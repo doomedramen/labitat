@@ -212,7 +212,9 @@ export function ItemCard({ item, editMode, onEdit }: ItemCardProps) {
   const Widget = serviceDef?.Widget
   const status = serviceData?._status ?? (dataError ? "error" : null)
 
-  const hasWidget = !editMode && Widget && serviceDef && serviceData
+  // Don't show widget when in edit mode, no widget exists, or status is error
+  const hasWidget =
+    !editMode && Widget && serviceDef && serviceData && status !== "error"
   const showSkeleton = !editMode && item.serviceType && isLoading
 
   const inner = (
