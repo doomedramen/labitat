@@ -50,7 +50,7 @@ function ItemIcon({
 
   // Build icon URL - try SVG first, fall back to PNG
   const buildIconUrl = () => {
-    const slug = iconUrl.startsWith("http") ? null : iconUrl
+    const slug = iconUrl.startsWith("http") ? null : iconUrl.toLowerCase()
 
     if (slug) {
       // Try SVG first, then PNG as fallback

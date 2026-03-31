@@ -41,22 +41,26 @@ export function ItemDialog({
 }: ItemDialogProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [selectedService, setSelectedService] = useState<string | null>(null)
+  const [selectedService, setSelectedService] = useState<
+    (typeof services)[number] | null
+  >(null)
   const [configValues, setConfigValues] = useState<Record<string, string>>({})
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
   const isEdit = item !== null
 
   const services = getAllServices()
   const serviceDef = selectedService
-    ? services.find((s) => s.id === selectedService)
-    : null
 
-  // Initialize state when item changes - using a single setState to avoid cascading updates
+  // Initialize state when dialog opens
   useEffect(() => {
     if (!open) return
 
     const init = async () => {
-      setSelectedService(item?.serviceType ?? null)
+      // Convert service type ID to service object
+      const service = item?.serviceType
+        ? services.find((s) => s.id === item.serviceType) || null
+        : null
+      setSelectedService(service)
       setConfigValues({})
       setIsLoadingConfig(false)
 
@@ -172,12 +176,15 @@ export function ItemDialog({
               <input
                 type="hidden"
                 name="serviceType"
-                value={selectedService ?? ""}
+                value={selectedService?.id ?? ""}
                 data-testid="item-service-type-hidden"
               />
               <Combobox
-                value={selectedService ?? ""}
+                value={selectedService}
                 onValueChange={(v) => setSelectedService(v || null)}
+                items={services}
+                itemToStringValue={(s) => s.name}
+                autoHighlight
               >
                 <ComboboxInput
                   placeholder="None (link only)"
@@ -188,16 +195,18 @@ export function ItemDialog({
                 <ComboboxContent>
                   <ComboboxList>
                     <ComboboxEmpty>No service found</ComboboxEmpty>
-                    <ComboboxItem value="">None (link only)</ComboboxItem>
+                    <ComboboxItem value={undefined}>
+                      None (link only)
+                    </ComboboxItem>
                     {services
                       .slice()
                       .sort((a, b) => a.name.localeCompare(b.name))
                       .map((s) => (
-                        <ComboboxItem key={s.id} value={s.id}>
+                        <ComboboxItem key={s.id} value={s}>
                           <CheckIcon
                             className={cn(
                               "size-4",
-                              selectedService === s.id
+                              selectedService?.id === s.id
                                 ? "opacity-100"
                                 : "opacity-0"
                             )}

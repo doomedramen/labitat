@@ -53,7 +53,7 @@ export function ActiveStreamItem({
   state,
 }: ActiveStream) {
   return (
-    <div className="flex w-full items-center gap-2 rounded-md bg-muted/50 px-2 py-1">
+    <div className="flex w-full items-center justify-between gap-2 rounded-md bg-muted/50 px-2 py-1">
       {state === "paused" ? (
         <Pause className="h-3 w-3 shrink-0 text-muted-foreground" />
       ) : (
