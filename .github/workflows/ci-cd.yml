@@ -14,8 +14,12 @@ env:
 jobs:
   # ── Test & Build ────────────────────────────────────────────────────────────
   test:
-    name: Test & Build
+    name: ${{ matrix.task }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        task: [lint, check-adapters, typecheck, build]
+      fail-fast: false
 
     steps:
       - name: Checkout repository
@@ -30,21 +34,23 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: latest
-          run_install: true
+          run_install: false
 
-      - name: Lint
-        run: pnpm lint
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pnpm-store
+            node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
-      - name: Check adapter registry
-        run: pnpm check-adapters
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Type check
-        run: pnpm typecheck
-
-      - name: Build
-        run: pnpm build
-
-      # Skip artifact upload - not needed for Docker build
+      - name: Run ${{ matrix.task }}
+        run: pnpm ${{ matrix.task }}
 
   # ── Docker Build & Push ─────────────────────────────────────────────────────
   docker:
