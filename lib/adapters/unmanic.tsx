@@ -62,7 +62,7 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
       fetch(`${baseUrl}/unmanic/api/v2/pending/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ limit: 0, start: 0 }),
+        body: JSON.stringify({}),
       }),
     ])
 
@@ -73,7 +73,7 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
     }
 
     const workersData = await workersRes.json()
-    const queueData = queueRes.ok ? await queueRes.json() : { recordsTotal: 0 }
+    const queueData = queueRes.ok ? await queueRes.json() : { records_total: 0 }
 
     // workers_status is an array of worker objects with 'idle' property
     const workersStatus = workersData.workers_status ?? []
@@ -82,11 +82,14 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
       (w: { idle: boolean }) => !w.idle
     ).length
 
+    // API returns snake_case: records_total
+    const queueLength = queueData.records_total ?? queueData.recordsTotal ?? 0
+
     return {
       _status: "ok" as const,
       activeWorkers,
       totalWorkers,
-      queueLength: queueData.recordsTotal ?? 0,
+      queueLength,
     }
   },
 
