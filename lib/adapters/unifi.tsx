@@ -116,15 +116,18 @@ export const unifiDefinition: ServiceDefinition<UniFiData> = {
     }
 
     // Get site stats (like Homepage - use /api/stat/sites)
-    const statsRes = await fetch(`${baseUrl}/proxy/network/api/s/${site}/stat/sites`, { headers })
+    const statsRes = await fetch(
+      `${baseUrl}/proxy/network/api/s/${site}/stat/sites`,
+      { headers }
+    )
 
     if (!statsRes.ok) {
       throw new Error("Failed to fetch site stats")
     }
 
     const statsData = await statsRes.json()
-    const siteData = statsData.data?.find((s: { desc: string; name: string }) => 
-      s.desc === site || s.name === site
+    const siteData = statsData.data?.find(
+      (s: { desc: string; name: string }) => s.desc === site || s.name === site
     )
 
     if (!siteData) {
@@ -132,9 +135,15 @@ export const unifiDefinition: ServiceDefinition<UniFiData> = {
     }
 
     // Get health data for wan, lan, wlan (matching Homepage)
-    const wan = siteData.health?.find((h: { subsystem: string }) => h.subsystem === "wan")
-    const lan = siteData.health?.find((h: { subsystem: string }) => h.subsystem === "lan")
-    const wlan = siteData.health?.find((h: { subsystem: string }) => h.subsystem === "wlan")
+    const wan = siteData.health?.find(
+      (h: { subsystem: string }) => h.subsystem === "wan"
+    )
+    const lan = siteData.health?.find(
+      (h: { subsystem: string }) => h.subsystem === "lan"
+    )
+    const wlan = siteData.health?.find(
+      (h: { subsystem: string }) => h.subsystem === "wlan"
+    )
 
     // Calculate uptime from gw_system-stats
     const uptime = wan?.["gw_system-stats"]?.uptime

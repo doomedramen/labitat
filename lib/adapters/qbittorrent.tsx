@@ -9,12 +9,7 @@ type QBittorrentData = {
   upload: number
 }
 
-function QBittorrentWidget({
-  leech,
-  download,
-  seed,
-  upload,
-}: QBittorrentData) {
+function QBittorrentWidget({ leech, download, seed, upload }: QBittorrentData) {
   const items = [
     { value: leech, label: "Leech" },
     { value: download, label: "Download" },
@@ -96,7 +91,9 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
 
     // Get torrent list (like Homepage)
     const headers = { Cookie: cookie }
-    const torrentsRes = await fetch(`${baseUrl}/api/v2/torrents/info`, { headers })
+    const torrentsRes = await fetch(`${baseUrl}/api/v2/torrents/info`, {
+      headers,
+    })
 
     if (!torrentsRes.ok) {
       throw new Error("Failed to fetch torrent data")

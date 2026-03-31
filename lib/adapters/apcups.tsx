@@ -14,7 +14,10 @@ function ApcupsWidget({ status, load, charge, timeLeft }: ApcupsData) {
     { value: status, label: "Status" },
     { value: `${load}%`, label: "Load" },
     { value: `${charge}%`, label: "Battery" },
-    { value: `${Math.floor((parseFloat(timeLeft) ?? 0) * 60)} min`, label: "Time Left" },
+    {
+      value: `${Math.floor((parseFloat(timeLeft) ?? 0) * 60)} min`,
+      label: "Time Left",
+    },
   ]
 
   return (
@@ -64,7 +67,7 @@ export const apcupsDefinition: ServiceDefinition<ApcupsData> = {
     // Note: apcupsd uses a binary NIS protocol on port 3551
     // This requires a server-side proxy or REST wrapper to work in Next.js
     // Users should set up apcaccess-http or similar to expose the data via HTTP
-    
+
     const host = config.host ?? "127.0.0.1"
     const port = config.port ?? 3551
 
@@ -82,7 +85,7 @@ export const apcupsDefinition: ServiceDefinition<ApcupsData> = {
         if (res.ok) {
           const data = await res.json()
           return {
-            _status: data.STATUS === "ONLINE" ? "ok" : "warn" as const,
+            _status: data.STATUS === "ONLINE" ? "ok" : ("warn" as const),
             status: data.STATUS ?? "UNKNOWN",
             load: data.LOADPCT ?? "0",
             charge: data.BCHARGE ?? "0",
@@ -97,7 +100,7 @@ export const apcupsDefinition: ServiceDefinition<ApcupsData> = {
     // If no REST wrapper found, throw helpful error
     throw new Error(
       "APC UPS requires a REST wrapper. Install apcaccess-http or similar on the apcupsd host. " +
-      "See: https://github.com/apcupsd/apcupsd or set up a custom HTTP endpoint that returns JSON."
+        "See: https://github.com/apcupsd/apcupsd or set up a custom HTTP endpoint that returns JSON."
     )
   },
 

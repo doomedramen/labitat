@@ -99,7 +99,8 @@ export const jackettDefinition: ServiceDefinition<JackettData> = {
 
     if (!indexersRes.ok) {
       if (indexersRes.status === 401) throw new Error("Invalid API key")
-      if (indexersRes.status === 404) throw new Error("Jackett not found at this URL")
+      if (indexersRes.status === 404)
+        throw new Error("Jackett not found at this URL")
       throw new Error(`Jackett error: ${indexersRes.status}`)
     }
 

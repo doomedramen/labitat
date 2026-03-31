@@ -110,7 +110,8 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
 
     if (!statsRes.ok) {
       if (statsRes.status === 401) throw new Error("Invalid credentials")
-      if (statsRes.status === 404) throw new Error("Frigate not found at this URL")
+      if (statsRes.status === 404)
+        throw new Error("Frigate not found at this URL")
       throw new Error(`Frigate error: ${statsRes.status}`)
     }
 
@@ -118,7 +119,10 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
 
     return {
       _status: "ok" as const,
-      cameras: statsData?.cameras !== undefined ? Object.keys(statsData.cameras).length : 0,
+      cameras:
+        statsData?.cameras !== undefined
+          ? Object.keys(statsData.cameras).length
+          : 0,
       uptime: statsData?.service?.uptime ?? 0,
       version: statsData?.service?.version ?? "unknown",
     }

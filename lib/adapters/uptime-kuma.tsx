@@ -79,7 +79,9 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
     let sitesUp = 0
     let sitesDown = 0
 
-    const heartbeatList = heartbeatData.heartbeatList as Record<string, { status: number }[]> | undefined
+    const heartbeatList = heartbeatData.heartbeatList as
+      | Record<string, { status: number }[]>
+      | undefined
     if (heartbeatList) {
       Object.values(heartbeatList).forEach((siteList) => {
         const lastHeartbeat = siteList[siteList.length - 1]
@@ -93,9 +95,13 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
 
     // Calculate average uptime
     const uptimeList = Object.values(heartbeatData.uptimeList ?? {}) as number[]
-    const avgUptime = uptimeList.length > 0
-      ? (uptimeList.reduce((a, b) => a + b, 0) / uptimeList.length * 100).toFixed(1)
-      : "0"
+    const avgUptime =
+      uptimeList.length > 0
+        ? (
+            (uptimeList.reduce((a, b) => a + b, 0) / uptimeList.length) *
+            100
+          ).toFixed(1)
+        : "0"
 
     return {
       _status: "ok" as const,

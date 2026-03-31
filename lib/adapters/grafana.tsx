@@ -9,7 +9,12 @@ type GrafanaData = {
   alertsTriggered: number
 }
 
-function GrafanaWidget({ dashboards, datasources, totalAlerts, alertsTriggered }: GrafanaData) {
+function GrafanaWidget({
+  dashboards,
+  datasources,
+  totalAlerts,
+  alertsTriggered,
+}: GrafanaData) {
   const items = [
     { value: dashboards, label: "Dashboards" },
     { value: datasources, label: "Datasources" },

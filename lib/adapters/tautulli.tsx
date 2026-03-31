@@ -23,16 +23,16 @@ type TautulliData = {
 function TautulliWidget({ showActiveStreams, sessions }: TautulliData) {
   if (!showActiveStreams || !sessions || sessions.length === 0) {
     return (
-      <div className="flex flex-col pb-1 mx-1">
-        <div className="text-xs relative h-5 w-full rounded-md bg-muted/50 mt-1">
-          <span className="absolute left-2 text-xs mt-[2px]">-</span>
+      <div className="mx-1 flex flex-col pb-1">
+        <div className="relative mt-1 h-5 w-full rounded-md bg-muted/50 text-xs">
+          <span className="absolute left-2 mt-[2px] text-xs">-</span>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col pb-1 mx-1">
+    <div className="mx-1 flex flex-col pb-1">
       <ActiveStreamList
         streams={sessions.map((session) => ({
           title: session.full_title,
@@ -83,7 +83,9 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
     const showActiveStreams = config.showActiveStreams === "true"
 
     // Get activity (like Homepage - only fetch get_activity)
-    const activityRes = await fetch(`${baseUrl}/api/v2?cmd=get_activity&${params}`)
+    const activityRes = await fetch(
+      `${baseUrl}/api/v2?cmd=get_activity&${params}`
+    )
 
     if (!activityRes.ok) {
       if (activityRes.status === 401) throw new Error("Invalid API key")

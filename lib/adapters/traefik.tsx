@@ -8,11 +8,7 @@ type TraefikData = {
   middlewares: number
 }
 
-function TraefikWidget({
-  routers,
-  services,
-  middlewares,
-}: TraefikData) {
+function TraefikWidget({ routers, services, middlewares }: TraefikData) {
   const items = [
     { value: routers, label: "Routers" },
     { value: services, label: "Services" },

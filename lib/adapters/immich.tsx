@@ -92,14 +92,20 @@ export const immichDefinition: ServiceDefinition<ImmichData> = {
     }
 
     // Get version to determine correct stats endpoint
-    const versionEndpoint = version === "2" ? "/server/version" : "/server-info/version"
-    const versionRes = await fetch(`${baseUrl}/api${versionEndpoint}`, { headers })
+    const versionEndpoint =
+      version === "2" ? "/server/version" : "/server-info/version"
+    const versionRes = await fetch(`${baseUrl}/api${versionEndpoint}`, {
+      headers,
+    })
 
     let statsEndpoint = "/server-info/stats"
     if (version === "1" && versionRes.ok) {
       const versionData = await versionRes.json()
       // Use statistics endpoint for Immich > 1.84
-      if (versionData?.major > 1 || (versionData?.major === 1 && versionData?.minor > 84)) {
+      if (
+        versionData?.major > 1 ||
+        (versionData?.major === 1 && versionData?.minor > 84)
+      ) {
         statsEndpoint = "/server-info/statistics"
       }
     } else if (version === "2") {
@@ -110,7 +116,8 @@ export const immichDefinition: ServiceDefinition<ImmichData> = {
 
     if (!statsRes.ok) {
       if (statsRes.status === 401) throw new Error("Invalid API key")
-      if (statsRes.status === 404) throw new Error("Immich not found at this URL")
+      if (statsRes.status === 404)
+        throw new Error("Immich not found at this URL")
       throw new Error(`Immich error: ${statsRes.status}`)
     }
 

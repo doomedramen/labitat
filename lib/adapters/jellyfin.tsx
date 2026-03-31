@@ -81,7 +81,9 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
     const useJellyfinV2 = version === "2"
 
     // Jellyfin uses MediaBrowser auth header format
-    const deviceId = encodeURIComponent(`labitat-${config.url.replace(/^https?:\/\//, "")}`)
+    const deviceId = encodeURIComponent(
+      `labitat-${config.url.replace(/^https?:\/\//, "")}`
+    )
     const authHeader = `MediaBrowser Token="${encodeURIComponent(config.apiKey)}", Client="Labitat", Device="Labitat", DeviceId="${deviceId}", Version="1.0.0"`
     const headers = { Authorization: authHeader }
 
@@ -89,7 +91,9 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
     const itemsEndpoint = useJellyfinV2 ? "/Items/Counts" : "/Items/Counts"
 
     const [sessionsRes, countsRes] = await Promise.all([
-      fetch(`${baseUrl}${sessionsEndpoint}?ActiveWithinSeconds=120`, { headers }),
+      fetch(`${baseUrl}${sessionsEndpoint}?ActiveWithinSeconds=120`, {
+        headers,
+      }),
       fetch(`${baseUrl}${itemsEndpoint}`, { headers }),
     ])
 

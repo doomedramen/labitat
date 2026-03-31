@@ -76,7 +76,9 @@ export const lidarrDefinition: ServiceDefinition<LidarrData> = {
     }
 
     const artistsData = await artistsRes.json()
-    const wantedData = wantedRes.ok ? await wantedRes.json() : { totalRecords: 0 }
+    const wantedData = wantedRes.ok
+      ? await wantedRes.json()
+      : { totalRecords: 0 }
     const queueData = queueRes.ok ? await queueRes.json() : { totalCount: 0 }
 
     return {

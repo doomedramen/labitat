@@ -8,11 +8,7 @@ type PortainerData = {
   total: number
 }
 
-function PortainerWidget({
-  running,
-  stopped,
-  total,
-}: PortainerData) {
+function PortainerWidget({ running, stopped, total }: PortainerData) {
   const items = [
     { value: running, label: "Running" },
     { value: stopped, label: "Stopped" },

@@ -9,7 +9,12 @@ type TransmissionData = {
   upload: number
 }
 
-function TransmissionWidget({ leech, download, seed, upload }: TransmissionData) {
+function TransmissionWidget({
+  leech,
+  download,
+  seed,
+  upload,
+}: TransmissionData) {
   const items = [
     { value: leech, label: "Leech" },
     { value: download, label: "Download" },
@@ -79,7 +84,9 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     const rpcUrl = config.rpcUrl ?? "/transmission/"
     const rpcEndpoint = `${baseUrl}${rpcUrl}rpc`
 
-    const auth = Buffer.from(`${config.username}:${config.password}`).toString("base64")
+    const auth = Buffer.from(`${config.username}:${config.password}`).toString(
+      "base64"
+    )
 
     // First request to get CSRF token (Transmission returns 409 with token)
     let csrfToken = ""
@@ -122,7 +129,8 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
 
     if (!res.ok) {
       if (res.status === 401) throw new Error("Invalid username or password")
-      if (res.status === 404) throw new Error("Transmission not found at this URL")
+      if (res.status === 404)
+        throw new Error("Transmission not found at this URL")
       throw new Error(`Transmission error: ${res.status}`)
     }
 
@@ -130,9 +138,17 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     const torrents = data.arguments?.torrents ?? []
 
     // Calculate stats (matching Homepage logic)
-    const rateDl = torrents.reduce((acc: number, t: { rateDownload: number }) => acc + (t.rateDownload ?? 0), 0)
-    const rateUl = torrents.reduce((acc: number, t: { rateUpload: number }) => acc + (t.rateUpload ?? 0), 0)
-    const completed = torrents.filter((t: { percentDone: number }) => t.percentDone === 1).length
+    const rateDl = torrents.reduce(
+      (acc: number, t: { rateDownload: number }) => acc + (t.rateDownload ?? 0),
+      0
+    )
+    const rateUl = torrents.reduce(
+      (acc: number, t: { rateUpload: number }) => acc + (t.rateUpload ?? 0),
+      0
+    )
+    const completed = torrents.filter(
+      (t: { percentDone: number }) => t.percentDone === 1
+    ).length
     const leech = torrents.length - completed
 
     return {

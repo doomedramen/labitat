@@ -7,10 +7,7 @@ type BazarrData = {
   wantedEpisodes: number
 }
 
-function BazarrWidget({
-  wantedMovies,
-  wantedEpisodes,
-}: BazarrData) {
+function BazarrWidget({ wantedMovies, wantedEpisodes }: BazarrData) {
   const items = [
     { value: wantedMovies, label: "Movies Missing" },
     { value: wantedEpisodes, label: "Episodes Missing" },
@@ -63,11 +60,10 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const [wantedMoviesRes, wantedEpisodesRes] =
-      await Promise.all([
-        fetch(`${baseUrl}/api/movies/wanted?start=0&length=0`, { headers }),
-        fetch(`${baseUrl}/api/episodes/wanted?start=0&length=0`, { headers }),
-      ])
+    const [wantedMoviesRes, wantedEpisodesRes] = await Promise.all([
+      fetch(`${baseUrl}/api/movies/wanted?start=0&length=0`, { headers }),
+      fetch(`${baseUrl}/api/episodes/wanted?start=0&length=0`, { headers }),
+    ])
 
     if (!wantedMoviesRes.ok) {
       if (wantedMoviesRes.status === 401) throw new Error("Invalid API key")

@@ -100,7 +100,9 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
       }
 
       // Fetch proxy hosts only (like Homepage)
-      const proxyRes = await fetch(`${baseUrl}/api/nginx/proxy-hosts`, { headers })
+      const proxyRes = await fetch(`${baseUrl}/api/nginx/proxy-hosts`, {
+        headers,
+      })
 
       if (!proxyRes.ok) {
         throw new Error(`NPM error: ${proxyRes.status}`)
