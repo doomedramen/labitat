@@ -9,14 +9,6 @@ type UniFiData = {
   wlanUsers: number
 }
 
-function formatUptime(seconds: number): string {
-  const days = Math.floor(seconds / 86400)
-  if (days > 0) return `${days}d`
-  const hours = Math.floor(seconds / 3600)
-  if (hours > 0) return `${hours}h`
-  return `${Math.floor(seconds / 60)}m`
-}
-
 function UniFiWidget({ uptime, wan, lanUsers, wlanUsers }: UniFiData) {
   const items = [
     { value: uptime, label: "Uptime" },

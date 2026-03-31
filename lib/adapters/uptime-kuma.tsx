@@ -63,16 +63,15 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
     const slug = config.slug ?? "default"
 
     // Uptime Kuma uses REST API (like Homepage)
-    const [statusRes, heartbeatRes] = await Promise.all([
+    const [_statusRes, heartbeatRes] = await Promise.all([
       fetch(`${baseUrl}/api/status-page?slug=${slug}`),
       fetch(`${baseUrl}/api/status-page/heartbeat?slug=${slug}`),
     ])
 
-    if (!statusRes.ok || !heartbeatRes.ok) {
+    if (!_statusRes.ok || !heartbeatRes.ok) {
       throw new Error("Failed to fetch Uptime Kuma data")
     }
 
-    const statusData = await statusRes.json()
     const heartbeatData = await heartbeatRes.json()
 
     // Count sites up/down from heartbeat list

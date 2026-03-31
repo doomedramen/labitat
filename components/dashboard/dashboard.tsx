@@ -42,7 +42,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   // ── Edit mode ──────────────────────────────────────────────────────────────
   const [editMode, setEditMode] = useState(false)
   const [dashboardTitle, setDashboardTitle] = useState(title)
-  const [isSavingTitle, setIsSavingTitle] = useState(false)
   const [titleChanged, setTitleChanged] = useState(false)
 
   // Sync title when server data changes
@@ -347,9 +346,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           onDone={() => {
             if (titleChanged && dashboardTitle.trim()) {
               startTransition(() => {
-                setIsSavingTitle(true)
-                updateDashboardTitle(dashboardTitle.trim()).finally(() => {
-                  setIsSavingTitle(false)
+                updateDashboardTitle(dashboardTitle.trim()).then(() => {
                   setTitleChanged(false)
                   setEditMode(false)
                 })

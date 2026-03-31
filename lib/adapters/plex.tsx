@@ -52,14 +52,16 @@ function PlexWidget({
       </div>
 
       {showActiveStreams && sessions && sessions.length > 0 && (
-        <ActiveStreamList
-          streams={sessions.map((session) => ({
-            title: session.full_title,
-            user: session.user,
-            progress: session.progress,
-            state: session.state,
-          }))}
-        />
+        <div className="mx-1 flex flex-col pb-1">
+          <ActiveStreamList
+            streams={sessions.map((session) => ({
+              title: session.full_title,
+              user: session.user,
+              progress: session.progress,
+              state: session.state,
+            }))}
+          />
+        </div>
       )}
     </div>
   )
@@ -192,16 +194,18 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
         const type = getAttr("type") // "movie" or "episode"
         const viewOffset = getAttr("viewOffset") // Progress in milliseconds
 
-        // Build display title
-        // For TV episodes: "Show: Season - Episode"
+        // Build display title matching Tautulli format
+        // For TV episodes: "Show: S01 - Episode Title"
         // For movies: just the movie title
         let fullTitle = title
         if (grandparentTitle) {
-          // Extract season/episode info from parentTitle (e.g., "Season 2" -> "S02")
-          const seasonMatch = parentTitle?.match(/Season\s*(\d+)/i)
-          const seasonStr = seasonMatch
-            ? `S${seasonMatch[1].padStart(2, "0")}`
-            : parentTitle
+          // Extract season number from parentTitle or use seasonNumber attribute
+          const seasonNumber = getAttr("parentIndex")
+          const seasonStr = seasonNumber
+            ? `S${seasonNumber.padStart(2, "0")}`
+            : parentTitle?.match(/Season\s*(\d+)/i)
+              ? `S${parentTitle.match(/Season\s*(\d+)/i)![1].padStart(2, "0")}`
+              : parentTitle
           fullTitle = `${grandparentTitle}: ${seasonStr} - ${title}`
         } else if (type === "movie") {
           // For movies, use title unless it looks like a library name

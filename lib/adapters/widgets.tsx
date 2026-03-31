@@ -53,7 +53,7 @@ export function ActiveStreamItem({
   state,
 }: ActiveStream) {
   return (
-    <div className="flex items-center gap-2 rounded-md bg-muted/50 px-2 py-1">
+    <div className="flex w-full items-center gap-2 rounded-md bg-muted/50 px-2 py-1">
       {state === "paused" ? (
         <Pause className="h-3 w-3 shrink-0 text-muted-foreground" />
       ) : (
@@ -76,7 +76,7 @@ export function ActiveStreamList({ streams }: { streams: ActiveStream[] }) {
   if (streams.length === 0) return null
 
   return (
-    <div className="mt-2 flex flex-row flex-wrap gap-1.5 border-t pt-2">
+    <div className="mt-2 flex flex-col gap-1.5 border-t pt-2">
       {streams.map((stream, idx) => (
         <ActiveStreamItem key={idx} {...stream} />
       ))}

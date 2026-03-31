@@ -215,8 +215,6 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     // Build download list for active torrents (not completed, not stalled)
     let downloads: DownloadItem[] = []
     if (showDownloads) {
-      const statePriority = ["downloading", "seeding", "queued", "stopped"]
-
       downloads = torrents
         .filter(
           (t: { percentDone: number; left: number }) =>
