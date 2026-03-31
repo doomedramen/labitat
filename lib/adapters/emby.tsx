@@ -64,14 +64,9 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Emby-Token": config.apiKey }
 
-    const [sessionsRes, moviesRes, showsRes] = await Promise.all([
+    const [sessionsRes, countsRes] = await Promise.all([
       fetch(`${baseUrl}/Sessions?ActiveWithinSeconds=120`, { headers }),
-      fetch(`${baseUrl}/Items?IncludeItemTypes=Movie&Recursive=true&Limit=0`, {
-        headers,
-      }),
-      fetch(`${baseUrl}/Items?IncludeItemTypes=Series&Recursive=true&Limit=0`, {
-        headers,
-      }),
+      fetch(`${baseUrl}/Items/Counts`, { headers }),
     ])
 
     if (!sessionsRes.ok) {
@@ -82,12 +77,9 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
     }
 
     const sessionsData = await sessionsRes.json()
-    const moviesData = (await moviesRes.ok)
-      ? await moviesRes.json()
-      : { TotalRecordCount: 0 }
-    const showsData = (await showsRes.ok)
-      ? await showsRes.json()
-      : { TotalRecordCount: 0 }
+    const countsData = (await countsRes.ok)
+      ? await countsRes.json()
+      : { MovieCount: 0, SeriesCount: 0, EpisodeCount: 0, SongCount: 0 }
 
     // Count active streams (sessions with NowPlayingItem that's not paused)
     const activeStreams = sessionsData.filter(
@@ -98,9 +90,9 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
     return {
       _status: "ok" as const,
       activeStreams,
-      movies: moviesData.TotalRecordCount ?? 0,
-      shows: showsData.TotalRecordCount ?? 0,
-      episodes: 0, // Would require separate call
+      movies: countsData.MovieCount ?? 0,
+      shows: countsData.SeriesCount ?? 0,
+      episodes: countsData.EpisodeCount ?? 0,
     }
   },
 

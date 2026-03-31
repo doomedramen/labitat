@@ -4,17 +4,15 @@ type LidarrData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
   queued: number
-  missing: number
+  wanted: number
   artists: number
-  albums: number
 }
 
-function LidarrWidget({ queued, missing, artists, albums }: LidarrData) {
+function LidarrWidget({ queued, wanted, artists }: LidarrData) {
   const items = [
+    { value: wanted, label: "Wanted" },
     { value: queued, label: "Queued" },
-    { value: missing, label: "Missing" },
     { value: artists, label: "Artists" },
-    { value: albums, label: "Albums" },
   ]
 
   return (
@@ -64,9 +62,9 @@ export const lidarrDefinition: ServiceDefinition<LidarrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const [artistsRes, albumRes, queueRes] = await Promise.all([
+    const [artistsRes, wantedRes, queueRes] = await Promise.all([
       fetch(`${baseUrl}/api/v1/artist`, { headers }),
-      fetch(`${baseUrl}/api/v1/album`, { headers }),
+      fetch(`${baseUrl}/api/v1/wanted/missing`, { headers }),
       fetch(`${baseUrl}/api/v1/queue/status`, { headers }),
     ])
 
@@ -78,23 +76,14 @@ export const lidarrDefinition: ServiceDefinition<LidarrData> = {
     }
 
     const artistsData = await artistsRes.json()
-    const albumData = await albumRes.json()
+    const wantedData = wantedRes.ok ? await wantedRes.json() : { totalRecords: 0 }
     const queueData = queueRes.ok ? await queueRes.json() : { totalCount: 0 }
-
-    // Calculate missing albums (monitored but not downloaded)
-    let missing = 0
-    for (const album of albumData) {
-      if (album.monitored && !album.grabbed) {
-        missing++
-      }
-    }
 
     return {
       _status: "ok" as const,
       queued: queueData.totalCount ?? 0,
-      missing,
+      wanted: wantedData.totalRecords ?? 0,
       artists: artistsData.length,
-      albums: albumData.length,
     }
   },
 

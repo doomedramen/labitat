@@ -121,27 +121,55 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
 
     // Simple XML parsing for MediaContainer
     const streamMatch = sessionsText.match(/size="(\d+)"/)
+    const streams = streamMatch ? parseInt(streamMatch[1], 10) : 0
 
-    // Parse library sections by type
-    const dirRegex =
-      /<Directory[^>]*type="([^"]*)"[^>]*leafCount="(\d+)"[^>]*>/g
-    let albums = 0
-    let movies = 0
-    let tvShows = 0
+    // Parse library sections to get directory entries
+    const dirRegex = /<Directory[^>]*key="([^"]*)"[^>]*type="([^"]*)"[^>]*>/g
+    const libraries: { key: string; type: string }[] = []
     let dirMatch
     while ((dirMatch = dirRegex.exec(libraryText)) !== null) {
-      const [, type, count] = dirMatch
-      const countNum = parseInt(count, 10)
-      if (type === "artist") {
-        albums += countNum
-      } else if (type === "movie") {
-        movies += countNum
-      } else if (type === "show") {
-        tvShows += countNum
+      const [, key, type] = dirMatch
+      if (["movie", "show", "artist"].includes(type)) {
+        libraries.push({ key, type })
       }
     }
 
-    const streams = streamMatch ? parseInt(streamMatch[1], 10) : 0
+    // Fetch actual counts from each library section
+    // This matches how Homepage does it - using totalSize from /library/sections/{key}/all
+    let albums = 0
+    let movies = 0
+    let tvShows = 0
+
+    await Promise.all(
+      libraries.map(async ({ key, type }) => {
+        const endpoint =
+          type === "artist"
+            ? `${baseUrl}/library/sections/${key}/albums`
+            : `${baseUrl}/library/sections/${key}/all`
+
+        try {
+          const res = await fetch(endpoint, { headers })
+          if (!res.ok) return
+
+          const text = await res.text()
+          // Extract totalSize or size attribute from MediaContainer
+          const sizeMatch = text.match(
+            /<MediaContainer[^>]*(?:totalSize|size)="(\d+)"/
+          )
+          const count = sizeMatch ? parseInt(sizeMatch[1], 10) : 0
+
+          if (type === "movie") {
+            movies += count
+          } else if (type === "show") {
+            tvShows += count
+          } else if (type === "artist") {
+            albums += count
+          }
+        } catch {
+          // Ignore errors for individual library sections
+        }
+      })
+    )
 
     // Parse active sessions if enabled
     const sessions: PlexSession[] = []

@@ -40,15 +40,13 @@ export function ActiveStreamItem({
   state,
 }: ActiveStream) {
   return (
-    <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
-      <div className="flex w-full items-center gap-1">
-        {state === "paused" ? (
-          <Pause className="h-3 w-3 shrink-0 text-muted-foreground" />
-        ) : (
-          <Play className="h-3 w-3 shrink-0 text-muted-foreground" />
-        )}
-        <span className="min-w-0 truncate font-medium">{title}</span>
-      </div>
+    <div className="flex items-center gap-2 rounded-md bg-muted/50 px-2 py-1">
+      {state === "paused" ? (
+        <Pause className="h-3 w-3 shrink-0 text-muted-foreground" />
+      ) : (
+        <Play className="h-3 w-3 shrink-0 text-muted-foreground" />
+      )}
+      <span className="min-w-0 truncate font-medium">{title}</span>
       <span className="text-muted-foreground">({user})</span>
       <div className="flex items-center gap-1 font-mono text-muted-foreground tabular-nums">
         <Clock className="h-3 w-3 shrink-0" />

@@ -4,16 +4,14 @@ type ReadarrData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
   queued: number
-  missing: number
-  authors: number
+  wanted: number
   books: number
 }
 
-function ReadarrWidget({ queued, missing, authors, books }: ReadarrData) {
+function ReadarrWidget({ queued, wanted, books }: ReadarrData) {
   const items = [
+    { value: wanted, label: "Wanted" },
     { value: queued, label: "Queued" },
-    { value: missing, label: "Missing" },
-    { value: authors, label: "Authors" },
     { value: books, label: "Books" },
   ]
 
@@ -64,37 +62,28 @@ export const readarrDefinition: ServiceDefinition<ReadarrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const [authorsRes, booksRes, queueRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/author`, { headers }),
+    const [booksRes, wantedRes, queueRes] = await Promise.all([
       fetch(`${baseUrl}/api/v1/book`, { headers }),
+      fetch(`${baseUrl}/api/v1/wanted/missing`, { headers }),
       fetch(`${baseUrl}/api/v1/queue/status`, { headers }),
     ])
 
-    if (!authorsRes.ok) {
-      if (authorsRes.status === 401) throw new Error("Invalid API key")
-      if (authorsRes.status === 404)
+    if (!booksRes.ok) {
+      if (booksRes.status === 401) throw new Error("Invalid API key")
+      if (booksRes.status === 404)
         throw new Error("Readarr not found at this URL")
-      throw new Error(`Readarr error: ${authorsRes.status}`)
+      throw new Error(`Readarr error: ${booksRes.status}`)
     }
 
-    const authorsData = await authorsRes.json()
     const booksData = await booksRes.json()
+    const wantedData = wantedRes.ok ? await wantedRes.json() : { totalRecords: 0 }
     const queueData = queueRes.ok ? await queueRes.json() : { totalCount: 0 }
-
-    // Calculate missing books (monitored but not downloaded)
-    let missing = 0
-    for (const book of booksData) {
-      if (book.monitored && !book.grabbed) {
-        missing++
-      }
-    }
 
     return {
       _status: "ok" as const,
       queued: queueData.totalCount ?? 0,
-      missing,
-      authors: authorsData.length,
-      books: booksData.length,
+      wanted: wantedData.totalRecords ?? 0,
+      books: booksData.have ?? 0,
     }
   },
 

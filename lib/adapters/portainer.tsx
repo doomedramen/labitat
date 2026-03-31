@@ -3,23 +3,20 @@ import type { ServiceDefinition } from "./types"
 type PortainerData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
-  runningContainers: number
-  stoppedContainers: number
-  totalContainers: number
-  stacks: number
+  running: number
+  stopped: number
+  total: number
 }
 
 function PortainerWidget({
-  runningContainers,
-  stoppedContainers,
-  totalContainers,
-  stacks,
+  running,
+  stopped,
+  total,
 }: PortainerData) {
   const items = [
-    { value: runningContainers, label: "Running" },
-    { value: stoppedContainers, label: "Stopped" },
-    { value: totalContainers, label: "Total" },
-    { value: stacks, label: "Stacks" },
+    { value: running, label: "Running" },
+    { value: stopped, label: "Stopped" },
+    { value: total, label: "Total" },
   ]
 
   return (
@@ -69,10 +66,19 @@ export const portainerDefinition: ServiceDefinition<PortainerData> = {
       required: true,
       placeholder: "Your Portainer password",
     },
+    {
+      key: "endpointId",
+      label: "Environment ID",
+      type: "text",
+      required: false,
+      placeholder: "1",
+      helperText: "Portainer environment ID (default: 1)",
+    },
   ],
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
+    const endpointId = config.endpointId ?? 1
 
     // First, authenticate to get a JWT token
     const authRes = await fetch(`${baseUrl}/api/auth`, {
@@ -97,30 +103,26 @@ export const portainerDefinition: ServiceDefinition<PortainerData> = {
 
     const headers = { Authorization: `Bearer ${token}` }
 
-    // Fetch containers and stacks from the default endpoint (ID: 1)
-    const [containersRes, stacksRes] = await Promise.all([
-      fetch(`${baseUrl}/api/endpoints/1/docker/containers/json?all=true`, {
-        headers,
-      }),
-      fetch(`${baseUrl}/api/endpoints/1/stacks`, { headers }),
-    ])
+    // Fetch containers from configured endpoint (like Homepage)
+    const containersRes = await fetch(
+      `${baseUrl}/api/endpoints/${endpointId}/docker/containers/json?all=1`,
+      { headers }
+    )
 
     const containersData = containersRes.ok ? await containersRes.json() : []
-    const stacksData = stacksRes.ok ? await stacksRes.json() : []
 
-    const runningContainers = containersData.filter(
+    const running = containersData.filter(
       (c: { State: string }) => c.State === "running"
     ).length
-    const stoppedContainers = containersData.filter(
+    const stopped = containersData.filter(
       (c: { State: string }) => c.State === "exited"
     ).length
 
     return {
       _status: "ok" as const,
-      runningContainers,
-      stoppedContainers,
-      totalContainers: containersData.length,
-      stacks: stacksData.length,
+      running,
+      stopped,
+      total: containersData.length,
     }
   },
 

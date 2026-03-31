@@ -1,0 +1,128 @@
+import type { ServiceDefinition } from "./types"
+
+type FrigateData = {
+  _status?: "ok" | "warn" | "error"
+  _statusText?: string
+  cameras: number
+  uptime: number
+  version: string
+}
+
+function formatUptime(seconds: number): string {
+  const days = Math.floor(seconds / 86400)
+  const hours = Math.floor((seconds % 86400) / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+
+  if (days > 0) return `${days}d ${hours}h`
+  if (hours > 0) return `${hours}h ${minutes}m`
+  return `${minutes}m`
+}
+
+function FrigateWidget({ cameras, uptime, version }: FrigateData) {
+  const items = [
+    { value: cameras, label: "Cameras" },
+    { value: formatUptime(uptime), label: "Uptime" },
+    { value: version, label: "Version" },
+  ]
+
+  return (
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
+      {items.map((item) => (
+        <div
+          key={item.label}
+          className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center"
+        >
+          <span className="font-medium text-foreground tabular-nums">
+            {item.value}
+          </span>
+          <span className="text-muted-foreground">{item.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export const frigateDefinition: ServiceDefinition<FrigateData> = {
+  id: "frigate",
+  name: "Frigate",
+  icon: "frigate",
+  category: "monitoring",
+  defaultPollingMs: 30_000,
+
+  configFields: [
+    {
+      key: "url",
+      label: "URL",
+      type: "url",
+      required: true,
+      placeholder: "http://192.168.1.2:5000",
+      helperText: "The base URL of your Frigate instance",
+    },
+    {
+      key: "username",
+      label: "Username",
+      type: "text",
+      required: false,
+      placeholder: "admin",
+      helperText: "Required if Frigate has authentication enabled",
+    },
+    {
+      key: "password",
+      label: "Password",
+      type: "password",
+      required: false,
+      placeholder: "Your Frigate password",
+      helperText: "Required if Frigate has authentication enabled",
+    },
+  ],
+
+  async fetchData(config) {
+    const baseUrl = config.url.replace(/\/$/, "")
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    }
+
+    // If credentials provided, login first
+    if (config.username && config.password) {
+      const loginRes = await fetch(`${baseUrl}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: config.username,
+          password: config.password,
+        }),
+      })
+
+      if (!loginRes.ok) {
+        throw new Error("Failed to authenticate with Frigate")
+      }
+
+      const cookie = loginRes.headers.get("set-cookie")
+      if (cookie) {
+        headers.Cookie = cookie
+      }
+    }
+
+    // Fetch stats
+    const statsRes = await fetch(`${baseUrl}/api/stats`, { headers })
+
+    if (!statsRes.ok) {
+      if (statsRes.status === 401) throw new Error("Invalid credentials")
+      if (statsRes.status === 404) throw new Error("Frigate not found at this URL")
+      throw new Error(`Frigate error: ${statsRes.status}`)
+    }
+
+    const statsData = await statsRes.json()
+
+    return {
+      _status: "ok" as const,
+      cameras: statsData?.cameras !== undefined ? Object.keys(statsData.cameras).length : 0,
+      uptime: statsData?.service?.uptime ?? 0,
+      version: statsData?.service?.version ?? "unknown",
+    }
+  },
+
+  Widget: FrigateWidget,
+}

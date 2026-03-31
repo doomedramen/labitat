@@ -3,18 +3,18 @@ import type { ServiceDefinition } from "./types"
 type GrafanaData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
-  alerts: number
-  firing: number
-  pending: number
   dashboards: number
+  datasources: number
+  totalAlerts: number
+  alertsTriggered: number
 }
 
-function GrafanaWidget({ alerts, firing, pending, dashboards }: GrafanaData) {
+function GrafanaWidget({ dashboards, datasources, totalAlerts, alertsTriggered }: GrafanaData) {
   const items = [
-    { value: alerts, label: "Alerts" },
-    { value: firing, label: "Firing" },
-    { value: pending, label: "Pending" },
     { value: dashboards, label: "Dashboards" },
+    { value: datasources, label: "Datasources" },
+    { value: totalAlerts, label: "Total Alerts" },
+    { value: alertsTriggered, label: "Alerts Triggered" },
   ]
 
   return (
@@ -67,42 +67,33 @@ export const grafanaDefinition: ServiceDefinition<GrafanaData> = {
       "Content-Type": "application/json",
     }
 
-    // Fetch alerts and dashboards
-    const [alertsRes, dashboardsRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/provisioning/alert-rules`, { headers }),
-      fetch(`${baseUrl}/api/search?type=dash-db`, { headers }),
+    // Fetch stats and alerts (like Homepage)
+    const [statsRes, alertsRes] = await Promise.all([
+      fetch(`${baseUrl}/api/admin/stats`, { headers }),
+      fetch(`${baseUrl}/api/alerts`, { headers }),
     ])
 
-    // Grafana API may not have provisioning API enabled, handle gracefully
-    let alertsData = []
-    if (alertsRes.ok) {
-      alertsData = await alertsRes.json()
-    }
-
-    if (!dashboardsRes.ok) {
-      if (dashboardsRes.status === 401) throw new Error("Invalid API key")
-      if (dashboardsRes.status === 404)
+    if (!statsRes.ok) {
+      if (statsRes.status === 401) throw new Error("Invalid API key")
+      if (statsRes.status === 404)
         throw new Error("Grafana not found at this URL")
-      throw new Error(`Grafana error: ${dashboardsRes.status}`)
+      throw new Error(`Grafana error: ${statsRes.status}`)
     }
 
-    const dashboardsData = await dashboardsRes.json()
+    const statsData = await statsRes.json()
+    const alertsData = alertsRes.ok ? await alertsRes.json() : []
 
-    // Count alert states
-    const firing = alertsData.filter(
-      (a: { state: string }) => a.state === "Firing"
+    // Count alerts in alerting state (matching Homepage)
+    const alertsTriggered = alertsData.filter(
+      (a: { state: string }) => a.state === "alerting"
     ).length
-    const pending = alertsData.filter(
-      (a: { state: string }) => a.state === "Pending"
-    ).length
-    const alerts = alertsData.length
 
     return {
       _status: "ok" as const,
-      alerts,
-      firing,
-      pending,
-      dashboards: dashboardsData.length,
+      dashboards: statsData.dashboards ?? 0,
+      datasources: statsData.datasources ?? 0,
+      totalAlerts: statsData.alerts ?? 0,
+      alertsTriggered,
     }
   },
 

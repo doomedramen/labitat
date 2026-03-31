@@ -28,6 +28,10 @@ import { uptimeKumaDefinition } from "./uptime-kuma"
 import { grafanaDefinition } from "./grafana"
 import { genericPingDefinition } from "./generic-ping"
 import { genericRestDefinition } from "./generic-rest"
+import { transmissionDefinition } from "./transmission"
+import { immichDefinition } from "./immich"
+import { jackettDefinition } from "./jackett"
+import { frigateDefinition } from "./frigate"
 
 // Re-export types
 export type {
@@ -66,6 +70,10 @@ export const registry: ServiceRegistry = {
   [grafanaDefinition.id]: grafanaDefinition,
   [genericPingDefinition.id]: genericPingDefinition,
   [genericRestDefinition.id]: genericRestDefinition,
+  [transmissionDefinition.id]: transmissionDefinition,
+  [immichDefinition.id]: immichDefinition,
+  [jackettDefinition.id]: jackettDefinition,
+  [frigateDefinition.id]: frigateDefinition,
 }
 
 /** Get a service definition by ID */

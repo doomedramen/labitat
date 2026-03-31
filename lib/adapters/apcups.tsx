@@ -12,9 +12,9 @@ type ApcupsData = {
 function ApcupsWidget({ status, load, charge, timeLeft }: ApcupsData) {
   const items = [
     { value: status, label: "Status" },
-    { value: load, label: "Load" },
-    { value: charge, label: "Battery" },
-    { value: timeLeft, label: "Time Left" },
+    { value: `${load}%`, label: "Load" },
+    { value: `${charge}%`, label: "Battery" },
+    { value: `${Math.floor((parseFloat(timeLeft) ?? 0) * 60)} min`, label: "Time Left" },
   ]
 
   return (
@@ -48,7 +48,7 @@ export const apcupsDefinition: ServiceDefinition<ApcupsData> = {
       type: "text",
       required: true,
       placeholder: "192.168.1.78",
-      helperText: "The host running apcupsd (NIS server)",
+      helperText: "The host running apcupsd with NIS server enabled",
     },
     {
       key: "port",
@@ -56,35 +56,49 @@ export const apcupsDefinition: ServiceDefinition<ApcupsData> = {
       type: "number",
       required: false,
       placeholder: "3551",
-      helperText: "Default: 3551",
+      helperText: "Default: 3551 (apcupsd NIS port)",
     },
   ],
 
-  async fetchData() {
-    // Note: This requires a proxy server that exposes apcupsd NIS over HTTP
-    // You'll need to run apcaccess or a small daemon that provides this data
-    // For now, we'll assume there's an HTTP endpoint that returns JSON
+  async fetchData(config) {
+    // Note: apcupsd uses a binary NIS protocol on port 3551
+    // This requires a server-side proxy or REST wrapper to work in Next.js
+    // Users should set up apcaccess-http or similar to expose the data via HTTP
+    
+    const host = config.host ?? "127.0.0.1"
+    const port = config.port ?? 3551
 
-    // This is a placeholder - apcupsd uses a binary protocol on port 3551
-    // In practice, you'd need apcaccess running locally or a REST wrapper
-    // For Homepage compatibility, they use a TCP connection directly
+    // Try to fetch from a REST wrapper (apcaccess-http, etc.)
+    // Common patterns: http://host:port/status.json or http://host:3552/status
+    const restUrls = [
+      `http://${host}:${port}/status.json`,
+      `http://${host}:3552/status`,
+      `http://${host}/apc/status`,
+    ]
 
-    // Alternative: Use apcaccess command if running locally
-    // For now, throw an error explaining the limitation
+    for (const url of restUrls) {
+      try {
+        const res = await fetch(url)
+        if (res.ok) {
+          const data = await res.json()
+          return {
+            _status: data.STATUS === "ONLINE" ? "ok" : "warn" as const,
+            status: data.STATUS ?? "UNKNOWN",
+            load: data.LOADPCT ?? "0",
+            charge: data.BCHARGE ?? "0",
+            timeLeft: data.TIMELEFT ?? "0",
+          }
+        }
+      } catch {
+        // Try next URL
+      }
+    }
+
+    // If no REST wrapper found, throw helpful error
     throw new Error(
-      "APC UPS requires a local apcaccess daemon. Configure apcupsd NIS server and ensure apcaccess can connect."
+      "APC UPS requires a REST wrapper. Install apcaccess-http or similar on the apcupsd host. " +
+      "See: https://github.com/apcupsd/apcupsd or set up a custom HTTP endpoint that returns JSON."
     )
-
-    // If you have a REST wrapper, the implementation would look like:
-    // const res = await fetch(`http://${host}:${port}/status`)
-    // const data = await res.json()
-    // return {
-    //   _status: data.STATUS === 'ONLINE' ? 'ok' : 'warn',
-    //   status: data.STATUS ?? 'UNKNOWN',
-    //   load: `${data.LOADPCT ?? 0}%`,
-    //   charge: `${data.BCHARGE ?? 0}%`,
-    //   timeLeft: `${Math.floor((data.TIMELEFT ?? 0) * 60)} min`,
-    // }
   },
 
   Widget: ApcupsWidget,

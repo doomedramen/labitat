@@ -3,20 +3,20 @@ import type { ServiceDefinition } from "./types"
 type NginxProxyManagerData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
-  proxyHosts: number
-  redirectHosts: number
-  deadHosts: number
+  enabled: number
+  disabled: number
+  total: number
 }
 
 function NginxProxyManagerWidget({
-  proxyHosts,
-  redirectHosts,
-  deadHosts,
+  enabled,
+  disabled,
+  total,
 }: NginxProxyManagerData) {
   const items = [
-    { value: proxyHosts, label: "Proxy Hosts" },
-    { value: redirectHosts, label: "Redirects" },
-    { value: deadHosts, label: "404 Hosts" },
+    { value: enabled, label: "Enabled" },
+    { value: disabled, label: "Disabled" },
+    { value: total, label: "Total" },
   ]
 
   return (
@@ -99,22 +99,28 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         "Content-Type": "application/json",
       }
 
-      // Fetch all hosts
-      const [proxyRes, redirectRes, deadRes] = await Promise.all([
-        fetch(`${baseUrl}/api/nginx/proxy-hosts`, { headers }),
-        fetch(`${baseUrl}/api/nginx/redirection-hosts`, { headers }),
-        fetch(`${baseUrl}/api/nginx/dead-hosts`, { headers }),
-      ])
+      // Fetch proxy hosts only (like Homepage)
+      const proxyRes = await fetch(`${baseUrl}/api/nginx/proxy-hosts`, { headers })
 
-      const proxyData = proxyRes.ok ? await proxyRes.json() : []
-      const redirectData = redirectRes.ok ? await redirectRes.json() : []
-      const deadData = deadRes.ok ? await deadRes.json() : []
+      if (!proxyRes.ok) {
+        throw new Error(`NPM error: ${proxyRes.status}`)
+      }
+
+      const proxyData = await proxyRes.json()
+
+      // Count enabled and disabled hosts
+      const enabled = Array.isArray(proxyData)
+        ? proxyData.filter((h: { enabled: boolean }) => h.enabled).length
+        : 0
+      const disabled = Array.isArray(proxyData)
+        ? proxyData.filter((h: { enabled: boolean }) => !h.enabled).length
+        : 0
 
       return {
         _status: "ok" as const,
-        proxyHosts: Array.isArray(proxyData) ? proxyData.length : 0,
-        redirectHosts: Array.isArray(redirectData) ? redirectData.length : 0,
-        deadHosts: Array.isArray(deadData) ? deadData.length : 0,
+        enabled,
+        disabled,
+        total: Array.isArray(proxyData) ? proxyData.length : 0,
       }
     },
 

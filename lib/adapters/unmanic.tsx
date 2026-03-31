@@ -73,7 +73,7 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
     }
 
     const workersData = await workersRes.json()
-    const queueData = queueRes.ok ? await queueRes.json() : { records_total: 0 }
+    const queueData = queueRes.ok ? await queueRes.json() : { recordsTotal: 0 }
 
     // workers_status is an array of worker objects with 'idle' property
     const workersStatus = workersData.workers_status ?? []
@@ -86,7 +86,7 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
       _status: "ok" as const,
       activeWorkers,
       totalWorkers,
-      queueLength: queueData.records_total ?? 0,
+      queueLength: queueData.recordsTotal ?? 0,
     }
   },
 

@@ -5,16 +5,16 @@ type AdGuardData = {
   _statusText?: string
   queries: number
   blocked: number
-  filtered: string
-  latency: string
+  filtered: number
+  latency: number
 }
 
 function AdGuardWidget({ queries, blocked, filtered, latency }: AdGuardData) {
   const items = [
-    { value: (queries ?? 0).toLocaleString(), label: "Queries" },
-    { value: (blocked ?? 0).toLocaleString(), label: "Blocked" },
-    { value: filtered, label: "Filtered" },
-    { value: latency, label: "Latency" },
+    { value: queries.toLocaleString(), label: "Queries" },
+    { value: blocked.toLocaleString(), label: "Blocked" },
+    { value: filtered.toLocaleString(), label: "Filtered" },
+    { value: `${latency.toFixed(0)}ms`, label: "Latency" },
   ]
 
   return (
@@ -75,7 +75,7 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
     )
     const headers = { Authorization: `Basic ${auth}` }
 
-    // Get stats
+    // Get stats (like Homepage)
     const statsRes = await fetch(`${baseUrl}/control/stats`, { headers })
 
     if (!statsRes.ok) {
@@ -88,27 +88,18 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
 
     const statsData = await statsRes.json()
 
-    // Get status for additional info
-    const statusRes = await fetch(`${baseUrl}/control/status`, { headers })
-    const statusData = statusRes.ok ? await statusRes.json() : {}
-
-    const totalQueries = (statsData.numDnsQueries ?? []).reduce(
-      (a: number, b: number) => a + b,
-      0
-    )
-    const totalBlocked = (statsData.numBlockedFiltering ?? []).reduce(
-      (a: number, b: number) => a + b,
-      0
-    )
-    const filteredPercent =
-      totalQueries > 0 ? ((totalBlocked / totalQueries) * 100).toFixed(1) : "0"
+    // Calculate filtered (matching Homepage logic)
+    const filtered =
+      (statsData.num_replaced_safebrowsing ?? 0) +
+      (statsData.num_replaced_safesearch ?? 0) +
+      (statsData.num_replaced_parental ?? 0)
 
     return {
       _status: "ok" as const,
-      queries: totalQueries,
-      blocked: totalBlocked,
-      filtered: `${filteredPercent}%`,
-      latency: `${statusData.avgProcessingTime ?? 0}ms`,
+      queries: statsData.num_dns_queries ?? 0,
+      blocked: statsData.num_blocked_filtering ?? 0,
+      filtered,
+      latency: (statsData.avg_processing_time ?? 0) * 1000,
     }
   },
 

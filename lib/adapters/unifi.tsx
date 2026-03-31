@@ -72,10 +72,19 @@ export const unifiDefinition: ServiceDefinition<UniFiData> = {
       required: true,
       placeholder: "Your UniFi password",
     },
+    {
+      key: "site",
+      label: "Site",
+      type: "text",
+      required: false,
+      placeholder: "default",
+      helperText: "Site name (default: default)",
+    },
   ],
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
+    const site = config.site ?? "default"
 
     // UniFi requires login first to get a session cookie
     const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
@@ -106,42 +115,38 @@ export const unifiDefinition: ServiceDefinition<UniFiData> = {
       headers["X-CSRF-Token"] = csrfToken
     }
 
-    // Get site data - default site is "default"
-    const [siteRes, statRes] = await Promise.all([
-      fetch(`${baseUrl}/proxy/network/api/s/default/self`, { headers }),
-      fetch(`${baseUrl}/proxy/network/api/s/default/stat/sta`, { headers }),
-    ])
+    // Get site stats (like Homepage - use /api/stat/sites)
+    const statsRes = await fetch(`${baseUrl}/proxy/network/api/s/${site}/stat/sites`, { headers })
 
-    if (!siteRes.ok) {
-      throw new Error("Failed to fetch site data")
+    if (!statsRes.ok) {
+      throw new Error("Failed to fetch site stats")
     }
 
-    const siteData = await siteRes.json()
-    const statData = statRes.ok ? await statRes.json() : { data: [] }
+    const statsData = await statsRes.json()
+    const siteData = statsData.data?.find((s: { desc: string; name: string }) => 
+      s.desc === site || s.name === site
+    )
 
-    const systemInfo = siteData.data?.[0] ?? {}
-    const clients = statData.data ?? []
-
-    // Count wired vs wireless clients
-    let lanUsers = 0
-    let wlanUsers = 0
-    for (const client of clients) {
-      if (client.is_wired) lanUsers++
-      else wlanUsers++
+    if (!siteData) {
+      throw new Error(`Site '${site}' not found`)
     }
 
-    // Get uptime from system stats
-    const uptimeSeconds = systemInfo.uptime ?? 0
+    // Get health data for wan, lan, wlan (matching Homepage)
+    const wan = siteData.health?.find((h: { subsystem: string }) => h.subsystem === "wan")
+    const lan = siteData.health?.find((h: { subsystem: string }) => h.subsystem === "lan")
+    const wlan = siteData.health?.find((h: { subsystem: string }) => h.subsystem === "wlan")
 
-    // WAN status - check if uplink is available
-    const wanStatus = systemInfo.wan_up ? "UP" : "DOWN"
+    // Calculate uptime from gw_system-stats
+    const uptime = wan?.["gw_system-stats"]?.uptime
+      ? `${Math.floor(wan["gw_system-stats"].uptime / 86400)}d`
+      : null
 
     return {
-      _status: wanStatus === "UP" ? "ok" : "error",
-      uptime: formatUptime(uptimeSeconds),
-      wan: wanStatus,
-      lanUsers,
-      wlanUsers,
+      _status: "ok" as const,
+      uptime: uptime ?? "0d",
+      wan: wan?.status === "ok" ? "UP" : "DOWN",
+      lanUsers: lan?.num_user ?? 0,
+      wlanUsers: wlan?.num_user ?? 0,
     }
   },
 

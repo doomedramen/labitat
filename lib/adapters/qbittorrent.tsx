@@ -3,30 +3,23 @@ import type { ServiceDefinition } from "./types"
 type QBittorrentData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
-  downloading: number
-  seeding: number
-  paused: number
-  speed: string
-}
-
-function formatSpeed(bytesPerSec: number): string {
-  if (bytesPerSec >= 1_000_000) {
-    return `${(bytesPerSec / 1_000_000).toFixed(1)} MB/s`
-  }
-  return `${(bytesPerSec / 1_000).toFixed(0)} KB/s`
+  leech: number
+  download: number
+  seed: number
+  upload: number
 }
 
 function QBittorrentWidget({
-  downloading,
-  seeding,
-  paused,
-  speed,
+  leech,
+  download,
+  seed,
+  upload,
 }: QBittorrentData) {
   const items = [
-    { value: downloading, label: "Downloading" },
-    { value: seeding, label: "Seeding" },
-    { value: paused, label: "Paused" },
-    { value: speed, label: "Down" },
+    { value: leech, label: "Leech" },
+    { value: download, label: "Download" },
+    { value: seed, label: "Seed" },
+    { value: upload, label: "Upload" },
   ]
 
   return (
@@ -101,46 +94,37 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       throw new Error("No session cookie returned")
     }
 
-    // Get transfer info and torrent list
+    // Get torrent list (like Homepage)
     const headers = { Cookie: cookie }
+    const torrentsRes = await fetch(`${baseUrl}/api/v2/torrents/info`, { headers })
 
-    const [transferRes, torrentsRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v2/transfer/info`, { headers }),
-      fetch(`${baseUrl}/api/v2/torrents/info`, { headers }),
-    ])
-
-    if (!transferRes.ok || !torrentsRes.ok) {
+    if (!torrentsRes.ok) {
       throw new Error("Failed to fetch torrent data")
     }
 
-    const transferData = await transferRes.json()
     const torrentsData = await torrentsRes.json()
 
-    // Count by state
-    let downloading = 0
-    let seeding = 0
-    let paused = 0
+    // Calculate stats (matching Homepage logic)
+    let rateDl = 0
+    let rateUl = 0
+    let completed = 0
 
     for (const torrent of torrentsData) {
-      if (torrent.state === "downloading" || torrent.state === "stalledDL") {
-        downloading++
-      } else if (
-        torrent.state === "uploading" ||
-        torrent.state === "stalledUP" ||
-        torrent.state === "forcedUP"
-      ) {
-        seeding++
-      } else if (torrent.state === "pausedDL" || torrent.state === "pausedUP") {
-        paused++
+      rateDl += torrent.dlspeed ?? 0
+      rateUl += torrent.upspeed ?? 0
+      if (torrent.progress === 1) {
+        completed++
       }
     }
 
+    const leech = torrentsData.length - completed
+
     return {
       _status: "ok" as const,
-      downloading,
-      seeding,
-      paused,
-      speed: formatSpeed(transferData.dl_info_speed ?? 0),
+      leech,
+      download: rateDl,
+      seed: completed,
+      upload: rateUl,
     }
   },
 

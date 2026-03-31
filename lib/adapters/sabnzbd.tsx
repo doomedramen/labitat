@@ -5,35 +5,14 @@ type SabnzbdData = {
   _statusText?: string
   queue: number
   speed: string
-  paused: boolean
-  remaining: string
+  timeleft: string
 }
 
-function formatSpeed(bytesPerSec: number): string {
-  if (bytesPerSec >= 1_000_000) {
-    return `${(bytesPerSec / 1_000_000).toFixed(1)} MB/s`
-  }
-  return `${(bytesPerSec / 1_000).toFixed(0)} KB/s`
-}
-
-function formatSize(bytes: number): string {
-  if (bytes >= 1_000_000_000_000) {
-    return `${(bytes / 1_000_000_000_000).toFixed(1)} TB`
-  }
-  if (bytes >= 1_000_000_000) {
-    return `${(bytes / 1_000_000_000).toFixed(1)} GB`
-  }
-  if (bytes >= 1_000_000) {
-    return `${(bytes / 1_000_000).toFixed(1)} MB`
-  }
-  return `${(bytes / 1_000).toFixed(0)} KB`
-}
-
-function SabnzbdWidget({ queue, speed, paused, remaining }: SabnzbdData) {
+function SabnzbdWidget({ queue, speed, timeleft }: SabnzbdData) {
   const items = [
+    { value: speed, label: "Speed" },
     { value: queue, label: "Queue" },
-    { value: speed, label: paused ? "Paused" : "Speed" },
-    { value: remaining, label: "Remaining" },
+    { value: timeleft, label: "Time Left" },
   ]
 
   return (
@@ -102,9 +81,8 @@ export const sabnzbdDefinition: ServiceDefinition<SabnzbdData> = {
     return {
       _status: "ok" as const,
       queue: queue.noofslots ?? 0,
-      speed: formatSpeed(queue.speed ?? 0),
-      paused: queue.paused ?? false,
-      remaining: formatSize(queue.mbleft ? queue.mbleft * 1_000_000 : 0),
+      speed: queue.speed ?? "0 B/s",
+      timeleft: queue.timeleft ?? "0:00:00",
     }
   },
 

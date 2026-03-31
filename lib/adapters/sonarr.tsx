@@ -6,15 +6,13 @@ type SonarrData = {
   wanted: number
   queued: number
   series: number
-  episodes: number
 }
 
-function SonarrWidget({ wanted, queued, series, episodes }: SonarrData) {
+function SonarrWidget({ wanted, queued, series }: SonarrData) {
   const items = [
     { value: wanted, label: "Wanted" },
     { value: queued, label: "Queued" },
     { value: series, label: "Series" },
-    { value: episodes, label: "Episodes" },
   ]
 
   return (
@@ -64,40 +62,28 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const [seriesRes, queueRes] = await Promise.all([
+    const [wantedRes, queueRes, seriesRes] = await Promise.all([
+      fetch(`${baseUrl}/api/v3/wanted/missing`, { headers }),
+      fetch(`${baseUrl}/api/v3/queue`, { headers }),
       fetch(`${baseUrl}/api/v3/series`, { headers }),
-      fetch(`${baseUrl}/api/v3/queue/status`, { headers }),
     ])
 
-    if (!seriesRes.ok) {
-      if (seriesRes.status === 401) throw new Error("Invalid API key")
-      if (seriesRes.status === 404)
+    if (!wantedRes.ok) {
+      if (wantedRes.status === 401) throw new Error("Invalid API key")
+      if (wantedRes.status === 404)
         throw new Error("Sonarr not found at this URL")
-      throw new Error(`Sonarr error: ${seriesRes.status}`)
+      throw new Error(`Sonarr error: ${wantedRes.status}`)
     }
 
+    const wantedData = await wantedRes.json()
+    const queueData = queueRes.ok ? await queueRes.json() : { totalRecords: 0 }
     const seriesData = await seriesRes.json()
-    const queueData = queueRes.ok ? await queueRes.json() : { totalCount: 0 }
-
-    // Calculate stats
-    let wanted = 0
-    let episodes = 0
-
-    for (const show of seriesData) {
-      if (show.monitored && show.statistics) {
-        const missing =
-          show.statistics.episodeCount - show.statistics.episodeFileCount
-        if (missing > 0) wanted += missing
-        episodes += show.statistics.episodeCount ?? 0
-      }
-    }
 
     return {
       _status: "ok" as const,
-      wanted,
-      queued: queueData.totalCount ?? 0,
+      wanted: wantedData.totalRecords ?? 0,
+      queued: queueData.totalRecords ?? 0,
       series: seriesData.length,
-      episodes,
     }
   },
 

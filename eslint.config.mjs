@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Test files should not be linted with React rules
     "tests/**",
+    // Homepage clone should be ignored
+    "homepage/**",
   ]),
 ]);
 

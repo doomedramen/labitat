@@ -80,18 +80,18 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     const moviesData = await moviesRes.json()
     const queueData = queueRes.ok ? await queueRes.json() : { totalCount: 0 }
 
-    // Calculate stats from movies
+    // Calculate stats from movies (matching Homepage logic)
     let wanted = 0
     let missing = 0
 
     for (const movie of moviesData) {
-      if (movie.monitored && !movie.hasFile) {
+      // Wanted: monitored, no file, and available
+      if (movie.monitored && !movie.hasFile && movie.isAvailable) {
         wanted++
-        // "missing" is the same as wanted in Radarr context
-        // but could also check movie.status === 'released' && !movie.hasFile
-        if (movie.status === "released") {
-          missing++
-        }
+      }
+      // Missing: monitored and no file (regardless of availability)
+      if (movie.monitored && !movie.hasFile) {
+        missing++
       }
     }
 

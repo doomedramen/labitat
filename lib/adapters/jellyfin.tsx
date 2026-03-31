@@ -63,20 +63,34 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
       placeholder: "Your Jellyfin API key",
       helperText: "Found in Dashboard → Advanced → API Keys",
     },
+    {
+      key: "version",
+      label: "API Version",
+      type: "select",
+      options: [
+        { value: "1", label: "v1" },
+        { value: "2", label: "v2" },
+      ],
+      helperText: "Jellyfin API version (v2 for Jellyfin 10.9+)",
+    },
   ],
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
-    const headers = { "X-Emby-Token": config.apiKey }
+    const version = config.version ?? "1"
+    const useJellyfinV2 = version === "2"
 
-    const [sessionsRes, moviesRes, showsRes] = await Promise.all([
-      fetch(`${baseUrl}/Sessions?ActiveWithinSeconds=120`, { headers }),
-      fetch(`${baseUrl}/Items?IncludeItemTypes=Movie&Recursive=true&Limit=0`, {
-        headers,
-      }),
-      fetch(`${baseUrl}/Items?IncludeItemTypes=Series&Recursive=true&Limit=0`, {
-        headers,
-      }),
+    // Jellyfin uses MediaBrowser auth header format
+    const deviceId = encodeURIComponent(`labitat-${config.url.replace(/^https?:\/\//, "")}`)
+    const authHeader = `MediaBrowser Token="${encodeURIComponent(config.apiKey)}", Client="Labitat", Device="Labitat", DeviceId="${deviceId}", Version="1.0.0"`
+    const headers = { Authorization: authHeader }
+
+    const sessionsEndpoint = useJellyfinV2 ? "/Sessions" : "/Sessions"
+    const itemsEndpoint = useJellyfinV2 ? "/Items/Counts" : "/Items/Counts"
+
+    const [sessionsRes, countsRes] = await Promise.all([
+      fetch(`${baseUrl}${sessionsEndpoint}?ActiveWithinSeconds=120`, { headers }),
+      fetch(`${baseUrl}${itemsEndpoint}`, { headers }),
     ])
 
     if (!sessionsRes.ok) {
@@ -87,12 +101,9 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
     }
 
     const sessionsData = await sessionsRes.json()
-    const moviesData = (await moviesRes.ok)
-      ? await moviesRes.json()
-      : { TotalRecordCount: 0 }
-    const showsData = (await showsRes.ok)
-      ? await showsRes.json()
-      : { TotalRecordCount: 0 }
+    const countsData = (await countsRes.ok)
+      ? await countsRes.json()
+      : { MovieCount: 0, SeriesCount: 0, EpisodeCount: 0, SongCount: 0 }
 
     // Count active streams (sessions with NowPlayingItem)
     const activeStreams = sessionsData.filter(
@@ -103,9 +114,9 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
     return {
       _status: "ok" as const,
       activeStreams,
-      movies: moviesData.TotalRecordCount ?? 0,
-      shows: showsData.TotalRecordCount ?? 0,
-      episodes: 0, // Would require separate call, keep simple for now
+      movies: countsData.MovieCount ?? 0,
+      shows: countsData.SeriesCount ?? 0,
+      episodes: countsData.EpisodeCount ?? 0,
     }
   },
 
