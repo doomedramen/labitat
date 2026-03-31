@@ -45,6 +45,9 @@ export function ItemDialog({
     (typeof services)[number] | null
   >(null)
   const [configValues, setConfigValues] = useState<Record<string, string>>({})
+  const [booleanValues, setBooleanValues] = useState<Record<string, boolean>>(
+    {}
+  )
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
   const isEdit = item !== null
 
@@ -62,6 +65,7 @@ export function ItemDialog({
         : null
       setSelectedService(service)
       setConfigValues({})
+      setBooleanValues({})
       setIsLoadingConfig(false)
 
       // Load decrypted config when editing an existing item
@@ -70,6 +74,14 @@ export function ItemDialog({
         try {
           const config = await getItemConfig(item.id)
           setConfigValues(config)
+          // Initialize boolean values from config
+          const bools: Record<string, boolean> = {}
+          for (const [key, value] of Object.entries(config)) {
+            if (value === "true" || value === "false") {
+              bools[key] = value === "true"
+            }
+          }
+          setBooleanValues(bools)
         } catch {
           setConfigValues({})
         } finally {
@@ -85,6 +97,11 @@ export function ItemDialog({
     if (!groupId) return
     const formData = new FormData(e.currentTarget)
     setError(null)
+
+    // Add boolean values from state (switches might not submit when unchanged)
+    for (const [key, value] of Object.entries(booleanValues)) {
+      formData.set(`config_${key}`, value ? "true" : "false")
+    }
 
     // Debug: log form data on client
     console.log("=== CLIENT: formData ===")
@@ -237,6 +254,20 @@ export function ItemDialog({
                       field={field}
                       defaultValue={configValues[field.key] ?? ""}
                       disabled={isPending || isLoadingConfig}
+                      checked={
+                        field.type === "boolean"
+                          ? (booleanValues[field.key] ?? false)
+                          : undefined
+                      }
+                      onCheckedChange={
+                        field.type === "boolean"
+                          ? (checked: boolean) =>
+                              setBooleanValues((prev) => ({
+                                ...prev,
+                                [field.key]: checked,
+                              }))
+                          : undefined
+                      }
                     />
                   ))}
                 </div>
