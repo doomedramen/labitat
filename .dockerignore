@@ -53,3 +53,7 @@ LICENSE
 tmp
 temp
 .cache
+
+# Runtime files (not needed in build)
+config.yaml
+data/
