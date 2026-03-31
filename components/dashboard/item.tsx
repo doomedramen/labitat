@@ -37,9 +37,8 @@ function ItemIcon({
   label: string
 }) {
   const [fallbackToGlobe, setFallbackToGlobe] = useState(false)
-  const [usePng, setUsePng] = useState(false)
 
-  // Show globe icon if no icon URL or all loading attempts failed
+  // Show globe icon if no icon URL or loading failed
   if (!iconUrl || fallbackToGlobe) {
     return (
       <div className="flex size-9 flex-none items-center justify-center bg-muted">
@@ -48,20 +47,33 @@ function ItemIcon({
     )
   }
 
-  // Build icon URL - try SVG first, fall back to PNG
+  // Build icon URL - determine format from extension (like Homepage)
   const buildIconUrl = () => {
-    const slug = iconUrl.startsWith("http") ? null : iconUrl.toLowerCase()
-
-    if (slug) {
-      // Try SVG first, then PNG as fallback
-      if (!usePng) {
-        return `https://cdn.jsdelivr.net/gh/selfhst/icons/svg/${slug}.svg`
-      }
-      return `https://cdn.jsdelivr.net/gh/selfhst/icons/png/${slug}.png`
+    // Custom URL
+    if (iconUrl.startsWith("http")) {
+      return iconUrl
     }
 
-    // Custom URL
-    return iconUrl
+    // selfh.st slug - check if extension is specified
+    const slug = iconUrl.toLowerCase()
+
+    if (slug.endsWith(".png")) {
+      const iconName = slug.replace(".png", "")
+      return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${iconName}.png`
+    }
+
+    if (slug.endsWith(".webp")) {
+      const iconName = slug.replace(".webp", "")
+      return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/${iconName}.webp`
+    }
+
+    if (slug.endsWith(".svg")) {
+      const iconName = slug.replace(".svg", "")
+      return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/${iconName}.svg`
+    }
+
+    // No extension - default to PNG (most widely available)
+    return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${slug}.png`
   }
 
   const src = buildIconUrl()
@@ -74,15 +86,7 @@ function ItemIcon({
       width={36}
       height={36}
       className="size-9 flex-none object-contain"
-      onError={() => {
-        if (!usePng && !iconUrl.startsWith("http")) {
-          // Try PNG fallback for selfhst icons
-          setUsePng(true)
-        } else {
-          // All attempts exhausted - show globe icon
-          setFallbackToGlobe(true)
-        }
-      }}
+      onError={() => setFallbackToGlobe(true)}
     />
   )
 }
