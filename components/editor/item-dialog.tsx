@@ -183,7 +183,7 @@ export function ItemDialog({
                 value={selectedService}
                 onValueChange={(v) => setSelectedService(v || null)}
                 items={services}
-                itemToStringValue={(s) => s.name}
+                itemToStringLabel={(s) => s.name}
                 autoHighlight
               >
                 <ComboboxInput
