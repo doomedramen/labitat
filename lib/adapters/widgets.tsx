@@ -5,6 +5,7 @@
  * These provide consistent styling across different services.
  */
 
+import { List, ListItem } from "@/components/ui/list"
 import { Clock, Pause, Play } from "lucide-react"
 
 export type ActiveStream = {
@@ -53,7 +54,7 @@ export function ActiveStreamItem({
   state,
 }: ActiveStream) {
   return (
-    <div className="flex w-full items-center justify-between gap-2 rounded-md bg-muted/50 px-2 py-1">
+    <ListItem>
       {state === "paused" ? (
         <Pause className="h-3 w-3 shrink-0 text-muted-foreground" />
       ) : (
@@ -65,7 +66,7 @@ export function ActiveStreamItem({
         <Clock className="h-3 w-3 shrink-0" />
         {formatDuration(progress)}
       </div>
-    </div>
+    </ListItem>
   )
 }
 
@@ -76,11 +77,11 @@ export function ActiveStreamList({ streams }: { streams: ActiveStream[] }) {
   if (streams.length === 0) return null
 
   return (
-    <div className="mt-2 flex flex-col gap-1.5 border-t pt-2">
+    <List>
       {streams.map((stream, idx) => (
         <ActiveStreamItem key={idx} {...stream} />
       ))}
-    </div>
+    </List>
   )
 }
 
@@ -96,7 +97,7 @@ export function DownloadItem({
   size,
 }: DownloadItem) {
   return (
-    <div className="relative m-1 flex h-5 w-full rounded-md bg-muted/50 px-1">
+    <ListItem className="relative m-1 h-5 !gap-0 !p-0">
       <div
         className="absolute z-0 -ml-1 h-5 rounded-md bg-muted"
         style={{
@@ -112,7 +113,7 @@ export function DownloadItem({
         {size && `${size} - `}
         {timeLeft ? `${activity ?? "downloading"} - ${timeLeft}` : activity}
       </div>
-    </div>
+    </ListItem>
   )
 }
 
@@ -123,10 +124,10 @@ export function DownloadList({ downloads }: { downloads: DownloadItem[] }) {
   if (downloads.length === 0) return null
 
   return (
-    <div className="mt-2 border-t pt-2">
+    <List>
       {downloads.map((download, idx) => (
         <DownloadItem key={idx} {...download} />
       ))}
-    </div>
+    </List>
   )
 }

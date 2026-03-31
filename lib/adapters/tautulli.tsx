@@ -104,18 +104,24 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
     let sessions: TautulliSession[] = []
     if (showActiveStreams) {
       const sessionsList = activityData.response?.data?.sessions ?? []
-      sessions = sessionsList.map((s: Record<string, unknown>) => ({
-        title: (s.title as string) ?? "",
-        parent_title: (s.parent_title as string) ?? "",
-        grandparent_title: (s.grandparent_title as string) ?? "",
-        full_title: (s.full_title as string) ?? "",
-        user: (s.friendly_name as string) ?? (s.user as string) ?? "",
-        // view_offset is in milliseconds, convert to seconds
-        progress: ((s.view_offset as number) ?? 0) / 1000,
-        episode_number: s.episode_number as number | undefined,
-        season_number: s.season_number as number | undefined,
-        state: (s.state as string) === "paused" ? "paused" : "playing",
-      }))
+      sessions = sessionsList.map((s: Record<string, unknown>) => {
+        // Tautulli wraps movie titles in quotes - strip them
+        const rawTitle = (s.full_title as string) ?? ""
+        const fullTitle = rawTitle.replace(/^"(.+)"$/, "$1")
+
+        return {
+          title: (s.title as string) ?? "",
+          parent_title: (s.parent_title as string) ?? "",
+          grandparent_title: (s.grandparent_title as string) ?? "",
+          full_title: fullTitle,
+          user: (s.friendly_name as string) ?? (s.user as string) ?? "",
+          // view_offset is in milliseconds, convert to seconds
+          progress: ((s.view_offset as number) ?? 0) / 1000,
+          episode_number: s.episode_number as number | undefined,
+          season_number: s.season_number as number | undefined,
+          state: (s.state as string) === "paused" ? "paused" : "playing",
+        }
+      })
     }
 
     return {
