@@ -20,6 +20,7 @@ export function FieldRenderer({
   const name = `config_${field.key}`
 
   if (field.type === "boolean") {
+    const isChecked = defaultValue === "true"
     return (
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
@@ -31,8 +32,9 @@ export function FieldRenderer({
         <Switch
           id={id}
           name={name}
+          defaultChecked={isChecked}
           value="true"
-          defaultChecked={defaultValue === "true"}
+          uncheckedValue="false"
           disabled={disabled}
         />
       </div>
