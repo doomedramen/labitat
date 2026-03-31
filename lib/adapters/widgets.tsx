@@ -65,7 +65,7 @@ export function ActiveStreamList({ streams }: { streams: ActiveStream[] }) {
   if (streams.length === 0) return null
 
   return (
-    <div className="mt-2 grid grid-cols-1 gap-1.5 border-t pt-2">
+    <div className="mt-2 flex flex-row flex-wrap gap-1.5 border-t pt-2">
       {streams.map((stream, idx) => (
         <ActiveStreamItem key={idx} {...stream} />
       ))}
