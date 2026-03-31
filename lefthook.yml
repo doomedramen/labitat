@@ -6,8 +6,10 @@ pre-commit:
   commands:
     lint:
       run: pnpm lint
+      stage_fixed: true
     format:
       run: pnpm format
+      stage_fixed: true
     typecheck:
       run: pnpm typecheck
     check-adapters:
