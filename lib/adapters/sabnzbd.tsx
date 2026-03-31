@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { DownloadList, type DownloadItem } from "./widgets"
 
 type SabnzbdData = {
   _status?: "ok" | "warn" | "error"
@@ -6,9 +7,22 @@ type SabnzbdData = {
   queue: number
   speed: string
   timeleft: string
+  showDownloads?: boolean
+  downloads?: DownloadItem[]
 }
 
-function SabnzbdWidget({ queue, speed, timeleft }: SabnzbdData) {
+function formatTime(timeLeft: string): string {
+  if (!timeLeft || timeLeft === "-") return "∞"
+  return timeLeft
+}
+
+function SabnzbdWidget({
+  queue,
+  speed,
+  timeleft,
+  showDownloads,
+  downloads,
+}: SabnzbdData) {
   const items = [
     { value: speed, label: "Speed" },
     { value: queue, label: "Queue" },
@@ -16,18 +30,24 @@ function SabnzbdWidget({ queue, speed, timeleft }: SabnzbdData) {
   ]
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center"
-        >
-          <span className="font-medium text-foreground tabular-nums">
-            {item.value}
-          </span>
-          <span className="text-muted-foreground">{item.label}</span>
-        </div>
-      ))}
+    <div>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center"
+          >
+            <span className="font-medium text-foreground tabular-nums">
+              {item.value}
+            </span>
+            <span className="text-muted-foreground">{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {showDownloads && downloads && downloads.length > 0 && (
+        <DownloadList downloads={downloads} />
+      )}
     </div>
   )
 }
@@ -56,11 +76,18 @@ export const sabnzbdDefinition: ServiceDefinition<SabnzbdData> = {
       placeholder: "Your SABnzbd API key",
       helperText: "Found in Config → General → API Key",
     },
+    {
+      key: "showDownloads",
+      label: "Show active downloads",
+      type: "boolean",
+      helperText: "Display currently downloading items with progress",
+    },
   ],
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
-    const url = `${baseUrl}/api?mode=queue&output=json&apikey=${config.apiKey}`
+    const showDownloads = config.showDownloads === "true"
+    const url = `${baseUrl}/api?mode=queue&output=json&apikey=${config.apiKey}${showDownloads ? "&nzo_type=active" : ""}`
 
     const res = await fetch(url)
 
@@ -78,11 +105,25 @@ export const sabnzbdDefinition: ServiceDefinition<SabnzbdData> = {
 
     const queue = data.queue ?? {}
 
+    // Build download list for active downloads
+    let downloads: DownloadItem[] = []
+    if (showDownloads && Array.isArray(queue.slots)) {
+      downloads = queue.slots.map((slot: Record<string, unknown>) => ({
+        title: (slot.filename as string) ?? "Unknown",
+        progress: parseFloat((slot.percentage as string) ?? "0") || 0,
+        timeLeft: formatTime((slot.timeleft as string) ?? ""),
+        activity: "downloading",
+        size: (slot.size as string) ?? "",
+      }))
+    }
+
     return {
       _status: "ok" as const,
       queue: queue.noofslots ?? 0,
       speed: queue.speed ?? "0 B/s",
       timeleft: queue.timeleft ?? "0:00:00",
+      showDownloads,
+      downloads,
     }
   },
 

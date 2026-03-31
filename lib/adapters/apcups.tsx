@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { getApcupsStatus } from "../actions/apcups"
 
 type ApcupsData = {
   _status?: "ok" | "warn" | "error"
@@ -64,44 +65,23 @@ export const apcupsDefinition: ServiceDefinition<ApcupsData> = {
   ],
 
   async fetchData(config) {
-    // Note: apcupsd uses a binary NIS protocol on port 3551
-    // This requires a server-side proxy or REST wrapper to work in Next.js
-    // Users should set up apcaccess-http or similar to expose the data via HTTP
-
     const host = config.host ?? "127.0.0.1"
-    const port = config.port ?? 3551
+    const port = parseInt(config.port ?? "3551", 10)
 
-    // Try to fetch from a REST wrapper (apcaccess-http, etc.)
-    // Common patterns: http://host:port/status.json or http://host:3552/status
-    const restUrls = [
-      `http://${host}:${port}/status.json`,
-      `http://${host}:3552/status`,
-      `http://${host}/apc/status`,
-    ]
+    try {
+      const data = await getApcupsStatus(host, port)
 
-    for (const url of restUrls) {
-      try {
-        const res = await fetch(url)
-        if (res.ok) {
-          const data = await res.json()
-          return {
-            _status: data.STATUS === "ONLINE" ? "ok" : ("warn" as const),
-            status: data.STATUS ?? "UNKNOWN",
-            load: data.LOADPCT ?? "0",
-            charge: data.BCHARGE ?? "0",
-            timeLeft: data.TIMELEFT ?? "0",
-          }
-        }
-      } catch {
-        // Try next URL
+      return {
+        _status: data.STATUS === "ONLINE" ? "ok" : ("warn" as const),
+        status: data.STATUS ?? "UNKNOWN",
+        load: data.LOADPCT ?? "0",
+        charge: data.BCHARGE ?? "0",
+        timeLeft: data.TIMELEFT ?? "0",
       }
+    } catch (error) {
+      const err = error as Error
+      throw new Error(`APC UPS connection failed: ${err.message}`)
     }
-
-    // If no REST wrapper found, throw helpful error
-    throw new Error(
-      "APC UPS requires a REST wrapper. Install apcaccess-http or similar on the apcupsd host. " +
-        "See: https://github.com/apcupsd/apcupsd or set up a custom HTTP endpoint that returns JSON."
-    )
   },
 
   Widget: ApcupsWidget,

@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { DownloadList, type DownloadItem } from "./widgets"
 
 type QBittorrentData = {
   _status?: "ok" | "warn" | "error"
@@ -7,29 +8,67 @@ type QBittorrentData = {
   download: number
   seed: number
   upload: number
+  showDownloads?: boolean
+  downloads?: DownloadItem[]
 }
 
-function QBittorrentWidget({ leech, download, seed, upload }: QBittorrentData) {
+function formatBytes(bytes: number): string {
+  if (bytes >= 1_000_000_000) {
+    return `${(bytes / 1_000_000_000).toFixed(1)} GB`
+  }
+  if (bytes >= 1_000_000) {
+    return `${(bytes / 1_000_000).toFixed(1)} MB`
+  }
+  if (bytes >= 1_000) {
+    return `${(bytes / 1_000).toFixed(1)} KB`
+  }
+  return `${bytes.toFixed(0)} B`
+}
+
+function formatTime(seconds: number): string {
+  if (seconds < 0 || !isFinite(seconds)) return "∞"
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  if (h > 0)
+    return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+  return `${m}:${s.toString().padStart(2, "0")}`
+}
+
+function QBittorrentWidget({
+  leech,
+  download,
+  seed,
+  upload,
+  showDownloads,
+  downloads,
+}: QBittorrentData) {
   const items = [
     { value: leech, label: "Leech" },
-    { value: download, label: "Download" },
+    { value: `${formatBytes(download)}/s`, label: "Download" },
     { value: seed, label: "Seed" },
-    { value: upload, label: "Upload" },
+    { value: `${formatBytes(upload)}/s`, label: "Upload" },
   ]
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center"
-        >
-          <span className="font-medium text-foreground tabular-nums">
-            {item.value}
-          </span>
-          <span className="text-muted-foreground">{item.label}</span>
-        </div>
-      ))}
+    <div>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center"
+          >
+            <span className="font-medium text-foreground tabular-nums">
+              {item.value}
+            </span>
+            <span className="text-muted-foreground">{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {showDownloads && downloads && downloads.length > 0 && (
+        <DownloadList downloads={downloads} />
+      )}
     </div>
   )
 }
@@ -64,10 +103,17 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       required: true,
       placeholder: "Your qBittorrent password",
     },
+    {
+      key: "showDownloads",
+      label: "Show active downloads",
+      type: "boolean",
+      helperText: "Display currently downloading torrents with progress",
+    },
   ],
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
+    const showDownloads = config.showDownloads === "true"
 
     // First, login to get a session cookie
     const loginRes = await fetch(`${baseUrl}/api/v2/auth/login`, {
@@ -116,12 +162,56 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
 
     const leech = torrentsData.length - completed
 
+    // Build download list for active downloads
+    let downloads: DownloadItem[] = []
+    if (showDownloads) {
+      const statePriority = [
+        "downloading",
+        "forcedDL",
+        "metaDL",
+        "forcedMetaDL",
+        "checkingDL",
+        "stalledDL",
+        "queuedDL",
+        "pausedDL",
+      ]
+
+      const leechTorrents = torrentsData.filter(
+        (t: { state: string; progress: number }) =>
+          t.state.includes("DL") && t.progress < 1
+      )
+
+      leechTorrents.sort(
+        (
+          a: { state: string; progress: number },
+          b: { state: string; progress: number }
+        ) => {
+          const firstStateIndex = statePriority.indexOf(a.state)
+          const secondStateIndex = statePriority.indexOf(b.state)
+          if (firstStateIndex !== secondStateIndex) {
+            return firstStateIndex - secondStateIndex
+          }
+          return b.progress - a.progress
+        }
+      )
+
+      downloads = leechTorrents.map((t: Record<string, unknown>) => ({
+        title: (t.name as string) ?? "Unknown",
+        progress: ((t.progress as number) ?? 0) * 100,
+        timeLeft: formatTime((t.eta as number) ?? -1),
+        activity: t.state as string,
+        size: formatBytes((t.size as number) ?? 0),
+      }))
+    }
+
     return {
       _status: "ok" as const,
       leech,
       download: rateDl,
       seed: completed,
       upload: rateUl,
+      showDownloads,
+      downloads,
     }
   },
 

@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { DownloadList, type DownloadItem } from "./widgets"
 
 type TransmissionData = {
   _status?: "ok" | "warn" | "error"
@@ -7,6 +8,31 @@ type TransmissionData = {
   download: number
   seed: number
   upload: number
+  showDownloads?: boolean
+  downloads?: DownloadItem[]
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes >= 1_000_000_000) {
+    return `${(bytes / 1_000_000_000).toFixed(1)} GB`
+  }
+  if (bytes >= 1_000_000) {
+    return `${(bytes / 1_000_000).toFixed(1)} MB`
+  }
+  if (bytes >= 1_000) {
+    return `${(bytes / 1_000).toFixed(1)} KB`
+  }
+  return `${bytes.toFixed(0)} B`
+}
+
+function formatTime(seconds: number): string {
+  if (seconds < 0 || !isFinite(seconds)) return "∞"
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  if (h > 0)
+    return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+  return `${m}:${s.toString().padStart(2, "0")}`
 }
 
 function TransmissionWidget({
@@ -14,27 +40,35 @@ function TransmissionWidget({
   download,
   seed,
   upload,
+  showDownloads,
+  downloads,
 }: TransmissionData) {
   const items = [
     { value: leech, label: "Leech" },
-    { value: download, label: "Download" },
+    { value: `${formatBytes(download)}/s`, label: "Download" },
     { value: seed, label: "Seed" },
-    { value: upload, label: "Upload" },
+    { value: `${formatBytes(upload)}/s`, label: "Upload" },
   ]
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center"
-        >
-          <span className="font-medium text-foreground tabular-nums">
-            {item.value}
-          </span>
-          <span className="text-muted-foreground">{item.label}</span>
-        </div>
-      ))}
+    <div>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center"
+          >
+            <span className="font-medium text-foreground tabular-nums">
+              {item.value}
+            </span>
+            <span className="text-muted-foreground">{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {showDownloads && downloads && downloads.length > 0 && (
+        <DownloadList downloads={downloads} />
+      )}
     </div>
   )
 }
@@ -77,12 +111,19 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       placeholder: "/transmission/",
       helperText: "Default: /transmission/",
     },
+    {
+      key: "showDownloads",
+      label: "Show active downloads",
+      type: "boolean",
+      helperText: "Display currently downloading torrents with progress",
+    },
   ],
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
     const rpcUrl = config.rpcUrl ?? "/transmission/"
     const rpcEndpoint = `${baseUrl}${rpcUrl}rpc`
+    const showDownloads = config.showDownloads === "true"
 
     const auth = Buffer.from(`${config.username}:${config.password}`).toString(
       "base64"
@@ -100,7 +141,17 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
         body: JSON.stringify({
           method: "torrent-get",
           arguments: {
-            fields: ["percentDone", "rateDownload", "rateUpload"],
+            fields: showDownloads
+              ? [
+                  "name",
+                  "percentDone",
+                  "rateDownload",
+                  "rateUpload",
+                  "sizeWhenDone",
+                  "left",
+                  "eta",
+                ]
+              : ["percentDone", "rateDownload", "rateUpload"],
           },
         }),
       })
@@ -122,7 +173,17 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       body: JSON.stringify({
         method: "torrent-get",
         arguments: {
-          fields: ["percentDone", "rateDownload", "rateUpload"],
+          fields: showDownloads
+            ? [
+                "name",
+                "percentDone",
+                "rateDownload",
+                "rateUpload",
+                "sizeWhenDone",
+                "left",
+                "eta",
+              ]
+            : ["percentDone", "rateDownload", "rateUpload"],
         },
       }),
     })
@@ -151,12 +212,37 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     ).length
     const leech = torrents.length - completed
 
+    // Build download list for active torrents (not completed, not stalled)
+    let downloads: DownloadItem[] = []
+    if (showDownloads) {
+      const statePriority = ["downloading", "seeding", "queued", "stopped"]
+
+      downloads = torrents
+        .filter(
+          (t: { percentDone: number; left: number }) =>
+            t.percentDone < 1 && t.left > 0
+        )
+        .sort(
+          (a: { percentDone: number }, b: { percentDone: number }) =>
+            a.percentDone - b.percentDone
+        )
+        .map((t: Record<string, unknown>) => ({
+          title: (t.name as string) ?? "Unknown",
+          progress: ((t.percentDone as number) ?? 0) * 100,
+          timeLeft: formatTime((t.eta as number) ?? -1),
+          activity: "downloading",
+          size: formatBytes((t.sizeWhenDone as number) ?? 0),
+        }))
+    }
+
     return {
       _status: "ok" as const,
       leech,
       download: rateDl,
       seed: completed,
       upload: rateUl,
+      showDownloads,
+      downloads,
     }
   },
 
