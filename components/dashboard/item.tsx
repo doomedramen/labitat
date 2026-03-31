@@ -208,7 +208,7 @@ export function ItemCard({ item, editMode, onEdit }: ItemCardProps) {
   const Widget = serviceDef?.Widget
   const status = serviceData?._status ?? (dataError ? "error" : null)
 
-  const hasWidget = !editMode && Widget && serviceDef
+  const hasWidget = !editMode && Widget && serviceDef && serviceData
   const showSkeleton = !editMode && item.serviceType && isLoading
 
   const inner = (

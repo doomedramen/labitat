@@ -190,7 +190,8 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
         const title = getAttr("title") ?? ""
         const grandparentTitle = getAttr("grandparentTitle") // Show name for episodes
         const parentTitle = getAttr("parentTitle") // Season name for episodes
-        const originalTitle = getAttr("originalTitle") // Original title (fallback)
+        const originalTitle = getAttr("originalTitle") // Original title
+        const librarySectionTitle = getAttr("librarySectionTitle") // Library name
         const type = getAttr("type") // "movie" or "episode"
         const viewOffset = getAttr("viewOffset") // Progress in milliseconds
 
@@ -208,17 +209,21 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
               : parentTitle
           fullTitle = `${grandparentTitle}: ${seasonStr} - ${title}`
         } else if (type === "movie") {
-          // For movies, use title unless it looks like a library name
+          // For movies, prefer originalTitle if title looks like a library name
           // Library names often contain parens like "Films (Apple TV)"
-          if (title.includes("(") && originalTitle) {
+          if (librarySectionTitle && title === librarySectionTitle) {
+            // Title is the library name, use originalTitle instead
+            fullTitle = originalTitle || title
+          } else if (title.includes("(") && originalTitle) {
+            // Title contains parens (likely library name), use originalTitle
             fullTitle = originalTitle
           } else {
             fullTitle = title
           }
         }
 
-        // Also find the user from the associated Player element
-        // Player comes after Video in the XML, so we need to find it in the full response
+        // Also find the user and player info from the associated User and Player elements
+        // These come after Video in the XML, so we need to find them in the full response
         const videoIndex = sessionsText.indexOf(videoEl)
         const nextVideoIndex = sessionsText.indexOf("<Video", videoIndex + 1)
         const sectionToSearch =
@@ -226,8 +231,9 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
             ? sessionsText.slice(videoIndex, nextVideoIndex)
             : sessionsText.slice(videoIndex)
 
-        const playerMatch = sectionToSearch.match(/<Player[^>]*title="([^"]*)"/)
-        const user = playerMatch ? playerMatch[1] : "Unknown"
+        // Get username from User element (title attribute)
+        const userMatch = sectionToSearch.match(/<User[^>]*title="([^"]*)"/)
+        const user = userMatch ? userMatch[1] : "Unknown"
 
         // Check if paused (look for state="paused" in Player element)
         const stateMatch = sectionToSearch.match(/<Player[^>]*state="([^"]*)"/)
