@@ -9,18 +9,21 @@ type FieldRendererProps = {
   field: FieldDef
   defaultValue?: string
   disabled?: boolean
+  onCheckedChange?: (checked: boolean) => void
+  checked?: boolean
 }
 
 export function FieldRenderer({
   field,
   defaultValue = "",
   disabled,
+  onCheckedChange,
+  checked,
 }: FieldRendererProps) {
   const id = `field-${field.key}`
   const name = `config_${field.key}`
 
   if (field.type === "boolean") {
-    const isChecked = defaultValue === "true"
     return (
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
@@ -32,7 +35,8 @@ export function FieldRenderer({
         <Switch
           id={id}
           name={name}
-          defaultChecked={isChecked}
+          checked={checked ?? defaultValue === "true"}
+          onCheckedChange={onCheckedChange}
           value="true"
           uncheckedValue="false"
           disabled={disabled}
