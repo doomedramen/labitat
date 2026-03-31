@@ -1,0 +1,21 @@
+# Lefthook configuration for auto version bumping
+# See: https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      run: pnpm lint
+    format:
+      run: pnpm format
+    typecheck:
+      run: pnpm typecheck
+    check-adapters:
+      run: pnpm check-adapters
+
+pre-push:
+  parallel: false
+  commands:
+    build:
+      run: pnpm build
+

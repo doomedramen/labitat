@@ -1,0 +1,55 @@
+# Dependencies
+node_modules
+
+# Build output
+.next
+out
+build
+dist
+
+# Development
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+*.log
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+.DS_Store
+Thumbs.db
+*.md
+!README.md
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# CI/CD
+.github
+lefthook.yml
+
+# Scripts
+scripts
+
+# Documentation
+PROJECT_SPEC.md
+CONTRIBUTING.md
+LICENSE
+
+# System files
+tmp
+temp
+.cache

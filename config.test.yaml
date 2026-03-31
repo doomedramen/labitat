@@ -1,0 +1,4 @@
+# Test configuration for Playwright E2E tests
+auth:
+  email: admin@example.com
+  passwordHash: "$2b$12$XSqAUTBUrcYYhdiIAit.TOM2.tEiWFpdUiw4QHT1QrIGqSfuCYQkO"

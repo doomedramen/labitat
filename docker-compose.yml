@@ -1,0 +1,36 @@
+services:
+  labitat:
+    image: ghcr.io/doomedramen/labitat:latest
+    container_name: labitat
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - labitat_data:/data
+      - ./config.yaml:/app/config.yaml:ro
+    
+    environment:
+      # Required: 32+ character random string for encryption
+      # Generate with: openssl rand -base64 32
+      - SECRET_KEY=${SECRET_KEY:-change_me_to_a_random_32_char_string_minimum}
+      - NODE_ENV=production
+      # Optional: customize port
+      # - PORT=3000
+    
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp
+
+volumes:
+  labitat_data:
+    name: labitat_data
