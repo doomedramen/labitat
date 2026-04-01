@@ -67,7 +67,6 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
                 defaultValue={group?.name ?? ""}
                 placeholder="e.g. Media, Networking…"
                 autoFocus
-                required
                 data-testid="group-name-input"
               />
             </div>

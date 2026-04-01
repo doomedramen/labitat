@@ -15,8 +15,7 @@ async function requireAuth() {
 export async function createGroup(formData: FormData) {
   await requireAuth()
 
-  const name = (formData.get("name") as string).trim()
-  if (!name) throw new Error("Name is required")
+  const name = (formData.get("name") as string | null)?.trim() ?? ""
 
   const [result] = await db.select({ maxOrder: max(groups.order) }).from(groups)
   const nextOrder = (result?.maxOrder ?? -1) + 1
@@ -28,8 +27,7 @@ export async function createGroup(formData: FormData) {
 export async function updateGroup(id: string, formData: FormData) {
   await requireAuth()
 
-  const name = (formData.get("name") as string).trim()
-  if (!name) throw new Error("Name is required")
+  const name = (formData.get("name") as string | null)?.trim() ?? ""
 
   await db.update(groups).set({ name }).where(eq(groups.id, id))
   revalidatePath("/")
