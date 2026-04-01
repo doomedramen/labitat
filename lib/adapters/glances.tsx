@@ -30,7 +30,6 @@ type GlancesData = {
   showDisk: boolean
   showNetwork: boolean
   diskPath: string
-  diskUnits: string
 }
 
 function GlancesWidget({
@@ -50,7 +49,6 @@ function GlancesWidget({
   showUptime,
   showDisk,
   showNetwork,
-  diskUnits,
 }: GlancesData) {
   const formatUptime = (seconds: number) => {
     const days = Math.floor(seconds / 86400)
@@ -64,13 +62,10 @@ function GlancesWidget({
 
   const formatBytes = (bytes?: number) => {
     if (bytes === undefined) return ""
-    if (diskUnits === "bytes") {
-      const gb = bytes / 1024 / 1024 / 1024
-      if (gb >= 1) return `${gb.toFixed(2)} GB`
-      const mb = bytes / 1024 / 1024
-      return `${mb.toFixed(2)} MB`
-    }
-    return `${bytes.toFixed(2)} ${diskUnits}`
+    if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} GB`
+    if (bytes >= 1e6) return `${(bytes / 1e6).toFixed(1)} MB`
+    if (bytes >= 1e3) return `${(bytes / 1e3).toFixed(1)} KB`
+    return `${bytes} B`
   }
 
   const getStatusColor = (value: number) => {
@@ -251,18 +246,6 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
       helperText: "Disk mount point to monitor (default: /)",
     },
     {
-      key: "diskUnits",
-      label: "Disk Units",
-      type: "select",
-      required: false,
-      options: [
-        { label: "Auto (bytes)", value: "bytes" },
-        { label: "MB", value: "MB" },
-        { label: "GB", value: "GB" },
-      ],
-      helperText: "Units for disk usage display",
-    },
-    {
       key: "showDisk",
       label: "Show Disk",
       type: "boolean",
@@ -296,10 +279,25 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
       return res.json()
     }
 
-    const [quicklook, fsData, uptimeRaw] = await Promise.all([
-      get("quicklook"),
+    const showCpuTemp = config.showCpuTemp === "true"
+    const showNetwork = config.showNetwork === "true"
+
+    const [
+      cpuData,
+      memData,
+      loadData,
+      fsData,
+      uptimeRaw,
+      sensorsData,
+      networkData,
+    ] = await Promise.all([
+      get("cpu"),
+      get("mem"),
+      get("load"),
       get("fs"),
       get("uptime"),
+      showCpuTemp ? get("sensors") : Promise.resolve(null),
+      showNetwork ? get("network") : Promise.resolve(null),
     ])
 
     // Parse uptime string: "1 day, 5:23:45.123456" or "5:23:45.123456"
@@ -312,23 +310,35 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
         timeStr = dayMatch[2]
       }
       const timeParts = timeStr.split(":").map((p) => parseFloat(p))
-      const hours = timeParts[0] ?? 0
-      const mins = timeParts[1] ?? 0
-      const secs = timeParts[2] ?? 0
-      return days * 86400 + hours * 3600 + mins * 60 + secs
+      return (
+        (timeParts[0] ?? 0) * 3600 +
+        (timeParts[1] ?? 0) * 60 +
+        (timeParts[2] ?? 0) +
+        days * 86400
+      )
     }
 
     const uptimeSeconds =
-      typeof uptimeRaw === "string"
-        ? parseUptime(uptimeRaw)
-        : typeof uptimeRaw === "number"
-          ? uptimeRaw
-          : 0
+      typeof uptimeRaw === "string" ? parseUptime(uptimeRaw) : (uptimeRaw ?? 0)
 
-    console.log("[glances] fs response:", JSON.stringify(fsData))
+    // CPU temp: average of temperature_core sensors with CPU-related labels
+    const cpuSensorLabels = ["cpu_thermal", "Core", "Tctl", "Temperature"]
+    const cpuSensors = Array.isArray(sensorsData)
+      ? sensorsData.filter(
+          (s: { label: string; type: string }) =>
+            cpuSensorLabels.some((l) => s.label?.startsWith(l)) &&
+            s.type === "temperature_core"
+        )
+      : []
+    const cpuTemp =
+      cpuSensors.length > 0
+        ? cpuSensors.reduce(
+            (acc: number, s: { value: number }) => acc + s.value,
+            0
+          ) / cpuSensors.length
+        : undefined
 
     const diskPath = config.diskPath || "/"
-    // fsData may be an array of objects or an object keyed by mount point
     const fsList: unknown[] = Array.isArray(fsData)
       ? fsData
       : typeof fsData === "object" && fsData !== null
@@ -336,40 +346,51 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
         : []
     type FsEntry = {
       mnt_point?: string
-      mount_point?: string
       percent?: number
       used?: number
       size?: number
-      total?: number
     }
     const diskEntry =
-      (fsList as FsEntry[]).find(
-        (d) => (d.mnt_point ?? d.mount_point) === diskPath
-      ) ?? (fsList[0] as FsEntry | undefined)
+      (fsList as FsEntry[]).find((d) => d.mnt_point === diskPath) ??
+      (fsList[0] as FsEntry | undefined)
+
+    // Network: sum rx/tx across all interfaces (bytes/s)
+    const networkList = Array.isArray(networkData) ? networkData : []
+    type NetEntry = { rx: number; tx: number; interface_name?: string }
+    const filteredNet = (networkList as NetEntry[]).filter(
+      (n) => n.interface_name !== "lo"
+    )
+    const networkRx =
+      filteredNet.length > 0
+        ? filteredNet.reduce((acc, n) => acc + (n.rx ?? 0), 0)
+        : undefined
+    const networkTx =
+      filteredNet.length > 0
+        ? filteredNet.reduce((acc, n) => acc + (n.tx ?? 0), 0)
+        : undefined
 
     return {
       _status: "ok" as const,
-      cpuPercent: quicklook.cpu?.total ?? quicklook.cpu,
-      memoryPercent: quicklook.mem?.percent ?? quicklook.mem,
-      cpuTemp: quicklook.cputemp,
+      cpuPercent: cpuData.total,
+      memoryPercent: memData.percent,
+      cpuTemp,
       diskPercent: diskEntry?.percent ?? 0,
       diskUsed: diskEntry?.used,
-      diskTotal: diskEntry?.size ?? diskEntry?.total,
+      diskTotal: diskEntry?.size,
       uptime: uptimeSeconds,
       load:
-        quicklook.load?.[0] !== undefined
-          ? [quicklook.load[0], quicklook.load[1] ?? 0, quicklook.load[2] ?? 0]
+        loadData?.min1 !== undefined
+          ? [loadData.min1, loadData.min5 ?? 0, loadData.min15 ?? 0]
           : undefined,
-      networkRx: quicklook.network?.[0]?.rx,
-      networkTx: quicklook.network?.[0]?.tx,
+      networkRx,
+      networkTx,
       showCpu: config.showCpu !== "false",
       showMem: config.showMem !== "false",
-      showCpuTemp: config.showCpuTemp === "true",
+      showCpuTemp,
       showUptime: config.showUptime !== "false",
       showDisk: config.showDisk !== "false",
-      showNetwork: config.showNetwork === "true",
+      showNetwork,
       diskPath,
-      diskUnits: config.diskUnits || "bytes",
     }
   },
 
