@@ -3,6 +3,7 @@
 import { useTransition, useState, useEffect } from "react"
 import { createItem, updateItem, getItemConfig } from "@/actions/items"
 import type { ItemRow } from "@/lib/types"
+import type { ServiceDefinition, FieldDef } from "@/lib/adapters/types"
 import { getAllServices } from "@/lib/adapters"
 import {
   Dialog,
@@ -17,11 +18,15 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import {
   Combobox,
-  ComboboxInput,
+  ComboboxCollection,
   ComboboxContent,
-  ComboboxList,
-  ComboboxItem,
   ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxLabel,
+  ComboboxList,
+  ComboboxSeparator,
 } from "@/components/ui/combobox"
 import { CheckIcon } from "lucide-react"
 import { FieldRenderer } from "./field-renderer"
@@ -29,30 +34,65 @@ import { FieldRenderer } from "./field-renderer"
 type ItemDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  item: ItemRow | null
+  existingItem: ItemRow | null
   groupId: string | null
 }
 
 export function ItemDialog({
   open,
   onOpenChange,
-  item,
+  existingItem,
   groupId,
 }: ItemDialogProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [selectedService, setSelectedService] = useState<
-    (typeof services)[number] | null
-  >(null)
+  const [selectedService, setSelectedService] =
+    useState<ServiceDefinition | null>(null)
   const [configValues, setConfigValues] = useState<Record<string, string>>({})
   const [booleanValues, setBooleanValues] = useState<Record<string, boolean>>(
     {}
   )
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
-  const isEdit = item !== null
+  const isEdit = existingItem !== null
 
-  const services = getAllServices()
-  const serviceDef = selectedService
+  // Separate services into general widgets and service widgets
+  const allServices = getAllServices()
+  const generalWidgets = allServices.filter(
+    (s) =>
+      s.clientSide ||
+      [
+        "openmeteo",
+        "openweathermap",
+        "datetime",
+        "glances",
+        "logo",
+        "search",
+      ].includes(s.id)
+  )
+  const serviceWidgets = allServices.filter(
+    (s) =>
+      !s.clientSide &&
+      ![
+        "openmeteo",
+        "openweathermap",
+        "datetime",
+        "glances",
+        "logo",
+        "search",
+      ].includes(s.id)
+  )
+
+  const groupedServices: {
+    value: string
+    label: string
+    items: ServiceDefinition[]
+  }[] = [
+    { value: "general", label: "General Widgets", items: generalWidgets },
+    { value: "services", label: "Service Widgets", items: serviceWidgets },
+  ]
+
+  // Flat array for Combobox items prop (required by the component)
+  const allServicesFlat = [...generalWidgets, ...serviceWidgets]
 
   // Initialize state when dialog opens
   useEffect(() => {
@@ -60,8 +100,8 @@ export function ItemDialog({
 
     const init = async () => {
       // Convert service type ID to service object
-      const service = item?.serviceType
-        ? services.find((s) => s.id === item.serviceType) || null
+      const service = existingItem?.serviceType
+        ? allServices.find((s) => s.id === existingItem.serviceType) || null
         : null
       setSelectedService(service)
       setConfigValues({})
@@ -69,10 +109,10 @@ export function ItemDialog({
       setIsLoadingConfig(false)
 
       // Load decrypted config when editing an existing item
-      if (item?.id && item?.serviceType) {
+      if (existingItem?.id && existingItem?.serviceType) {
         setIsLoadingConfig(true)
         try {
-          const config = await getItemConfig(item.id)
+          const config = await getItemConfig(existingItem.id)
           setConfigValues(config)
           // Initialize boolean values from config
           const bools: Record<string, boolean> = {}
@@ -90,7 +130,29 @@ export function ItemDialog({
       }
     }
     init()
-  }, [open, item?.id, item?.serviceType, item])
+  }, [
+    open,
+    existingItem?.id,
+    existingItem?.serviceType,
+    existingItem,
+    allServices,
+  ])
+
+  const serviceDef = selectedService
+
+  // Auto-update label when service changes (for new items only)
+  useEffect(() => {
+    if (!open || isEdit || !selectedService) return
+    // Auto-fill label with service name if label is empty or matches previous service name
+    const labelInput = document.getElementById("item-label") as HTMLInputElement
+    const currentLabel = (existingItem as ItemRow | null)?.label ?? ""
+    if (
+      labelInput &&
+      (!labelInput.value || labelInput.value === currentLabel)
+    ) {
+      labelInput.value = selectedService.name
+    }
+  }, [open, isEdit, selectedService, existingItem])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -113,7 +175,7 @@ export function ItemDialog({
     startTransition(async () => {
       try {
         if (isEdit) {
-          await updateItem(item.id, formData)
+          await updateItem(existingItem.id, formData)
         } else {
           await createItem(groupId, formData)
         }
@@ -134,7 +196,7 @@ export function ItemDialog({
         </DialogHeader>
 
         <form
-          key={item?.id ?? "new"}
+          key={existingItem?.id ?? "new"}
           id="item-dialog-form"
           onSubmit={handleSubmit}
         >
@@ -144,7 +206,7 @@ export function ItemDialog({
               <Input
                 id="item-label"
                 name="label"
-                defaultValue={item?.label ?? ""}
+                defaultValue={existingItem?.label ?? ""}
                 placeholder="e.g. Sonarr"
                 autoFocus
                 required
@@ -158,7 +220,7 @@ export function ItemDialog({
                 id="item-href"
                 name="href"
                 type="url"
-                defaultValue={item?.href ?? ""}
+                defaultValue={existingItem?.href ?? ""}
                 placeholder="https://sonarr.home.lab"
                 data-testid="item-href-input"
               />
@@ -169,7 +231,7 @@ export function ItemDialog({
               <Input
                 id="item-icon"
                 name="iconUrl"
-                defaultValue={item?.iconUrl ?? ""}
+                defaultValue={existingItem?.iconUrl ?? ""}
                 placeholder="sonarr  or  https://…/icon.svg"
                 data-testid="item-icon-input"
               />
@@ -199,7 +261,7 @@ export function ItemDialog({
               <Combobox
                 value={selectedService}
                 onValueChange={(v) => setSelectedService(v || null)}
-                items={services}
+                items={allServicesFlat}
                 itemToStringLabel={(s) => s.name}
                 autoHighlight
               >
@@ -215,22 +277,29 @@ export function ItemDialog({
                     <ComboboxItem value={undefined}>
                       None (link only)
                     </ComboboxItem>
-                    {services
-                      .slice()
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((s) => (
-                        <ComboboxItem key={s.id} value={s}>
-                          <CheckIcon
-                            className={cn(
-                              "size-4",
-                              selectedService?.id === s.id
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {s.name}
-                        </ComboboxItem>
-                      ))}
+                    {groupedServices.map((group, groupIndex) => (
+                      <ComboboxGroup key={group.value} items={group.items}>
+                        <ComboboxLabel>{group.label}</ComboboxLabel>
+                        <ComboboxCollection>
+                          {(service: ServiceDefinition) => (
+                            <ComboboxItem key={service.id} value={service}>
+                              <CheckIcon
+                                className={cn(
+                                  "size-4",
+                                  selectedService?.id === service.id
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {service.name}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxCollection>
+                        {groupIndex < groupedServices.length - 1 && (
+                          <ComboboxSeparator />
+                        )}
+                      </ComboboxGroup>
+                    ))}
                   </ComboboxList>
                 </ComboboxContent>
               </Combobox>
@@ -248,7 +317,7 @@ export function ItemDialog({
                   Service Configuration
                 </h4>
                 <div className="flex flex-col gap-4">
-                  {serviceDef.configFields.map((field) => (
+                  {serviceDef.configFields.map((field: FieldDef) => (
                     <FieldRenderer
                       key={field.key}
                       field={field}
@@ -282,7 +351,9 @@ export function ItemDialog({
                   name="pollingMs"
                   type="number"
                   defaultValue={
-                    item?.pollingMs ?? serviceDef.defaultPollingMs ?? 10000
+                    existingItem?.pollingMs ??
+                    serviceDef.defaultPollingMs ??
+                    10000
                   }
                   placeholder={String(serviceDef.defaultPollingMs ?? 10000)}
                   data-testid="item-polling-input"

@@ -86,9 +86,10 @@ export type ServiceDefinition<TData extends ServiceData = ServiceData> = {
   category: ServiceCategory
   configFields: FieldDef[]
   defaultPollingMs?: number
-  fetchData: (config: Record<string, string>) => Promise<TData>
+  fetchData?: (config: Record<string, string>) => Promise<TData>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Widget: FC<any> // Widget receives the data returned by fetchData
+  clientSide?: boolean // Widget handles its own data fetching/updates client-side
 }
 
 // ── Registry type ─────────────────────────────────────────────────────────────

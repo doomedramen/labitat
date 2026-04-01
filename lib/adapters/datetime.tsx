@@ -1,33 +1,67 @@
 import type { ServiceDefinition } from "./types"
 import { Clock, Calendar, Globe } from "lucide-react"
+import { useEffect, useState } from "react"
 
 type DateTimeData = {
-  _status?: "ok" | "warn" | "error"
+  _status?: "ok" | "warn" | "error" | "none"
   _statusText?: string
-  dateTime: string
-  date: string
-  time: string
   timeZone: string
   timeZoneOffset: string
+  date?: string
+  time?: string
 }
 
-function DateTimeWidget({
-  date,
-  time,
-  timeZone,
-  timeZoneOffset,
-}: DateTimeData) {
+function DateTimeWidget({ timeZone, timeZoneOffset }: DateTimeData) {
+  const [currentTime, setCurrentTime] = useState<{
+    date: string
+    time: string
+  }>({ date: "", time: "" })
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date()
+      const options: Intl.DateTimeFormatOptions = {
+        timeZone: timeZone || undefined,
+      }
+
+      const dateStr = now.toLocaleDateString("en-US", {
+        ...options,
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+
+      const timeStr = now.toLocaleTimeString("en-US", {
+        ...options,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+
+      setCurrentTime({ date: dateStr, time: timeStr })
+    }
+
+    // Update immediately
+    updateTime()
+
+    // Update every second
+    const interval = setInterval(updateTime, 1000)
+    return () => clearInterval(interval)
+  }, [timeZone])
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-center gap-2">
         <Clock className="size-5 text-muted-foreground" />
         <div className="text-2xl font-bold text-foreground tabular-nums">
-          {time}
+          {currentTime.time || "--:--:--"}
         </div>
       </div>
       <div className="flex items-center justify-center gap-1 text-xs font-medium text-foreground">
         <Calendar className="size-3 text-muted-foreground" />
-        {date}
+        {currentTime.date || "--/--/----"}
       </div>
       <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
         <Globe className="size-3" />
@@ -42,7 +76,8 @@ export const datetimeDefinition: ServiceDefinition<DateTimeData> = {
   name: "Date & Time",
   icon: "clock",
   category: "info",
-  defaultPollingMs: 1000,
+  defaultPollingMs: undefined,
+  clientSide: true, // Widget updates itself client-side
 
   configFields: [
     {
@@ -52,90 +87,45 @@ export const datetimeDefinition: ServiceDefinition<DateTimeData> = {
       required: false,
       placeholder: "e.g., America/New_York",
       helperText:
-        "Leave empty for server local time. Uses IANA time zone format.",
+        "Leave empty for browser local time. Uses IANA time zone format.",
     },
   ],
 
   async fetchData(config) {
     const timeZone = config.timeZone || undefined
+    const now = new Date()
 
-    let date: Date
     let displayTimeZone: string
     let displayTimeZoneOffset: string
 
-    try {
-      date = new Date()
+    if (timeZone) {
+      // Validate time zone
+      const options: Intl.DateTimeFormatOptions = {
+        timeZone,
+        timeZoneName: "short",
+      }
+      const formatter = new Intl.DateTimeFormat("en-US", options)
+      const parts = formatter.formatToParts(now)
+      const timeZoneNamePart = parts.find((p) => p.type === "timeZoneName")
 
-      if (timeZone) {
-        // Validate time zone
-        const options: Intl.DateTimeFormatOptions = {
-          timeZone,
-          timeZoneName: "short",
-        }
-        const formatter = new Intl.DateTimeFormat("en-US", options)
-        const parts = formatter.formatToParts(date)
-        const timeZoneNamePart = parts.find((p) => p.type === "timeZoneName")
-
-        if (!timeZoneNamePart) {
-          throw new Error(`Invalid time zone: ${timeZone}`)
-        }
-
-        displayTimeZone = timeZone
-        displayTimeZoneOffset = timeZoneNamePart.value
-
-        // Get the time in the specified timezone
-        const tzString = date.toLocaleString("en-US", { timeZone })
-        date = new Date(tzString)
-      } else {
-        // Use local time
-        displayTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-        const offset = -date.getTimezoneOffset()
-        const offsetHours = Math.floor(Math.abs(offset) / 60)
-        const offsetMinutes = Math.abs(offset) % 60
-        const sign = offset >= 0 ? "+" : "-"
-        displayTimeZoneOffset = `UTC${sign}${offsetHours.toString().padStart(2, "0")}:${offsetMinutes.toString().padStart(2, "0")}`
+      if (!timeZoneNamePart) {
+        throw new Error(`Invalid time zone: ${timeZone}`)
       }
 
-      // If we didn't already set offset (for custom timezone), calculate it
-      if (!displayTimeZoneOffset && timeZone) {
-        const tzDate = new Date(date.toLocaleString("en-US", { timeZone }))
-        const utcDate = new Date(date.toUTCString())
-        const diffMs = tzDate.getTime() - utcDate.getTime()
-        const offsetHours = Math.floor(diffMs / (1000 * 60 * 60))
-        const offsetMinutes = Math.abs(
-          Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-        )
-        const sign = offsetHours >= 0 ? "+" : "-"
-        displayTimeZoneOffset = `UTC${sign}${Math.abs(offsetHours).toString().padStart(2, "0")}:${offsetMinutes.toString().padStart(2, "0")}`
-      }
-    } catch (err) {
-      if (err instanceof Error && err.message.includes("Invalid time zone")) {
-        throw err
-      }
-      throw new Error(
-        `Failed to get date/time: ${err instanceof Error ? err.message : "Unknown error"}`
-      )
+      displayTimeZone = timeZone
+      displayTimeZoneOffset = timeZoneNamePart.value
+    } else {
+      // Use local time
+      displayTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      const offset = -now.getTimezoneOffset()
+      const offsetHours = Math.floor(Math.abs(offset) / 60)
+      const offsetMinutes = Math.abs(offset) % 60
+      const sign = offset >= 0 ? "+" : "-"
+      displayTimeZoneOffset = `UTC${sign}${offsetHours.toString().padStart(2, "0")}:${offsetMinutes.toString().padStart(2, "0")}`
     }
 
-    const dateStr = date.toLocaleDateString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
-
-    const timeStr = date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    })
-
     return {
-      _status: "ok" as const,
-      dateTime: date.toISOString(),
-      date: dateStr,
-      time: timeStr,
+      _status: "none" as const, // Static config - widget updates client-side
       timeZone: displayTimeZone,
       timeZoneOffset: displayTimeZoneOffset,
     }

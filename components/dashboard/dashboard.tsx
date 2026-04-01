@@ -374,7 +374,7 @@ export function Dashboard({
       <ItemDialog
         open={itemDialogOpen}
         onOpenChange={(o) => setItemDialogOpen(o)}
-        item={editingItem}
+        existingItem={editingItem}
         groupId={itemGroupId}
       />
     </>

@@ -178,7 +178,9 @@ export function ItemCard({
 
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
-  const shouldPollService = !editMode && item.serviceType && serviceDef
+  const isClientSide = serviceDef?.clientSide
+  const shouldPollService =
+    !editMode && item.serviceType && serviceDef && !isClientSide
   const shouldPing = !editMode && !item.serviceType && item.href
 
   // Compute derived state
@@ -191,7 +193,7 @@ export function ItemCard({
     : (pingStatus ??
       (effectiveData ? dataToStatus(effectiveData) : { state: "unknown" }))
 
-  // Poll service data when not in edit mode
+  // Poll service data when not in edit mode (server-side adapters)
   useEffect(() => {
     if (!shouldPollService) return
 
@@ -214,6 +216,28 @@ export function ItemCard({
     const interval = setInterval(poll, pollingMs)
     return () => clearInterval(interval)
   }, [shouldPollService, item.id, pollingMs, initialData])
+
+  // Client-side widgets handle their own updates (e.g., DateTime updates every second)
+  useEffect(() => {
+    if (!isClientSide || !serviceDef || editMode) return
+
+    // For client-side widgets, we pass the config to the widget
+    // and let it handle its own state/updates
+    const parseConfig = () => {
+      try {
+        if (item.configEnc) {
+          // This would need decryption on client, which we can't do
+          // So client-side widgets should use config from initialData or defaults
+        }
+      } catch {
+        // Ignore
+      }
+    }
+    parseConfig()
+
+    // Client-side widgets are responsible for their own polling
+    // This effect just ensures they're not polled by the server mechanism
+  }, [isClientSide, serviceDef, editMode, item.configEnc])
 
   // Ping URL for non-service items
   useEffect(() => {
@@ -253,14 +277,32 @@ export function ItemCard({
 
   const Widget = serviceDef?.Widget
 
-  // Don't show widget when in edit mode, no widget exists, or error
+  // For client-side widgets, always render the Widget (it handles its own state)
+  // For server-side widgets, only render if we have data
   const hasWidget =
     !editMode &&
     Widget &&
     serviceDef &&
-    effectiveData &&
-    serviceStatus.state !== "error"
-  const showSkeleton = !editMode && item.serviceType && effectiveLoading
+    (isClientSide || (effectiveData && serviceStatus.state !== "error"))
+  const showSkeleton =
+    !editMode && item.serviceType && effectiveLoading && !isClientSide
+
+  // For client-side widgets, pass the initial config data
+  const widgetProps =
+    isClientSide && serviceDef
+      ? {
+          ...effectiveData,
+          config: serviceDef.configFields.reduce(
+            (acc, field) => {
+              if (effectiveData?.[field.key] !== undefined) {
+                acc[field.key] = effectiveData[field.key]
+              }
+              return acc
+            },
+            {} as Record<string, unknown>
+          ),
+        }
+      : effectiveData
 
   const inner = (
     <div
@@ -301,7 +343,7 @@ export function ItemCard({
       {/* Widget below or skeleton */}
       {hasWidget && !effectiveLoading && (
         <div className="mt-2">
-          <Widget {...effectiveData} />
+          <Widget {...widgetProps} />
         </div>
       )}
       {showSkeleton && <WidgetSkeleton />}

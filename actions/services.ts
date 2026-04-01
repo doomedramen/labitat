@@ -61,8 +61,16 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
     }
   }
 
-  // Fetch live data
+  // Fetch live data (only for server-side adapters)
   try {
+    if (!adapter.fetchData) {
+      // Client-side widget - return config for client to handle
+      return {
+        _status: "none" as const,
+        ...config,
+      }
+    }
+
     const data = await adapter.fetchData(config)
     const responseData: ServiceData = {
       ...data,
