@@ -15,7 +15,6 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { deleteGroup } from "@/actions/groups"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
-import type { ServiceData } from "@/lib/adapters/types"
 import { Button } from "@/components/ui/button"
 import { ItemCard } from "./item"
 import { WidgetErrorBoundary } from "./error-boundary"
@@ -37,7 +36,6 @@ type GroupProps = {
   onEditGroup: (group: GroupRow) => void
   onAddItem: (groupId: string) => void
   onEditItem: (item: ItemRow) => void
-  initialServiceData: Record<string, ServiceData>
   onGroupDeleted?: (groupId: string) => void
   onItemDeleted?: (itemId: string) => void
 }
@@ -48,7 +46,6 @@ export function Group({
   onEditGroup,
   onAddItem,
   onEditItem,
-  initialServiceData,
   onGroupDeleted,
   onItemDeleted,
 }: GroupProps) {
@@ -176,7 +173,6 @@ export function Group({
                 item={item}
                 editMode={editMode}
                 onEdit={onEditItem}
-                initialData={initialServiceData[item.id]}
                 onDeleted={onItemDeleted}
               />
             </WidgetErrorBoundary>

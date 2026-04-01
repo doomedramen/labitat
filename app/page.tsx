@@ -1,11 +1,15 @@
+import { Suspense } from "react"
 import { eq } from "drizzle-orm"
 import { getSession } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
-import { fetchAllServiceData } from "@/actions/services"
 import { Dashboard } from "@/components/dashboard/dashboard"
+import { DashboardSkeleton } from "@/components/dashboard/skeleton"
 
-export default async function DashboardPage() {
+// Always fetch fresh data - no caching
+export const dynamic = "force-dynamic"
+
+async function DashboardContent() {
   const [session, groupsWithItems, titleSetting] = await Promise.all([
     getSession(),
     db.query.groups.findMany({
@@ -19,22 +23,19 @@ export default async function DashboardPage() {
     db.query.settings.findFirst({ where: eq(settings.key, "dashboardTitle") }),
   ])
 
-  const title = titleSetting?.value ?? "Labitat"
-
-  // Fetch initial service data for all items with a service type
-  const itemIds = groupsWithItems
-    .flatMap((g) => g.items)
-    .filter((i) => i.serviceType)
-    .map((i) => i.id)
-
-  const initialServiceData = await fetchAllServiceData(itemIds)
-
   return (
     <Dashboard
       groups={groupsWithItems}
       isLoggedIn={!!session.loggedIn}
-      title={title}
-      initialServiceData={initialServiceData}
+      title={titleSetting?.value ?? "Labitat"}
     />
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardContent />
+    </Suspense>
   )
 }

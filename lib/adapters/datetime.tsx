@@ -1,7 +1,6 @@
 "use client"
 
 import type { ServiceDefinition } from "./types"
-import { Clock, Calendar, Globe } from "lucide-react"
 import { useEffect, useState } from "react"
 
 type DateTimeData = {
@@ -28,7 +27,6 @@ function DateTimeWidget({ timeZone }: DateTimeData) {
       const dateStr = now.toLocaleDateString("en-US", {
         timeZone: tz,
         weekday: "short",
-        year: "numeric",
         month: "short",
         day: "numeric",
       })
@@ -51,7 +49,7 @@ function DateTimeWidget({ timeZone }: DateTimeData) {
       setCurrentTime({
         date: dateStr,
         time: timeStr,
-        tzDisplay: `${resolvedTz} (${tzName})`,
+        tzDisplay: tzName,
       })
     }
 
@@ -61,20 +59,15 @@ function DateTimeWidget({ timeZone }: DateTimeData) {
   }, [timeZone])
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-center gap-2">
-        <Clock className="size-5 text-muted-foreground" />
-        <div className="text-2xl font-bold text-foreground tabular-nums">
-          {currentTime.time || "--:--:--"}
-        </div>
+    <div className="text-center">
+      <div className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
+        {currentTime.time || "--:--:--"}
       </div>
-      <div className="flex items-center justify-center gap-1 text-xs font-medium text-foreground">
-        <Calendar className="size-3 text-muted-foreground" />
+      <div className="mt-0.5 text-xs text-muted-foreground">
         {currentTime.date || "--/--/----"}
-      </div>
-      <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-        <Globe className="size-3" />
-        {currentTime.tzDisplay}
+        {currentTime.tzDisplay && (
+          <span className="ml-1.5 opacity-70">• {currentTime.tzDisplay}</span>
+        )}
       </div>
     </div>
   )

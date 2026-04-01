@@ -22,7 +22,6 @@ import { reorderGroups } from "@/actions/groups"
 import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
-import type { ServiceData } from "@/lib/adapters/types"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,7 +31,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ThemeSwitcher } from "@/components/theme-switcher"
+import { ModeToggle } from "@/components/mode-toggle"
 import { Group, GroupDragPreview } from "./group"
 import { ItemCardDragPreview } from "./item"
 import { EditBar } from "./edit-bar"
@@ -44,15 +43,9 @@ type DashboardProps = {
   groups: GroupWithItems[]
   isLoggedIn: boolean
   title: string
-  initialServiceData: Record<string, ServiceData>
 }
 
-export function Dashboard({
-  groups,
-  isLoggedIn,
-  title,
-  initialServiceData,
-}: DashboardProps) {
+export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   // ── Login dialog ───────────────────────────────────────────────────────────
   const [loginOpen, setLoginOpen] = useState(false)
 
@@ -332,7 +325,7 @@ export function Dashboard({
             </h1>
           )}
           <div className="flex items-center gap-2">
-            <ThemeSwitcher />
+            <ModeToggle />
             {isLoggedIn ? (
               !editMode && (
                 <Button
@@ -380,7 +373,6 @@ export function Dashboard({
                     onEditGroup={openEditGroup}
                     onAddItem={openAddItem}
                     onEditItem={openEditItem}
-                    initialServiceData={initialServiceData}
                     onGroupDeleted={handleGroupDeleted}
                     onItemDeleted={handleItemDeleted}
                   />

@@ -4,6 +4,13 @@ import type { FieldDef } from "@/lib/adapters/types"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 type FieldRendererProps = {
   field: FieldDef
@@ -22,6 +29,36 @@ export function FieldRenderer({
 }: FieldRendererProps) {
   const id = `field-${field.key}`
   const name = `config_${field.key}`
+
+  if (field.type === "select" && field.options) {
+    return (
+      <div className="flex flex-col gap-2">
+        <Label htmlFor={id}>
+          {field.label}
+          {field.required && <span className="text-destructive"> *</span>}
+        </Label>
+        <Select
+          name={name}
+          defaultValue={defaultValue || field.options[0]?.value}
+          disabled={disabled}
+        >
+          <SelectTrigger id={id} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {field.options.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {field.helperText && (
+          <p className="text-xs text-muted-foreground">{field.helperText}</p>
+        )}
+      </div>
+    )
+  }
 
   if (field.type === "boolean") {
     return (

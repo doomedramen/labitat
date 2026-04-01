@@ -7,6 +7,7 @@ import {
   PencilIcon,
   Trash2Icon,
 } from "lucide-react"
+import { ItemCardSkeleton } from "@/components/dashboard/skeleton"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { deleteItem } from "@/actions/items"
@@ -139,47 +140,20 @@ function StatusDot({ status }: { status: ServiceStatus }) {
   )
 }
 
-// ── Skeleton loader ───────────────────────────────────────────────────────────
-
-function WidgetSkeleton() {
-  return (
-    <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
-      {[...Array(3)].map((_, i) => (
-        <div
-          key={i}
-          className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1.5"
-        >
-          <div className="h-4 w-8 animate-pulse rounded bg-muted-foreground/20" />
-          <div className="mt-1 h-2.5 w-6 animate-pulse rounded bg-muted-foreground/10" />
-        </div>
-      ))}
-    </div>
-  )
-}
-
 // ── Item card ─────────────────────────────────────────────────────────────────
 
 type ItemCardProps = {
   item: ItemRow
   editMode: boolean
   onEdit: (item: ItemRow) => void
-  initialData?: ServiceData
   onDeleted?: (itemId: string) => void
 }
 
-export function ItemCard({
-  item,
-  editMode,
-  onEdit,
-  initialData,
-  onDeleted,
-}: ItemCardProps) {
+export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const [isPending, startTransition] = useTransition()
-  const [serviceData, setServiceData] = useState<ServiceData | null>(
-    initialData ?? null
-  )
+  const [serviceData, setServiceData] = useState<ServiceData | null>(null)
   const [pingStatus, setPingStatus] = useState<ServiceStatus | null>(null)
-  const [isLoading, setIsLoading] = useState(!initialData && item.serviceType)
+  const [isLoading, setIsLoading] = useState(!!item.serviceType)
 
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
@@ -189,8 +163,8 @@ export function ItemCard({
   const shouldPing = !editMode && !item.serviceType && item.href
 
   // Compute derived state
-  const effectiveData = editMode ? null : (serviceData ?? initialData)
-  const effectiveLoading = editMode ? false : !initialData && isLoading
+  const effectiveData = editMode ? null : serviceData
+  const effectiveLoading = editMode ? false : isLoading
 
   // Compute status from service data or ping
   // Only show status if item has href (for ping)
@@ -215,14 +189,11 @@ export function ItemCard({
       }
     }
 
-    // Initial poll only if no SSR data
-    if (!initialData) {
-      poll()
-    }
+    poll()
 
     const interval = setInterval(poll, pollingMs)
     return () => clearInterval(interval)
-  }, [shouldPollService, item.id, pollingMs, initialData])
+  }, [shouldPollService, item.id, pollingMs])
 
   // Client-side widgets handle their own updates (e.g., DateTime updates every second)
   useEffect(() => {
@@ -297,6 +268,10 @@ export function ItemCard({
   const showSkeleton =
     !editMode && item.serviceType && effectiveLoading && !isClientSide
 
+  if (showSkeleton) {
+    return <ItemCardSkeleton />
+  }
+
   // For client-side widgets, pass the initial config data
   const widgetProps =
     isClientSide && serviceDef
@@ -317,8 +292,8 @@ export function ItemCard({
   const inner = (
     <div
       className={cn(
-        "relative px-3",
-        hasWidget || showSkeleton ? "py-2.5" : "py-2"
+        "relative px-3 transition-all duration-200 ease-in-out",
+        hasWidget ? "py-2.5" : "py-2"
       )}
       data-testid="item-card"
       data-item-id={item.id}
@@ -350,13 +325,12 @@ export function ItemCard({
           </p>
         </div>
       </div>
-      {/* Widget below or skeleton */}
+      {/* Widget below */}
       {hasWidget && !effectiveLoading && (
         <div className="mt-2">
           <Widget {...widgetProps} />
         </div>
       )}
-      {showSkeleton && <WidgetSkeleton />}
     </div>
   )
 
@@ -365,7 +339,7 @@ export function ItemCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group/item relative overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition-all",
+        "group/item relative overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition-all duration-200 ease-in-out",
         editMode
           ? "ring-2 ring-border"
           : item.href &&
