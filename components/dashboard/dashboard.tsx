@@ -26,12 +26,19 @@ import type { ServiceData } from "@/lib/adapters/types"
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { Group, GroupDragPreview } from "./group"
 import { ItemCardDragPreview } from "./item"
 import { EditBar } from "./edit-bar"
 import { GroupDialog } from "@/components/editor/group-dialog"
 import { ItemDialog } from "@/components/editor/item-dialog"
+import { LoginForm } from "@/app/login/login-form"
 
 type DashboardProps = {
   groups: GroupWithItems[]
@@ -46,6 +53,9 @@ export function Dashboard({
   title,
   initialServiceData,
 }: DashboardProps) {
+  // ── Login dialog ───────────────────────────────────────────────────────────
+  const [loginOpen, setLoginOpen] = useState(false)
+
   // ── Edit mode ──────────────────────────────────────────────────────────────
   const [editMode, setEditMode] = useState(false)
   const [dashboardTitle, setDashboardTitle] = useState(title)
@@ -284,15 +294,14 @@ export function Dashboard({
                 </Button>
               )
             ) : (
-              <Link
-                href="/login"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" })
-                )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLoginOpen(true)}
                 data-testid="sign-in-link"
               >
                 Sign in to edit
-              </Link>
+              </Button>
             )}
           </div>
         </header>
@@ -377,6 +386,15 @@ export function Dashboard({
         existingItem={editingItem}
         groupId={itemGroupId}
       />
+
+      <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Sign in</DialogTitle>
+          </DialogHeader>
+          <LoginForm />
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

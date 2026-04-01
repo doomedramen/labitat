@@ -62,6 +62,8 @@ function GlancesWidget({
 
   const formatBytes = (bytes?: number) => {
     if (bytes === undefined) return ""
+    if (bytes >= 1e15) return `${(bytes / 1e15).toFixed(1)} PB`
+    if (bytes >= 1e12) return `${(bytes / 1e12).toFixed(1)} TB`
     if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} GB`
     if (bytes >= 1e6) return `${(bytes / 1e6).toFixed(1)} MB`
     if (bytes >= 1e3) return `${(bytes / 1e3).toFixed(1)} KB`
