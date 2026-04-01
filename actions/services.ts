@@ -6,33 +6,7 @@ import { eq } from "drizzle-orm"
 import { decrypt } from "@/lib/crypto"
 import { getCached, setCached } from "@/lib/cache"
 import { getService } from "@/lib/adapters"
-import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
-
-// Convert legacy ServiceData status to new ServiceStatus
-export function dataToStatus(data: ServiceData): ServiceStatus {
-  const status = data._status
-
-  if (!status || status === "none") {
-    return { state: "unknown" }
-  }
-
-  if (status === "ok") {
-    return { state: "healthy" }
-  }
-
-  if (status === "warn") {
-    return { state: "healthy" } // Warn is still healthy, just with caveats
-  }
-
-  if (status === "error") {
-    return {
-      state: "error",
-      reason: data._statusText || "Service error",
-    }
-  }
-
-  return { state: "unknown" }
-}
+import type { ServiceData } from "@/lib/adapters/types"
 
 export async function fetchServiceData(itemId: string): Promise<ServiceData> {
   // Load item from DB
