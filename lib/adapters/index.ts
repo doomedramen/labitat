@@ -19,6 +19,14 @@ import { apcupsDefinition } from "./apcups"
 import { unifiDefinition } from "./unifi"
 import { nginxProxyManagerDefinition } from "./nginx-proxy-manager"
 
+// ── General widgets ──────────────────────────────────────────────────────────
+import { openmeteoDefinition } from "./openmeteo"
+import { datetimeDefinition } from "./datetime"
+import { glancesDefinition } from "./glances"
+import { logoDefinition } from "./logo"
+import { openweathermapDefinition } from "./openweathermap"
+import { searchDefinition } from "./search"
+
 // ── Disabled widgets (not manually tested) ───────────────────────────────────
 // import { embyDefinition } from "./emby"
 // import { jellyfinDefinition } from "./jellyfin"
@@ -62,6 +70,14 @@ export const registry: ServiceRegistry = {
   [apcupsDefinition.id]: apcupsDefinition,
   [unifiDefinition.id]: unifiDefinition,
   [nginxProxyManagerDefinition.id]: nginxProxyManagerDefinition,
+
+  // General widgets
+  [openmeteoDefinition.id]: openmeteoDefinition,
+  [datetimeDefinition.id]: datetimeDefinition,
+  [glancesDefinition.id]: glancesDefinition,
+  [logoDefinition.id]: logoDefinition,
+  [openweathermapDefinition.id]: openweathermapDefinition,
+  [searchDefinition.id]: searchDefinition,
 
   // Disabled widgets
   // [embyDefinition.id]: embyDefinition,
