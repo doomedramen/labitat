@@ -18,6 +18,7 @@ import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
 import type { ServiceData } from "@/lib/adapters/types"
 import { Button } from "@/components/ui/button"
 import { ItemCard } from "./item"
+import { WidgetErrorBoundary } from "./error-boundary"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -163,13 +164,14 @@ export function Group({
           data-testid="group-items-container"
         >
           {group.items.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              editMode={editMode}
-              onEdit={onEditItem}
-              initialData={initialServiceData[item.id]}
-            />
+            <WidgetErrorBoundary key={item.id}>
+              <ItemCard
+                item={item}
+                editMode={editMode}
+                onEdit={onEditItem}
+                initialData={initialServiceData[item.id]}
+              />
+            </WidgetErrorBoundary>
           ))}
 
           {editMode && (

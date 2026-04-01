@@ -7,6 +7,11 @@
 
 import { List, ListItem } from "@/components/ui/list"
 import { Clock, Pause, Play } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export type ActiveStream = {
   /** Full display title (e.g., "Show: S01 - Episode Title") */
@@ -53,20 +58,31 @@ export function ActiveStreamItem({
   progress,
   state,
 }: ActiveStream) {
+  const tooltipText = `${title} (${user}) - ${formatDuration(progress)}`
+
   return (
-    <ListItem>
-      {state === "paused" ? (
-        <Pause className="h-3 w-3 shrink-0 text-muted-foreground" />
-      ) : (
-        <Play className="h-3 w-3 shrink-0 text-muted-foreground" />
-      )}
-      <span className="min-w-0 truncate font-medium">{title}</span>
-      <span className="text-muted-foreground">({user})</span>
-      <div className="flex items-center gap-1 font-mono text-muted-foreground tabular-nums">
-        <Clock className="h-3 w-3 shrink-0" />
-        {formatDuration(progress)}
-      </div>
-    </ListItem>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <ListItem>
+            {state === "paused" ? (
+              <Pause className="h-3 w-3 shrink-0 text-muted-foreground" />
+            ) : (
+              <Play className="h-3 w-3 shrink-0 text-muted-foreground" />
+            )}
+            <span className="min-w-0 truncate font-medium">{title}</span>
+            <span className="text-muted-foreground">({user})</span>
+            <div className="flex items-center gap-1 font-mono text-muted-foreground tabular-nums">
+              <Clock className="h-3 w-3 shrink-0" />
+              {formatDuration(progress)}
+            </div>
+          </ListItem>
+        }
+      />
+      <TooltipContent side="top" className="max-w-xs text-xs">
+        {tooltipText}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -96,24 +112,37 @@ export function DownloadItem({
   activity,
   size,
 }: DownloadItem) {
+  const tooltipText = `${title}${size ? ` - ${size}` : ""}${timeLeft ? ` - ${timeLeft}` : ""}`
+
   return (
-    <ListItem className="relative m-1 h-5 !gap-0 !p-0">
-      <div
-        className="absolute z-0 -ml-1 h-5 rounded-md bg-muted"
-        style={{
-          width: `${Math.min(100, Math.max(0, progress))}%`,
-        }}
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <ListItem className="relative m-1 h-5 !gap-0 !p-0">
+            <div
+              className="absolute z-0 -ml-1 h-5 rounded-md bg-muted"
+              style={{
+                width: `${Math.min(100, Math.max(0, progress))}%`,
+              }}
+            />
+            <div className="relative z-10 mr-2 ml-2 h-4 grow self-center text-xs">
+              <div className="absolute w-full overflow-hidden text-left text-ellipsis whitespace-nowrap">
+                {title}
+              </div>
+            </div>
+            <div className="z-10 mr-1.5 flex justify-end self-center overflow-hidden pl-1 text-xs text-ellipsis whitespace-nowrap text-muted-foreground">
+              {size && `${size} - `}
+              {timeLeft
+                ? `${activity ?? "downloading"} - ${timeLeft}`
+                : activity}
+            </div>
+          </ListItem>
+        }
       />
-      <div className="relative z-10 mr-2 ml-2 h-4 grow self-center text-xs">
-        <div className="absolute w-full overflow-hidden text-left text-ellipsis whitespace-nowrap">
-          {title}
-        </div>
-      </div>
-      <div className="z-10 mr-1.5 flex justify-end self-center overflow-hidden pl-1 text-xs text-ellipsis whitespace-nowrap text-muted-foreground">
-        {size && `${size} - `}
-        {timeLeft ? `${activity ?? "downloading"} - ${timeLeft}` : activity}
-      </div>
-    </ListItem>
+      <TooltipContent side="top" className="max-w-xs text-xs">
+        {tooltipText}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 

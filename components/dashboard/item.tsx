@@ -10,9 +10,10 @@ import {
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { deleteItem } from "@/actions/items"
-import { fetchServiceData } from "@/actions/services"
+import { fetchServiceData, dataToStatus } from "@/actions/services"
+import { pingUrl } from "@/actions/ping"
 import type { ItemRow } from "@/lib/types"
-import type { ServiceData } from "@/lib/adapters/types"
+import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
 import { getService } from "@/lib/adapters"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -27,6 +28,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 // ── Icon ─────────────────────────────────────────────────────────────────────
 
@@ -92,23 +98,40 @@ function ItemIcon({
   )
 }
 
-// ── Status dot ────────────────────────────────────────────────────────────────
+// ── Status dot with tooltip ────────────────────────────────────────────────────
 
-const statusDotClass: Record<string, string> = {
-  ok: "bg-green-500",
-  warn: "bg-amber-400",
+const statusColors: Record<ServiceStatus["state"], string> = {
+  healthy: "bg-green-500",
+  reachable: "bg-amber-400",
+  unreachable: "bg-red-500",
   error: "bg-red-500",
-  loading: "bg-foreground/30 animate-pulse",
+  unknown: "bg-gray-400",
 }
 
-function StatusDot({ status }: { status: string }) {
+const statusLabels: Record<ServiceStatus["state"], string> = {
+  healthy: "Healthy",
+  reachable: "Reachable",
+  unreachable: "Unreachable",
+  error: "Error",
+  unknown: "Unknown",
+}
+
+function StatusDot({ status }: { status: ServiceStatus }) {
+  const color = statusColors[status.state]
+  const label = statusLabels[status.state]
+  const reason = "reason" in status ? status.reason : undefined
+
+  const tooltipContent = reason ? `${label}: ${reason}` : label
+
   return (
-    <span
-      className={cn(
-        "block size-2 rounded-full",
-        statusDotClass[status] ?? "bg-foreground/20"
-      )}
-    />
+    <Tooltip>
+      <TooltipTrigger
+        render={<span className={cn("block size-2 rounded-full", color)} />}
+      />
+      <TooltipContent side="top" className="text-xs">
+        {tooltipContent}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -149,33 +172,35 @@ export function ItemCard({
   const [serviceData, setServiceData] = useState<ServiceData | null>(
     initialData ?? null
   )
-  const [dataError, setDataError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(!initialData)
+  const [pingStatus, setPingStatus] = useState<ServiceStatus | null>(null)
+  const [isLoading, setIsLoading] = useState(!initialData && item.serviceType)
 
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
-  const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 10_000
-  const shouldPoll = !editMode && item.serviceType && serviceDef
+  const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
+  const shouldPollService = !editMode && item.serviceType && serviceDef
+  const shouldPing = !editMode && !item.serviceType && item.href
 
-  // Compute derived state - use initial data when available, otherwise use fetched data
+  // Compute derived state
   const effectiveData = editMode ? null : (initialData ?? serviceData)
   const effectiveLoading = editMode ? false : !initialData && isLoading
-  const effectiveError = editMode ? null : dataError
 
-  // Poll service data when not in edit mode using server action
+  // Compute status from service data or ping
+  const serviceStatus: ServiceStatus = editMode
+    ? { state: "unknown" }
+    : (pingStatus ??
+      (effectiveData ? dataToStatus(effectiveData) : { state: "unknown" }))
+
+  // Poll service data when not in edit mode
   useEffect(() => {
-    if (!shouldPoll) return
+    if (!shouldPollService) return
 
     const poll = async () => {
       try {
         const data = await fetchServiceData(item.id)
         setServiceData(data)
-        setDataError(null)
         setIsLoading(false)
-      } catch (err) {
-        setDataError(
-          err instanceof Error ? err.message : "Failed to fetch data"
-        )
-        setServiceData({ _status: "error" })
+      } catch {
+        setServiceData({ _status: "error", _statusText: "Failed to fetch" })
         setIsLoading(false)
       }
     }
@@ -187,7 +212,21 @@ export function ItemCard({
 
     const interval = setInterval(poll, pollingMs)
     return () => clearInterval(interval)
-  }, [shouldPoll, item.id, pollingMs, initialData])
+  }, [shouldPollService, item.id, pollingMs, initialData])
+
+  // Ping URL for non-service items
+  useEffect(() => {
+    if (!shouldPing) return
+
+    const ping = async () => {
+      const status = await pingUrl(item.href!)
+      setPingStatus(status)
+    }
+
+    ping()
+    const interval = setInterval(ping, pollingMs)
+    return () => clearInterval(interval)
+  }, [shouldPing, item.href, pollingMs])
 
   const {
     attributes,
@@ -212,11 +251,14 @@ export function ItemCard({
   const handleDelete = () => startTransition(() => deleteItem(item.id))
 
   const Widget = serviceDef?.Widget
-  const status = effectiveData?._status ?? (effectiveError ? "error" : null)
 
-  // Don't show widget when in edit mode, no widget exists, or status is error
+  // Don't show widget when in edit mode, no widget exists, or error
   const hasWidget =
-    !editMode && Widget && serviceDef && effectiveData && status !== "error"
+    !editMode &&
+    Widget &&
+    serviceDef &&
+    effectiveData &&
+    serviceStatus.state !== "error"
   const showSkeleton = !editMode && item.serviceType && effectiveLoading
 
   const inner = (
@@ -231,7 +273,7 @@ export function ItemCard({
       {/* Status dot - absolute top right */}
       {!editMode && (
         <div className="absolute top-3 right-3">
-          <StatusDot status={status ?? "loading"} />
+          <StatusDot status={serviceStatus} />
         </div>
       )}
       {/* Main row: drag handle | icon | title */}
@@ -253,7 +295,6 @@ export function ItemCard({
           <p className="truncate text-sm leading-snug font-medium">
             {item.label}
           </p>
-          {/* TODO: description if provided */}
         </div>
       </div>
       {/* Widget below or skeleton */}

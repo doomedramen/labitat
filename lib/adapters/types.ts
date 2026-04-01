@@ -34,6 +34,15 @@ export type ServiceCategory =
   | "productivity"
   | "info"
 
+// ── Service status ──────────────────────────────────────────────────────────────
+
+export type ServiceStatus =
+  | { state: "unknown" }
+  | { state: "healthy"; latencyMs?: number }
+  | { state: "reachable" } // HTTP 200 but no service adapter
+  | { state: "unreachable"; reason: string } // Network error (timeout, refused, DNS)
+  | { state: "error"; reason: string; httpStatus?: number } // HTTP 4xx/5xx or adapter error
+
 // ── Service data ──────────────────────────────────────────────────────────────
 
 export type ServiceData = {
