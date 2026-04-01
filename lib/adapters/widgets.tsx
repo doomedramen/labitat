@@ -118,7 +118,7 @@ export function DownloadItem({
     <Tooltip>
       <TooltipTrigger
         render={
-          <ListItem className="relative m-1 h-5 !gap-0 !p-0">
+          <ListItem className="relative h-5 !gap-0 !p-0">
             <div
               className="absolute z-0 -ml-1 h-5 rounded-md bg-muted"
               style={{
