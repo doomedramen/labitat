@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef, useTransition } from "react"
-import Link from "next/link"
+
 import {
   DndContext,
   DragOverlay,
@@ -24,7 +24,7 @@ import { updateDashboardTitle } from "@/actions/settings"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
 import type { ServiceData } from "@/lib/adapters/types"
 import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Dialog,
