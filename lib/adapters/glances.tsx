@@ -325,13 +325,27 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
           ? uptimeRaw
           : 0
 
+    console.log("[glances] fs response:", JSON.stringify(fsData))
+
     const diskPath = config.diskPath || "/"
-    const diskEntry = Array.isArray(fsData)
-      ? (fsData.find(
-          (d: { mnt_point?: string; mount_point?: string }) =>
-            (d.mnt_point ?? d.mount_point) === diskPath
-        ) ?? fsData[0])
-      : null
+    // fsData may be an array of objects or an object keyed by mount point
+    const fsList: unknown[] = Array.isArray(fsData)
+      ? fsData
+      : typeof fsData === "object" && fsData !== null
+        ? Object.values(fsData)
+        : []
+    type FsEntry = {
+      mnt_point?: string
+      mount_point?: string
+      percent?: number
+      used?: number
+      size?: number
+      total?: number
+    }
+    const diskEntry =
+      (fsList as FsEntry[]).find(
+        (d) => (d.mnt_point ?? d.mount_point) === diskPath
+      ) ?? (fsList[0] as FsEntry | undefined)
 
     return {
       _status: "ok" as const,

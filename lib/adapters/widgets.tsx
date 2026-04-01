@@ -120,7 +120,7 @@ export function DownloadItem({
         render={
           <ListItem className="relative h-5 !gap-0 !p-0">
             <div
-              className="absolute z-0 -ml-1 h-5 rounded-md bg-muted"
+              className="absolute z-0 h-5 rounded-md bg-muted"
               style={{
                 width: `${Math.min(100, Math.max(0, progress))}%`,
               }}
