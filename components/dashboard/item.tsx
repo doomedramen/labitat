@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition, useState, useEffect, useCallback } from "react"
+import { useTransition, useState, useEffect } from "react"
 import {
   GlobeIcon,
   GripVerticalIcon,
