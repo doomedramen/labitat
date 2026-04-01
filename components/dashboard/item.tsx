@@ -187,7 +187,7 @@ export function ItemCard({
   const shouldPing = !editMode && !item.serviceType && item.href
 
   // Compute derived state
-  const effectiveData = editMode ? null : (initialData ?? serviceData)
+  const effectiveData = editMode ? null : (serviceData ?? initialData)
   const effectiveLoading = editMode ? false : !initialData && isLoading
 
   // Compute status from service data or ping

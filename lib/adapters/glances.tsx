@@ -76,6 +76,12 @@ function GlancesWidget({
     return "text-red-500"
   }
 
+  const getTempColor = (celsius: number) => {
+    if (celsius < 70) return "text-green-500"
+    if (celsius < 85) return "text-amber-500"
+    return "text-red-500"
+  }
+
   const stats = [
     showCpu &&
       cpuPercent !== undefined && {
@@ -95,10 +101,10 @@ function GlancesWidget({
       },
     showCpuTemp &&
       cpuTemp !== undefined && {
-        icon: <Thermometer className="size-3 text-muted-foreground" />,
+        icon: <Thermometer className={`size-3 ${getTempColor(cpuTemp)}`} />,
         value: `${cpuTemp.toFixed(1)}°C`,
         label: "Temp",
-        color: "text-foreground",
+        color: getTempColor(cpuTemp),
       },
     showDisk &&
       diskPercent !== undefined && {

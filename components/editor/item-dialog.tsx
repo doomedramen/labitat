@@ -349,22 +349,25 @@ export function ItemDialog({
 
             {serviceDef && (
               <div className="flex flex-col gap-2">
-                <Label htmlFor="item-polling">Polling Interval (ms)</Label>
+                <Label htmlFor="item-polling">Polling Interval (seconds)</Label>
                 <Input
                   id="item-polling"
                   name="pollingMs"
                   type="number"
-                  defaultValue={
-                    existingItem?.pollingMs ??
-                    serviceDef.defaultPollingMs ??
-                    10000
-                  }
-                  placeholder={String(serviceDef.defaultPollingMs ?? 10000)}
+                  min="1"
+                  defaultValue={Math.round(
+                    (existingItem?.pollingMs ??
+                      serviceDef.defaultPollingMs ??
+                      10000) / 1000
+                  )}
+                  placeholder={String(
+                    Math.round((serviceDef.defaultPollingMs ?? 10000) / 1000)
+                  )}
                   data-testid="item-polling-input"
                 />
                 <p className="text-xs text-muted-foreground">
                   How often to refresh data (default:{" "}
-                  {serviceDef.defaultPollingMs ?? 10000}ms)
+                  {Math.round((serviceDef.defaultPollingMs ?? 10000) / 1000)}s)
                 </p>
               </div>
             )}

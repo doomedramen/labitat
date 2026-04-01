@@ -78,7 +78,7 @@ export async function createItem(groupId: string, formData: FormData) {
   const nextOrder = (result?.maxOrder ?? -1) + 1
 
   const pollingMsStr = formData.get("pollingMs") as string
-  const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) : null
+  const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) * 1000 : null
 
   await db.insert(items).values({
     id: nanoid(),
@@ -108,7 +108,7 @@ export async function updateItem(id: string, formData: FormData) {
   )
 
   const pollingMsStr = formData.get("pollingMs") as string
-  const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) : null
+  const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) * 1000 : null
 
   await db
     .update(items)
