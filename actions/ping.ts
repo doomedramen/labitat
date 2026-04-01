@@ -13,8 +13,8 @@ export async function pingUrl(url: string): Promise<ServiceStatus> {
       redirect: "follow",
     })
 
-    // Some servers (e.g. Proxmox) reject HEAD — retry with GET
-    if (res.status === 405 || res.status === 501) {
+    // Many servers (Proxmox, PBS, etc.) reject HEAD with 4xx — retry with GET
+    if (!res.ok) {
       const getController = new AbortController()
       const getTimeout = setTimeout(() => getController.abort(), 5000)
       res = await fetch(url, {
