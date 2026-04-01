@@ -94,42 +94,11 @@ export const datetimeDefinition: ServiceDefinition<DateTimeData> = {
   ],
 
   async fetchData(config) {
-    const timeZone = config.timeZone || undefined
-    const now = new Date()
-
-    let displayTimeZone: string
-    let displayTimeZoneOffset: string
-
-    if (timeZone) {
-      // Validate time zone
-      const options: Intl.DateTimeFormatOptions = {
-        timeZone,
-        timeZoneName: "short",
-      }
-      const formatter = new Intl.DateTimeFormat("en-US", options)
-      const parts = formatter.formatToParts(now)
-      const timeZoneNamePart = parts.find((p) => p.type === "timeZoneName")
-
-      if (!timeZoneNamePart) {
-        throw new Error(`Invalid time zone: ${timeZone}`)
-      }
-
-      displayTimeZone = timeZone
-      displayTimeZoneOffset = timeZoneNamePart.value
-    } else {
-      // Use local time
-      displayTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-      const offset = -now.getTimezoneOffset()
-      const offsetHours = Math.floor(Math.abs(offset) / 60)
-      const offsetMinutes = Math.abs(offset) % 60
-      const sign = offset >= 0 ? "+" : "-"
-      displayTimeZoneOffset = `UTC${sign}${offsetHours.toString().padStart(2, "0")}:${offsetMinutes.toString().padStart(2, "0")}`
-    }
-
+    // Minimal server-side work - widget handles all formatting client-side
     return {
-      _status: "none" as const, // Static config - widget updates client-side
-      timeZone: displayTimeZone,
-      timeZoneOffset: displayTimeZoneOffset,
+      _status: "none" as const,
+      timeZone: config.timeZone || "",
+      timeZoneOffset: "",
     }
   },
 
