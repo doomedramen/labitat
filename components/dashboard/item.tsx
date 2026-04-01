@@ -188,6 +188,8 @@ export function ItemCard({
   const effectiveLoading = editMode ? false : !initialData && isLoading
 
   // Compute status from service data or ping
+  // Only show status if item has href (for ping) or service with fetchData
+  const hasStatus = item.href || (serviceDef && serviceDef.fetchData)
   const serviceStatus: ServiceStatus = editMode
     ? { state: "unknown" }
     : (pingStatus ??
@@ -313,8 +315,8 @@ export function ItemCard({
       data-testid="item-card"
       data-item-id={item.id}
     >
-      {/* Status dot - absolute top right */}
-      {!editMode && (
+      {/* Status dot - absolute top right - only show if item has href or service with fetchData */}
+      {!editMode && hasStatus && (
         <div className="absolute top-3 right-3">
           <StatusDot status={serviceStatus} />
         </div>
