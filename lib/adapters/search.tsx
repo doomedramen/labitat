@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { Search, ArrowRight } from "lucide-react"
 
 type SearchData = {
   _status?: "ok" | "warn" | "error" | "none"
@@ -43,7 +44,7 @@ const searchEngines: Record<string, { url: string; placeholder: string }> = {
   },
 }
 
-function SearchWidget({ searchEngine, searchUrl, placeholder }: SearchData) {
+function SearchWidget({ searchUrl, placeholder }: SearchData) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = e.currentTarget
@@ -58,18 +59,22 @@ function SearchWidget({ searchEngine, searchUrl, placeholder }: SearchData) {
   return (
     <form onSubmit={handleSubmit} className="py-1">
       <div className="flex gap-1">
-        <input
-          type="text"
-          name="search"
-          placeholder={placeholder}
-          className="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none focus:border-ring focus:ring-1 focus:ring-ring"
-          autoComplete="off"
-        />
+        <div className="relative flex-1">
+          <Search className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            name="search"
+            placeholder={placeholder}
+            className="w-full rounded-md border border-input bg-background py-1.5 pr-2 pl-7 text-xs outline-none focus:border-ring focus:ring-1 focus:ring-ring"
+            autoComplete="off"
+          />
+        </div>
         <button
           type="submit"
-          className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          className="flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          Search
+          <ArrowRight className="size-3" />
+          <span>Go</span>
         </button>
       </div>
     </form>

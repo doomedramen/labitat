@@ -1,4 +1,18 @@
 import type { ServiceDefinition } from "./types"
+import {
+  Sun,
+  Cloud,
+  CloudSun,
+  CloudRain,
+  CloudSnow,
+  CloudLightning,
+  CloudFog,
+  Wind,
+  Droplets,
+  Thermometer,
+  Gauge,
+  Cloudy,
+} from "lucide-react"
 
 type OpenWeatherMapData = {
   _status?: "ok" | "warn" | "error"
@@ -7,10 +21,49 @@ type OpenWeatherMapData = {
   feelsLike: number
   weatherDescription: string
   weatherIcon: string
+  weatherMain?: string
   humidity: number
   pressure: number
   windSpeed: number
   cloudiness: number
+}
+
+function getWeatherIcon(main?: string, icon?: string, description?: string) {
+  const iconClass = "size-12 text-foreground"
+  const mainLower = main?.toLowerCase() || ""
+
+  // Use OpenWeatherMap's main weather type
+  switch (mainLower) {
+    case "clear":
+      return <Sun className={iconClass} />
+    case "clouds":
+      return <Cloud className={iconClass} />
+    case "rain":
+    case "drizzle":
+      return <CloudRain className={iconClass} />
+    case "snow":
+      return <CloudSnow className={iconClass} />
+    case "thunderstorm":
+      return <CloudLightning className={iconClass} />
+    case "mist":
+    case "fog":
+    case "haze":
+    case "smoke":
+    case "dust":
+      return <CloudFog className={iconClass} />
+    default:
+      // Fallback to OpenWeatherMap icon if available
+      if (icon) {
+        return (
+          <img
+            src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+            alt={description || "Weather"}
+            className="size-12"
+          />
+        )
+      }
+      return <Thermometer className={iconClass} />
+  }
 }
 
 function OpenWeatherMapWidget({
@@ -18,6 +71,7 @@ function OpenWeatherMapWidget({
   feelsLike,
   weatherDescription,
   weatherIcon,
+  weatherMain,
   humidity,
   pressure,
   windSpeed,
@@ -26,13 +80,7 @@ function OpenWeatherMapWidget({
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
-        {weatherIcon && (
-          <img
-            src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`}
-            alt={weatherDescription}
-            className="size-12"
-          />
-        )}
+        {getWeatherIcon(weatherMain, weatherIcon, weatherDescription)}
         <div className="flex flex-col">
           <div className="text-3xl font-bold text-foreground tabular-nums">
             {temperature.toFixed(1)}°C
@@ -49,24 +97,28 @@ function OpenWeatherMapWidget({
 
       <div className="grid grid-cols-4 gap-2 text-xs">
         <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
+          <Droplets className="mb-0.5 size-3 text-muted-foreground" />
           <span className="font-medium text-foreground tabular-nums">
             {humidity}%
           </span>
           <span className="text-muted-foreground">Humidity</span>
         </div>
         <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
+          <Gauge className="mb-0.5 size-3 text-muted-foreground" />
           <span className="font-medium text-foreground tabular-nums">
             {pressure}
           </span>
           <span className="text-muted-foreground">hPa</span>
         </div>
         <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
+          <Wind className="mb-0.5 size-3 text-muted-foreground" />
           <span className="font-medium text-foreground tabular-nums">
             {windSpeed.toFixed(1)}
           </span>
           <span className="text-muted-foreground">m/s</span>
         </div>
         <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
+          <Cloudy className="mb-0.5 size-3 text-muted-foreground" />
           <span className="font-medium text-foreground tabular-nums">
             {cloudiness}%
           </span>
@@ -155,6 +207,7 @@ export const openweathermapDefinition: ServiceDefinition<OpenWeatherMapData> = {
       feelsLike: main?.feels_like ?? 0,
       weatherDescription: weather?.description ?? "Unknown",
       weatherIcon: weather?.icon ?? "",
+      weatherMain: weather?.main,
       humidity: main?.humidity ?? 0,
       pressure: main?.pressure ?? 0,
       windSpeed: data.wind?.speed ?? 0,

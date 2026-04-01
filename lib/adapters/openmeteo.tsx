@@ -1,5 +1,17 @@
 import { fetchWeatherApi } from "openmeteo"
 import type { ServiceDefinition } from "./types"
+import {
+  Sun,
+  Cloud,
+  CloudSun,
+  CloudRain,
+  CloudSnow,
+  CloudLightning,
+  CloudFog,
+  Wind,
+  Droplets,
+  Thermometer,
+} from "lucide-react"
 
 type OpenMeteoData = {
   _status?: "ok" | "warn" | "error"
@@ -55,25 +67,90 @@ function getWeatherDescription(code: number, isDay: 0 | 1): string {
   return isDay === 1 ? weather.day : weather.night
 }
 
+function getWeatherIcon(code: number, isDay: 0 | 1) {
+  const iconClass = "size-10 text-foreground"
+
+  // Clear sky
+  if (code === 0) {
+    return isDay === 1 ? (
+      <Sun className={iconClass} />
+    ) : (
+      <CloudSun className={iconClass} />
+    )
+  }
+
+  // Mainly clear, partly cloudy
+  if (code === 1 || code === 2) {
+    return isDay === 1 ? (
+      <CloudSun className={iconClass} />
+    ) : (
+      <Cloud className={iconClass} />
+    )
+  }
+
+  // Overcast
+  if (code === 3) {
+    return <Cloud className={iconClass} />
+  }
+
+  // Fog
+  if (code === 45 || code === 48) {
+    return <CloudFog className={iconClass} />
+  }
+
+  // Drizzle
+  if (code >= 51 && code <= 57) {
+    return <CloudRain className={iconClass} />
+  }
+
+  // Rain
+  if (code >= 61 && code <= 67) {
+    return <CloudRain className={iconClass} />
+  }
+
+  // Snow
+  if (code >= 71 && code <= 86) {
+    return <CloudSnow className={iconClass} />
+  }
+
+  // Thunderstorm
+  if (code >= 95) {
+    return <CloudLightning className={iconClass} />
+  }
+
+  return <Thermometer className={iconClass} />
+}
+
 function OpenMeteoWidget({
   temperature,
+  weatherCode,
   weatherDescription,
   windSpeed,
   humidity,
+  isDay,
 }: OpenMeteoData) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
-        <div className="text-3xl font-bold text-foreground tabular-nums">
-          {temperature.toFixed(1)}°C
-        </div>
-        <div className="flex flex-col text-xs">
-          <span className="font-medium text-foreground">
+        {getWeatherIcon(weatherCode, isDay)}
+        <div className="flex flex-col">
+          <div className="text-3xl font-bold text-foreground tabular-nums">
+            {temperature.toFixed(1)}°C
+          </div>
+          <div className="text-xs text-muted-foreground">
             {weatherDescription}
-          </span>
-          <span className="text-muted-foreground">
-            Wind: {windSpeed.toFixed(1)} km/h • Humidity: {humidity}%
-          </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <Wind className="size-3" />
+          <span className="tabular-nums">{windSpeed.toFixed(1)} km/h</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Droplets className="size-3" />
+          <span className="tabular-nums">{humidity}%</span>
         </div>
       </div>
     </div>

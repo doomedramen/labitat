@@ -1,4 +1,13 @@
 import type { ServiceDefinition } from "./types"
+import {
+  Cpu,
+  MemoryStick,
+  HardDrive,
+  Clock,
+  Activity,
+  Download,
+  Upload,
+} from "lucide-react"
 
 type GlancesData = {
   _status?: "ok" | "warn" | "error"
@@ -49,6 +58,7 @@ function GlancesWidget({
     <div className="space-y-2">
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1.5 text-center">
+          <Cpu className={`mb-0.5 size-3 ${getStatusColor(cpuPercent)}`} />
           <span
             className={`font-medium tabular-nums ${getStatusColor(cpuPercent)}`}
           >
@@ -57,6 +67,9 @@ function GlancesWidget({
           <span className="text-muted-foreground">CPU</span>
         </div>
         <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1.5 text-center">
+          <MemoryStick
+            className={`mb-0.5 size-3 ${getStatusColor(memoryPercent)}`}
+          />
           <span
             className={`font-medium tabular-nums ${getStatusColor(memoryPercent)}`}
           >
@@ -65,6 +78,9 @@ function GlancesWidget({
           <span className="text-muted-foreground">RAM</span>
         </div>
         <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1.5 text-center">
+          <HardDrive
+            className={`mb-0.5 size-3 ${getStatusColor(diskPercent)}`}
+          />
           <span
             className={`font-medium tabular-nums ${getStatusColor(diskPercent)}`}
           >
@@ -75,20 +91,32 @@ function GlancesWidget({
       </div>
 
       <div className="flex items-center justify-between gap-2 text-xs">
-        <span className="text-muted-foreground">
-          Uptime: {formatUptime(uptime)}
-        </span>
+        <div className="flex items-center gap-1 text-muted-foreground">
+          <Clock className="size-3" />
+          <span>Uptime: {formatUptime(uptime)}</span>
+        </div>
         {load && load.length > 0 && (
-          <span className="text-muted-foreground">
-            Load: {load.map((l) => l.toFixed(2)).join(" / ")}
-          </span>
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Activity className="size-3" />
+            <span>Load: {load.map((l) => l.toFixed(2)).join(" / ")}</span>
+          </div>
         )}
       </div>
 
       {(networkRx !== undefined || networkTx !== undefined) && (
         <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-          {networkRx !== undefined && <span>Rx: {formatBytes(networkRx)}</span>}
-          {networkTx !== undefined && <span>Tx: {formatBytes(networkTx)}</span>}
+          {networkRx !== undefined && (
+            <div className="flex items-center gap-1">
+              <Download className="size-3" />
+              <span>Rx: {formatBytes(networkRx)}</span>
+            </div>
+          )}
+          {networkTx !== undefined && (
+            <div className="flex items-center gap-1">
+              <Upload className="size-3" />
+              <span>Tx: {formatBytes(networkTx)}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

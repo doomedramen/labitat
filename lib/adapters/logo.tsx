@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { ExternalLink } from "lucide-react"
 
 type LogoData = {
   _status?: "ok" | "warn" | "error" | "none"
@@ -10,13 +11,14 @@ type LogoData = {
 
 function LogoWidget({ imageUrl, linkUrl, altText }: LogoData) {
   const content = (
-    <div className="flex items-center justify-center py-2">
+    <div className="flex items-center justify-center gap-2 py-2">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={imageUrl}
         alt={altText || "Logo"}
         className="max-h-16 w-auto object-contain"
       />
+      {linkUrl && <ExternalLink className="size-4 text-muted-foreground" />}
     </div>
   )
 

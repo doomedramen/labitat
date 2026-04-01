@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { Clock, Calendar, Globe } from "lucide-react"
 
 type DateTimeData = {
   _status?: "ok" | "warn" | "error"
@@ -11,19 +12,25 @@ type DateTimeData = {
 }
 
 function DateTimeWidget({
-  dateTime,
   date,
   time,
   timeZone,
   timeZoneOffset,
 }: DateTimeData) {
   return (
-    <div className="space-y-1 text-center">
-      <div className="text-2xl font-bold text-foreground tabular-nums">
-        {time}
+    <div className="space-y-2">
+      <div className="flex items-center justify-center gap-2">
+        <Clock className="size-5 text-muted-foreground" />
+        <div className="text-2xl font-bold text-foreground tabular-nums">
+          {time}
+        </div>
       </div>
-      <div className="text-xs font-medium text-foreground">{date}</div>
-      <div className="text-xs text-muted-foreground">
+      <div className="flex items-center justify-center gap-1 text-xs font-medium text-foreground">
+        <Calendar className="size-3 text-muted-foreground" />
+        {date}
+      </div>
+      <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+        <Globe className="size-3" />
         {timeZone} ({timeZoneOffset})
       </div>
     </div>
