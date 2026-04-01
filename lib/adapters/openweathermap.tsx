@@ -1,5 +1,6 @@
 import Image from "next/image"
 import type { ServiceDefinition } from "./types"
+import { StatGrid } from "./widgets"
 import {
   Sun,
   Cloud,
@@ -95,36 +96,31 @@ function OpenWeatherMapWidget({
         {weatherDescription}
       </div>
 
-      <div className="grid grid-cols-4 gap-2 text-xs">
-        <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
-          <Droplets className="mb-0.5 size-3 text-muted-foreground" />
-          <span className="font-medium text-foreground tabular-nums">
-            {humidity}%
-          </span>
-          <span className="text-muted-foreground">Humidity</span>
-        </div>
-        <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
-          <Gauge className="mb-0.5 size-3 text-muted-foreground" />
-          <span className="font-medium text-foreground tabular-nums">
-            {pressure}
-          </span>
-          <span className="text-muted-foreground">hPa</span>
-        </div>
-        <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
-          <Wind className="mb-0.5 size-3 text-muted-foreground" />
-          <span className="font-medium text-foreground tabular-nums">
-            {windSpeed.toFixed(1)}
-          </span>
-          <span className="text-muted-foreground">m/s</span>
-        </div>
-        <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
-          <Cloudy className="mb-0.5 size-3 text-muted-foreground" />
-          <span className="font-medium text-foreground tabular-nums">
-            {cloudiness}%
-          </span>
-          <span className="text-muted-foreground">Clouds</span>
-        </div>
-      </div>
+      <StatGrid
+        cols={4}
+        items={[
+          {
+            icon: <Droplets className="size-3 text-muted-foreground" />,
+            value: `${humidity}%`,
+            label: "Humidity",
+          },
+          {
+            icon: <Gauge className="size-3 text-muted-foreground" />,
+            value: pressure,
+            label: "hPa",
+          },
+          {
+            icon: <Wind className="size-3 text-muted-foreground" />,
+            value: `${windSpeed.toFixed(1)}`,
+            label: "m/s",
+          },
+          {
+            icon: <Cloudy className="size-3 text-muted-foreground" />,
+            value: `${cloudiness}%`,
+            label: "Clouds",
+          },
+        ]}
+      />
     </div>
   )
 }

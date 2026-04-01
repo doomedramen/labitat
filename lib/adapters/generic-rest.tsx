@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { StatGrid } from "./widgets"
 
 type GenericRestData = {
   _status?: "ok" | "warn" | "error"
@@ -8,16 +9,7 @@ type GenericRestData = {
 }
 
 function GenericRestWidget({ value, label }: GenericRestData) {
-  return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
-      <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center">
-        <span className="font-medium text-foreground tabular-nums">
-          {value}
-        </span>
-        <span className="text-muted-foreground">{label}</span>
-      </div>
-    </div>
-  )
+  return <StatGrid items={[{ value, label }]} />
 }
 
 export const genericRestDefinition: ServiceDefinition<GenericRestData> = {

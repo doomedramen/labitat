@@ -5,6 +5,7 @@
  * These provide consistent styling across different services.
  */
 
+import { cn } from "@/lib/utils"
 import { List, ListItem } from "@/components/ui/list"
 import { Clock, Pause, Play } from "lucide-react"
 import {
@@ -12,6 +13,66 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+
+// ── Stat grid ─────────────────────────────────────────────────────────────────
+
+export type StatItem = {
+  value: string | number
+  label: string
+  /** Optional lucide icon rendered above the value */
+  icon?: React.ReactNode
+  /** Tailwind class for the value colour, e.g. "text-green-500". Defaults to text-foreground */
+  valueClassName?: string
+}
+
+/**
+ * A single stat tile: optional icon, value, label.
+ */
+export function StatCard({ value, label, icon, valueClassName }: StatItem) {
+  return (
+    <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1.5 text-center">
+      {icon && <div className="mb-0.5">{icon}</div>}
+      <span
+        className={cn(
+          "font-medium tabular-nums",
+          valueClassName ?? "text-foreground"
+        )}
+      >
+        {value}
+      </span>
+      <span className="text-muted-foreground">{label}</span>
+    </div>
+  )
+}
+
+/**
+ * Responsive grid of StatCards. Defaults to auto-fit columns (min 60px).
+ * Pass `cols` to fix the number of columns (useful when wrapping to 2 rows).
+ */
+export function StatGrid({
+  items,
+  cols,
+}: {
+  items: StatItem[]
+  cols?: number
+}) {
+  if (items.length === 0) return null
+
+  return (
+    <div
+      className="grid gap-1.5 text-xs"
+      style={{
+        gridTemplateColumns: cols
+          ? `repeat(${cols}, 1fr)`
+          : "repeat(auto-fit, minmax(60px, 1fr))",
+      }}
+    >
+      {items.map((item) => (
+        <StatCard key={item.label} {...item} />
+      ))}
+    </div>
+  )
+}
 
 export type ActiveStream = {
   /** Full display title (e.g., "Show: S01 - Episode Title") */

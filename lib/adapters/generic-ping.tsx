@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { cn } from "@/lib/utils"
+import { StatGrid } from "./widgets"
 
 type GenericPingData = {
   _status?: "ok" | "warn" | "error"
@@ -9,34 +9,21 @@ type GenericPingData = {
 }
 
 function GenericPingWidget({ status, responseTime }: GenericPingData) {
+  const isOnline = status === "up"
   const items = [
     {
-      value: status === "up" ? "✓" : "✗",
-      label: status === "up" ? "Online" : "Offline",
+      value: isOnline ? "✓" : "✗",
+      label: isOnline ? "Online" : "Offline",
+      valueClassName: isOnline ? "text-green-500" : "text-red-500",
     },
-    { value: `${responseTime}ms`, label: "Response" },
+    {
+      value: `${responseTime}ms`,
+      label: "Response",
+      valueClassName: isOnline ? "text-green-500" : "text-red-500",
+    },
   ]
 
-  return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center"
-        >
-          <span
-            className={cn(
-              "font-medium tabular-nums",
-              status === "up" ? "text-green-500" : "text-red-500"
-            )}
-          >
-            {item.value}
-          </span>
-          <span className="text-muted-foreground">{item.label}</span>
-        </div>
-      ))}
-    </div>
-  )
+  return <StatGrid items={items} />
 }
 
 export const genericPingDefinition: ServiceDefinition<GenericPingData> = {

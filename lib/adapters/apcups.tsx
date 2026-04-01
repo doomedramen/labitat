@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import { getApcupsStatus } from "../actions/apcups"
+import { StatGrid } from "./widgets"
 
 type ApcupsData = {
   _status?: "ok" | "warn" | "error"
@@ -21,21 +22,7 @@ function ApcupsWidget({ status, load, charge, timeLeft }: ApcupsData) {
     },
   ]
 
-  return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5 text-xs">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1 text-center"
-        >
-          <span className="font-medium text-foreground tabular-nums">
-            {item.value}
-          </span>
-          <span className="text-muted-foreground">{item.label}</span>
-        </div>
-      ))}
-    </div>
-  )
+  return <StatGrid items={items} />
 }
 
 export const apcupsDefinition: ServiceDefinition<ApcupsData> = {

@@ -18,6 +18,7 @@ import { deleteGroup } from "@/actions/groups"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import { ItemCard } from "./item"
 import { WidgetErrorBoundary } from "./error-boundary"
 import {
@@ -63,9 +64,9 @@ export function Group({
     return false
   })
 
-  const toggleCollapse = () => {
+  const handleOpenChange = (open: boolean) => {
     setCollapsed((prev) => {
-      const next = !prev
+      const next = !open
       try {
         const stored = localStorage.getItem("labitat-collapsed-groups")
         const ids: string[] = stored ? JSON.parse(stored) : []
@@ -104,15 +105,18 @@ export function Group({
   const itemIds = group.items.map((i) => i.id)
 
   return (
-    <section
+    <Collapsible
       ref={setNodeRef}
       style={style}
-      aria-label={group.name}
-      data-testid="group"
+      open={!collapsed}
+      onOpenChange={handleOpenChange}
+      className="space-y-3"
       data-group-id={group.id}
+      data-testid="group"
+      aria-label={group.name}
     >
       {/* Group header */}
-      <div className="mb-3 flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5">
         {editMode ? (
           <button
             ref={setActivatorNodeRef}
@@ -126,8 +130,8 @@ export function Group({
           </button>
         ) : (
           <button
-            onClick={toggleCollapse}
-            className="text-muted-foreground/40 hover:text-muted-foreground"
+            onClick={() => setCollapsed((prev) => !prev)}
+            className="flex items-center gap-1.5 text-muted-foreground/40 hover:text-muted-foreground"
             aria-label={collapsed ? "Expand group" : "Collapse group"}
           >
             <ChevronDownIcon
@@ -136,15 +140,14 @@ export function Group({
                 collapsed && "-rotate-90"
               )}
             />
+            <h2
+              className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+              data-testid="group-name"
+            >
+              {group.name}
+            </h2>
           </button>
         )}
-
-        <h2
-          className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
-          data-testid="group-name"
-        >
-          {group.name}
-        </h2>
 
         {editMode && (
           <>
@@ -203,13 +206,8 @@ export function Group({
       </div>
 
       {/* Items grid — collapsible in view mode */}
-      <div
-        className={cn(
-          "grid transition-[grid-template-rows] duration-200",
-          collapsed && !editMode ? "grid-rows-[0fr]" : "grid-rows-[1fr]"
-        )}
-      >
-        <div className="overflow-hidden p-0.5">
+      <CollapsibleContent className="overflow-hidden">
+        <div className="p-0.5">
           <SortableContext items={itemIds} strategy={rectSortingStrategy}>
             <div
               data-group-id={group.id}
@@ -241,8 +239,8 @@ export function Group({
             </div>
           </SortableContext>
         </div>
-      </div>
-    </section>
+      </CollapsibleContent>
+    </Collapsible>
   )
 }
 

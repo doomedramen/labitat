@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { StatGrid, type StatItem } from "./widgets"
 import {
   Cpu,
   MemoryStick,
@@ -80,13 +81,13 @@ function GlancesWidget({
     return "text-red-500"
   }
 
-  const stats = [
+  const stats: StatItem[] = [
     showCpu &&
       cpuPercent !== undefined && {
         icon: <Cpu className={`size-3 ${getStatusColor(cpuPercent)}`} />,
         value: `${cpuPercent.toFixed(1)}%`,
         label: "CPU",
-        color: getStatusColor(cpuPercent),
+        valueClassName: getStatusColor(cpuPercent),
       },
     showMem &&
       memoryPercent !== undefined && {
@@ -95,80 +96,49 @@ function GlancesWidget({
         ),
         value: `${memoryPercent.toFixed(1)}%`,
         label: "RAM",
-        color: getStatusColor(memoryPercent),
+        valueClassName: getStatusColor(memoryPercent),
       },
     showCpuTemp &&
       cpuTemp !== undefined && {
         icon: <Thermometer className={`size-3 ${getTempColor(cpuTemp)}`} />,
         value: `${cpuTemp.toFixed(1)}°C`,
         label: "Temp",
-        color: getTempColor(cpuTemp),
+        valueClassName: getTempColor(cpuTemp),
       },
     showDisk &&
       diskPercent !== undefined && {
         icon: <HardDrive className={`size-3 ${getStatusColor(diskPercent)}`} />,
         value: `${diskPercent.toFixed(1)}%`,
         label: "Disk",
-        color: getStatusColor(diskPercent),
+        valueClassName: getStatusColor(diskPercent),
       },
     showUptime &&
       uptime !== undefined && {
         icon: <Clock className="size-3 text-muted-foreground" />,
         value: formatUptime(uptime),
         label: "Uptime",
-        color: "text-foreground",
       },
     load &&
       load.length > 0 && {
         icon: <Activity className="size-3 text-muted-foreground" />,
         value: load[0].toFixed(2),
         label: "Load",
-        color: "text-foreground",
       },
     showNetwork &&
       networkRx !== undefined && {
         icon: <Download className="size-3 text-muted-foreground" />,
         value: formatBytes(networkRx),
         label: "Rx",
-        color: "text-foreground",
       },
     showNetwork &&
       networkTx !== undefined && {
         icon: <Upload className="size-3 text-muted-foreground" />,
         value: formatBytes(networkTx),
         label: "Tx",
-        color: "text-foreground",
       },
-  ].filter(Boolean) as Array<{
-    icon: React.ReactNode
-    value: string
-    label: string
-    color: string
-  }>
+  ].filter(Boolean) as StatItem[]
 
-  if (stats.length === 0) return null
-
-  const cols = Math.min(stats.length, 4)
-
-  return (
-    <div
-      className="grid gap-1.5 text-xs"
-      style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
-    >
-      {stats.map((stat) => (
-        <div
-          key={stat.label}
-          className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1.5 text-center"
-        >
-          <div className="mb-0.5">{stat.icon}</div>
-          <span className={`font-medium tabular-nums ${stat.color}`}>
-            {stat.value}
-          </span>
-          <span className="text-muted-foreground">{stat.label}</span>
-        </div>
-      ))}
-    </div>
-  )
+  return <StatGrid items={stats} cols={Math.min(stats.length, 4)} />
 }
 
 export const glancesDefinition: ServiceDefinition<GlancesData> = {
