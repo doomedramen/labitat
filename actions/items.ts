@@ -63,8 +63,7 @@ async function buildServiceConfig(
 export async function createItem(groupId: string, formData: FormData) {
   await requireAuth()
 
-  const label = (formData.get("label") as string).trim()
-  if (!label) throw new Error("Label is required")
+  const label = (formData.get("label") as string | null)?.trim() ?? ""
 
   const serviceType = (formData.get("serviceType") as string) || null
   const { configEnc, serviceUrl } = await buildServiceConfig(
@@ -100,8 +99,7 @@ export async function createItem(groupId: string, formData: FormData) {
 export async function updateItem(id: string, formData: FormData) {
   await requireAuth()
 
-  const label = (formData.get("label") as string).trim()
-  if (!label) throw new Error("Label is required")
+  const label = (formData.get("label") as string | null)?.trim() ?? ""
 
   const serviceType = (formData.get("serviceType") as string) || null
   const { configEnc, serviceUrl } = await buildServiceConfig(

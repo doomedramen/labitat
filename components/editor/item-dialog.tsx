@@ -13,12 +13,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
 import {
   Combobox,
-  ComboboxCollection,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxGroup,
@@ -28,7 +27,6 @@ import {
   ComboboxList,
   ComboboxSeparator,
 } from "@/components/ui/combobox"
-import { CheckIcon } from "lucide-react"
 import { FieldRenderer } from "./field-renderer"
 
 type ItemDialogProps = {
@@ -53,6 +51,7 @@ export function ItemDialog({
     {}
   )
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
+  const [showIcon, setShowIcon] = useState(existingItem?.iconUrl !== "none")
   const isEdit = existingItem !== null
 
   // Separate services into general widgets and service widgets
@@ -82,25 +81,21 @@ export function ItemDialog({
       ].includes(s.id)
   )
 
-  // Grouped structure for Combobox with groups
-  const groupedItems = [
-    { value: "general", items: generalWidgets },
-    { value: "services", items: serviceWidgets },
-  ].filter((g) => g.items.length > 0)
-
   // Initialize state when dialog opens
   useEffect(() => {
     if (!open) return
 
     const init = async () => {
       // Convert service type ID to service object
+      const services = getAllServices()
       const service = existingItem?.serviceType
-        ? allServices.find((s) => s.id === existingItem.serviceType) || null
+        ? services.find((s) => s.id === existingItem.serviceType) || null
         : null
       setSelectedService(service)
       setConfigValues({})
       setBooleanValues({})
       setIsLoadingConfig(false)
+      setShowIcon(existingItem?.iconUrl !== "none")
 
       // Load decrypted config when editing an existing item
       if (existingItem?.id && existingItem?.serviceType) {
@@ -124,13 +119,8 @@ export function ItemDialog({
       }
     }
     init()
-  }, [
-    open,
-    existingItem?.id,
-    existingItem?.serviceType,
-    existingItem,
-    allServices,
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, existingItem?.id, existingItem?.serviceType])
 
   const serviceDef = selectedService
 
@@ -203,7 +193,6 @@ export function ItemDialog({
                 defaultValue={existingItem?.label ?? ""}
                 placeholder="e.g. Sonarr"
                 autoFocus
-                required
                 data-testid="item-label-input"
               />
             </div>
@@ -221,26 +210,43 @@ export function ItemDialog({
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="item-icon">Icon</Label>
-              <Input
-                id="item-icon"
-                name="iconUrl"
-                defaultValue={existingItem?.iconUrl ?? ""}
-                placeholder="sonarr  or  https://…/icon.svg"
-                data-testid="item-icon-input"
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter a{" "}
-                <a
-                  href="https://selfh.st/icons"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline underline-offset-2"
-                >
-                  selfh.st
-                </a>{" "}
-                slug or a full image URL
-              </p>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="item-show-icon"
+                  checked={showIcon}
+                  onCheckedChange={(v) => setShowIcon(!!v)}
+                />
+                <Label htmlFor="item-show-icon">Show icon</Label>
+              </div>
+              {showIcon ? (
+                <>
+                  <Input
+                    id="item-icon"
+                    name="iconUrl"
+                    defaultValue={
+                      existingItem?.iconUrl === "none"
+                        ? ""
+                        : (existingItem?.iconUrl ?? "")
+                    }
+                    placeholder="sonarr  or  https://…/icon.svg"
+                    data-testid="item-icon-input"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter a{" "}
+                    <a
+                      href="https://selfh.st/icons"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2"
+                    >
+                      selfh.st
+                    </a>{" "}
+                    slug or a full image URL
+                  </p>
+                </>
+              ) : (
+                <input type="hidden" name="iconUrl" value="none" />
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -255,8 +261,9 @@ export function ItemDialog({
               <Combobox
                 value={selectedService}
                 onValueChange={(v) => setSelectedService(v || null)}
-                items={groupedItems}
-                itemToStringLabel={(s) => s.name}
+                items={allServices}
+                itemToStringLabel={(s) => s?.name ?? ""}
+                itemToStringValue={(s) => s?.id ?? ""}
                 autoHighlight
               >
                 <ComboboxInput
@@ -267,39 +274,34 @@ export function ItemDialog({
                 />
                 <ComboboxContent>
                   <ComboboxList>
-                    {(group, index) => (
-                      <>
-                        {index === 0 && (
-                          <ComboboxItem value={undefined}>
-                            None (link only)
+                    <ComboboxItem
+                      value={undefined as ServiceDefinition | undefined}
+                    >
+                      None (link only)
+                    </ComboboxItem>
+                    <ComboboxSeparator />
+                    {generalWidgets.length > 0 && (
+                      <ComboboxGroup>
+                        <ComboboxLabel>General Widgets</ComboboxLabel>
+                        {generalWidgets.map((service) => (
+                          <ComboboxItem key={service.id} value={service}>
+                            {service.name}
                           </ComboboxItem>
-                        )}
-                        <ComboboxGroup>
-                          <ComboboxLabel>
-                            {group.value === "general"
-                              ? "General Widgets"
-                              : "Service Widgets"}
-                          </ComboboxLabel>
-                          <ComboboxCollection>
-                            {(service: ServiceDefinition) => (
-                              <ComboboxItem key={service.id} value={service}>
-                                <CheckIcon
-                                  className={cn(
-                                    "size-4",
-                                    selectedService?.id === service.id
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
-                                {service.name}
-                              </ComboboxItem>
-                            )}
-                          </ComboboxCollection>
-                        </ComboboxGroup>
-                        {index < groupedItems.length - 1 && (
-                          <ComboboxSeparator />
-                        )}
-                      </>
+                        ))}
+                      </ComboboxGroup>
+                    )}
+                    {generalWidgets.length > 0 && serviceWidgets.length > 0 && (
+                      <ComboboxSeparator />
+                    )}
+                    {serviceWidgets.length > 0 && (
+                      <ComboboxGroup>
+                        <ComboboxLabel>Service Widgets</ComboboxLabel>
+                        {serviceWidgets.map((service) => (
+                          <ComboboxItem key={service.id} value={service}>
+                            {service.name}
+                          </ComboboxItem>
+                        ))}
+                      </ComboboxGroup>
                     )}
                   </ComboboxList>
                   <ComboboxEmpty>No service found</ComboboxEmpty>

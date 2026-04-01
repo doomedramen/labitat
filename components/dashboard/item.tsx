@@ -46,6 +46,9 @@ function ItemIcon({
 }) {
   const [fallbackToGlobe, setFallbackToGlobe] = useState(false)
 
+  // Explicitly disabled
+  if (iconUrl === "none") return null
+
   // Show globe icon if no icon URL or loading failed
   if (!iconUrl || fallbackToGlobe) {
     return (
@@ -188,8 +191,8 @@ export function ItemCard({
   const effectiveLoading = editMode ? false : !initialData && isLoading
 
   // Compute status from service data or ping
-  // Only show status if item has href (for ping) or service with fetchData
-  const hasStatus = item.href || (serviceDef && serviceDef.fetchData)
+  // Only show status if item has href (for ping)
+  const hasStatus = !!item.href
   const serviceStatus: ServiceStatus = editMode
     ? { state: "unknown" }
     : (pingStatus ??

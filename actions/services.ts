@@ -71,6 +71,16 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       }
     }
 
+    // For client-side widgets, still call fetchData to get computed values
+    // (e.g., datetime widget needs timeZoneOffset computed from timeZone config)
+    if (adapter.clientSide && adapter.fetchData) {
+      const data = await adapter.fetchData(config)
+      return {
+        ...data,
+        _status: data._status ?? "none",
+      }
+    }
+
     const data = await adapter.fetchData(config)
     const responseData: ServiceData = {
       ...data,

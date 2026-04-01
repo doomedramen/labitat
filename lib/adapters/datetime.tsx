@@ -13,21 +13,20 @@ type DateTimeData = {
   time?: string
 }
 
-function DateTimeWidget({ timeZone, timeZoneOffset }: DateTimeData) {
+function DateTimeWidget({ timeZone }: DateTimeData) {
   const [currentTime, setCurrentTime] = useState<{
     date: string
     time: string
-  }>({ date: "", time: "" })
+    tzDisplay: string
+  }>({ date: "", time: "", tzDisplay: "" })
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date()
-      const options: Intl.DateTimeFormatOptions = {
-        timeZone: timeZone || undefined,
-      }
+      const tz = timeZone || undefined
 
       const dateStr = now.toLocaleDateString("en-US", {
-        ...options,
+        timeZone: tz,
         weekday: "short",
         year: "numeric",
         month: "short",
@@ -35,20 +34,28 @@ function DateTimeWidget({ timeZone, timeZoneOffset }: DateTimeData) {
       })
 
       const timeStr = now.toLocaleTimeString("en-US", {
-        ...options,
+        timeZone: tz,
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
         hour12: false,
       })
 
-      setCurrentTime({ date: dateStr, time: timeStr })
+      const resolvedTz = tz ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: resolvedTz,
+        timeZoneName: "short",
+      }).formatToParts(now)
+      const tzName = parts.find((p) => p.type === "timeZoneName")?.value ?? ""
+
+      setCurrentTime({
+        date: dateStr,
+        time: timeStr,
+        tzDisplay: `${resolvedTz} (${tzName})`,
+      })
     }
 
-    // Update immediately
     updateTime()
-
-    // Update every second
     const interval = setInterval(updateTime, 1000)
     return () => clearInterval(interval)
   }, [timeZone])
@@ -67,7 +74,7 @@ function DateTimeWidget({ timeZone, timeZoneOffset }: DateTimeData) {
       </div>
       <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
         <Globe className="size-3" />
-        {timeZone} ({timeZoneOffset})
+        {currentTime.tzDisplay}
       </div>
     </div>
   )
