@@ -43,6 +43,32 @@ export type ServiceStatus =
   | { state: "unreachable"; reason: string } // Network error (timeout, refused, DNS)
   | { state: "error"; reason: string; httpStatus?: number } // HTTP 4xx/5xx or adapter error
 
+// Convert legacy ServiceData._status to new ServiceStatus
+export function dataToStatus(data: ServiceData): ServiceStatus {
+  const status = data._status
+
+  if (!status || status === "none") {
+    return { state: "unknown" }
+  }
+
+  if (status === "ok") {
+    return { state: "healthy" }
+  }
+
+  if (status === "warn") {
+    return { state: "healthy" } // Warn is still healthy, just with caveats
+  }
+
+  if (status === "error") {
+    return {
+      state: "error",
+      reason: data._statusText || "Service error",
+    }
+  }
+
+  return { state: "unknown" }
+}
+
 // ── Service data ──────────────────────────────────────────────────────────────
 
 export type ServiceData = {
