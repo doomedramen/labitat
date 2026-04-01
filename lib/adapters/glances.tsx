@@ -279,62 +279,82 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
     const version = config.version || "4"
-    const headers: HeadersInit = {
-      Accept: "application/json",
-    }
+    const headers: HeadersInit = { Accept: "application/json" }
 
     if (config.username && config.password) {
       const credentials = btoa(`${config.username}:${config.password}`)
       headers.Authorization = `Basic ${credentials}`
     }
 
-    const res = await fetch(`${baseUrl}/api/${version}/quicklook`, { headers })
-
-    if (!res.ok) {
-      if (res.status === 401) throw new Error("Authentication failed")
-      if (res.status === 404) throw new Error("Glances API not found")
-      throw new Error(`Glances error: ${res.status}`)
-    }
-
-    const data = await res.json()
-
-    let diskPercent = data.fs?.[0]?.percent ?? data.disk ?? 0
-    let diskUsed = data.fs?.[0]?.used
-    let diskTotal = data.fs?.[0]?.total
-
-    if (config.diskPath && data.fs) {
-      const diskInfo = data.fs.find(
-        (d: { mount_point?: string }) => d.mount_point === config.diskPath
-      )
-      if (diskInfo) {
-        diskPercent = diskInfo.percent ?? 0
-        diskUsed = diskInfo.used
-        diskTotal = diskInfo.total
+    const get = async (path: string) => {
+      const res = await fetch(`${baseUrl}/api/${version}/${path}`, { headers })
+      if (!res.ok) {
+        if (res.status === 401) throw new Error("Authentication failed")
+        if (res.status === 404) throw new Error("Glances API not found")
+        throw new Error(`Glances error: ${res.status}`)
       }
+      return res.json()
     }
+
+    const [quicklook, fsData, uptimeRaw] = await Promise.all([
+      get("quicklook"),
+      get("fs"),
+      get("uptime"),
+    ])
+
+    // Parse uptime string: "1 day, 5:23:45.123456" or "5:23:45.123456"
+    const parseUptime = (raw: string): number => {
+      let days = 0
+      let timeStr = raw
+      const dayMatch = raw.match(/(\d+)\s+day[s]?,\s*(.+)/)
+      if (dayMatch) {
+        days = parseInt(dayMatch[1], 10)
+        timeStr = dayMatch[2]
+      }
+      const timeParts = timeStr.split(":").map((p) => parseFloat(p))
+      const hours = timeParts[0] ?? 0
+      const mins = timeParts[1] ?? 0
+      const secs = timeParts[2] ?? 0
+      return days * 86400 + hours * 3600 + mins * 60 + secs
+    }
+
+    const uptimeSeconds =
+      typeof uptimeRaw === "string"
+        ? parseUptime(uptimeRaw)
+        : typeof uptimeRaw === "number"
+          ? uptimeRaw
+          : 0
+
+    const diskPath = config.diskPath || "/"
+    const diskEntry = Array.isArray(fsData)
+      ? (fsData.find(
+          (d: { mnt_point?: string; mount_point?: string }) =>
+            (d.mnt_point ?? d.mount_point) === diskPath
+        ) ?? fsData[0])
+      : null
 
     return {
       _status: "ok" as const,
-      cpuPercent: data.cpu?.total ?? data.cpu,
-      memoryPercent: data.mem?.percent ?? data.mem,
-      cpuTemp: data.cputemp,
-      diskPercent,
-      diskUsed,
-      diskTotal,
-      uptime: data.uptime ?? 0,
+      cpuPercent: quicklook.cpu?.total ?? quicklook.cpu,
+      memoryPercent: quicklook.mem?.percent ?? quicklook.mem,
+      cpuTemp: quicklook.cputemp,
+      diskPercent: diskEntry?.percent ?? 0,
+      diskUsed: diskEntry?.used,
+      diskTotal: diskEntry?.size ?? diskEntry?.total,
+      uptime: uptimeSeconds,
       load:
-        data.load?.[0] !== undefined
-          ? [data.load[0], data.load[1] ?? 0, data.load[2] ?? 0]
+        quicklook.load?.[0] !== undefined
+          ? [quicklook.load[0], quicklook.load[1] ?? 0, quicklook.load[2] ?? 0]
           : undefined,
-      networkRx: data.network?.[0]?.rx,
-      networkTx: data.network?.[0]?.tx,
+      networkRx: quicklook.network?.[0]?.rx,
+      networkTx: quicklook.network?.[0]?.tx,
       showCpu: config.showCpu !== "false",
       showMem: config.showMem !== "false",
       showCpuTemp: config.showCpuTemp === "true",
       showUptime: config.showUptime !== "false",
       showDisk: config.showDisk !== "false",
       showNetwork: config.showNetwork === "true",
-      diskPath: config.diskPath || "/",
+      diskPath,
       diskUnits: config.diskUnits || "bytes",
     }
   },
