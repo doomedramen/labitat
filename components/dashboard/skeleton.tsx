@@ -17,7 +17,7 @@ function GroupSkeleton({ itemCount }: { itemCount: number }) {
       <div className="mb-3">
         <Skeleton className="h-3 w-20 rounded-md" />
       </div>
-      <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
+      <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {Array.from({ length: itemCount }).map((_, i) => (
           <ItemCardSkeleton key={i} />
         ))}

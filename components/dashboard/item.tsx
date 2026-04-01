@@ -7,7 +7,7 @@ import {
   PencilIcon,
   Trash2Icon,
 } from "lucide-react"
-import { ItemCardSkeleton } from "@/components/dashboard/skeleton"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { deleteItem } from "@/actions/items"
@@ -283,12 +283,8 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
     Widget &&
     serviceDef &&
     (isClientSide || (effectiveData && serviceStatus.state !== "error"))
-  const showSkeleton =
-    !editMode && item.serviceType && effectiveLoading && !isClientSide
-
-  if (showSkeleton) {
-    return <ItemCardSkeleton />
-  }
+  const showWidgetSkeleton =
+    !editMode && !!item.serviceType && effectiveLoading && !isClientSide
 
   // For client-side widgets, pass the initial config data
   const widgetProps =
@@ -343,7 +339,14 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
           </p>
         </div>
       </div>
-      {/* Widget below */}
+      {/* Widget below or loading skeleton */}
+      {showWidgetSkeleton && (
+        <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-[52px] rounded-md" />
+          ))}
+        </div>
+      )}
       {hasWidget && !effectiveLoading && (
         <div className="mt-2">
           <Widget {...widgetProps} />
