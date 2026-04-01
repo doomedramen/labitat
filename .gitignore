@@ -45,3 +45,6 @@ config.yaml
 next-env.d.ts
 .env
 /homepage
+
+# service worker (generated)
+/public/sw.js
