@@ -1,3 +1,5 @@
+"use client"
+
 import type { ServiceDefinition } from "./types"
 import { ExternalLink } from "lucide-react"
 

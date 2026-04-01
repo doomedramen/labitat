@@ -1,3 +1,5 @@
+"use client"
+
 import type { ServiceDefinition } from "./types"
 import { Clock, Calendar, Globe } from "lucide-react"
 import { useEffect, useState } from "react"

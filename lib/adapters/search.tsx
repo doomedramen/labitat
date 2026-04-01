@@ -1,3 +1,5 @@
+"use client"
+
 import type { ServiceDefinition } from "./types"
 import { Search, ArrowRight } from "lucide-react"
 
