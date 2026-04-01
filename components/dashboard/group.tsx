@@ -15,6 +15,7 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { deleteGroup } from "@/actions/groups"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
+import type { ServiceData } from "@/lib/adapters/types"
 import { Button } from "@/components/ui/button"
 import { ItemCard } from "./item"
 import {
@@ -35,6 +36,7 @@ type GroupProps = {
   onEditGroup: (group: GroupRow) => void
   onAddItem: (groupId: string) => void
   onEditItem: (item: ItemRow) => void
+  initialServiceData: Record<string, ServiceData>
 }
 
 export function Group({
@@ -43,6 +45,7 @@ export function Group({
   onEditGroup,
   onAddItem,
   onEditItem,
+  initialServiceData,
 }: GroupProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -165,6 +168,7 @@ export function Group({
               item={item}
               editMode={editMode}
               onEdit={onEditItem}
+              initialData={initialServiceData[item.id]}
             />
           ))}
 

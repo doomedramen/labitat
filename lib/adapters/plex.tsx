@@ -189,25 +189,20 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
 
         const title = getAttr("title") ?? ""
         const grandparentTitle = getAttr("grandparentTitle") // Show name for episodes
-        const parentTitle = getAttr("parentTitle") // Season name for episodes
         const originalTitle = getAttr("originalTitle") // Original title
         const librarySectionTitle = getAttr("librarySectionTitle") // Library name
         const type = getAttr("type") // "movie" or "episode"
         const viewOffset = getAttr("viewOffset") // Progress in milliseconds
 
         // Build display title matching Tautulli format
-        // For TV episodes: "Show: S01 - Episode Title"
+        // For TV episodes: "Show - Episode Title"
         // For movies: just the movie title
         let fullTitle = title
         if (grandparentTitle) {
-          // Extract season number from parentTitle or use seasonNumber attribute
-          const seasonNumber = getAttr("parentIndex")
-          const seasonStr = seasonNumber
-            ? `S${seasonNumber.padStart(2, "0")}`
-            : parentTitle?.match(/Season\s*(\d+)/i)
-              ? `S${parentTitle.match(/Season\s*(\d+)/i)![1].padStart(2, "0")}`
-              : parentTitle
-          fullTitle = `${grandparentTitle}: ${seasonStr} - ${title}`
+          // For TV episodes, title is sometimes the show name - use originalTitle for episode title
+          const episodeTitle =
+            title === grandparentTitle ? originalTitle || title : title
+          fullTitle = `${grandparentTitle} - ${episodeTitle}`
         } else if (type === "movie") {
           // For movies, prefer originalTitle if title looks like a library name
           // Library names often contain parens like "Films (Apple TV)"

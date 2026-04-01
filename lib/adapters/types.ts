@@ -37,7 +37,7 @@ export type ServiceCategory =
 // ── Service data ──────────────────────────────────────────────────────────────
 
 export type ServiceData = {
-  _status?: "ok" | "warn" | "error"
+  _status?: "ok" | "warn" | "error" | "none"
   _statusText?: string
   [key: string]: unknown
 }

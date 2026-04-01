@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition, useState, useEffect } from "react"
+import { useTransition, useState, useEffect, useCallback } from "react"
 import {
   GlobeIcon,
   GripVerticalIcon,
@@ -10,6 +10,7 @@ import {
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { deleteItem } from "@/actions/items"
+import { fetchServiceData } from "@/actions/services"
 import type { ItemRow } from "@/lib/types"
 import type { ServiceData } from "@/lib/adapters/types"
 import { getService } from "@/lib/adapters"
@@ -135,57 +136,58 @@ type ItemCardProps = {
   item: ItemRow
   editMode: boolean
   onEdit: (item: ItemRow) => void
+  initialData?: ServiceData
 }
 
-export function ItemCard({ item, editMode, onEdit }: ItemCardProps) {
+export function ItemCard({
+  item,
+  editMode,
+  onEdit,
+  initialData,
+}: ItemCardProps) {
   const [isPending, startTransition] = useTransition()
-  const [serviceData, setServiceData] = useState<ServiceData | null>(null)
+  const [serviceData, setServiceData] = useState<ServiceData | null>(
+    initialData ?? null
+  )
   const [dataError, setDataError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 10_000
+  const shouldPoll = !editMode && item.serviceType && serviceDef
 
-  // Poll service data when not in edit mode
+  // Compute derived state - use initial data when available, otherwise use fetched data
+  const effectiveData = editMode ? null : (initialData ?? serviceData)
+  const effectiveLoading = editMode ? false : !initialData && isLoading
+  const effectiveError = editMode ? null : dataError
+
+  // Poll service data when not in edit mode using server action
   useEffect(() => {
-    if (editMode || !item.serviceType || !serviceDef) {
-      setServiceData(null)
-      setIsLoading(false)
-      return
-    }
+    if (!shouldPoll) return
 
-    let cancelled = false
     const poll = async () => {
-      if (cancelled) return
       try {
-        const res = await fetch(`/api/services/${item.id}`)
-        if (!res.ok) {
-          throw new Error(`Failed to fetch: ${res.status}`)
-        }
-        const data = await res.json()
-        if (!cancelled) {
-          setServiceData(data)
-          setDataError(null)
-          setIsLoading(false)
-        }
+        const data = await fetchServiceData(item.id)
+        setServiceData(data)
+        setDataError(null)
+        setIsLoading(false)
       } catch (err) {
-        if (!cancelled) {
-          setDataError(
-            err instanceof Error ? err.message : "Failed to fetch data"
-          )
-          setServiceData({ _status: "error" })
-          setIsLoading(false)
-        }
+        setDataError(
+          err instanceof Error ? err.message : "Failed to fetch data"
+        )
+        setServiceData({ _status: "error" })
+        setIsLoading(false)
       }
     }
 
-    poll()
-    const interval = setInterval(poll, pollingMs)
-    return () => {
-      cancelled = true
-      clearInterval(interval)
+    // Initial poll only if no SSR data
+    if (!initialData) {
+      poll()
     }
-  }, [editMode, item.id, item.serviceType, serviceDef, pollingMs])
+
+    const interval = setInterval(poll, pollingMs)
+    return () => clearInterval(interval)
+  }, [shouldPoll, item.id, pollingMs, initialData])
 
   const {
     attributes,
@@ -210,12 +212,12 @@ export function ItemCard({ item, editMode, onEdit }: ItemCardProps) {
   const handleDelete = () => startTransition(() => deleteItem(item.id))
 
   const Widget = serviceDef?.Widget
-  const status = serviceData?._status ?? (dataError ? "error" : null)
+  const status = effectiveData?._status ?? (effectiveError ? "error" : null)
 
   // Don't show widget when in edit mode, no widget exists, or status is error
   const hasWidget =
-    !editMode && Widget && serviceDef && serviceData && status !== "error"
-  const showSkeleton = !editMode && item.serviceType && isLoading
+    !editMode && Widget && serviceDef && effectiveData && status !== "error"
+  const showSkeleton = !editMode && item.serviceType && effectiveLoading
 
   const inner = (
     <div
@@ -255,9 +257,9 @@ export function ItemCard({ item, editMode, onEdit }: ItemCardProps) {
         </div>
       </div>
       {/* Widget below or skeleton */}
-      {hasWidget && !isLoading && (
+      {hasWidget && !effectiveLoading && (
         <div className="mt-2">
-          <Widget {...serviceData} />
+          <Widget {...effectiveData} />
         </div>
       )}
       {showSkeleton && <WidgetSkeleton />}

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm"
 import { getSession } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
+import { fetchAllServiceData } from "@/actions/services"
 import { Dashboard } from "@/components/dashboard/dashboard"
 
 export default async function DashboardPage() {
@@ -20,11 +21,20 @@ export default async function DashboardPage() {
 
   const title = titleSetting?.value ?? "Labitat"
 
+  // Fetch initial service data for all items with a service type
+  const itemIds = groupsWithItems
+    .flatMap((g) => g.items)
+    .filter((i) => i.serviceType)
+    .map((i) => i.id)
+
+  const initialServiceData = await fetchAllServiceData(itemIds)
+
   return (
     <Dashboard
       groups={groupsWithItems}
       isLoggedIn={!!session.loggedIn}
       title={title}
+      initialServiceData={initialServiceData}
     />
   )
 }

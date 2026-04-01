@@ -22,6 +22,7 @@ import { reorderGroups } from "@/actions/groups"
 import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
+import type { ServiceData } from "@/lib/adapters/types"
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,9 +37,15 @@ type DashboardProps = {
   groups: GroupWithItems[]
   isLoggedIn: boolean
   title: string
+  initialServiceData: Record<string, ServiceData>
 }
 
-export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
+export function Dashboard({
+  groups,
+  isLoggedIn,
+  title,
+  initialServiceData,
+}: DashboardProps) {
   // ── Edit mode ──────────────────────────────────────────────────────────────
   const [editMode, setEditMode] = useState(false)
   const [dashboardTitle, setDashboardTitle] = useState(title)
@@ -313,6 +320,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                     onEditGroup={openEditGroup}
                     onAddItem={openAddItem}
                     onEditItem={openEditItem}
+                    initialServiceData={initialServiceData}
                   />
                 ))}
               </div>
