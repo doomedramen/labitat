@@ -250,6 +250,57 @@ export function Dashboard({
     setItemDialogOpen(true)
   }, [])
 
+  // ── Optimistic handlers ────────────────────────────────────────────────────
+  const handleItemCreated = useCallback((groupId: string, item: ItemRow) => {
+    setSortedGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId ? { ...g, items: [...g.items, item] } : g
+      )
+    )
+  }, [])
+
+  const handleItemUpdated = useCallback((item: ItemRow) => {
+    setSortedGroups((prev) =>
+      prev.map((g) => ({
+        ...g,
+        items: g.items.map((i) => (i.id === item.id ? { ...i, ...item } : i)),
+      }))
+    )
+  }, [])
+
+  const handleItemDeleted = useCallback((itemId: string) => {
+    setSortedGroups((prev) =>
+      prev.map((g) => ({
+        ...g,
+        items: g.items.filter((i) => i.id !== itemId),
+      }))
+    )
+  }, [])
+
+  const handleGroupCreated = useCallback(
+    (name: string) => {
+      const tempGroup: GroupWithItems = {
+        id: `__opt_${Date.now()}`,
+        name,
+        order: sortedGroups.length,
+        createdAt: null,
+        items: [],
+      }
+      setSortedGroups((prev) => [...prev, tempGroup])
+    },
+    [sortedGroups.length]
+  )
+
+  const handleGroupUpdated = useCallback((groupId: string, name: string) => {
+    setSortedGroups((prev) =>
+      prev.map((g) => (g.id === groupId ? { ...g, name } : g))
+    )
+  }, [])
+
+  const handleGroupDeleted = useCallback((groupId: string) => {
+    setSortedGroups((prev) => prev.filter((g) => g.id !== groupId))
+  }, [])
+
   // ── Render ─────────────────────────────────────────────────────────────────
   const groupIds = sortedGroups.map((g) => g.id)
 
@@ -330,6 +381,8 @@ export function Dashboard({
                     onAddItem={openAddItem}
                     onEditItem={openEditItem}
                     initialServiceData={initialServiceData}
+                    onGroupDeleted={handleGroupDeleted}
+                    onItemDeleted={handleItemDeleted}
                   />
                 ))}
               </div>
@@ -379,12 +432,20 @@ export function Dashboard({
         open={groupDialogOpen}
         onOpenChange={(o) => setGroupDialogOpen(o)}
         group={editingGroup}
+        onSuccess={(name, groupId) => {
+          if (groupId) handleGroupUpdated(groupId, name)
+          else handleGroupCreated(name)
+        }}
       />
       <ItemDialog
         open={itemDialogOpen}
         onOpenChange={(o) => setItemDialogOpen(o)}
         existingItem={editingItem}
         groupId={itemGroupId}
+        onSuccess={(item, isNew) => {
+          if (isNew) handleItemCreated(item.groupId, item)
+          else handleItemUpdated(item)
+        }}
       />
 
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>

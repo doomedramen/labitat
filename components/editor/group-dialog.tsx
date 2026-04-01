@@ -18,9 +18,15 @@ type GroupDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   group: GroupRow | null
+  onSuccess?: (name: string, groupId: string | null) => void
 }
 
-export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
+export function GroupDialog({
+  open,
+  onOpenChange,
+  group,
+  onSuccess,
+}: GroupDialogProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const isEdit = group !== null
@@ -29,6 +35,12 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     setError(null)
+    onSuccess?.(
+      (formData.get("name") as string) || "",
+      isEdit ? group!.id : null
+    )
+    onOpenChange(false)
+
     startTransition(async () => {
       try {
         if (isEdit) {
@@ -36,7 +48,6 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
         } else {
           await createGroup(formData)
         }
-        onOpenChange(false)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong")
       }

@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Combobox,
+  ComboboxCollection,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxGroup,
@@ -34,6 +35,7 @@ type ItemDialogProps = {
   onOpenChange: (open: boolean) => void
   existingItem: ItemRow | null
   groupId: string | null
+  onSuccess?: (item: ItemRow, isNew: boolean) => void
 }
 
 export function ItemDialog({
@@ -41,6 +43,7 @@ export function ItemDialog({
   onOpenChange,
   existingItem,
   groupId,
+  onSuccess,
 }: ItemDialogProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -54,32 +57,27 @@ export function ItemDialog({
   const [showIcon, setShowIcon] = useState(existingItem?.iconUrl !== "none")
   const isEdit = existingItem !== null
 
-  // Separate services into general widgets and service widgets
+  // Separate services into general widgets and service widgets, sorted alphabetically
   const allServices = getAllServices()
-  const generalWidgets = allServices.filter(
-    (s) =>
-      s.clientSide ||
-      [
-        "openmeteo",
-        "openweathermap",
-        "datetime",
-        "glances",
-        "logo",
-        "search",
-      ].includes(s.id)
-  )
-  const serviceWidgets = allServices.filter(
-    (s) =>
-      !s.clientSide &&
-      ![
-        "openmeteo",
-        "openweathermap",
-        "datetime",
-        "glances",
-        "logo",
-        "search",
-      ].includes(s.id)
-  )
+  const generalIds = [
+    "openmeteo",
+    "openweathermap",
+    "datetime",
+    "glances",
+    "logo",
+    "search",
+  ]
+  const generalWidgets = allServices
+    .filter((s) => s.clientSide || generalIds.includes(s.id))
+    .sort((a, b) => a.name.localeCompare(b.name))
+  const serviceWidgets = allServices
+    .filter((s) => !s.clientSide && !generalIds.includes(s.id))
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  const groupedItems = [
+    { value: "general", items: generalWidgets },
+    { value: "services", items: serviceWidgets },
+  ].filter((g) => g.items.length > 0)
 
   // Initialize state when dialog opens
   useEffect(() => {
@@ -149,12 +147,25 @@ export function ItemDialog({
       formData.set(`config_${key}`, value ? "true" : "false")
     }
 
-    // Debug: log form data on client
-    console.log("=== CLIENT: formData ===")
-    for (const [key, value] of formData.entries()) {
-      console.log(`  ${key}:`, value)
+    const optimisticItem: ItemRow = {
+      id: existingItem?.id ?? `__opt_${Date.now()}`,
+      groupId: groupId!,
+      label: (formData.get("label") as string) || "",
+      href: (formData.get("href") as string) || null,
+      iconUrl: (formData.get("iconUrl") as string) || null,
+      serviceType: (formData.get("serviceType") as string) || null,
+      serviceUrl: null,
+      apiKeyEnc: null,
+      configEnc: null,
+      pollingMs: (() => {
+        const v = formData.get("pollingMs") as string
+        return v ? parseInt(v) * 1000 : 10000
+      })(),
+      order: existingItem?.order ?? 0,
+      createdAt: null,
     }
-    console.log("========================")
+    onSuccess?.(optimisticItem, !isEdit)
+    onOpenChange(false)
 
     startTransition(async () => {
       try {
@@ -163,9 +174,10 @@ export function ItemDialog({
         } else {
           await createItem(groupId, formData)
         }
-        onOpenChange(false)
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong")
+        console.error(
+          err instanceof Error ? err.message : "Something went wrong"
+        )
       }
     })
   }
@@ -261,7 +273,7 @@ export function ItemDialog({
               <Combobox
                 value={selectedService}
                 onValueChange={(v) => setSelectedService(v || null)}
-                items={allServices}
+                items={groupedItems}
                 itemToStringLabel={(s) => s?.name ?? ""}
                 itemToStringValue={(s) => s?.id ?? ""}
                 autoHighlight
@@ -281,26 +293,30 @@ export function ItemDialog({
                     </ComboboxItem>
                     <ComboboxSeparator />
                     {generalWidgets.length > 0 && (
-                      <ComboboxGroup>
+                      <ComboboxGroup items={generalWidgets}>
                         <ComboboxLabel>General Widgets</ComboboxLabel>
-                        {generalWidgets.map((service) => (
-                          <ComboboxItem key={service.id} value={service}>
-                            {service.name}
-                          </ComboboxItem>
-                        ))}
+                        <ComboboxCollection>
+                          {(service: ServiceDefinition) => (
+                            <ComboboxItem key={service.id} value={service}>
+                              {service.name}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxCollection>
                       </ComboboxGroup>
                     )}
                     {generalWidgets.length > 0 && serviceWidgets.length > 0 && (
                       <ComboboxSeparator />
                     )}
                     {serviceWidgets.length > 0 && (
-                      <ComboboxGroup>
+                      <ComboboxGroup items={serviceWidgets}>
                         <ComboboxLabel>Service Widgets</ComboboxLabel>
-                        {serviceWidgets.map((service) => (
-                          <ComboboxItem key={service.id} value={service}>
-                            {service.name}
-                          </ComboboxItem>
-                        ))}
+                        <ComboboxCollection>
+                          {(service: ServiceDefinition) => (
+                            <ComboboxItem key={service.id} value={service}>
+                              {service.name}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxCollection>
                       </ComboboxGroup>
                     )}
                   </ComboboxList>

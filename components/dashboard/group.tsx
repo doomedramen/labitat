@@ -38,6 +38,8 @@ type GroupProps = {
   onAddItem: (groupId: string) => void
   onEditItem: (item: ItemRow) => void
   initialServiceData: Record<string, ServiceData>
+  onGroupDeleted?: (groupId: string) => void
+  onItemDeleted?: (itemId: string) => void
 }
 
 export function Group({
@@ -47,6 +49,8 @@ export function Group({
   onAddItem,
   onEditItem,
   initialServiceData,
+  onGroupDeleted,
+  onItemDeleted,
 }: GroupProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -143,7 +147,10 @@ export function Group({
                   <AlertDialogAction
                     variant="destructive"
                     disabled={isPending}
-                    onClick={() => startTransition(() => deleteGroup(group.id))}
+                    onClick={() => {
+                      onGroupDeleted?.(group.id)
+                      startTransition(() => deleteGroup(group.id))
+                    }}
                     data-testid="group-delete-confirm"
                   >
                     Delete
@@ -170,6 +177,7 @@ export function Group({
                 editMode={editMode}
                 onEdit={onEditItem}
                 initialData={initialServiceData[item.id]}
+                onDeleted={onItemDeleted}
               />
             </WidgetErrorBoundary>
           ))}

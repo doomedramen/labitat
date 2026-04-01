@@ -164,6 +164,7 @@ type ItemCardProps = {
   editMode: boolean
   onEdit: (item: ItemRow) => void
   initialData?: ServiceData
+  onDeleted?: (itemId: string) => void
 }
 
 export function ItemCard({
@@ -171,6 +172,7 @@ export function ItemCard({
   editMode,
   onEdit,
   initialData,
+  onDeleted,
 }: ItemCardProps) {
   const [isPending, startTransition] = useTransition()
   const [serviceData, setServiceData] = useState<ServiceData | null>(
@@ -278,7 +280,10 @@ export function ItemCard({
     opacity: isDragging ? 0.35 : undefined,
   }
 
-  const handleDelete = () => startTransition(() => deleteItem(item.id))
+  const handleDelete = () => {
+    onDeleted?.(item.id)
+    startTransition(() => deleteItem(item.id))
+  }
 
   const Widget = serviceDef?.Widget
 
