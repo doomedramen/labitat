@@ -41,17 +41,33 @@ import {
 function ItemIcon({
   iconUrl,
   label,
+  href,
 }: {
   iconUrl: string | null
   label: string
+  href?: string | null
 }) {
   const [fallbackToGlobe, setFallbackToGlobe] = useState(false)
 
   // Explicitly disabled
   if (iconUrl === "none") return null
 
-  // Show globe icon if no icon URL or loading failed
-  if (!iconUrl || fallbackToGlobe) {
+  // Auto-detect favicon from href when no custom icon is set
+  const faviconUrl =
+    !iconUrl && href
+      ? (() => {
+          try {
+            return new URL(href).origin + "/favicon.ico"
+          } catch {
+            return null
+          }
+        })()
+      : null
+
+  const effectiveUrl = iconUrl || faviconUrl
+
+  // Show globe icon if nothing to show or loading failed
+  if (!effectiveUrl || fallbackToGlobe) {
     return (
       <div className="flex size-9 flex-none items-center justify-center bg-muted">
         <GlobeIcon className="size-4 text-muted-foreground" />
@@ -61,13 +77,13 @@ function ItemIcon({
 
   // Build icon URL - determine format from extension (like Homepage)
   const buildIconUrl = () => {
-    // Custom URL
-    if (iconUrl.startsWith("http")) {
-      return iconUrl
+    // Custom or auto-detected URL
+    if (effectiveUrl.startsWith("http")) {
+      return effectiveUrl
     }
 
     // selfh.st slug - check if extension is specified
-    const slug = iconUrl.toLowerCase()
+    const slug = effectiveUrl.toLowerCase()
 
     if (slug.endsWith(".png")) {
       const iconName = slug.replace(".png", "")
@@ -153,7 +169,9 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const [isPending, startTransition] = useTransition()
   const [serviceData, setServiceData] = useState<ServiceData | null>(null)
   const [pingStatus, setPingStatus] = useState<ServiceStatus | null>(null)
-  const [isLoading, setIsLoading] = useState(!!item.serviceType)
+  const [isLoading, setIsLoading] = useState(
+    !!item.serviceType && !getService(item.serviceType)?.clientSide
+  )
 
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
@@ -318,7 +336,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
             <GripVerticalIcon className="size-4" />
           </button>
         )}
-        <ItemIcon iconUrl={item.iconUrl} label={item.label} />
+        <ItemIcon iconUrl={item.iconUrl} label={item.label} href={item.href} />
         <div className="min-w-0 flex-1 pr-4">
           <p className="truncate text-sm leading-snug font-medium">
             {item.label}
@@ -419,7 +437,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
 export function ItemCardDragPreview({ item }: { item: ItemRow }) {
   return (
     <div className="flex min-h-[3.25rem] items-center gap-3 rounded-xl bg-background/90 px-3 py-2.5 shadow-lg ring-2 ring-primary/30 backdrop-blur-sm">
-      <ItemIcon iconUrl={item.iconUrl} label={item.label} />
+      <ItemIcon iconUrl={item.iconUrl} label={item.label} href={item.href} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm leading-snug font-medium">
           {item.label}

@@ -1,5 +1,6 @@
 import "./globals.css"
 import type { Viewport, Metadata } from "next"
+import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { cn } from "@/lib/utils"
@@ -52,6 +53,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Toaster richColors position="bottom-right" />
           <ServiceWorkerRegistrar />
         </ThemeProvider>
       </body>

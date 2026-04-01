@@ -3,6 +3,16 @@ const nextConfig = {
   // Required for Docker standalone output
   output: 'standalone',
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'openweathermap.org',
+        pathname: '/img/wn/**',
+      },
+    ],
+  },
+
   // Allowed origins for development
   allowedDevOrigins: ['192.168.1.14'],
 

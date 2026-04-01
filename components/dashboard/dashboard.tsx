@@ -3,10 +3,12 @@
 
 import { useState, useEffect, useCallback, useRef, useTransition } from "react"
 
+import { toast } from "sonner"
 import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
@@ -79,7 +81,10 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   const [, startTransition] = useTransition()
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
+    })
   )
 
   // ── Drag handlers ──────────────────────────────────────────────────────────
@@ -250,6 +255,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         g.id === groupId ? { ...g, items: [...g.items, item] } : g
       )
     )
+    toast.success(`${item.label || "Item"} added`)
   }, [])
 
   const handleItemUpdated = useCallback((item: ItemRow) => {
@@ -259,6 +265,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         items: g.items.map((i) => (i.id === item.id ? { ...i, ...item } : i)),
       }))
     )
+    toast.success(`${item.label || "Item"} saved`)
   }, [])
 
   const handleItemDeleted = useCallback((itemId: string) => {
@@ -268,6 +275,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         items: g.items.filter((i) => i.id !== itemId),
       }))
     )
+    toast.success("Item deleted")
   }, [])
 
   const handleGroupCreated = useCallback(
@@ -280,6 +288,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         items: [],
       }
       setSortedGroups((prev) => [...prev, tempGroup])
+      toast.success(`${name || "Group"} added`)
     },
     [sortedGroups.length]
   )
@@ -288,10 +297,12 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     setSortedGroups((prev) =>
       prev.map((g) => (g.id === groupId ? { ...g, name } : g))
     )
+    toast.success(`${name || "Group"} saved`)
   }, [])
 
   const handleGroupDeleted = useCallback((groupId: string) => {
     setSortedGroups((prev) => prev.filter((g) => g.id !== groupId))
+    toast.success("Group deleted")
   }, [])
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -411,6 +422,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                 updateDashboardTitle(dashboardTitle.trim()).then(() => {
                   setTitleChanged(false)
                   setEditMode(false)
+                  toast.success("Dashboard saved")
                 })
               })
             } else {

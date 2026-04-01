@@ -1,8 +1,8 @@
+import Image from "next/image"
 import type { ServiceDefinition } from "./types"
 import {
   Sun,
   Cloud,
-  CloudSun,
   CloudRain,
   CloudSnow,
   CloudLightning,

@@ -1,7 +1,8 @@
 "use client"
 
-import { useTransition } from "react"
+import { useTransition, useState } from "react"
 import {
+  ChevronDownIcon,
   GripVerticalIcon,
   PencilIcon,
   PlusIcon,
@@ -15,6 +16,7 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { deleteGroup } from "@/actions/groups"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ItemCard } from "./item"
 import { WidgetErrorBoundary } from "./error-boundary"
@@ -50,6 +52,34 @@ export function Group({
   onItemDeleted,
 }: GroupProps) {
   const [isPending, startTransition] = useTransition()
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      const stored = localStorage.getItem("labitat-collapsed-groups")
+      if (stored) {
+        const ids = JSON.parse(stored) as string[]
+        return ids.includes(group.id)
+      }
+    } catch {}
+    return false
+  })
+
+  const toggleCollapse = () => {
+    setCollapsed((prev) => {
+      const next = !prev
+      try {
+        const stored = localStorage.getItem("labitat-collapsed-groups")
+        const ids: string[] = stored ? JSON.parse(stored) : []
+        if (next) {
+          if (!ids.includes(group.id)) ids.push(group.id)
+        } else {
+          const idx = ids.indexOf(group.id)
+          if (idx >= 0) ids.splice(idx, 1)
+        }
+        localStorage.setItem("labitat-collapsed-groups", JSON.stringify(ids))
+      } catch {}
+      return next
+    })
+  }
 
   const {
     attributes,
@@ -83,7 +113,7 @@ export function Group({
     >
       {/* Group header */}
       <div className="mb-3 flex items-center gap-1.5">
-        {editMode && (
+        {editMode ? (
           <button
             ref={setActivatorNodeRef}
             {...attributes}
@@ -93,6 +123,19 @@ export function Group({
             data-testid="group-drag-handle"
           >
             <GripVerticalIcon className="size-4" />
+          </button>
+        ) : (
+          <button
+            onClick={toggleCollapse}
+            className="text-muted-foreground/40 hover:text-muted-foreground"
+            aria-label={collapsed ? "Expand group" : "Collapse group"}
+          >
+            <ChevronDownIcon
+              className={cn(
+                "size-3.5 transition-transform duration-200",
+                collapsed && "-rotate-90"
+              )}
+            />
           </button>
         )}
 
@@ -159,37 +202,46 @@ export function Group({
         )}
       </div>
 
-      {/* Items grid */}
-      <SortableContext items={itemIds} strategy={rectSortingStrategy}>
-        <div
-          data-group-id={group.id}
-          data-type="group"
-          className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]"
-          data-testid="group-items-container"
-        >
-          {group.items.map((item) => (
-            <WidgetErrorBoundary key={item.id}>
-              <ItemCard
-                item={item}
-                editMode={editMode}
-                onEdit={onEditItem}
-                onDeleted={onItemDeleted}
-              />
-            </WidgetErrorBoundary>
-          ))}
-
-          {editMode && (
-            <button
-              onClick={() => onAddItem(group.id)}
-              className="flex min-h-[3.25rem] items-center justify-center gap-1.5 rounded-xl border border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/30 hover:text-foreground"
-              data-testid="add-item-button"
+      {/* Items grid — collapsible in view mode */}
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows] duration-200",
+          collapsed && !editMode ? "grid-rows-[0fr]" : "grid-rows-[1fr]"
+        )}
+      >
+        <div className="overflow-hidden p-0.5">
+          <SortableContext items={itemIds} strategy={rectSortingStrategy}>
+            <div
+              data-group-id={group.id}
+              data-type="group"
+              className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]"
+              data-testid="group-items-container"
             >
-              <PlusIcon className="size-4" />
-              Add item
-            </button>
-          )}
+              {group.items.map((item) => (
+                <WidgetErrorBoundary key={item.id}>
+                  <ItemCard
+                    item={item}
+                    editMode={editMode}
+                    onEdit={onEditItem}
+                    onDeleted={onItemDeleted}
+                  />
+                </WidgetErrorBoundary>
+              ))}
+
+              {editMode && (
+                <button
+                  onClick={() => onAddItem(group.id)}
+                  className="flex min-h-[3.25rem] items-center justify-center gap-1.5 rounded-xl border border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/30 hover:text-foreground"
+                  data-testid="add-item-button"
+                >
+                  <PlusIcon className="size-4" />
+                  Add item
+                </button>
+              )}
+            </div>
+          </SortableContext>
         </div>
-      </SortableContext>
+      </div>
     </section>
   )
 }

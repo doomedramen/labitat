@@ -7,11 +7,24 @@ export async function pingUrl(url: string): Promise<ServiceStatus> {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 5000)
 
-    const res = await fetch(url, {
+    let res = await fetch(url, {
       method: "HEAD",
       signal: controller.signal,
       redirect: "follow",
     })
+
+    // Some servers (e.g. Proxmox) reject HEAD — retry with GET
+    if (res.status === 405 || res.status === 501) {
+      const getController = new AbortController()
+      const getTimeout = setTimeout(() => getController.abort(), 5000)
+      res = await fetch(url, {
+        method: "GET",
+        signal: getController.signal,
+        redirect: "follow",
+      })
+      clearTimeout(getTimeout)
+    }
+
     clearTimeout(timeout)
 
     if (res.ok) {

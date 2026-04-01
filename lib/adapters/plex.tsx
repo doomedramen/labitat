@@ -183,7 +183,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
       for (const videoEl of videoElements) {
         // Extract attributes from the Video element
         const getAttr = (name: string): string | null => {
-          const m = videoEl.match(new RegExp(`${name}="([^"]*)"`, "i"))
+          const m = videoEl.match(new RegExp(`\\b${name}="([^"]*)"`, "i"))
           return m ? m[1] : null
         }
 
