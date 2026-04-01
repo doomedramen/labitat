@@ -82,17 +82,11 @@ export function ItemDialog({
       ].includes(s.id)
   )
 
-  const groupedServices: {
-    value: string
-    label: string
-    items: ServiceDefinition[]
-  }[] = [
-    { value: "general", label: "General Widgets", items: generalWidgets },
-    { value: "services", label: "Service Widgets", items: serviceWidgets },
-  ]
-
-  // Flat array for Combobox items prop (required by the component)
-  const allServicesFlat = [...generalWidgets, ...serviceWidgets]
+  // Grouped structure for Combobox with groups
+  const groupedItems = [
+    { value: "general", items: generalWidgets },
+    { value: "services", items: serviceWidgets },
+  ].filter((g) => g.items.length > 0)
 
   // Initialize state when dialog opens
   useEffect(() => {
@@ -261,7 +255,7 @@ export function ItemDialog({
               <Combobox
                 value={selectedService}
                 onValueChange={(v) => setSelectedService(v || null)}
-                items={allServicesFlat}
+                items={groupedItems}
                 itemToStringLabel={(s) => s.name}
                 autoHighlight
               >
@@ -273,34 +267,42 @@ export function ItemDialog({
                 />
                 <ComboboxContent>
                   <ComboboxList>
-                    <ComboboxEmpty>No service found</ComboboxEmpty>
-                    <ComboboxItem value={undefined}>
-                      None (link only)
-                    </ComboboxItem>
-                    {groupedServices.map((group, groupIndex) => (
-                      <ComboboxGroup key={group.value} items={group.items}>
-                        <ComboboxLabel>{group.label}</ComboboxLabel>
-                        <ComboboxCollection>
-                          {(service: ServiceDefinition) => (
-                            <ComboboxItem key={service.id} value={service}>
-                              <CheckIcon
-                                className={cn(
-                                  "size-4",
-                                  selectedService?.id === service.id
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {service.name}
-                            </ComboboxItem>
-                          )}
-                        </ComboboxCollection>
-                        {groupIndex < groupedServices.length - 1 && (
+                    {(group, index) => (
+                      <>
+                        {index === 0 && (
+                          <ComboboxItem value={undefined}>
+                            None (link only)
+                          </ComboboxItem>
+                        )}
+                        <ComboboxGroup>
+                          <ComboboxLabel>
+                            {group.value === "general"
+                              ? "General Widgets"
+                              : "Service Widgets"}
+                          </ComboboxLabel>
+                          <ComboboxCollection>
+                            {(service: ServiceDefinition) => (
+                              <ComboboxItem key={service.id} value={service}>
+                                <CheckIcon
+                                  className={cn(
+                                    "size-4",
+                                    selectedService?.id === service.id
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {service.name}
+                              </ComboboxItem>
+                            )}
+                          </ComboboxCollection>
+                        </ComboboxGroup>
+                        {index < groupedItems.length - 1 && (
                           <ComboboxSeparator />
                         )}
-                      </ComboboxGroup>
-                    ))}
+                      </>
+                    )}
                   </ComboboxList>
+                  <ComboboxEmpty>No service found</ComboboxEmpty>
                 </ComboboxContent>
               </Combobox>
               <p className="text-xs text-muted-foreground">
