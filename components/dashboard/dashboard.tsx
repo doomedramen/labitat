@@ -34,6 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { ModeToggle } from "@/components/mode-toggle"
+import { PaletteSwitcher } from "@/components/palette-switcher"
 import { Group, GroupDragPreview } from "./group"
 import { ItemCardDragPreview } from "./item"
 import { EditBar } from "./edit-bar"
@@ -336,6 +337,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             </h1>
           )}
           <div className="flex items-center gap-2">
+            <PaletteSwitcher />
             <ModeToggle />
             {isLoggedIn ? (
               !editMode && (
