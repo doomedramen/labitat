@@ -13,6 +13,12 @@ const PALETTES = [
   { id: "catppuccin", label: "Catppuccin" },
   { id: "gruvbox", label: "Gruvbox" },
   { id: "amoled", label: "AMOLED" },
+  { id: "dracula", label: "Dracula" },
+  { id: "one-dark", label: "One Dark" },
+  { id: "solarized", label: "Solarized" },
+  { id: "tokyo-night", label: "Tokyo Night" },
+  { id: "monokai", label: "Monokai" },
+  { id: "dawn", label: "Dawn" },
 ]
 
 export function PaletteSwitcher({ onSelect }: { onSelect?: () => void }) {

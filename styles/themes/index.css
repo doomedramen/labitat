@@ -1,0 +1,16 @@
+/* Labitat Theme Palettes
+   Each palette defines light (default) and dark (.dark) variants.
+   Applied via data-palette="x" on <html>.
+*/
+
+@import "./default.css";
+@import "./nord.css";
+@import "./catppuccin.css";
+@import "./gruvbox.css";
+@import "./amoled.css";
+@import "./dracula.css";
+@import "./one-dark.css";
+@import "./solarized.css";
+@import "./tokyo-night.css";
+@import "./monokai.css";
+@import "./dawn.css";
