@@ -8,22 +8,24 @@ import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
-async function getAppTitle() {
+async function getAppSettings() {
   try {
-    const titleSetting = await db.query.settings.findFirst({
-      where: eq(settings.key, "dashboardTitle"),
+    const rows = await db.query.settings.findMany({
+      where: (s, { inArray }) => inArray(s.key, ["dashboardTitle", "palette"]),
     })
-    return titleSetting?.value ?? "Labitat"
+    const map = Object.fromEntries(rows.map((r) => [r.key, r.value]))
+    return {
+      title: map.dashboardTitle ?? "Labitat",
+      palette: map.palette ?? "default",
+    }
   } catch {
-    return "Labitat"
+    return { title: "Labitat", palette: "default" }
   }
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = await getAppTitle()
-  return {
-    title,
-  }
+  const { title } = await getAppSettings()
+  return { title }
 }
 
 export const viewport: Viewport = {
@@ -33,15 +35,17 @@ export const viewport: Viewport = {
   ],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const { palette } = await getAppSettings()
   return (
     <html
       lang="en"
       suppressHydrationWarning
+      data-palette={palette}
       className={cn("font-sans antialiased")}
     >
       <head />
