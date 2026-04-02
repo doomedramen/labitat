@@ -10,8 +10,14 @@ type CacheEntry<T> = {
 const memoryCache = new Map<string, CacheEntry<unknown>>()
 
 // File-based cache for persistence
-// Use CACHE_DIR env var if set, otherwise default to ./data/cache
-const CACHE_DIR = process.env.CACHE_DIR ?? join(process.cwd(), "data", "cache")
+// Use CACHE_DIR env var if set, otherwise:
+// - Docker (NODE_ENV=production + /data exists): /data/cache
+// - Native install: ./data/cache relative to cwd
+const CACHE_DIR =
+  process.env.CACHE_DIR ??
+  (process.env.NODE_ENV === "production" && process.env.HOSTNAME
+    ? "/data/cache"
+    : join(process.cwd(), "data", "cache"))
 const CACHE_FILE = join(CACHE_DIR, "widget-cache.json")
 
 // Initialize cache directory
