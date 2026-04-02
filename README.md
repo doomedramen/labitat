@@ -39,9 +39,14 @@ bash <(curl -s https://raw.githubusercontent.com/labitat/labitat/main/install.sh
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `SECRET_KEY` | Yes | 32+ char random string for encryption |
-| `DATABASE_URL` | No | SQLite path (default: `file:./data/labitat.db`) |
+| `DATABASE_URL` | No | SQLite path. Native: `file:./data/labitat.db`, Docker: `file:/data/labitat.db` |
 | `NODE_ENV` | No | Set to `production` for deployment |
 | `PORT` | No | Override default port (3000) |
+
+### Directory Paths
+
+- **Native install:** Data stored in `./data/` relative to installation directory
+- **Docker:** Application in `/app` (read-only), data volume mounted at `/data`
 
 ### config.yaml
 

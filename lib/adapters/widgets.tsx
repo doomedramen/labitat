@@ -30,7 +30,7 @@ export type StatItem = {
  */
 export function StatCard({ value, label, icon, valueClassName }: StatItem) {
   return (
-    <div className="flex flex-col items-center rounded-md bg-muted/50 px-2 py-1.5 text-center">
+    <div className="flex h-full flex-col items-center justify-center rounded-md bg-muted/50 px-2 py-1.5 text-center">
       {icon && <div className="mb-0.5">{icon}</div>}
       <span
         className={cn(
