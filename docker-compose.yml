@@ -8,7 +8,7 @@ services:
     volumes:
       - labitat_data:/data
       - ./config.yaml:/app/config.yaml:ro
-    
+
     environment:
       # Required: 32+ character random string for encryption
       # Generate with: openssl rand -base64 32
@@ -16,6 +16,8 @@ services:
       - NODE_ENV=production
       # Optional: customize port
       # - PORT=3000
+      # Cache directory for widget cache persistence
+      - CACHE_DIR=/data/cache
     
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]

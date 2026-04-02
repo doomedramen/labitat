@@ -48,8 +48,8 @@ COPY --from=builder --chown=labitat:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=labitat:nodejs /app/drizzle.config.ts ./
 COPY --from=builder --chown=labitat:nodejs /app/lib ./lib
 
-# Create data directory for SQLite database
-RUN mkdir -p /data && chown -R labitat:nodejs /data
+# Create data directory for SQLite database and cache
+RUN mkdir -p /data/cache && chown -R labitat:nodejs /data
 
 # Copy and set up entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
