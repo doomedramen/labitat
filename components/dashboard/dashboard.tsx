@@ -33,7 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ModeToggle } from "@/components/mode-toggle"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { PaletteSwitcher } from "@/components/palette-switcher"
 import { Group, GroupDragPreview } from "./group"
 import { ItemCardDragPreview } from "./item"
@@ -313,7 +313,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     <>
       <div className={cn("min-h-svh p-6", editMode && "pb-24")}>
         {/* Header */}
-        <header className="mb-8 flex items-center justify-between gap-4">
+        <header className="mb-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
           {editMode ? (
             <Input
               value={dashboardTitle}
@@ -321,7 +321,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                 setDashboardTitle(e.target.value)
                 setTitleChanged(true)
               }}
-              className="h-8 w-[200px]"
+              className="h-8 w-full max-w-[200px]"
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
                   setDashboardTitle(title)
@@ -338,7 +338,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           )}
           <div className="flex items-center gap-2">
             <PaletteSwitcher />
-            <ModeToggle />
+            <ThemeToggle />
             {isLoggedIn ? (
               !editMode && (
                 <Button

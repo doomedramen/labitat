@@ -12,8 +12,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export function ModeToggle() {
+export function ThemeToggle() {
   const { setTheme } = useTheme()
+  const [palette, setPalette] = React.useState<string>("")
+
+  React.useEffect(() => {
+    // Try localStorage first for instant load, fall back to DOM attribute
+    const stored = localStorage.getItem("labitat-palette")
+    const current =
+      stored ||
+      document.documentElement.getAttribute("data-palette") ||
+      "default"
+    setPalette(current)
+  }, [])
+
+  // AMOLED is dark-only, hide the mode toggle
+  if (palette === "amoled") return null
 
   return (
     <DropdownMenu>
@@ -26,7 +40,7 @@ export function ModeToggle() {
           </Button>
         )}
       />
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="z-[100]">
         <DropdownMenuItem onClick={() => setTheme("light")}>
           Light
         </DropdownMenuItem>

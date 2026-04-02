@@ -22,14 +22,19 @@ export function PaletteSwitcher() {
   const [palette, setPalette] = React.useState<string>("")
 
   React.useEffect(() => {
+    // Try localStorage first for instant load, fall back to DOM attribute
+    const stored = localStorage.getItem("labitat-palette")
     const current =
-      document.documentElement.getAttribute("data-palette") ?? "default"
+      stored ||
+      document.documentElement.getAttribute("data-palette") ||
+      "default"
     setPalette(current)
   }, [])
 
   async function handleChange(value: string | null) {
     if (!value) return
     setPalette(value)
+    localStorage.setItem("labitat-palette", value)
     document.documentElement.setAttribute("data-palette", value)
     await updatePalette(value)
   }
@@ -44,7 +49,7 @@ export function PaletteSwitcher() {
       >
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="z-[100]">
         {PALETTES.map((p) => (
           <SelectItem key={p.id} value={p.id}>
             {p.label}
