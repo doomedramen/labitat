@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition, useState, useEffect } from "react"
+import { useTransition, useState, Suspense } from "react"
 import {
   GlobeIcon,
   GripVerticalIcon,
@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { deleteItem } from "@/actions/items"
-import { fetchServiceData } from "@/actions/services"
+import { getWidgetData } from "@/actions/widget-data"
 import { pingUrl } from "@/actions/ping"
 import type { ItemRow } from "@/lib/types"
 import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
@@ -19,6 +19,7 @@ import { dataToStatus } from "@/lib/adapters/types"
 import { getService } from "@/lib/adapters"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import useSWR from "swr"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -167,87 +168,71 @@ type ItemCardProps = {
 
 export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const [isPending, startTransition] = useTransition()
-  const [serviceData, setServiceData] = useState<ServiceData | null>(null)
-  const [pingStatus, setPingStatus] = useState<ServiceStatus | null>(null)
-  const [isLoading, setIsLoading] = useState(
-    !!item.serviceType && !getService(item.serviceType)?.clientSide
-  )
 
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
   const isClientSide = serviceDef?.clientSide
-  const shouldPollService =
-    !editMode && item.serviceType && serviceDef && !isClientSide
+
+  // Determine what to fetch
+  const shouldFetchService = !editMode && item.serviceType && serviceDef
   const shouldPing = !editMode && !item.serviceType && item.href
+
+  // Use SWR for service data fetching (keeps API keys on server)
+  const {
+    data: serviceData,
+    isLoading: isServiceLoading,
+    error: serviceError,
+  } = useSWR<ServiceData | null>(
+    shouldFetchService && !isClientSide ? `widget:${item.id}` : null,
+    () => getWidgetData(item.id),
+    {
+      refreshInterval: pollingMs,
+      dedupingInterval: pollingMs,
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Only retry up to 3 times, then wait longer
+        if (retryCount >= 3) return
+        setTimeout(() => revalidate({ retryCount }), pollingMs)
+      },
+    }
+  )
+
+  // Use SWR for ping data
+  const { data: pingStatus, isLoading: isPingLoading } =
+    useSWR<ServiceStatus | null>(
+      shouldPing ? `ping:${item.id}:${item.href}` : null,
+      () => pingUrl(item.href!),
+      {
+        refreshInterval: pollingMs,
+        dedupingInterval: pollingMs,
+        revalidateOnFocus: false,
+        revalidateIfStale: false,
+      }
+    )
 
   // Compute derived state
   const effectiveData = editMode ? null : serviceData
-  const effectiveLoading = editMode ? false : isLoading
+  const effectiveLoading = editMode
+    ? false
+    : shouldFetchService && !isClientSide
+      ? isServiceLoading
+      : shouldPing
+        ? isPingLoading
+        : false
 
   // Compute status from service data or ping
   // Only show status if item has href (for ping)
   const hasStatus = !!item.href
   const serviceStatus: ServiceStatus = editMode
     ? { state: "unknown" }
-    : (pingStatus ??
-      (effectiveData ? dataToStatus(effectiveData) : { state: "unknown" }))
-
-  // Poll service data when not in edit mode (server-side adapters)
-  useEffect(() => {
-    if (!shouldPollService) return
-
-    const poll = async () => {
-      try {
-        const data = await fetchServiceData(item.id)
-        setServiceData(data)
-        setIsLoading(false)
-      } catch {
-        setServiceData({ _status: "error", _statusText: "Failed to fetch" })
-        setIsLoading(false)
-      }
-    }
-
-    poll()
-
-    const interval = setInterval(poll, pollingMs)
-    return () => clearInterval(interval)
-  }, [shouldPollService, item.id, pollingMs])
-
-  // Client-side widgets handle their own updates (e.g., DateTime updates every second)
-  useEffect(() => {
-    if (!isClientSide || !serviceDef || editMode) return
-
-    // For client-side widgets, we pass the config to the widget
-    // and let it handle its own state/updates
-    const parseConfig = () => {
-      try {
-        if (item.configEnc) {
-          // This would need decryption on client, which we can't do
-          // So client-side widgets should use config from initialData or defaults
-        }
-      } catch {
-        // Ignore
-      }
-    }
-    parseConfig()
-
-    // Client-side widgets are responsible for their own polling
-    // This effect just ensures they're not polled by the server mechanism
-  }, [isClientSide, serviceDef, editMode, item.configEnc])
-
-  // Ping URL for non-service items
-  useEffect(() => {
-    if (!shouldPing) return
-
-    const ping = async () => {
-      const status = await pingUrl(item.href!)
-      setPingStatus(status)
-    }
-
-    ping()
-    const interval = setInterval(ping, pollingMs)
-    return () => clearInterval(interval)
-  }, [shouldPing, item.href, pollingMs])
+    : serviceError
+      ? { state: "error", reason: serviceError.message || "Failed to fetch" }
+      : pingStatus
+        ? pingStatus
+        : effectiveData
+          ? dataToStatus(effectiveData)
+          : { state: "unknown" }
 
   const {
     attributes,

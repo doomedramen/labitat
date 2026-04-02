@@ -6,8 +6,8 @@ import { settings } from "@/lib/db/schema"
 import { Dashboard } from "@/components/dashboard/dashboard"
 import { DashboardSkeleton } from "@/components/dashboard/skeleton"
 
-// Always fetch fresh data - no caching
-export const dynamic = "force-dynamic"
+// Revalidate every 60 seconds - serves cached HTML instantly
+export const revalidate = 60
 
 async function DashboardContent() {
   const [session, groupsWithItems, titleSetting] = await Promise.all([

@@ -29,7 +29,7 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
   const pollingMs = item.pollingMs ?? adapter.defaultPollingMs ?? 10000
 
   // Check cache
-  const cached = getCached<ServiceData>(`service:${itemId}`, pollingMs)
+  const cached = await getCached<ServiceData>(`service:${itemId}`, pollingMs)
   if (cached) {
     return cached
   }
@@ -56,7 +56,7 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
         _status: "error",
         _statusText: "Failed to decrypt credentials — check SECRET_KEY",
       }
-      setCached(`service:${itemId}`, errorResponse)
+      await setCached(`service:${itemId}`, errorResponse)
       return errorResponse
     }
   }
@@ -86,7 +86,7 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       ...data,
       _status: data._status ?? "ok",
     }
-    setCached(`service:${itemId}`, responseData)
+    await setCached(`service:${itemId}`, responseData)
     return responseData
   } catch (err) {
     const errorResponse: ServiceData = {
@@ -94,7 +94,7 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       _statusText: err instanceof Error ? err.message : "Failed to fetch data",
     }
     // Cache errors briefly to avoid hammering
-    setCached(`service:${itemId}`, errorResponse)
+    await setCached(`service:${itemId}`, errorResponse)
     return errorResponse
   }
 }

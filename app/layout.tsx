@@ -3,6 +3,7 @@ import type { Viewport, Metadata } from "next"
 import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
+import { SWRProvider } from "@/components/swr-provider"
 import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
@@ -56,9 +57,11 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster richColors position="top-right" />
-          <ServiceWorkerRegistrar />
+          <SWRProvider>
+            {children}
+            <Toaster richColors position="top-right" />
+            <ServiceWorkerRegistrar />
+          </SWRProvider>
         </ThemeProvider>
       </body>
     </html>
