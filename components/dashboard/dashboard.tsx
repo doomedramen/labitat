@@ -41,6 +41,15 @@ import { EditBar } from "./edit-bar"
 import { GroupDialog } from "@/components/editor/group-dialog"
 import { ItemDialog } from "@/components/editor/item-dialog"
 import { LoginForm } from "@/app/login/login-form"
+import { Palette } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 type DashboardProps = {
   groups: GroupWithItems[]
@@ -337,19 +346,40 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             </h1>
           )}
           <div className="flex items-center gap-2">
-            <PaletteSwitcher />
-            <ThemeToggle />
             {isLoggedIn ? (
-              !editMode && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEditMode(true)}
-                  data-testid="edit-button"
-                >
-                  Edit
-                </Button>
-              )
+              <>
+                {!editMode && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditMode(true)}
+                    data-testid="edit-button"
+                  >
+                    Edit
+                  </Button>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={(props) => (
+                      <Button variant="outline" size="icon" {...props}>
+                        <Palette className="h-4 w-4" />
+                        <span className="sr-only">Theme settings</span>
+                      </Button>
+                    )}
+                  />
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel>Theme</DropdownMenuLabel>
+                      <ThemeToggle />
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel>Palette</DropdownMenuLabel>
+                      <PaletteSwitcher />
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             ) : (
               <Button
                 variant="outline"
