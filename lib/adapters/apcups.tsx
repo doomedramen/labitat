@@ -14,10 +14,10 @@ type ApcupsData = {
 function ApcupsWidget({ status, load, charge, timeLeft }: ApcupsData) {
   const items = [
     { value: status, label: "Status" },
-    { value: `${load}%`, label: "Load" },
-    { value: `${charge}%`, label: "Battery" },
+    { value: `${parseFloat(load) ?? 0}%`, label: "Load" },
+    { value: `${parseFloat(charge) ?? 0}%`, label: "Battery" },
     {
-      value: `${Math.floor((parseFloat(timeLeft) ?? 0) * 60)} min`,
+      value: `${Math.floor(parseFloat(timeLeft) ?? 0)} min`,
       label: "Time Left",
     },
   ]
