@@ -25,7 +25,7 @@ export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
       label: "API URL",
       type: "url",
       required: true,
-      placeholder: "http://192.168.1.1/api/status",
+      placeholder: "http://10.0.0.1/api/status",
       helperText: "The full URL of the REST API endpoint",
     },
     {

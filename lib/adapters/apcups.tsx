@@ -38,7 +38,7 @@ export const apcupsDefinition: ServiceDefinition<ApcupsData> = {
       label: "Host",
       type: "text",
       required: true,
-      placeholder: "192.168.1.78",
+      placeholder: "10.0.0.78",
       helperText: "The host running apcupsd with NIS server enabled",
     },
     {

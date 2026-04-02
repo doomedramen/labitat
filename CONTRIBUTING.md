@@ -93,7 +93,7 @@ export const yourServiceDefinition: ServiceDefinition<YourServiceData> = {
       label: 'URL',
       type: 'url',
       required: true,
-      placeholder: 'http://192.168.1.1',
+      placeholder: 'http://10.0.0.1',
     },
     {
       key: 'apiKey',

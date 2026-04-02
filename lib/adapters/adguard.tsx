@@ -34,7 +34,7 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://192.168.1.2",
+      placeholder: "http://10.0.0.2",
       helperText: "The base URL of your AdGuard Home instance",
     },
     {

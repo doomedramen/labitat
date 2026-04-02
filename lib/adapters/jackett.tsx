@@ -30,7 +30,7 @@ export const jackettDefinition: ServiceDefinition<JackettData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://192.168.1.2:9117",
+      placeholder: "http://10.0.0.2:9117",
       helperText: "The base URL of your Jackett instance",
     },
     {

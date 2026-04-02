@@ -37,7 +37,7 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         label: "URL",
         type: "url",
         required: true,
-        placeholder: "http://192.168.1.2:81",
+        placeholder: "http://10.0.0.2:81",
         helperText: "The base URL of your Nginx Proxy Manager instance",
       },
       {

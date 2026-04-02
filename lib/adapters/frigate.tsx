@@ -42,7 +42,7 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://192.168.1.2:5000",
+      placeholder: "http://10.0.0.2:5000",
       helperText: "The base URL of your Frigate instance",
     },
     {
