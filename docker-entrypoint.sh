@@ -8,12 +8,6 @@ if [ ! -f /app/config.yaml ]; then
   exit 1
 fi
 
-echo "Running database migrations..."
-# Ensure DATABASE_URL is set for drizzle-kit
-export DATABASE_URL="${DATABASE_URL:-file:/data/labitat.db}"
-# Run drizzle-kit directly from node_modules
-node node_modules/drizzle-kit/bin.cjs migrate
-
 echo "Starting Labitat..."
 # server.js is from Next.js standalone build output
 exec node server.js
