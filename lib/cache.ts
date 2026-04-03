@@ -63,7 +63,7 @@ async function saveCacheToFile() {
     } catch (err) {
       console.error("[cache] Failed to save cache:", err)
     }
-  }, 1000) // Debounce saves by 1 second
+  }, 100) // Debounce saves by 100ms to avoid excessive disk writes
 }
 
 export async function getCached<T>(

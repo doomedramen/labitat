@@ -189,7 +189,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       refreshInterval: pollingMs,
       dedupingInterval: pollingMs,
       revalidateOnFocus: false,
-      revalidateIfStale: false,
+      revalidateIfStale: true,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
         // Only retry up to 3 times, then wait longer
         if (retryCount >= 3) return
@@ -207,7 +207,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
         refreshInterval: pollingMs,
         dedupingInterval: pollingMs,
         revalidateOnFocus: false,
-        revalidateIfStale: false,
+        revalidateIfStale: true,
       }
     )
 
