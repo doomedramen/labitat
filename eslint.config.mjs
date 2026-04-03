@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     "tests/**",
     // Homepage clone should be ignored
     "homepage/**",
+    // VitePress generated files
+    "docs/.vitepress/**",
   ]),
 ]);
 

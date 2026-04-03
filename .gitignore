@@ -48,3 +48,5 @@ next-env.d.ts
 
 # service worker (generated)
 /public/sw.js
+/docs/.vitepress/cache
+/docs/.vitepress/dist
