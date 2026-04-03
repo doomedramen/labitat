@@ -4,18 +4,6 @@ Comprehensive end-to-end tests for Labitat using Playwright. All tests use **rea
 
 ## Setup
 
-### Prerequisites
-
-The tests require a config file with test credentials. Create `config.yaml` in the project root:
-
-```yaml
-auth:
-  email: admin@example.com
-  password_hash: $2b$10$rHkzG.yF5x8qJ9zN5qP5uO8vZ3xY2wV1uT0sR9qP8oN7mL6kJ5iH4g
-```
-
-The password hash above is for `admin123`.
-
 ### Install Browsers
 
 ```bash
@@ -118,8 +106,7 @@ Tests run in CI with:
 ## Common Issues
 
 ### Tests fail because element not found
-- Ensure config.yaml exists with correct credentials
-- Check if database is empty (tests expect clean state)
+- Ensure the test database is clean (global-setup seeds the admin user)
 - Increase timeout in playwright.config.ts if needed
 
 ### Drag and drop tests flaky

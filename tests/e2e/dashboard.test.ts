@@ -1,4 +1,15 @@
-import { test, expect } from "@playwright/test"
+import { test, expect, type Page } from "@playwright/test"
+
+const TEST_EMAIL = "admin@example.com"
+const TEST_PASSWORD = "admin123"
+
+async function login(page: Page) {
+  await page.goto("/login")
+  await page.getByTestId("email-input").fill(TEST_EMAIL)
+  await page.getByTestId("password-input").fill(TEST_PASSWORD)
+  await page.getByTestId("submit-button").click()
+  await page.waitForURL("/")
+}
 
 test.describe("Dashboard - Empty State", () => {
   test("should show empty state message when no groups exist", async ({
@@ -23,40 +34,21 @@ test.describe("Dashboard - Empty State", () => {
   })
 
   test("should show edit button for logged in users", async ({ page }) => {
-    // Login first
-    await page.goto("/login")
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
-    await page.getByTestId("submit-button").click()
-    await page.waitForURL("/")
-
-    // Should see Edit button
+    await login(page)
     await expect(page.getByTestId("edit-button")).toBeVisible()
   })
 })
 
 test.describe("Dashboard - Content", () => {
   test("should display dashboard title", async ({ page }) => {
-    // Login first
-    await page.goto("/login")
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
-    await page.getByTestId("submit-button").click()
-    await page.waitForURL("/")
-
-    // Should have a title/heading
+    await login(page)
     await expect(page.getByTestId("dashboard-title")).toBeVisible()
   })
 
   test("should toggle edit mode with keyboard shortcut (E key)", async ({
     page,
   }) => {
-    // Login first
-    await page.goto("/login")
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
-    await page.getByTestId("submit-button").click()
-    await page.waitForURL("/")
+    await login(page)
 
     // Press 'e' to toggle edit mode
     await page.keyboard.press("e")
@@ -71,12 +63,7 @@ test.describe("Dashboard - Content", () => {
   })
 
   test("should exit edit mode with Done button", async ({ page }) => {
-    // Login first
-    await page.goto("/login")
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
-    await page.getByTestId("submit-button").click()
-    await page.waitForURL("/")
+    await login(page)
 
     // Enter edit mode with Edit button
     await page.getByTestId("edit-button").click()
@@ -90,12 +77,7 @@ test.describe("Dashboard - Content", () => {
   })
 
   test("should exit edit mode with Escape key", async ({ page }) => {
-    // Login first
-    await page.goto("/login")
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
-    await page.getByTestId("submit-button").click()
-    await page.waitForURL("/")
+    await login(page)
 
     // Enter edit mode
     await page.getByTestId("edit-button").click()
@@ -133,12 +115,7 @@ test.describe("Dashboard - Empty State Edit Mode", () => {
   test("should show helpful message in empty state when logged in", async ({
     page,
   }) => {
-    // Login first
-    await page.goto("/login")
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
-    await page.getByTestId("submit-button").click()
-    await page.waitForURL("/")
+    await login(page)
 
     // Enter edit mode
     await page.getByTestId("edit-button").click()

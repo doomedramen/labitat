@@ -1,4 +1,0 @@
-auth:
-  email: admin@home.lab
-  # Generate with: node -e "require('bcryptjs').hash('yourpassword', 12).then(console.log)"
-  passwordHash: "$2b$12$..."

@@ -8,6 +8,13 @@
       "when": 1774969717437,
       "tag": "0000_lyrical_betty_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1775244936258,
+      "tag": "0001_overjoyed_chimera",
+      "breakpoints": true
     }
   ]
 }

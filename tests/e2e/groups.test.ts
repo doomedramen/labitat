@@ -1,13 +1,19 @@
-import { test, expect } from "@playwright/test"
+import { test, expect, type Page } from "@playwright/test"
+
+const TEST_EMAIL = "admin@example.com"
+const TEST_PASSWORD = "admin123"
+
+async function login(page: Page) {
+  await page.goto("/login")
+  await page.getByTestId("email-input").fill(TEST_EMAIL)
+  await page.getByTestId("password-input").fill(TEST_PASSWORD)
+  await page.getByTestId("submit-button").click()
+  await page.waitForURL("/")
+}
 
 test.describe("Group Management", () => {
   test.beforeEach(async ({ page }) => {
-    // Login before each test
-    await page.goto("/login")
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
-    await page.getByTestId("submit-button").click()
-    await page.waitForURL("/")
+    await login(page)
   })
 
   test("should create a new group", async ({ page }) => {

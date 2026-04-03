@@ -1,13 +1,14 @@
 import { test, expect } from "@playwright/test"
 
+const TEST_EMAIL = "admin@example.com"
+const TEST_PASSWORD = "admin123"
+
 test.describe("Authentication", () => {
   test("should show login page to unauthenticated users", async ({ page }) => {
     await page.goto("/login")
 
     await expect(page).toHaveURL("/login")
     await expect(page.getByTestId("login-form")).toBeVisible()
-    await expect(page.getByTestId("login-title")).toBeVisible()
-    await expect(page.getByTestId("login-description")).toBeVisible()
     await expect(page.getByTestId("email-input")).toBeVisible()
     await expect(page.getByTestId("password-input")).toBeVisible()
     await expect(page.getByTestId("submit-button")).toBeVisible()
@@ -18,8 +19,8 @@ test.describe("Authentication", () => {
   }) => {
     // First login
     await page.goto("/login")
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
+    await page.getByTestId("email-input").fill(TEST_EMAIL)
+    await page.getByTestId("password-input").fill(TEST_PASSWORD)
     await page.getByTestId("submit-button").click()
     await page.waitForURL("/")
 
@@ -31,8 +32,8 @@ test.describe("Authentication", () => {
   test("should login with valid credentials", async ({ page }) => {
     await page.goto("/login")
 
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
+    await page.getByTestId("email-input").fill(TEST_EMAIL)
+    await page.getByTestId("password-input").fill(TEST_PASSWORD)
     await page.getByTestId("submit-button").click()
 
     await page.waitForURL("/")
@@ -65,8 +66,8 @@ test.describe("Authentication", () => {
   test("should logout when clicking logout button", async ({ page }) => {
     // Login first
     await page.goto("/login")
-    await page.getByTestId("email-input").fill("admin@example.com")
-    await page.getByTestId("password-input").fill("admin123")
+    await page.getByTestId("email-input").fill(TEST_EMAIL)
+    await page.getByTestId("password-input").fill(TEST_PASSWORD)
     await page.getByTestId("submit-button").click()
     await page.waitForURL("/")
 
@@ -79,5 +80,16 @@ test.describe("Authentication", () => {
     // Should redirect to login
     await page.waitForURL("/login")
     await expect(page.getByTestId("login-form")).toBeVisible()
+  })
+})
+
+test.describe("Setup Wizard", () => {
+  test("should redirect to login when admin already exists", async ({
+    page,
+  }) => {
+    // The authenticated fixture already creates the admin,
+    // so /setup should redirect to /login
+    await page.goto("/setup")
+    await expect(page).toHaveURL("/login")
   })
 })

@@ -1,3 +1,4 @@
+import { hasAdminUser } from "@/actions/auth"
 import { getSession } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { LoginForm } from "./login-form"
@@ -6,6 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 export default async function LoginPage() {
   const session = await getSession()
   if (session.loggedIn) redirect("/")
+
+  // If no admin exists yet, redirect to setup
+  const hasAdmin = await hasAdminUser()
+  if (!hasAdmin) redirect("/setup")
 
   return (
     <main className="flex min-h-svh items-center justify-center p-6">

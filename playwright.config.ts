@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test"
 
 export default defineConfig({
   testDir: "./tests",
+  globalSetup: "./tests/global-setup.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
@@ -59,7 +60,6 @@ export default defineConfig({
     env: {
       NODE_ENV: "test",
       PORT: "3000",
-      CONFIG_PATH: "./config.test.yaml",
     },
   },
 })

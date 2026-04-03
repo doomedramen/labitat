@@ -5,8 +5,7 @@ import { sessionOptions, type SessionData } from "@/lib/session"
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Redirect to dashboard if already logged in and visiting /login
-  if (pathname === "/login") {
+  if (pathname === "/login" || pathname === "/setup") {
     const response = NextResponse.next()
     const session = await getIronSession<SessionData>(
       request,
@@ -22,5 +21,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login"],
+  matcher: ["/login", "/setup"],
 }
