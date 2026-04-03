@@ -212,27 +212,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     [startTransition]
   )
 
-  // ── Keyboard shortcut: E to toggle edit mode ───────────────────────────────
-  useEffect(() => {
-    if (!isLoggedIn) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key !== "e" && e.key !== "E") return
-      if (e.metaKey || e.ctrlKey || e.altKey) return
-      const t = e.target as HTMLElement
-      if (
-        t.tagName === "INPUT" ||
-        t.tagName === "TEXTAREA" ||
-        t.tagName === "SELECT" ||
-        t.isContentEditable
-      )
-        return
-      e.preventDefault()
-      setEditMode((m) => !m)
-    }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [isLoggedIn])
-
   // ── Dialog state ───────────────────────────────────────────────────────────
   const [groupDialogOpen, setGroupDialogOpen] = useState(false)
   const [editingGroup, setEditingGroup] = useState<GroupRow | null>(null)
@@ -518,11 +497,7 @@ function EmptyState({
             'Use "Add group" below to get started.'
           ) : (
             <>
-              No groups yet. Click <strong>Edit</strong> or press{" "}
-              <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
-                E
-              </kbd>{" "}
-              to start.
+              No groups yet. Click <strong>Edit</strong> to start.
             </>
           )
         ) : (
