@@ -325,9 +325,9 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
               : item.label}
           </p>
           {editMode && (
-            <div className="mt-0.5 space-y-0.5 text-xs text-muted-foreground">
+            <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
               {serviceDef && <span>{serviceDef.name}</span>}
-              {item.href && <span className="block truncate">{item.href}</span>}
+              {item.href && <span className="truncate">{item.href}</span>}
               <span>{pollingMs / 1000}s poll</span>
             </div>
           )}
