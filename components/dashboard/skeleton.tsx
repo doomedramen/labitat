@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function ItemCardSkeleton() {
   return (
-    <div className="min-h-[3.25rem] rounded-xl bg-card px-3 py-2 ring-1 ring-foreground/10">
+    <div className="min-h-[3.25rem] rounded-xl border border-border bg-card px-3 py-2">
       <div className="flex items-center gap-3">
         <Skeleton className="size-9 flex-none rounded-md" />
         <Skeleton className="h-4 w-24 rounded-md" />
@@ -17,7 +17,7 @@ function GroupSkeleton({ itemCount }: { itemCount: number }) {
       <div className="mb-3">
         <Skeleton className="h-3 w-20 rounded-md" />
       </div>
-      <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
         {Array.from({ length: itemCount }).map((_, i) => (
           <ItemCardSkeleton key={i} />
         ))}

@@ -1,8 +1,8 @@
 "use client"
 
-import * as React from "react"
 import { Moon, Sun, Monitor } from "lucide-react"
 import { useTheme } from "next-themes"
+import { usePalette } from "@/hooks/use-palette"
 import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -10,16 +10,7 @@ import {
 
 export function ThemeToggle({ onSelect }: { onSelect?: () => void }) {
   const { theme, setTheme } = useTheme()
-  const [palette, setPalette] = React.useState<string>("")
-
-  React.useEffect(() => {
-    const stored = localStorage.getItem("labitat-palette")
-    const current =
-      stored ||
-      document.documentElement.getAttribute("data-palette") ||
-      "default"
-    setPalette(current)
-  }, [])
+  const { palette } = usePalette()
 
   // AMOLED is dark-only, hide the theme toggle
   if (palette === "amoled") return null

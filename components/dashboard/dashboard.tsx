@@ -226,6 +226,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         t.isContentEditable
       )
         return
+      e.preventDefault()
       setEditMode((m) => !m)
     }
     window.addEventListener("keydown", handler)
@@ -291,7 +292,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   const handleGroupCreated = useCallback(
     (name: string) => {
       const tempGroup: GroupWithItems = {
-        id: `__opt_${Date.now()}`,
+        id: crypto.randomUUID(),
         name,
         order: sortedGroups.length,
         createdAt: null,
@@ -505,7 +506,7 @@ function EmptyState({
 }) {
   return (
     <div
-      className="flex flex-col items-center justify-center py-24 text-center"
+      className="flex flex-col items-center justify-center rounded-xl border bg-muted/30 py-24 text-center"
       data-testid="empty-state"
     >
       <p
@@ -518,8 +519,10 @@ function EmptyState({
           ) : (
             <>
               No groups yet. Click <strong>Edit</strong> or press{" "}
-              <kbd className="rounded border px-1 font-mono text-xs">E</kbd> to
-              start.
+              <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
+                E
+              </kbd>{" "}
+              to start.
             </>
           )
         ) : (

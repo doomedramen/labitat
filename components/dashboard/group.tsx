@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition, useState } from "react"
+import { useTransition, useState, useCallback } from "react"
 import {
   ChevronDownIcon,
   GripVerticalIcon,
@@ -33,6 +33,50 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+const COLLAPSED_GROUPS_KEY = "labitat-collapsed-groups"
+
+function useCollapsedState(
+  groupId: string
+): [boolean, (open: boolean) => void] {
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      const stored = localStorage.getItem(COLLAPSED_GROUPS_KEY)
+      if (stored) {
+        const ids = JSON.parse(stored) as string[]
+        return ids.includes(groupId)
+      }
+    } catch (error) {
+      console.warn("Failed to read collapsed state:", error)
+    }
+    return false
+  })
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      setCollapsed(() => {
+        const next = !open
+        try {
+          const stored = localStorage.getItem(COLLAPSED_GROUPS_KEY)
+          const ids: string[] = stored ? JSON.parse(stored) : []
+          if (next) {
+            if (!ids.includes(groupId)) ids.push(groupId)
+          } else {
+            const idx = ids.indexOf(groupId)
+            if (idx >= 0) ids.splice(idx, 1)
+          }
+          localStorage.setItem(COLLAPSED_GROUPS_KEY, JSON.stringify(ids))
+        } catch (error) {
+          console.warn("Failed to persist collapsed state:", error)
+        }
+        return next
+      })
+    },
+    [groupId]
+  )
+
+  return [collapsed, handleOpenChange]
+}
+
 type GroupProps = {
   group: GroupWithItems
   editMode: boolean
@@ -53,34 +97,7 @@ export function Group({
   onItemDeleted,
 }: GroupProps) {
   const [isPending, startTransition] = useTransition()
-  const [collapsed, setCollapsed] = useState(() => {
-    try {
-      const stored = localStorage.getItem("labitat-collapsed-groups")
-      if (stored) {
-        const ids = JSON.parse(stored) as string[]
-        return ids.includes(group.id)
-      }
-    } catch {}
-    return false
-  })
-
-  const handleOpenChange = (open: boolean) => {
-    setCollapsed((prev) => {
-      const next = !open
-      try {
-        const stored = localStorage.getItem("labitat-collapsed-groups")
-        const ids: string[] = stored ? JSON.parse(stored) : []
-        if (next) {
-          if (!ids.includes(group.id)) ids.push(group.id)
-        } else {
-          const idx = ids.indexOf(group.id)
-          if (idx >= 0) ids.splice(idx, 1)
-        }
-        localStorage.setItem("labitat-collapsed-groups", JSON.stringify(ids))
-      } catch {}
-      return next
-    })
-  }
+  const [collapsed, handleOpenChange] = useCollapsedState(group.id)
 
   const {
     attributes,
@@ -130,7 +147,7 @@ export function Group({
           </button>
         ) : (
           <button
-            onClick={() => setCollapsed((prev) => !prev)}
+            onClick={() => handleOpenChange(!collapsed)}
             className="flex items-center gap-1.5 text-muted-foreground/40 hover:text-muted-foreground"
             aria-label={collapsed ? "Expand group" : "Collapse group"}
           >
@@ -229,7 +246,7 @@ export function Group({
               {editMode && (
                 <button
                   onClick={() => onAddItem(group.id)}
-                  className="flex min-h-[3.25rem] items-center justify-center gap-1.5 rounded-xl border border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/30 hover:text-foreground"
+                  className="flex min-h-[3.25rem] items-center justify-center gap-1.5 rounded-xl border border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/30 hover:text-foreground"
                   data-testid="add-item-button"
                 >
                   <PlusIcon className="size-4" />
@@ -247,7 +264,7 @@ export function Group({
 /** Shown inside DragOverlay while a group is being dragged */
 export function GroupDragPreview({ group }: { group: GroupWithItems }) {
   return (
-    <div className="cursor-grabbing rounded-xl bg-background/80 px-3 py-2 shadow-lg ring-2 ring-primary/30 backdrop-blur-sm">
+    <div className="cursor-grabbing rounded-xl bg-popover/80 px-3 py-2 shadow-lg ring-2 ring-ring backdrop-blur-sm">
       <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
         {group.name}
       </span>

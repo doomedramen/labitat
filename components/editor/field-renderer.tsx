@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import type { FieldDef } from "@/lib/adapters/types"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,6 +30,11 @@ export function FieldRenderer({
 }: FieldRendererProps) {
   const id = `field-${field.key}`
   const name = `config_${field.key}`
+  const [selectValue, setSelectValue] = useState(
+    field.type === "select" && field.options
+      ? defaultValue || field.options[0]?.value
+      : ""
+  )
 
   if (field.type === "select" && field.options) {
     return (
@@ -39,7 +45,10 @@ export function FieldRenderer({
         </Label>
         <Select
           name={name}
-          defaultValue={defaultValue || field.options[0]?.value}
+          value={selectValue}
+          onValueChange={(v) => {
+            if (v != null) setSelectValue(v)
+          }}
           disabled={disabled}
         >
           <SelectTrigger id={id} className="w-full">

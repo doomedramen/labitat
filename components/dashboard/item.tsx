@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition, useState, Suspense } from "react"
+import { useTransition, useState } from "react"
 import {
   GlobeIcon,
   GripVerticalIcon,
@@ -123,11 +123,11 @@ function ItemIcon({
 // ── Status dot with tooltip ────────────────────────────────────────────────────
 
 const statusColors: Record<ServiceStatus["state"], string> = {
-  healthy: "bg-green-500",
-  reachable: "bg-gray-400",
-  unreachable: "bg-red-500",
-  error: "bg-red-500",
-  unknown: "bg-gray-400",
+  healthy: "bg-chart-3",
+  reachable: "bg-muted-foreground/50",
+  unreachable: "bg-destructive",
+  error: "bg-destructive",
+  unknown: "bg-muted-foreground/50",
 }
 
 const statusLabels: Record<ServiceStatus["state"], string> = {
@@ -345,11 +345,10 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group/item relative overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition-all duration-200 ease-in-out",
+        "group/item relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 ease-in-out",
         editMode
-          ? "ring-2 ring-border"
-          : item.href &&
-              "cursor-pointer hover:shadow-md hover:ring-foreground/20"
+          ? "border-ring/50"
+          : item.href && "cursor-pointer hover:border-ring/50 hover:shadow-md"
       )}
     >
       {!editMode && item.href ? (
@@ -370,7 +369,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
           <Button
             size="icon-xs"
             variant="ghost"
-            className="pointer-events-auto bg-background/70"
+            className="pointer-events-auto bg-popover/80"
             onClick={() => onEdit(item)}
             data-testid="item-edit-button"
           >
@@ -384,7 +383,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
                 <Button
                   size="icon-xs"
                   variant="ghost"
-                  className="pointer-events-auto bg-background/70 text-destructive"
+                  className="pointer-events-auto bg-popover/80 text-destructive"
                   disabled={isPending}
                   data-testid="item-delete-button"
                 />
@@ -424,7 +423,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
 /** Shown inside DragOverlay while an item is being dragged */
 export function ItemCardDragPreview({ item }: { item: ItemRow }) {
   return (
-    <div className="flex min-h-[3.25rem] items-center gap-3 rounded-xl bg-background/90 px-3 py-2.5 shadow-lg ring-2 ring-primary/30 backdrop-blur-sm">
+    <div className="flex min-h-[3.25rem] items-center gap-3 rounded-xl bg-popover/90 px-3 py-2.5 shadow-lg ring-2 ring-ring backdrop-blur-sm">
       <ItemIcon iconUrl={item.iconUrl} label={item.label} href={item.href} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm leading-snug font-medium">

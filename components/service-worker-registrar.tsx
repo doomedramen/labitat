@@ -3,6 +3,8 @@
 
 import { useEffect, useState } from "react"
 
+const IOS_INSTALL_DISMISSED_KEY = "labitat-ios-install-dismissed"
+
 export function ServiceWorkerRegistrar() {
   const [isIOS, setIsIOS] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
@@ -29,7 +31,7 @@ export function ServiceWorkerRegistrar() {
           console.log("Service Worker registered:", registration.scope)
 
           // Check for updates periodically
-          setInterval(
+          const intervalId = setInterval(
             () => {
               registration.update().catch(console.error)
             },
@@ -51,6 +53,9 @@ export function ServiceWorkerRegistrar() {
               }
             })
           })
+
+          // Cleanup interval on unmount
+          return () => clearInterval(intervalId)
         })
         .catch((error) => {
           console.error("Service Worker registration failed:", error)
@@ -70,16 +75,14 @@ function IOSInstallPrompt() {
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
-    const dismissedBefore = localStorage.getItem(
-      "labitat-ios-install-dismissed"
-    )
+    const dismissedBefore = localStorage.getItem(IOS_INSTALL_DISMISSED_KEY)
     if (dismissedBefore) {
       setDismissed(true)
     }
   }, [])
 
   const handleDismiss = () => {
-    localStorage.setItem("labitat-ios-install-dismissed", "true")
+    localStorage.setItem(IOS_INSTALL_DISMISSED_KEY, "true")
     setDismissed(true)
   }
 

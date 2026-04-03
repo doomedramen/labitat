@@ -1,7 +1,6 @@
 "use client"
 
-import * as React from "react"
-import { updatePalette } from "@/actions/settings"
+import { usePalette } from "@/hooks/use-palette"
 import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -22,26 +21,12 @@ const PALETTES = [
 ]
 
 export function PaletteSwitcher({ onSelect }: { onSelect?: () => void }) {
-  const [palette, setPalette] = React.useState<string>("")
-
-  React.useEffect(() => {
-    const stored = localStorage.getItem("labitat-palette")
-    const current =
-      stored ||
-      document.documentElement.getAttribute("data-palette") ||
-      "default"
-    setPalette(current)
-  }, [])
+  const { palette, setPalette } = usePalette()
 
   async function handleChange(value: string) {
-    setPalette(value)
-    localStorage.setItem("labitat-palette", value)
-    document.documentElement.setAttribute("data-palette", value)
-    await updatePalette(value)
+    await setPalette(value)
     onSelect?.()
   }
-
-  if (!palette) return null
 
   return (
     <DropdownMenuRadioGroup value={palette} onValueChange={handleChange}>

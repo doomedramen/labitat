@@ -19,6 +19,7 @@ type GroupDialogProps = {
   onOpenChange: (open: boolean) => void
   group: GroupRow | null
   onSuccess?: (name: string, groupId: string | null) => void
+  onError?: (error: string) => void
 }
 
 export function GroupDialog({
@@ -26,10 +27,16 @@ export function GroupDialog({
   onOpenChange,
   group,
   onSuccess,
+  onError,
 }: GroupDialogProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const isEdit = group !== null
+
+  const handleOpenChange = (open: boolean) => {
+    setError(null)
+    onOpenChange(open)
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -39,7 +46,7 @@ export function GroupDialog({
       (formData.get("name") as string) || "",
       isEdit ? group!.id : null
     )
-    onOpenChange(false)
+    handleOpenChange(false)
 
     startTransition(async () => {
       try {
@@ -49,13 +56,16 @@ export function GroupDialog({
           await createGroup(formData)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong")
+        const message =
+          err instanceof Error ? err.message : "Something went wrong"
+        setError(message)
+        onError?.(message)
       }
     })
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => onOpenChange(o)}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent data-testid="group-dialog">
         <DialogHeader>
           <DialogTitle data-testid="group-dialog-title">

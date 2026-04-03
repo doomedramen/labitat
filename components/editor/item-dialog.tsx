@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition, useState, useEffect } from "react"
+import { useTransition, useState, useEffect, useRef } from "react"
 import { createItem, updateItem, getItemConfig } from "@/actions/items"
 import type { ItemRow } from "@/lib/types"
 import type { ServiceDefinition, FieldDef } from "@/lib/adapters/types"
@@ -36,6 +36,7 @@ type ItemDialogProps = {
   existingItem: ItemRow | null
   groupId: string | null
   onSuccess?: (item: ItemRow, isNew: boolean) => void
+  onError?: (error: string) => void
 }
 
 export function ItemDialog({
@@ -44,6 +45,7 @@ export function ItemDialog({
   existingItem,
   groupId,
   onSuccess,
+  onError,
 }: ItemDialogProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -55,6 +57,7 @@ export function ItemDialog({
   )
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
   const [showIcon, setShowIcon] = useState(existingItem?.iconUrl !== "none")
+  const labelInputRef = useRef<HTMLInputElement>(null)
   const isEdit = existingItem !== null
 
   // Separate services into general widgets and service widgets, sorted alphabetically
@@ -79,7 +82,12 @@ export function ItemDialog({
     { value: "services", items: serviceWidgets },
   ].filter((g) => g.items.length > 0)
 
-  // Initialize state when dialog opens
+  // Clear error state and initialize when dialog opens
+  const handleOpenChange = (open: boolean) => {
+    setError(null)
+    onOpenChange(open)
+  }
+
   useEffect(() => {
     if (!open) return
 
@@ -125,14 +133,10 @@ export function ItemDialog({
   // Auto-update label when service changes (for new items only)
   useEffect(() => {
     if (!open || isEdit || !selectedService) return
-    // Auto-fill label with service name if label is empty or matches previous service name
-    const labelInput = document.getElementById("item-label") as HTMLInputElement
-    const currentLabel = (existingItem as ItemRow | null)?.label ?? ""
-    if (
-      labelInput &&
-      (!labelInput.value || labelInput.value === currentLabel)
-    ) {
-      labelInput.value = selectedService.name
+    const currentLabel = labelInputRef.current?.value ?? ""
+    const previousLabel = (existingItem as ItemRow | null)?.label ?? ""
+    if (!currentLabel || currentLabel === previousLabel) {
+      labelInputRef.current!.value = selectedService.name
     }
   }, [open, isEdit, selectedService, existingItem])
 
@@ -148,7 +152,7 @@ export function ItemDialog({
     }
 
     const optimisticItem: ItemRow = {
-      id: existingItem?.id ?? `__opt_${Date.now()}`,
+      id: existingItem?.id ?? crypto.randomUUID(),
       groupId: groupId!,
       label: (formData.get("label") as string) || "",
       href: (formData.get("href") as string) || null,
@@ -165,7 +169,7 @@ export function ItemDialog({
       createdAt: null,
     }
     onSuccess?.(optimisticItem, !isEdit)
-    onOpenChange(false)
+    handleOpenChange(false)
 
     startTransition(async () => {
       try {
@@ -175,15 +179,16 @@ export function ItemDialog({
           await createItem(groupId, formData)
         }
       } catch (err) {
-        console.error(
+        const message =
           err instanceof Error ? err.message : "Something went wrong"
-        )
+        setError(message)
+        onError?.(message)
       }
     })
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => onOpenChange(o)}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-lg" data-testid="item-dialog">
         <DialogHeader>
           <DialogTitle data-testid="item-dialog-title">
@@ -205,6 +210,7 @@ export function ItemDialog({
                 defaultValue={existingItem?.label ?? ""}
                 placeholder="e.g. Sonarr"
                 autoFocus
+                ref={labelInputRef}
                 data-testid="item-label-input"
               />
             </div>

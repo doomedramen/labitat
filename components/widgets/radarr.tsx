@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils"
 import type { ServiceData } from "@/lib/adapters/types"
 
 type RadarrData = ServiceData & {
@@ -53,5 +54,3 @@ export function RadarrWidget({
     </div>
   )
 }
-
-import { cn } from "@/lib/utils"
