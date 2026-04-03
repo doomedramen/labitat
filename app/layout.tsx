@@ -2,6 +2,7 @@ import "./globals.css"
 import type { Viewport, Metadata } from "next"
 import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeInitScript } from "@/components/theme-init-script"
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { SWRProvider } from "@/components/swr-provider"
 import { cn } from "@/lib/utils"
@@ -49,7 +50,9 @@ export default async function RootLayout({
       data-palette={palette}
       className={cn("font-sans antialiased")}
     >
-      <head />
+      <head>
+        <ThemeInitScript />
+      </head>
       <body>
         <ThemeProvider
           attribute="class"
