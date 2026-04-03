@@ -324,6 +324,13 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
               ? item.label || serviceDef?.name || item.href
               : item.label}
           </p>
+          {editMode && (
+            <div className="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+              {serviceDef && <span>{serviceDef.name}</span>}
+              {item.href && <span className="truncate">{item.href}</span>}
+              <span>{pollingMs / 1000}s poll</span>
+            </div>
+          )}
         </div>
       </div>
       {/* Widget below or loading skeleton */}
