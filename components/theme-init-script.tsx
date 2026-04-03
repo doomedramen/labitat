@@ -1,6 +1,6 @@
 /**
- * Inline script to apply the saved theme before page renders.
- * This prevents the theme from only taking effect after user interaction on mobile.
+ * Inline script to apply the saved theme and palette before page renders.
+ * This prevents the theme/palette from only taking effect after user interaction on mobile.
  */
 export function ThemeInitScript() {
   return (
@@ -9,6 +9,13 @@ export function ThemeInitScript() {
         __html: `
           (function() {
             try {
+              // Apply palette from localStorage immediately
+              var palette = localStorage.getItem('labitat-palette');
+              if (palette) {
+                document.documentElement.setAttribute('data-palette', palette);
+              }
+
+              // Apply theme from localStorage
               var theme = localStorage.getItem('theme');
               if (theme) {
                 if (theme === 'dark') {
