@@ -1,19 +1,14 @@
 "use client"
 
 import { Moon, Sun, Monitor } from "lucide-react"
-import { useTheme } from "next-themes"
-import { usePalette } from "@/hooks/use-palette"
+import { useThemeCookie } from "@/components/theme-provider"
 import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
 
 export function ThemeToggle({ onSelect }: { onSelect?: () => void }) {
-  const { theme, setTheme } = useTheme()
-  const { palette } = usePalette()
-
-  // AMOLED is dark-only, hide the theme toggle
-  if (palette === "amoled") return null
+  const { theme, setTheme } = useThemeCookie()
 
   return (
     <DropdownMenuRadioGroup

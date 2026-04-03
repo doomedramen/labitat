@@ -39,6 +39,7 @@ function useCollapsedState(
   groupId: string
 ): [boolean, (open: boolean) => void] {
   const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false
     try {
       const stored = localStorage.getItem(COLLAPSED_GROUPS_KEY)
       if (stored) {

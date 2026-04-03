@@ -10,8 +10,8 @@ import {
 export function PaletteSwitcher({ onSelect }: { onSelect?: () => void }) {
   const { palette, setPalette } = usePalette()
 
-  async function handleChange(value: string) {
-    await setPalette(value)
+  function handleChange(value: string) {
+    setPalette(value)
     onSelect?.()
   }
 

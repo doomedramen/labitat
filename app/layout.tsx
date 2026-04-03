@@ -1,32 +1,49 @@
 import "./globals.css"
 import type { Viewport, Metadata } from "next"
+import { cookies } from "next/headers"
 import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ThemeInitScript } from "@/components/theme-init-script"
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { SWRProvider } from "@/components/swr-provider"
 import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
-import { settings } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
 
-async function getAppSettings() {
+const PALETTE_COOKIE = "labitat-palette"
+const THEME_COOKIE = "labitat-theme"
+const DEFAULT_PALETTE = "default"
+const DEFAULT_THEME = "system"
+
+async function getPalette(): Promise<string> {
   try {
-    const rows = await db.query.settings.findMany({
-      where: (s, { inArray }) => inArray(s.key, ["dashboardTitle", "palette"]),
-    })
-    const map = Object.fromEntries(rows.map((r) => [r.key, r.value]))
-    return {
-      title: map.dashboardTitle ?? "Labitat",
-      palette: map.palette ?? "default",
-    }
+    const cookieStore = await cookies()
+    return cookieStore.get(PALETTE_COOKIE)?.value ?? DEFAULT_PALETTE
   } catch {
-    return { title: "Labitat", palette: "default" }
+    return DEFAULT_PALETTE
+  }
+}
+
+async function getTheme(): Promise<string> {
+  try {
+    const cookieStore = await cookies()
+    return cookieStore.get(THEME_COOKIE)?.value ?? DEFAULT_THEME
+  } catch {
+    return DEFAULT_THEME
+  }
+}
+
+async function getAppTitle(): Promise<string> {
+  try {
+    const row = await db.query.settings.findFirst({
+      where: (s, { eq }) => eq(s.key, "dashboardTitle"),
+    })
+    return row?.value ?? "Labitat"
+  } catch {
+    return "Labitat"
   }
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { title } = await getAppSettings()
+  const title = await getAppTitle()
   return { title }
 }
 
@@ -42,7 +59,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { palette } = await getAppSettings()
+  const [palette, theme] = await Promise.all([getPalette(), getTheme()])
   return (
     <html
       lang="en"
@@ -50,16 +67,8 @@ export default async function RootLayout({
       data-palette={palette}
       className={cn("font-sans antialiased")}
     >
-      <head>
-        <ThemeInitScript />
-      </head>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
           <SWRProvider>
             {children}
             <Toaster richColors position="top-right" />
