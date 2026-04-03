@@ -30,12 +30,12 @@ export type StatItem = {
  */
 export function StatCard({ value, label, icon, valueClassName }: StatItem) {
   return (
-    <div className="flex h-full flex-col items-center justify-center rounded-md bg-muted/50 px-2 py-1.5 text-center">
+    <div className="flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground">
       {icon && <div className="mb-0.5">{icon}</div>}
       <span
         className={cn(
           "font-medium tabular-nums",
-          valueClassName ?? "text-foreground"
+          valueClassName ?? "text-secondary-foreground"
         )}
       >
         {value}
@@ -179,7 +179,7 @@ export function DownloadItem({
     <Tooltip>
       <TooltipTrigger
         render={
-          <ListItem className="relative h-5 !gap-0 !p-0">
+          <ListItem className="relative h-5 gap-0! p-0!">
             <div
               className="absolute z-0 h-5 rounded-md bg-muted"
               style={{

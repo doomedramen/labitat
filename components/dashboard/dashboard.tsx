@@ -346,6 +346,27 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             </h1>
           )}
           <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={(props) => (
+                  <Button variant="outline" size="icon" {...props}>
+                    <Palette className="h-4 w-4" />
+                    <span className="sr-only">Theme settings</span>
+                  </Button>
+                )}
+              />
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Theme</DropdownMenuLabel>
+                  <ThemeToggle />
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Palette</DropdownMenuLabel>
+                  <PaletteSwitcher />
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {isLoggedIn ? (
               <>
                 {!editMode && (
@@ -358,27 +379,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                     Edit
                   </Button>
                 )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={(props) => (
-                      <Button variant="outline" size="icon" {...props}>
-                        <Palette className="h-4 w-4" />
-                        <span className="sr-only">Theme settings</span>
-                      </Button>
-                    )}
-                  />
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuGroup>
-                      <DropdownMenuLabel>Theme</DropdownMenuLabel>
-                      <ThemeToggle />
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuLabel>Palette</DropdownMenuLabel>
-                      <PaletteSwitcher />
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </>
             ) : (
               <Button
