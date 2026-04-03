@@ -320,7 +320,9 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
         <ItemIcon iconUrl={item.iconUrl} label={item.label} href={item.href} />
         <div className="min-w-0 flex-1 pr-4">
           <p className="truncate text-sm leading-snug font-medium">
-            {item.label || serviceDef?.name || item.href}
+            {editMode
+              ? item.label || serviceDef?.name || item.href
+              : item.label}
           </p>
         </div>
       </div>
