@@ -40,7 +40,7 @@ import { ItemCardDragPreview } from "./item"
 import { EditBar } from "./edit-bar"
 import { GroupDialog } from "@/components/editor/group-dialog"
 import { ItemDialog } from "@/components/editor/item-dialog"
-import { LoginForm } from "@/app/login/login-form"
+import { LoginForm } from "@/components/auth/login-form"
 import { Palette } from "lucide-react"
 import {
   DropdownMenu,

@@ -4,7 +4,8 @@ const TEST_EMAIL = "admin@example.com"
 const TEST_PASSWORD = "admin123"
 
 async function login(page: Page) {
-  await page.goto("/login")
+  await page.goto("/")
+  await page.getByTestId("sign-in-link").click()
   await page.getByTestId("email-input").fill(TEST_EMAIL)
   await page.getByTestId("password-input").fill(TEST_PASSWORD)
   await page.getByTestId("submit-button").click()

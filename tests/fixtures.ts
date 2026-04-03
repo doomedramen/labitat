@@ -8,10 +8,10 @@ const TEST_PASSWORD = "admin123"
  * If setup is already complete (user exists), it goes straight to login.
  */
 async function authenticate(page: Page) {
-  // Go to setup - if user already exists, it redirects to /login
+  // Go to setup - if user already exists, it redirects to /
   await page.goto("/setup")
 
-  // Check if we landed on setup form or got redirected to login
+  // Check if we landed on setup form or got redirected to home
   const url = page.url()
   if (url.includes("/setup")) {
     // Fill setup form
@@ -23,11 +23,12 @@ async function authenticate(page: Page) {
     // Now logout so we start fresh for login
     await page.getByTestId("edit-button").click()
     await page.getByTestId("logout-button").click()
-    await page.waitForURL("/login")
+    await page.waitForURL("/")
   }
 
-  // Login through the UI
-  await page.goto("/login")
+  // Login through the dashboard dialog
+  await page.goto("/")
+  await page.getByTestId("sign-in-link").click()
   await page.fill('input[name="email"]', TEST_EMAIL)
   await page.fill('input[name="password"]', TEST_PASSWORD)
   await page.click('button[type="submit"]')

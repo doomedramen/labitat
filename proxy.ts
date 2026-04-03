@@ -5,7 +5,7 @@ import { sessionOptions, type SessionData } from "@/lib/session"
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (pathname === "/login" || pathname === "/setup") {
+  if (pathname === "/setup") {
     const response = NextResponse.next()
     const session = await getIronSession<SessionData>(
       request,
@@ -21,5 +21,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/setup"],
+  matcher: ["/setup"],
 }

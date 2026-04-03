@@ -4,7 +4,8 @@ const TEST_EMAIL = "admin@example.com"
 const TEST_PASSWORD = "admin123"
 
 async function login(page: Page) {
-  await page.goto("/login")
+  await page.goto("/")
+  await page.getByTestId("sign-in-link").click()
   await page.getByTestId("email-input").fill(TEST_EMAIL)
   await page.getByTestId("password-input").fill(TEST_PASSWORD)
   await page.getByTestId("submit-button").click()
@@ -180,8 +181,9 @@ test.describe("Keyboard Shortcuts", () => {
   })
 
   test("should not toggle edit mode when typing in input", async ({ page }) => {
-    // Go to login to test input behavior
-    await page.goto("/login")
+    // Open login dialog to test input behavior
+    await page.goto("/")
+    await page.getByTestId("sign-in-link").click()
 
     // Focus email input
     await page.getByTestId("email-input").focus()
