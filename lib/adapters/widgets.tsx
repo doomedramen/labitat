@@ -153,9 +153,13 @@ export function ActiveStreamItem({
 export function ActiveStreamList({ streams }: { streams: ActiveStream[] }) {
   if (streams.length === 0) return null
 
+  const sorted = [...streams].sort((a, b) =>
+    a.title.localeCompare(b.title, undefined, { sensitivity: "base" })
+  )
+
   return (
     <List>
-      {streams.map((stream, idx) => (
+      {sorted.map((stream, idx) => (
         <ActiveStreamItem key={idx} {...stream} />
       ))}
     </List>
