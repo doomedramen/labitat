@@ -106,7 +106,7 @@ Tests run in CI with:
 ## Common Issues
 
 ### Tests fail because element not found
-- Ensure the test database is clean (global-setup seeds the admin user)
+- The test database is wiped and re-migrated before every run. If issues persist, delete `data/labitat.test.db` manually.
 - Increase timeout in playwright.config.ts if needed
 
 ### Drag and drop tests flaky

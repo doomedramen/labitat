@@ -60,6 +60,7 @@ export default defineConfig({
     env: {
       NODE_ENV: "test",
       PORT: "3000",
+      DATABASE_URL: "file:./data/labitat.test.db",
     },
   },
 })
