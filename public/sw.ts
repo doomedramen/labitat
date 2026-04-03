@@ -142,7 +142,7 @@ async function cacheFirst(request: Request, cacheName: string) {
       cache.put(request, response.clone())
     }
     return response
-  } catch (err) {
+  } catch (_err) {
     // Offline and not in cache
     console.log("Fetch failed and not in cache:", request.url)
     return new Response("Offline", {
@@ -164,7 +164,7 @@ async function networkFirst(request: Request, cacheName: string) {
       cache.put(request, response.clone())
     }
     return response
-  } catch (err) {
+  } catch (_err) {
     // Network failed, try cache
     console.log("Network failed, trying cache:", request.url)
     const cached = await cache.match(request)

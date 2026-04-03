@@ -33,49 +33,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-const COLLAPSED_GROUPS_KEY = "labitat-collapsed-groups"
+function useCollapsedState(groupId: string): [boolean, () => void] {
+  const [collapsed, setCollapsed] = useState(false)
 
-function useCollapsedState(
-  groupId: string
-): [boolean, (open: boolean) => void] {
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false
-    try {
-      const stored = localStorage.getItem(COLLAPSED_GROUPS_KEY)
-      if (stored) {
-        const ids = JSON.parse(stored) as string[]
-        return ids.includes(groupId)
-      }
-    } catch (error) {
-      console.warn("Failed to read collapsed state:", error)
-    }
-    return false
-  })
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => !prev)
+  }, [])
 
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      setCollapsed(() => {
-        const next = !open
-        try {
-          const stored = localStorage.getItem(COLLAPSED_GROUPS_KEY)
-          const ids: string[] = stored ? JSON.parse(stored) : []
-          if (next) {
-            if (!ids.includes(groupId)) ids.push(groupId)
-          } else {
-            const idx = ids.indexOf(groupId)
-            if (idx >= 0) ids.splice(idx, 1)
-          }
-          localStorage.setItem(COLLAPSED_GROUPS_KEY, JSON.stringify(ids))
-        } catch (error) {
-          console.warn("Failed to persist collapsed state:", error)
-        }
-        return next
-      })
-    },
-    [groupId]
-  )
-
-  return [collapsed, handleOpenChange]
+  return [collapsed, toggleCollapsed]
 }
 
 type GroupProps = {
@@ -98,7 +63,7 @@ export function Group({
   onItemDeleted,
 }: GroupProps) {
   const [isPending, startTransition] = useTransition()
-  const [collapsed, handleOpenChange] = useCollapsedState(group.id)
+  const [collapsed, toggleCollapsed] = useCollapsedState(group.id)
 
   const {
     attributes,
@@ -127,7 +92,6 @@ export function Group({
       ref={setNodeRef}
       style={style}
       open={!collapsed}
-      onOpenChange={handleOpenChange}
       className="space-y-3"
       data-group-id={group.id}
       data-testid="group"
@@ -148,7 +112,7 @@ export function Group({
           </button>
         ) : (
           <button
-            onClick={() => handleOpenChange(!collapsed)}
+            onClick={toggleCollapsed}
             className="flex items-center gap-1.5 text-muted-foreground/40 hover:text-muted-foreground"
             aria-label={collapsed ? "Expand group" : "Collapse group"}
           >

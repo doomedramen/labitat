@@ -8,18 +8,6 @@ import {
 
 const COOKIE_NAME = "labitat-theme"
 
-function getThemeFromCookie(): string | undefined {
-  if (typeof document === "undefined") return undefined
-  try {
-    return document.cookie
-      .split("; ")
-      .find((row) => row.startsWith(`${COOKIE_NAME}=`))
-      ?.split("=")[1]
-  } catch {
-    return undefined
-  }
-}
-
 function setThemeCookie(value: string) {
   try {
     document.cookie = `${COOKIE_NAME}=${value}; path=/; max-age=31536000; SameSite=Lax`

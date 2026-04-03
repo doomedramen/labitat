@@ -42,7 +42,7 @@ async function loadCacheFromFile() {
     for (const [key, value] of Object.entries(parsed)) {
       memoryCache.set(key, value)
     }
-  } catch (err) {
+  } catch {
     // File doesn't exist yet or is corrupted - start fresh
   }
 }

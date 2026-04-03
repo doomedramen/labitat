@@ -4,7 +4,7 @@
  * Reads version from package.json and bundles the SW
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from 'fs'
+import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { build } from 'esbuild'

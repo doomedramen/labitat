@@ -1,6 +1,6 @@
 // Drizzle config for Docker runtime migrations
 // Plain ESM — no drizzle-kit import needed
-export default {
+const config = {
   schema: "./lib/db/schema.ts",
   out: "./lib/db/migrations",
   dialect: "sqlite",
@@ -8,3 +8,5 @@ export default {
     url: process.env.DATABASE_URL ?? "file:./data/labitat.db",
   },
 }
+
+export default config

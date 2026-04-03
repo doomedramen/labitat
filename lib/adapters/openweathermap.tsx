@@ -1,4 +1,3 @@
-import Image from "next/image"
 import type { ServiceDefinition } from "./types"
 import { StatGrid } from "./widgets"
 import {
@@ -55,6 +54,7 @@ function getWeatherIcon(main?: string, icon?: string, description?: string) {
     default:
       // Fallback to OpenWeatherMap icon if available
       if (icon) {
+        // eslint-disable-next-line @next/next/no-img-element
         return (
           <img
             src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
