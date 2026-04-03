@@ -124,7 +124,7 @@ function ItemIcon({
 
 const statusColors: Record<ServiceStatus["state"], string> = {
   healthy: "bg-green-500",
-  reachable: "bg-amber-400",
+  reachable: "bg-gray-400",
   unreachable: "bg-red-500",
   error: "bg-red-500",
   unknown: "bg-gray-400",

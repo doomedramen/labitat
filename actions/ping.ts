@@ -35,6 +35,19 @@ export async function pingUrl(url: string): Promise<ServiceStatus> {
       if (err.message.includes("ECONNREFUSED")) {
         return { state: "unreachable", reason: "Connection refused" }
       }
+      if (
+        err.message.includes("CERT_") ||
+        err.message.includes("UNABLE_TO_VERIFY_LEAF_SIGNATURE") ||
+        err.message.includes("DEPTH_ZERO_SELF_SIGNED_CERT") ||
+        err.message.includes("self-signed") ||
+        err.message.includes("certificate")
+      ) {
+        return {
+          state: "error",
+          reason:
+            "SSL certificate error - certificate may be self-signed or invalid",
+        }
+      }
       return { state: "unreachable", reason: err.message }
     }
     return { state: "unreachable", reason: "Unknown error" }
