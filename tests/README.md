@@ -54,7 +54,7 @@ pnpm test:report
 - **dashboard.test.ts** - Dashboard display, empty states, edit mode
 - **groups.test.ts** - Group CRUD operations, drag-and-drop reordering
 - **items.test.ts** - Item CRUD operations, service configuration, drag-and-drop
-- **settings.test.ts** - Dashboard title editing, theme switching, keyboard shortcuts
+- **settings.test.ts** - Dashboard title editing, theme switching, dialog keyboard shortcuts
 
 ## Test Data
 

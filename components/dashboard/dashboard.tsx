@@ -311,6 +311,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                 setTitleChanged(true)
               }}
               className="h-8 w-full max-w-[200px]"
+              data-testid="dashboard-title-input"
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
                   setDashboardTitle(title)

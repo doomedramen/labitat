@@ -7,6 +7,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: 1,
+  timeout: 30000,
+  maxFailures: 1,
   reporter: "list",
   use: {
     baseURL: "http://localhost:3000",
@@ -53,7 +55,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "pnpm dev",
+    command: "node scripts/clean-test-db.mjs && pnpm db:push && pnpm dev",
     url: "http://localhost:3000",
     reuseExistingServer: false,
     timeout: 120 * 1000,

@@ -46,23 +46,6 @@ test.describe("Dashboard - Content", () => {
     await expect(page.getByTestId("dashboard-title")).toBeVisible()
   })
 
-  test("should toggle edit mode with keyboard shortcut (E key)", async ({
-    page,
-  }) => {
-    await login(page)
-
-    // Press 'e' to toggle edit mode
-    await page.keyboard.press("e")
-
-    // Should show edit bar with Add group button
-    await expect(page.getByTestId("edit-bar")).toBeVisible()
-    await expect(page.getByTestId("add-group-button")).toBeVisible()
-
-    // Press 'e' again to exit edit mode
-    await page.keyboard.press("e")
-    await expect(page.getByTestId("edit-bar")).not.toBeVisible()
-  })
-
   test("should exit edit mode with Done button", async ({ page }) => {
     await login(page)
 

@@ -7,7 +7,7 @@ import type { ServiceDefinition, ServiceRegistry } from "./types"
 import { radarrDefinition } from "./radarr"
 import { sonarrDefinition } from "./sonarr"
 import { prowlarrDefinition } from "./prowlarr"
-import { overseerrDefinition } from "./overseerr"
+import { seerrDefinition } from "./seerr"
 import { sabnzbdDefinition } from "./sabnzbd"
 import { qbittorrentDefinition } from "./qbittorrent"
 import { adguardDefinition } from "./adguard"
@@ -59,7 +59,7 @@ export const registry: ServiceRegistry = {
   [radarrDefinition.id]: radarrDefinition,
   [sonarrDefinition.id]: sonarrDefinition,
   [prowlarrDefinition.id]: prowlarrDefinition,
-  [overseerrDefinition.id]: overseerrDefinition,
+  [seerrDefinition.id]: seerrDefinition,
   [sabnzbdDefinition.id]: sabnzbdDefinition,
   [qbittorrentDefinition.id]: qbittorrentDefinition,
   [adguardDefinition.id]: adguardDefinition,

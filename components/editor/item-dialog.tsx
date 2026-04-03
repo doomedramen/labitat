@@ -26,7 +26,6 @@ import {
   ComboboxItem,
   ComboboxLabel,
   ComboboxList,
-  ComboboxSeparator,
 } from "@/components/ui/combobox"
 import { FieldRenderer } from "./field-renderer"
 
@@ -291,31 +290,15 @@ export function ItemDialog({
                   showClear
                 />
                 <ComboboxContent>
+                  <ComboboxEmpty>No service found</ComboboxEmpty>
                   <ComboboxList>
-                    <ComboboxItem
-                      value={undefined as ServiceDefinition | undefined}
-                    >
-                      None (link only)
-                    </ComboboxItem>
-                    <ComboboxSeparator />
-                    {generalWidgets.length > 0 && (
-                      <ComboboxGroup items={generalWidgets}>
-                        <ComboboxLabel>General Widgets</ComboboxLabel>
-                        <ComboboxCollection>
-                          {(service: ServiceDefinition) => (
-                            <ComboboxItem key={service.id} value={service}>
-                              {service.name}
-                            </ComboboxItem>
-                          )}
-                        </ComboboxCollection>
-                      </ComboboxGroup>
-                    )}
-                    {generalWidgets.length > 0 && serviceWidgets.length > 0 && (
-                      <ComboboxSeparator />
-                    )}
-                    {serviceWidgets.length > 0 && (
-                      <ComboboxGroup items={serviceWidgets}>
-                        <ComboboxLabel>Service Widgets</ComboboxLabel>
+                    {(group) => (
+                      <ComboboxGroup key={group.value} items={group.items}>
+                        <ComboboxLabel>
+                          {group.value === "general"
+                            ? "General Widgets"
+                            : "Service Widgets"}
+                        </ComboboxLabel>
                         <ComboboxCollection>
                           {(service: ServiceDefinition) => (
                             <ComboboxItem key={service.id} value={service}>
@@ -326,7 +309,6 @@ export function ItemDialog({
                       </ComboboxGroup>
                     )}
                   </ComboboxList>
-                  <ComboboxEmpty>No service found</ComboboxEmpty>
                 </ComboboxContent>
               </Combobox>
               <p className="text-xs text-muted-foreground">

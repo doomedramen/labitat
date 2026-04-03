@@ -1,7 +1,7 @@
 import type { ServiceDefinition } from "./types"
 import { StatGrid } from "./widgets"
 
-type OverseerrData = {
+type SeerrData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
   pending: number
@@ -10,12 +10,7 @@ type OverseerrData = {
   available: number
 }
 
-function OverseerrWidget({
-  pending,
-  processing,
-  approved,
-  available,
-}: OverseerrData) {
+function SeerrWidget({ pending, processing, approved, available }: SeerrData) {
   const items = [
     { value: pending, label: "Pending" },
     { value: processing, label: "Processing" },
@@ -26,10 +21,10 @@ function OverseerrWidget({
   return <StatGrid items={items} />
 }
 
-export const overseerrDefinition: ServiceDefinition<OverseerrData> = {
-  id: "overseerr",
-  name: "Overseerr",
-  icon: "overseerr",
+export const seerrDefinition: ServiceDefinition<SeerrData> = {
+  id: "seerr",
+  name: "Seerr",
+  icon: "seerr",
   category: "media",
   defaultPollingMs: 30_000,
 
@@ -39,15 +34,15 @@ export const overseerrDefinition: ServiceDefinition<OverseerrData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://overseerr.home.lab",
-      helperText: "The base URL of your Overseerr instance",
+      placeholder: "https://seerr.home.lab",
+      helperText: "The base URL of your Seerr instance",
     },
     {
       key: "apiKey",
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Overseerr API key",
+      placeholder: "Your Seerr API key",
       helperText: "Found in Settings → General → API Key",
     },
   ],
@@ -60,8 +55,8 @@ export const overseerrDefinition: ServiceDefinition<OverseerrData> = {
 
     if (!res.ok) {
       if (res.status === 401) throw new Error("Invalid API key")
-      if (res.status === 404) throw new Error("Overseerr not found at this URL")
-      throw new Error(`Overseerr error: ${res.status}`)
+      if (res.status === 404) throw new Error("Seerr not found at this URL")
+      throw new Error(`Seerr error: ${res.status}`)
     }
 
     const data = await res.json()
@@ -75,5 +70,5 @@ export const overseerrDefinition: ServiceDefinition<OverseerrData> = {
     }
   },
 
-  Widget: OverseerrWidget,
+  Widget: SeerrWidget,
 }

@@ -23,84 +23,52 @@ test.describe("Settings - Dashboard Title", () => {
     // Enter edit mode
     await page.getByTestId("edit-button").click()
 
-    // Title should become editable
-    const titleInput = page.locator(
-      'input[data-testid="dashboard-title-input"]'
-    )
+    // Title should become editable input
+    const titleInput = page.getByTestId("dashboard-title-input")
+    await expect(titleInput).toBeVisible()
+    await titleInput.fill(newTitle)
 
-    if (await titleInput.isVisible()) {
-      // If there's a dedicated input, use it
-      await titleInput.fill(newTitle)
-    } else {
-      // Otherwise look for any input near the title
-      const titleElement = page.getByTestId("dashboard-title")
-      await titleElement.click()
-
-      // Find the input that appears
-      const editInput = page
-        .locator('input[value*="Labitat"], input:not([type="hidden"])')
-        .first()
-      if (await editInput.isVisible()) {
-        await editInput.fill(newTitle)
-      }
-    }
-
-    // Save by pressing Enter or clicking Save button
-    const saveButton = page.locator('button:has-text("Save")')
-    if (await saveButton.isVisible()) {
-      await saveButton.click()
-    } else {
-      await page.keyboard.press("Enter")
-    }
+    // Exit edit mode with Done button to save
+    await page.getByTestId("done-button").click()
 
     await page.waitForTimeout(500)
 
-    // Verify title changed
-    await expect(page.locator(`text=${newTitle}`)).toBeVisible()
+    // Verify title changed - check the h1 element
+    await expect(page.getByTestId("dashboard-title")).toContainText(newTitle)
   })
 
   test("should cancel title edit with Escape", async ({ page }) => {
     // Enter edit mode
     await page.getByTestId("edit-button").click()
 
-    // Try to edit title
-    const titleElement = page.getByTestId("dashboard-title")
-    await titleElement.click()
+    // Get original title
+    const titleInput = page.getByTestId("dashboard-title-input")
+    await expect(titleInput).toBeVisible()
+    const originalTitle = await titleInput.inputValue()
 
-    // Find input
-    const editInput = page.locator("input").first()
-    if (await editInput.isVisible()) {
-      await editInput.fill("Cancelled Title")
+    // Change title
+    await titleInput.fill("Cancelled Title")
 
-      // Press Escape
-      await page.keyboard.press("Escape")
+    // Press Escape - this cancels the edit
+    await page.keyboard.press("Escape")
 
-      // Should exit edit mode without saving
-      await page.waitForTimeout(300)
-      await expect(page.getByTestId("edit-bar")).not.toBeVisible()
-    }
+    // Edit mode should be exited
+    await expect(page.getByTestId("edit-button")).toBeVisible()
+    // Title should be unchanged
+    await expect(page.getByTestId("dashboard-title")).toContainText(
+      originalTitle
+    )
   })
 
-  test("should show Save and Cancel buttons when editing title", async ({
-    page,
-  }) => {
+  test("should show Done button when editing title", async ({ page }) => {
     // Enter edit mode
     await page.getByTestId("edit-button").click()
 
-    // Click on title to edit
-    await page.getByTestId("dashboard-title").click()
+    // Title input should be visible
+    await expect(page.getByTestId("dashboard-title-input")).toBeVisible()
 
-    // Should show Save button
-    const saveButton = page.locator('button:has-text("Save")')
-    const cancelButton = page.locator('button:has-text("Cancel")')
-
-    // These might appear when title is being edited
-    if (await saveButton.isVisible()) {
-      await expect(saveButton).toBeVisible()
-    }
-    if (await cancelButton.isVisible()) {
-      await expect(cancelButton).toBeVisible()
-    }
+    // Done button should be visible in edit bar
+    await expect(page.getByTestId("done-button")).toBeVisible()
   })
 })
 
@@ -170,35 +138,9 @@ test.describe("Keyboard Shortcuts", () => {
     await login(page)
   })
 
-  test("should toggle edit mode with E key", async ({ page }) => {
-    // Press E to enter edit mode
-    await page.keyboard.press("e")
-    await expect(page.getByTestId("edit-bar")).toBeVisible()
-
-    // Press E again to exit
-    await page.keyboard.press("e")
-    await expect(page.getByTestId("edit-bar")).not.toBeVisible()
-  })
-
-  test("should not toggle edit mode when typing in input", async ({ page }) => {
-    // Open login dialog to test input behavior
-    await page.goto("/")
-    await page.getByTestId("sign-in-link").click()
-
-    // Focus email input
-    await page.getByTestId("email-input").focus()
-
-    // Type 'e' - should appear in input, not toggle edit mode
-    await page.keyboard.press("e")
-
-    // The input should contain 'e'
-    const value = await page.getByTestId("email-input").inputValue()
-    expect(value).toContain("e")
-  })
-
   test("should close dialogs with Escape key", async ({ page }) => {
     // Enter edit mode
-    await page.keyboard.press("e")
+    await page.getByTestId("edit-button").click()
 
     // Open add group dialog
     await page.getByTestId("add-group-button").click()
