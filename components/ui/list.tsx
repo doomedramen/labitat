@@ -39,7 +39,7 @@ export function ListItem({
   return (
     <div
       className={cn(
-        "flex w-full items-center justify-between gap-2 rounded-md bg-muted/50 px-2 py-1 text-xs",
+        "flex w-full items-center justify-between gap-2 rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground",
         className
       )}
       {...props}
