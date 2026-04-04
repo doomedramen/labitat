@@ -10,6 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  SECRET_KEY: ci-temp-secret-key-for-build-testing-32chars!
 
 jobs:
   # ── Test & Build ────────────────────────────────────────────────────────────
