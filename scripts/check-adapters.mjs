@@ -27,6 +27,9 @@ for (const file of adapterFiles) {
   const ext = path.extname(file)
   if (ext !== ".ts" && ext !== ".tsx") continue
 
+  // Skip test files
+  if (file.endsWith(".test.ts") || file.endsWith(".test.tsx")) continue
+
   const base = path.basename(file, ext)
   if (NON_ADAPTER_FILES.has(base)) continue
 
