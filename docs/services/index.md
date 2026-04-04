@@ -6,68 +6,68 @@ Labitat supports 30+ services out of the box, organized by category.
 
 | Service | Description |
 |---------|-------------|
-| [Radarr](/docs/services/radarr) | Movie collection manager |
-| [Sonarr](/docs/services/sonarr) | TV series collection manager |
-| [Lidarr](/docs/services/lidarr) | Music collection manager |
-| [Readarr](/docs/services/readarr) | Book collection manager |
-| [Prowlarr](/docs/services/prowlarr) | Indexer manager |
-| [Jackett](/docs/services/jackett) | API proxy for torrent trackers |
-| [qBittorrent](/docs/services/qbittorrent) | Torrent client |
-| [Transmission](/docs/services/transmission) | Torrent client |
-| [SABnzbd](/docs/services/sabnzbd) | Usenet downloader |
-| [Bazarr](/docs/services/bazarr) | Subtitle manager |
+| [Radarr](/services/downloads/radarr) | Movie collection manager |
+| [Sonarr](/services/downloads/sonarr) | TV series collection manager |
+| [Lidarr](/services/downloads/lidarr) | Music collection manager |
+| [Readarr](/services/downloads/readarr) | Book collection manager |
+| [Prowlarr](/services/downloads/prowlarr) | Indexer manager |
+| [Jackett](/services/downloads/jackett) | API proxy for torrent trackers |
+| [qBittorrent](/services/downloads/qbittorrent) | Torrent client |
+| [Transmission](/services/downloads/transmission) | Torrent client |
+| [SABnzbd](/services/downloads/sabnzbd) | Usenet downloader |
+| [Bazarr](/services/downloads/bazarr) | Subtitle manager |
 
 ## Media
 
 | Service | Description |
 |---------|-------------|
-| [Jellyfin](/docs/services/jellyfin) | Media server |
-| [Plex](/docs/services/plex) | Media server |
-| [Emby](/docs/services/emby) | Media server |
-| [Unmanic](/docs/services/unmanic) | Library optimizer |
-| [Tautulli](/docs/services/tautulli) | Plex monitoring |
-| [Immich](/docs/services/immich) | Photo backup |
-| [Frigate](/docs/services/frigate) | NVR with real-time detection |
-| [Overseerr/Seerr](/docs/services/seerr) | Media request manager |
+| [Jellyfin](/services/media/jellyfin) | Media server |
+| [Plex](/services/media/plex) | Media server |
+| [Emby](/services/media/emby) | Media server |
+| [Unmanic](/services/media/unmanic) | Library optimizer |
+| [Tautulli](/services/media/tautulli) | Plex monitoring |
+| [Immich](/services/media/immich) | Photo backup |
+| [Frigate](/services/media/frigate) | NVR with real-time detection |
+| [Overseerr/Seerr](/services/media/seerr) | Media request manager |
 
 ## Networking
 
 | Service | Description |
 |---------|-------------|
-| [Pi-hole](/docs/services/pihole) | DNS ad blocker |
-| [AdGuard Home](/docs/services/adguard) | DNS ad blocker |
-| [Nginx Proxy Manager](/docs/services/nginx-proxy-manager) | Reverse proxy UI |
-| [Traefik](/docs/services/traefik) | Edge router |
+| [Pi-hole](/services/networking/pihole) | DNS ad blocker |
+| [AdGuard Home](/services/networking/adguard) | DNS ad blocker |
+| [Nginx Proxy Manager](/services/networking/nginx-proxy-manager) | Reverse proxy UI |
+| [Traefik](/services/networking/traefik) | Edge router |
 
 ## Monitoring
 
 | Service | Description |
 |---------|-------------|
-| [Portainer](/docs/services/portainer) | Container management |
-| [Uptime Kuma](/docs/services/uptime-kuma) | Uptime monitoring |
-| [Grafana](/docs/services/grafana) | Metrics dashboard |
-| [Glances](/docs/services/glances) | System monitoring |
-| [APC UPS](/docs/services/apcups) | UPS monitoring |
-| [Unifi](/docs/services/unifi) | Network controller |
+| [Portainer](/services/monitoring/portainer) | Container management |
+| [Uptime Kuma](/services/monitoring/uptime-kuma) | Uptime monitoring |
+| [Grafana](/services/monitoring/grafana) | Metrics dashboard |
+| [Glances](/services/monitoring/glances) | System monitoring |
+| [APC UPS](/services/monitoring/apcups) | UPS monitoring |
+| [Unifi](/services/monitoring/unifi) | Network controller |
 
 ## Automation
 
 | Service | Description |
 |---------|-------------|
-| [Home Assistant](/docs/services/homeassistant) | Home automation |
+| [Home Assistant](/services/monitoring/homeassistant) | Home automation |
 
 ## Built-in
 
 | Widget | Description |
 |--------|-------------|
-| [Search](/docs/services/search) | Dashboard search |
-| [Logo](/docs/services/logo) | Custom logo display |
-| [Date/Time](/docs/services/datetime) | Clock widget |
-| [Weather](/docs/services/weather) | OpenWeatherMap widget |
+| [Search](/services/other/search) | Dashboard search |
+| [Logo](/services/other/logo) | Custom logo display |
+| [Date/Time](/services/other/datetime) | Clock widget |
+| [Weather](/services/other/weather) | OpenWeatherMap widget |
 
 ## Generic
 
 | Service | Description |
 |---------|-------------|
-| [Ping](/docs/services/generic-ping) | ICMP health check |
-| [REST API](/docs/services/generic-rest) | Custom HTTP endpoint |
+| [Ping](/services/generic/generic-ping) | ICMP health check |
+| [REST API](/services/generic/generic-rest) | Custom HTTP endpoint |

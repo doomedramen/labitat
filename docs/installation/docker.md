@@ -34,7 +34,7 @@ The `docker-compose.yml` includes:
 
 ## Environment Variables
 
-See [Configuration](/docs/configuration) for all available environment variables.
+See [Configuration](/configuration) for all available environment variables.
 
 ## Updating
 

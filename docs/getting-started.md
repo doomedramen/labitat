@@ -18,7 +18,7 @@ Visit `http://localhost:3000` — you'll be guided to create your admin account 
 
 ## Next Steps
 
-- [Installation](/docs/installation) — Detailed installation guides
-- [Configuration](/docs/configuration) — Environment variables and settings
-- [Services](/docs/services) — Supported services and how to add them
-- [Development](/docs/development) — How to contribute
+- [Installation](/installation/) — Detailed installation guides
+- [Configuration](/configuration) — Environment variables and settings
+- [Services](/services/) — Supported services and how to add them
+- [Development](/development) — How to contribute

@@ -3,44 +3,24 @@ title: Home
 description: A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support.
 ---
 
-<div className="hero">
-  <h1>Labitat</h1>
-  <p>A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support. Monitor 30+ services from a single, beautiful interface.</p>
-  <div className="cta-group">
-    <a href="/docs/getting-started" className="cta-primary">Get Started →</a>
-    <a href="/docs/installation" className="cta-secondary">Installation</a>
-    <a href="https://github.com/DoomedRamen/labitat" className="cta-secondary">GitHub</a>
-  </div>
+# Labitat
+
+A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support. Monitor 30+ services from a single, beautiful interface.
+
+<div class="cta-group">
+  <a href="/getting-started" class="cta-primary">Get Started →</a>
+  <a href="/installation" class="cta-secondary">Installation</a>
+  <a href="https://github.com/DoomedRamen/labitat" class="cta-secondary">GitHub</a>
 </div>
 
 ## Features
 
-<div className="features">
-  <div className="feature-card">
-    <h3>📊 Live Monitoring</h3>
-    <p>Real-time status and metrics for 30+ services including Radarr, Sonarr, Plex, and more.</p>
-  </div>
-  <div className="feature-card">
-    <h3>🖱️ Drag & Drop</h3>
-    <p>Arrange widgets your way with an intuitive drag-and-drop layout editor.</p>
-  </div>
-  <div className="feature-card">
-    <h3>📱 PWA Support</h3>
-    <p>Install on desktop or mobile for a native app experience with offline support.</p>
-  </div>
-  <div className="feature-card">
-    <h3>🔒 Secure by Default</h3>
-    <p>AES-256-GCM encryption for credentials, HTTP-only sessions, and security headers.</p>
-  </div>
-  <div className="feature-card">
-    <h3>🪶 Lightweight</h3>
-    <p>Runs on a Raspberry Pi, scales to full servers. Minimal resource usage.</p>
-  </div>
-  <div className="feature-card">
-    <h3>🔌 Extensible</h3>
-    <p>Add your own services with a single TypeScript file. One file = one service.</p>
-  </div>
-</div>
+- **📊 Live Monitoring** — Real-time status and metrics for 30+ services including Radarr, Sonarr, Plex, and more.
+- **🖱️ Drag & Drop** — Arrange widgets your way with an intuitive drag-and-drop layout editor.
+- **📱 PWA Support** — Install on desktop or mobile for a native app experience with offline support.
+- **🔒 Secure by Default** — AES-256-GCM encryption for credentials, HTTP-only sessions, and security headers.
+- **🪶 Lightweight** — Runs on a Raspberry Pi, scales to full servers. Minimal resource usage.
+- **🔌 Extensible** — Add your own services with a single TypeScript file. One file = one service.
 
 ## Supported Services
 
@@ -53,7 +33,7 @@ description: A modern, self-hosted homelab dashboard with live service widgets, 
 | **Automation** | Home Assistant |
 | **Generic** | Ping, REST API (bring your own endpoint) |
 
-See [all services](/docs/services) for individual configuration guides.
+See [all services](/services/) for individual configuration guides.
 
 ## Quick Start
 
