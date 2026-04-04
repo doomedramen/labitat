@@ -1,4 +1,4 @@
-import { createEnv } from "@t3-oss/env-core"
+import { createEnv } from "@t3-oss/env-nextjs"
 import { z } from "zod/v4"
 
 export const env = createEnv({
@@ -11,6 +11,6 @@ export const env = createEnv({
     PORT: z.coerce.number().default(3000),
     CACHE_DIR: z.string().optional(),
   },
-  runtimeEnv: process.env,
+  experimental__runtimeEnv: {},
   emptyStringAsUndefined: true,
 })
