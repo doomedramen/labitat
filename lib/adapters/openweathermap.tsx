@@ -54,8 +54,8 @@ function getWeatherIcon(main?: string, icon?: string, description?: string) {
     default:
       // Fallback to OpenWeatherMap icon if available
       if (icon) {
-        // eslint-disable-next-line @next/next/no-img-element
         return (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
             alt={description || "Weather"}

@@ -30,8 +30,6 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_URL=file:/data/labitat.db
-ENV HOSTNAME=0.0.0.0
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \

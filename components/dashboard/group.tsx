@@ -33,7 +33,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-function useCollapsedState(groupId: string): [boolean, () => void] {
+function useCollapsedState(): [boolean, () => void] {
   const [collapsed, setCollapsed] = useState(false)
 
   const toggleCollapsed = useCallback(() => {
@@ -63,7 +63,7 @@ export function Group({
   onItemDeleted,
 }: GroupProps) {
   const [isPending, startTransition] = useTransition()
-  const [collapsed, toggleCollapsed] = useCollapsedState(group.id)
+  const [collapsed, toggleCollapsed] = useCollapsedState()
 
   const {
     attributes,

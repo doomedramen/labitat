@@ -1,9 +1,9 @@
 import { getIronSession } from "iron-session"
 import { cookies } from "next/headers"
-import { sessionOptions, type SessionData } from "./session"
+import { getSessionOptions, type SessionData } from "./session"
 
-export { sessionOptions, type SessionData }
+export { getSessionOptions, type SessionData }
 
 export async function getSession() {
-  return getIronSession<SessionData>(await cookies(), sessionOptions)
+  return getIronSession<SessionData>(await cookies(), getSessionOptions())
 }

@@ -18,6 +18,8 @@ const eslintConfig = defineConfig([
     "homepage/**",
     // VitePress generated files
     "docs/.vitepress/**",
+    // Compiled service worker
+    "public/sw.js",
   ]),
 ]);
 

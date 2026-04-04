@@ -1,20 +1,28 @@
-import { drizzle } from "drizzle-orm/better-sqlite3"
+import { drizzle, BetterSQLite3Database } from "drizzle-orm/better-sqlite3"
 import Database from "better-sqlite3"
 import fs from "fs"
 import path from "path"
 import * as schema from "./schema"
-import { env } from "../env"
 
-const dbUrl = env.DATABASE_URL
-const dbPath = dbUrl.replace(/^file:/, "")
-const dbDir = path.dirname(path.resolve(dbPath))
+type Db = BetterSQLite3Database<typeof schema>
 
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true })
+function initDb(): Db {
+  const dbUrl = process.env.DATABASE_URL ?? "file:./data/labitat.db"
+  const dbPath = dbUrl.replace(/^file:/, "")
+  const dbDir = path.dirname(path.resolve(dbPath))
+
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true })
+  }
+
+  const sqlite = new Database(dbPath)
+  sqlite.pragma("journal_mode = WAL")
+  sqlite.pragma("foreign_keys = ON")
+  return drizzle(sqlite, { schema })
 }
 
-const sqlite = new Database(dbPath)
-sqlite.pragma("journal_mode = WAL")
-sqlite.pragma("foreign_keys = ON")
-
-export const db = drizzle(sqlite, { schema })
+export const db = new Proxy({} as Db, {
+  get(_target, prop) {
+    return initDb()[prop as keyof Db]
+  },
+})

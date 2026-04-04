@@ -6,7 +6,7 @@ export async function GET() {
   try {
     await db.select({ id: users.id }).from(users).limit(1)
     return NextResponse.json({ status: "ok" })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { status: "error", message: "Database unreachable" },
       { status: 503 }

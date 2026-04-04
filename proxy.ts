@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getIronSession } from "iron-session"
-import { sessionOptions, type SessionData } from "@/lib/session"
+import { getSessionOptions, type SessionData } from "@/lib/session"
 import { hasAdminUser } from "@/lib/db/admin"
 
 export async function proxy(request: NextRequest) {
@@ -31,7 +31,7 @@ export async function proxy(request: NextRequest) {
       const session = await getIronSession<SessionData>(
         request,
         response,
-        sessionOptions
+        getSessionOptions()
       )
       if (session.loggedIn) {
         return NextResponse.redirect(new URL("/", request.url))
