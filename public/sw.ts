@@ -22,9 +22,8 @@ self.addEventListener("install", (event: ExtendableEvent) => {
     caches
       .open(STATIC_CACHE)
       .then((cache) => {
-        return cache.addAll(STATIC_ASSETS).catch((err) => {
+        return cache.addAll(STATIC_ASSETS).catch(() => {
           // Some assets might not exist yet, that's ok
-          console.log("Some assets failed to cache:", err)
         })
       })
       .then(() => self.skipWaiting())
@@ -46,7 +45,6 @@ self.addEventListener("activate", (event: ExtendableEvent) => {
                 name !== DYNAMIC_CACHE
             )
             .map((name) => {
-              console.log("Deleting old cache:", name)
               return caches.delete(name)
             })
         )
@@ -144,7 +142,6 @@ async function cacheFirst(request: Request, cacheName: string) {
     return response
   } catch (_err) {
     // Offline and not in cache
-    console.log("Fetch failed and not in cache:", request.url)
     return new Response("Offline", {
       status: 503,
       statusText: "Service Unavailable",
@@ -166,7 +163,6 @@ async function networkFirst(request: Request, cacheName: string) {
     return response
   } catch (_err) {
     // Network failed, try cache
-    console.log("Network failed, trying cache:", request.url)
     const cached = await cache.match(request)
     if (cached) {
       return cached

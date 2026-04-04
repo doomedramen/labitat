@@ -28,8 +28,6 @@ export function ServiceWorkerRegistrar() {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/", updateViaCache: "none" })
         .then((registration) => {
-          console.log("Service Worker registered:", registration.scope)
-
           // Check for updates periodically
           const intervalId = setInterval(
             () => {
@@ -48,8 +46,7 @@ export function ServiceWorkerRegistrar() {
                 newWorker.state === "installed" &&
                 navigator.serviceWorker.controller
               ) {
-                // New content available, notify user
-                console.log("New content available, refresh to update")
+                // New content available — user will see refreshed content on next visit
               }
             })
           })
