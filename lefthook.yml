@@ -12,6 +12,9 @@ pre-commit:
       glob: "*.{ts,tsx,js,jsx,md,json}"
       run: pnpm format --write {staged_files}
       stage_fixed: true
+    version-bump:
+      run: npx -y package-bump@latest patch --stage
+      stage_fixed: true
 
 pre-push:
   parallel: false
@@ -22,6 +25,4 @@ pre-push:
       run: pnpm check-adapters
     build:
       run: pnpm build
-    version-bump:
-      run: npx -y package-bump@latest patch --stage
 
