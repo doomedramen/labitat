@@ -2,7 +2,7 @@
 
 A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support.
 
-![Labitat Screenshot](https://via.placeholder.com/1200x600?text=Labitat+Dashboard)
+![Labitat Dashboard](docs/public/images/labitat_dash.png)
 
 ## Features
 
