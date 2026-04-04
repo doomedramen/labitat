@@ -55,7 +55,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "node scripts/clean-test-db.mjs && pnpm db:push && pnpm dev",
+    command:
+      "node scripts/clean-test-db.mjs && node scripts/build-sw.js && pnpm db:push && pnpm dev",
     url: "http://localhost:3000",
     reuseExistingServer: false,
     timeout: 120 * 1000,
