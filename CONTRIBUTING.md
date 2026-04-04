@@ -4,6 +4,8 @@ Thank you for your interest in contributing to Labitat! This document provides g
 
 ## Code of Conduct
 
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. In short:
+
 - Be respectful and inclusive
 - Provide constructive feedback
 - Focus on what's best for the community

@@ -52,11 +52,51 @@ jobs:
       - name: Run ${{ matrix.task }}
         run: pnpm ${{ matrix.task }}
 
+  # ── E2E Tests ───────────────────────────────────────────────────────────────
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: latest
+          run_install: false
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            .pnpm-store
+            node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: pnpm test
+
   # ── Docker Build & Push ─────────────────────────────────────────────────────
   docker:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, e2e]
     if: github.event_name == 'push'
     permissions:
       contents: read

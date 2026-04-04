@@ -6,7 +6,7 @@ A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop
 
 ## Features
 
-- **Live Service Monitoring** — Real-time status and metrics for 30+ services
+- **Live Service Monitoring** — Real-time status and metrics for 20+ services (30+ with experimental adapters)
 - **Drag & Drop Layout** — Arrange widgets your way
 - **PWA Support** — Install on desktop or mobile for a native app experience
 - **Secure by Default** — AES-256-GCM encryption for credentials, HTTP-only sessions
@@ -48,12 +48,24 @@ pnpm start
 
 | Category | Services |
 |----------|----------|
-| **Downloads** | Radarr, Sonarr, Lidarr, Prowlarr, qBittorrent, SABnzbd, Bazarr |
-| **Media** | Jellyfin, Plex, Emby, Unmanic, Tautulli |
-| **Networking** | Pi-hole, AdGuard Home, Nginx Proxy Manager, Traefik |
-| **Monitoring** | Portainer, Uptime Kuma, Grafana, APCUPS, Unifi |
+| **Downloads** | Radarr, Sonarr, Prowlarr, qBittorrent, SABnzbd, Bazarr |
+| **Media** | Plex, Unmanic, Tautulli, Overseerr (Seerr) |
+| **Networking** | AdGuard Home, Nginx Proxy Manager |
+| **Monitoring** | APCUPS, Unifi, Glances |
+| **General** | Open-Meteo Weather, OpenWeatherMap, Date/Time, Search, Service Logo |
+
+### Experimental (Available but Not Manually Tested)
+
+These adapters exist in the codebase but are disabled by default. Enable them by uncommenting the relevant lines in `lib/adapters/index.ts`:
+
+| Category | Services |
+|----------|----------|
+| **Downloads** | Lidarr, Readarr, Transmission, Jackett |
+| **Media** | Jellyfin, Emby, Immich |
+| **Networking** | Pi-hole, Traefik |
+| **Monitoring** | Portainer, Uptime Kuma, Grafana, Frigate |
 | **Automation** | Home Assistant |
-| **Generic** | Ping, REST API (bring your own endpoint) |
+| **Generic** | Ping, REST API |
 
 Missing something? [Add a service](#contributing) in under 50 lines of code.
 
