@@ -13,8 +13,11 @@ const nextConfig = {
     ],
   },
 
-  // Allowed origins for development
-  allowedDevOrigins: ['192.168.1.14'],
+  // Allowed origins for development (set via NEXT_PUBLIC_ALLOWED_DEV_ORIGINS env var)
+  // Example: NEXT_PUBLIC_ALLOWED_DEV_ORIGINS=192.168.1.100 pnpm dev
+  allowedDevOrigins: process.env.NEXT_PUBLIC_ALLOWED_DEV_ORIGINS
+    ? process.env.NEXT_PUBLIC_ALLOWED_DEV_ORIGINS.split(",")
+    : [],
 
   // Security headers
   async headers() {

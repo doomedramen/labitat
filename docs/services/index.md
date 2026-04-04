@@ -63,7 +63,8 @@ Labitat supports 30+ services out of the box, organized by category.
 | [Search](/services/other/search) | Dashboard search |
 | [Logo](/services/other/logo) | Custom logo display |
 | [Date/Time](/services/other/datetime) | Clock widget |
-| [Weather](/services/other/weather) | OpenWeatherMap widget |
+| [Weather](/services/other/weather) | OpenWeatherMap widget (requires API key) |
+| [OpenMeteo Weather](/services/other/openmeteo) | Open-Meteo widget (no API key) |
 
 ## Generic
 

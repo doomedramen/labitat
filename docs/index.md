@@ -5,7 +5,7 @@ description: A modern, self-hosted homelab dashboard with live service widgets, 
 
 # Labitat
 
-A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support. Monitor 30+ services from a single, beautiful interface.
+A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support. Monitor your services from a single, beautiful interface.
 
 <div class="cta-group">
   <a href="/getting-started" class="cta-primary">Get Started →</a>
@@ -15,7 +15,7 @@ A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop
 
 ## Features
 
-- **📊 Live Monitoring** — Real-time status and metrics for 30+ services including Radarr, Sonarr, Plex, and more.
+- **📊 Live Monitoring** — Real-time status and metrics for services including Radarr, Sonarr, Plex, and more.
 - **🖱️ Drag & Drop** — Arrange widgets your way with an intuitive drag-and-drop layout editor.
 - **📱 PWA Support** — Install on desktop or mobile for a native app experience with offline support.
 - **🔒 Secure by Default** — AES-256-GCM encryption for credentials, HTTP-only sessions, and security headers.

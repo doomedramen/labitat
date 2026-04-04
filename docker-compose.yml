@@ -28,6 +28,7 @@ services:
     # Security hardening
     security_opt:
       - no-new-privileges:true
+    # read_only: false — Next.js standalone mode needs write access at runtime
     read_only: false
     tmpfs:
       - /tmp

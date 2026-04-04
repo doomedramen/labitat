@@ -24,8 +24,10 @@ Labitat is secure by default.
 ## Docker Security
 
 - Non-root user (UID 1001)
-- Read-only application directory
+- `no-new-privileges` security option enabled
 - Minimal base image
+- `/tmp` mounted as tmpfs (ephemeral)
+- Note: The container filesystem is not read-only (`read_only: false`) because Next.js standalone mode requires write access at runtime
 
 ## Best Practices
 
