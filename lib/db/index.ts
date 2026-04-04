@@ -7,7 +7,7 @@ import * as schema from "./schema"
 type Db = BetterSQLite3Database<typeof schema>
 
 function initDb(): Db {
-  const dbUrl = process.env.DATABASE_URL ?? "file:/data/labitat.db"
+  const dbUrl = process.env.DATABASE_URL ?? "file:./data/labitat.db"
   const dbPath = dbUrl.replace(/^file:/, "")
   const dbDir = path.dirname(path.resolve(dbPath))
 
