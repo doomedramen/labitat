@@ -4,8 +4,8 @@ set -e
 # Labitat Native Installer
 # Supported: Debian 12+, Ubuntu 22.04+, Proxmox VE 8+
 # Usage:
-#   Install:   curl -sSf https://raw.githubusercontent.com/labitat/labitat/main/install.sh | bash
-#   Uninstall: curl -sSf https://raw.githubusercontent.com/labitat/labitat/main/install.sh | bash -s -- --uninstall
+#   Install:   curl -sSf https://raw.githubusercontent.com/DoomedRamen/labitat/main/install.sh | bash
+#   Uninstall: curl -sSf https://raw.githubusercontent.com/DoomedRamen/labitat/main/install.sh | bash -s -- --uninstall
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 APP_NAME="labitat"
@@ -14,7 +14,7 @@ DATA_DIR="/var/lib/$APP_NAME"
 SERVICE_USER="$APP_NAME"
 SERVICE_FILE="/etc/systemd/system/$APP_NAME.service"
 PORT=3000
-GITHUB_REPO="https://github.com/labitat/labitat.git"
+GITHUB_REPO="https://github.com/DoomedRamen/labitat.git"
 NODE_MAJOR=20
 
 # ── Colors ────────────────────────────────────────────────────────────────────

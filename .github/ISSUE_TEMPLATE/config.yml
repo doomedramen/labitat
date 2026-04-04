@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/labitat/labitat/tree/main/docs
+    about: Check the docs before opening an issue.
+  - name: Contributing Guide
+    url: https://github.com/labitat/labitat/blob/main/CONTRIBUTING.md
+    about: Learn how to contribute and add new service adapters.

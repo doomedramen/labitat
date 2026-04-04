@@ -1,0 +1,69 @@
+# Production Docker Compose with Traefik reverse proxy and HTTPS
+# Usage:
+#   1. Copy this file and .env.example, fill in your values
+#   2. Create required directories (see below)
+#   3. Run: docker compose -f docker-compose.prod.yml up -d
+#
+# Prerequisites:
+#   - A domain name pointing to your server (e.g., labitat.example.com)
+#   - Ports 80 and 443 open for Let's Encrypt challenges
+#   - mkdir -p traefik/data labitat_data
+
+services:
+  # ── Traefik Reverse Proxy ───────────────────────────────────────────────────
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/data/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/data/acme.json:/etc/traefik/acme.json
+    networks:
+      - proxy
+
+  # ── Labitat Dashboard ──────────────────────────────────────────────────────
+  labitat:
+    image: ghcr.io/doomedramen/labitat:latest
+    container_name: labitat
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp
+    volumes:
+      - labitat_data:/data
+    environment:
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY is required. Generate with: openssl rand -base64 32}
+      - NODE_ENV=production
+      - DATABASE_URL=file:/data/labitat.db
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.labitat.rule=Host(`${LABITAT_DOMAIN:?LABITAT_DOMAIN is required}`)"
+      - "traefik.http.routers.labitat.entrypoints=websecure"
+      - "traefik.http.routers.labitat.tls=true"
+      - "traefik.http.routers.labitat.tls.certresolver=letsencrypt"
+      - "traefik.http.services.labitat.loadbalancer.server.port=3000"
+    networks:
+      - proxy
+
+volumes:
+  labitat_data:
+    name: labitat_data
+
+networks:
+  proxy:
+    name: proxy
+    driver: bridge

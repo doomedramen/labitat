@@ -1,0 +1,66 @@
+# Production Docker Compose with Nginx Proxy Manager and HTTPS
+# Usage:
+#   1. Copy this file and fill in your values
+#   2. Run: docker compose -f docker-compose.npm.yml up -d
+#   3. Access NPM at http://<your-server>:81 to configure the proxy
+#   4. Create a proxy host for labitat.example.com → labitat:3000
+#      with SSL + Let's Encrypt enabled
+#
+# Prerequisites:
+#   - A domain name pointing to your server (e.g., labitat.example.com)
+#   - Ports 80, 81, and 443 open
+
+services:
+  # ── Nginx Proxy Manager ────────────────────────────────────────────────────
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: npm
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+    environment:
+      TZ: ${TZ:-UTC}
+
+  # ── Labitat Dashboard ──────────────────────────────────────────────────────
+  labitat:
+    image: ghcr.io/doomedramen/labitat:latest
+    container_name: labitat
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp
+    volumes:
+      - labitat_data:/data
+    environment:
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY is required. Generate with: openssl rand -base64 32}
+      - NODE_ENV=production
+      - DATABASE_URL=file:/data/labitat.db
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    # No ports exposed — only accessible through NPM
+    networks:
+      - npm_network
+
+volumes:
+  labitat_data:
+    name: labitat_data
+  npm_data:
+    name: npm_data
+  npm_letsencrypt:
+    name: npm_letsencrypt
+
+networks:
+  npm_network:
+    name: npm_network
+    driver: bridge

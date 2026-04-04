@@ -1,26 +1,27 @@
-# Lefthook configuration for auto version bumping
+# Lefthook configuration
 # See: https://github.com/evilmartians/lefthook
 
 pre-commit:
   parallel: true
   commands:
     lint:
-      run: pnpm lint
+      glob: "*.{ts,tsx,js,jsx}"
+      run: pnpm lint --fix {staged_files}
       stage_fixed: true
     format:
-      run: pnpm format
-      stage_fixed: true
-    typecheck:
-      run: pnpm typecheck
-    check-adapters:
-      run: pnpm check-adapters
-    version-bump:
-      run: npx -y package-bump@latest patch --stage
+      glob: "*.{ts,tsx,js,jsx,md,json}"
+      run: pnpm format --write {staged_files}
       stage_fixed: true
 
 pre-push:
   parallel: false
   commands:
+    typecheck:
+      run: pnpm typecheck
+    check-adapters:
+      run: pnpm check-adapters
     build:
       run: pnpm build
+    version-bump:
+      run: npx -y package-bump@latest patch --stage
 

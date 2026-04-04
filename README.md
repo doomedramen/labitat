@@ -1,5 +1,11 @@
 # Labitat
 
+[![CI/CD](https://github.com/DoomedRamen/labitat/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/DoomedRamen/labitat/actions/workflows/ci-cd.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/v/release/DoomedRamen/labitat)](https://github.com/DoomedRamen/labitat/releases)
+[![Docker Pulls](https://img.shields.io/github/downloads/DoomedRamen/labitat/total?label=downloads)](https://github.com/DoomedRamen/labitat/pkgs/container/labitat)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+
 A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support.
 
 ![Labitat Dashboard](docs/public/images/labitat_dash.png)
@@ -18,7 +24,7 @@ A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop
 ### Docker Compose (Recommended)
 
 ```bash
-git clone https://github.com/labitat/labitat.git && cd labitat
+git clone https://github.com/DoomedRamen/labitat.git && cd labitat
 cp .env.example .env
 
 # Edit .env and set SECRET_KEY (generate with: openssl rand -base64 32)
@@ -30,7 +36,7 @@ Visit `http://localhost:3000` — you'll be guided to create your admin account 
 ### Native Install (Debian/Proxmox)
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/labitat/labitat/main/install.sh)
+bash <(curl -s https://raw.githubusercontent.com/DoomedRamen/labitat/main/install.sh)
 ```
 
 The installer sets up dependencies and the service. Visit the dashboard URL to create your admin account.
@@ -46,26 +52,26 @@ pnpm start
 
 ## Supported Services
 
-| Category | Services |
-|----------|----------|
-| **Downloads** | Radarr, Sonarr, Prowlarr, qBittorrent, SABnzbd, Bazarr |
-| **Media** | Plex, Unmanic, Tautulli, Overseerr (Seerr) |
-| **Networking** | AdGuard Home, Nginx Proxy Manager |
-| **Monitoring** | APCUPS, Unifi, Glances |
-| **General** | Open-Meteo Weather, OpenWeatherMap, Date/Time, Search, Service Logo |
+| Category       | Services                                                            |
+| -------------- | ------------------------------------------------------------------- |
+| **Downloads**  | Radarr, Sonarr, Prowlarr, qBittorrent, SABnzbd, Bazarr              |
+| **Media**      | Plex, Unmanic, Tautulli, Overseerr (Seerr)                          |
+| **Networking** | AdGuard Home, Nginx Proxy Manager                                   |
+| **Monitoring** | APCUPS, Unifi, Glances                                              |
+| **General**    | Open-Meteo Weather, OpenWeatherMap, Date/Time, Search, Service Logo |
 
 ### Experimental (Available but Not Manually Tested)
 
 These adapters exist in the codebase but are disabled by default. Enable them by uncommenting the relevant lines in `lib/adapters/index.ts`:
 
-| Category | Services |
-|----------|----------|
-| **Downloads** | Lidarr, Readarr, Transmission, Jackett |
-| **Media** | Jellyfin, Emby, Immich |
-| **Networking** | Pi-hole, Traefik |
+| Category       | Services                                 |
+| -------------- | ---------------------------------------- |
+| **Downloads**  | Lidarr, Readarr, Transmission, Jackett   |
+| **Media**      | Jellyfin, Emby, Immich                   |
+| **Networking** | Pi-hole, Traefik                         |
 | **Monitoring** | Portainer, Uptime Kuma, Grafana, Frigate |
-| **Automation** | Home Assistant |
-| **Generic** | Ping, REST API |
+| **Automation** | Home Assistant                           |
+| **Generic**    | Ping, REST API                           |
 
 Missing something? [Add a service](#contributing) in under 50 lines of code.
 
@@ -87,12 +93,12 @@ This key encrypts stored service credentials. **Back it up** — lose it and you
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SECRET_KEY` | **Yes** | 32+ char random string for encryption |
-| `DATABASE_URL` | No | SQLite path (default: `./data/labitat.db`) |
-| `NODE_ENV` | No | Set to `production` for deployment |
-| `PORT` | No | Override default port (3000) |
+| Variable       | Required | Description                                |
+| -------------- | -------- | ------------------------------------------ |
+| `SECRET_KEY`   | **Yes**  | 32+ char random string for encryption      |
+| `DATABASE_URL` | No       | SQLite path (default: `./data/labitat.db`) |
+| `NODE_ENV`     | No       | Set to `production` for deployment         |
+| `PORT`         | No       | Override default port (3000)               |
 
 ## Development
 
@@ -130,22 +136,26 @@ This scaffolds a service adapter and widget. See [Contributing](./CONTRIBUTING.m
 ## Troubleshooting
 
 **Container won't start:**
+
 ```bash
 docker compose logs labitat
 ```
 
 **Database issues:**
+
 ```bash
 # Reset database (WARNING: deletes all data)
 rm ./data/labitat.db && pnpm db:push
 ```
 
 **Service widgets not loading:**
+
 - Check that the service URL is reachable from the Labitat host
 - Verify API keys and credentials
 - Check widget polling interval in dashboard settings
 
 **Systemd service (native install):**
+
 ```bash
 journalctl -u labitat -f
 systemctl restart labitat
