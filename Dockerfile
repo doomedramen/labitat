@@ -44,6 +44,9 @@ COPY --from=builder --chown=labitat:nodejs /app/public ./public
 # Copy migration runner script and migrations (not included in standalone trace)
 COPY --chown=labitat:nodejs scripts/migrate.js ./scripts/migrate.js
 COPY --chown=labitat:nodejs lib/db/migrations ./lib/db/migrations
+# Copy drizzle-orm and better-sqlite3 for migration runner (not in standalone trace)
+COPY --from=builder --chown=labitat:nodejs /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
+COPY --from=builder --chown=labitat:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
 
 # Create data directory for SQLite database and cache
 RUN mkdir -p /data/cache && chown -R labitat:nodejs /data

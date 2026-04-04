@@ -12,7 +12,7 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const dbUrl = process.env.DATABASE_URL ?? "file:./data/labitat.db"
+const dbUrl = process.env.DATABASE_URL ?? "file:/data/labitat.db"
 const dbPath = dbUrl.replace(/^file:/, "")
 const dbDir = path.dirname(path.resolve(dbPath))
 

@@ -13,13 +13,14 @@ services:
       # Generate with: openssl rand -base64 32
       - SECRET_KEY=${SECRET_KEY:-change_me_to_a_random_32_char_string_minimum}
       - NODE_ENV=production
+      - DATABASE_URL=file:/data/labitat.db
       # Optional: customize port
       # - PORT=3000
       # Cache directory for widget cache persistence
       - CACHE_DIR=/data/cache
 
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
       interval: 30s
       timeout: 10s
       retries: 3

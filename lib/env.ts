@@ -4,7 +4,7 @@ import { z } from "zod/v4"
 export const env = createEnv({
   server: {
     SECRET_KEY: z.string().min(32),
-    DATABASE_URL: z.string().default("file:./data/labitat.db"),
+    DATABASE_URL: z.string().default("file:/data/labitat.db"),
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),
