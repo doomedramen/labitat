@@ -1,7 +1,7 @@
 # Labitat — Pre-Launch Improvement Plan
 
 > Last updated: 4 April 2026
-> Status: Phase 0, 1, 2 complete — Phase 3 in progress
+> Status: Phase 0, 1, 2, 3 complete — Phase 4 in progress
 
 ---
 
@@ -123,26 +123,25 @@
 
 ---
 
-## Phase 3: Testing & Quality
+## Phase 3: Testing & Quality ✅
 
-### 15. Add Unit Tests
+### 15. Add Unit Tests ✅
 
-- Set up Vitest or Jest (Vitest recommended for Next.js)
-- Target areas:
-  - `lib/adapters/` — fetchData functions, config validation
-  - `lib/utils/` — utility functions
-  - `hooks/` — custom React hooks
-  - `actions/` — server actions
-- Aim for meaningful coverage, not a percentage target
-- Add `pnpm test:unit` script
+- Installed Vitest v2 with Node.js environment
+- Created `vitest.config.ts` with `@/` path alias
+- Added `tests/unit-setup.ts` for env variable mocking
+- Added `pnpm test:unit` and `pnpm test:unit:watch` scripts
+- Tests written:
+  - `lib/crypto.test.ts` — encrypt/decrypt roundtrip, unique IV, base64 output, invalid input
+  - `lib/adapters/index.test.ts` — registry count, required fields, unique IDs, naming convention, sensitive field validation
+  - `lib/rate-limit.test.ts` — under limit, over limit, reset, independent keys, clear
 
-### 16. Add t3-env for Environment Validation
+### 16. Add t3-env for Environment Validation ✅
 
-- Install `@t3-oss/env-core` (not `env-nextjs` — all env vars are server-side only, no `NEXT_PUBLIC_` vars needed)
-- Define schema for: `SECRET_KEY`, `DATABASE_URL`, `NODE_ENV`, `PORT`, `CACHE_DIR`
-- Validate at startup (import early in server entry point)
-- Provide clear error messages for missing/invalid vars
-- Remove manual validation scattered across codebase (`lib/session.ts`, `lib/crypto.ts`, `lib/db/index.ts`, `lib/cache.ts`)
+- Installed `@t3-oss/env-core` and `zod`
+- Created `lib/env.ts` with schema for: `SECRET_KEY` (min 32 chars), `DATABASE_URL`, `NODE_ENV`, `PORT`, `CACHE_DIR`
+- Updated `lib/session.ts`, `lib/crypto.ts`, `lib/db/index.ts`, `lib/cache.ts` to use validated `env` object
+- Removed manual validation from `lib/crypto.ts` (now handled by t3-env)
 
 ### 17. Enable Multi-browser Testing (Deferred)
 
@@ -152,12 +151,13 @@
 - Consider: Run browsers sequentially to avoid DB conflicts
 - Defer until after unit test infrastructure is in place
 
-### 18. Add Rate Limiting to Login
+### 18. Add Rate Limiting to Login ✅
 
-- Protect against brute-force attacks on login form
-- Options: `@upstash/ratelimit`, `next-rate-limit`, or custom middleware
-- Consider: IP-based + account-based limits
-- Add to `docs/security.md`
+- Created `lib/rate-limit.ts` — in-memory + file-persisted rate limiter
+- Limits: 5 attempts per 15-minute window, 30-minute lockout
+- Rate limited by both IP (`x-forwarded-for`) and email (account lockout)
+- Resets on successful login
+- Integrated into `login()` server action in `actions/auth.ts`
 
 ---
 
@@ -217,7 +217,7 @@
 | ~~Week 1~~ | **~~Phase 1 (Security)~~**  | **~~1, 5, 6, 9, 2, 3~~** ✅ |
 | ~~Week 2~~ | **~~Phase 1 (Critical)~~**  | **~~7, 8, 4~~** ✅          |
 | ~~Week 3~~ | **~~Phase 2 (Community)~~** | **~~10, 11, 14, 13~~** ✅   |
-| Week 4     | Phase 3 (Testing)           | 15, 16, 18                  |
+| ~~Week 4~~ | **~~Phase 3 (Testing)~~**   | **~~15, 16, 18~~** ✅       |
 | Week 5     | Phase 4 (Docs & Polish)     | 19, 20, 21, 22, 24          |
 | Ongoing    | External dependencies       | 12, 17, 23                  |
 
@@ -228,9 +228,9 @@
 - **Item 7 (Disabled adapters)** — Marked as "experimental" in README. Users can enable by uncommenting in `lib/adapters/index.ts`.
 - **Item 8 (E2E tests in CI)** — Added as separate job, runs on all PRs and pushes.
 - **Item 12 (Screenshots)** and **Item 23 (Demo)** — require visual assets or hosting setup.
-- **Item 16 (t3-env)** — Use `@t3-oss/env-core` (not `env-nextjs`). All env vars are server-side only; no `NEXT_PUBLIC_` exposure needed.
 - **Item 17 (Multi-browser testing)** is deferred due to DB wipe conflicts between parallel browser workers. Will revisit after unit test infrastructure is in place.
 - **Item 19 (Telemetry)** — ✅ Completed. `NEXT_TELEMETRY_DISABLED=1` already set in Dockerfile.
 - **Phase 0** — ✅ All items (25, 26, 27) completed. Docker build verified.
 - **Phase 1** — ✅ All items (1-9) completed.
 - **Phase 2** — ✅ Items 10, 11, 13, 14 completed. Item 12 pending (requires visual assets).
+- **Phase 3** — ✅ All actionable items (15, 16, 18) completed. 17 tests passing. Item 17 deferred.

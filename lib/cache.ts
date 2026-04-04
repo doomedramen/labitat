@@ -1,5 +1,6 @@
 import { promises as fs } from "fs"
 import { join } from "path"
+import { env } from "./env"
 
 type CacheEntry<T> = {
   data: T
@@ -10,12 +11,9 @@ type CacheEntry<T> = {
 const memoryCache = new Map<string, CacheEntry<unknown>>()
 
 // File-based cache for persistence
-// Use CACHE_DIR env var if set, otherwise:
-// - Docker (NODE_ENV=production + /data exists): /data/cache
-// - Native install: ./data/cache relative to cwd
 const CACHE_DIR =
-  process.env.CACHE_DIR ??
-  (process.env.NODE_ENV === "production" && process.env.HOSTNAME
+  env.CACHE_DIR ??
+  (env.NODE_ENV === "production"
     ? "/data/cache"
     : join(process.cwd(), "data", "cache"))
 const CACHE_FILE = join(CACHE_DIR, "widget-cache.json")

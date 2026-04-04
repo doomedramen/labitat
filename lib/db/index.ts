@@ -3,8 +3,9 @@ import Database from "better-sqlite3"
 import fs from "fs"
 import path from "path"
 import * as schema from "./schema"
+import { env } from "../env"
 
-const dbUrl = process.env.DATABASE_URL ?? "file:./data/labitat.db"
+const dbUrl = env.DATABASE_URL
 const dbPath = dbUrl.replace(/^file:/, "")
 const dbDir = path.dirname(path.resolve(dbPath))
 

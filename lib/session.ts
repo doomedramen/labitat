@@ -1,4 +1,5 @@
 import type { SessionOptions } from "iron-session"
+import { env } from "./env"
 
 export type SessionData = {
   userId?: string
@@ -6,10 +7,10 @@ export type SessionData = {
 }
 
 export const sessionOptions: SessionOptions = {
-  password: process.env.SECRET_KEY!,
+  password: env.SECRET_KEY,
   cookieName: "labitat_session",
   cookieOptions: {
-    secure: process.env.NODE_ENV === "production",
+    secure: env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: "lax",
   },

@@ -1,18 +1,8 @@
+import { env } from "./env"
+
 function getKeyMaterial(): ArrayBuffer {
-  const key = process.env.SECRET_KEY
-  if (!key) {
-    throw new Error(
-      "[labitat] SECRET_KEY environment variable is not set. " +
-        "Generate one with: openssl rand -base64 32"
-    )
-  }
+  const key = env.SECRET_KEY
   const bytes = new TextEncoder().encode(key)
-  if (bytes.length < 32) {
-    throw new Error(
-      `[labitat] SECRET_KEY is too short: must be at least 32 bytes when UTF-8 encoded ` +
-        `(got ${bytes.length}). Generate one with: openssl rand -base64 32`
-    )
-  }
   // Use exactly 32 bytes; truncating a longer key is cryptographically safe
   const buf = new ArrayBuffer(32)
   new Uint8Array(buf).set(bytes.subarray(0, 32))
