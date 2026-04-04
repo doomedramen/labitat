@@ -1,4 +1,4 @@
-import { hasAdminUser } from "@/actions/auth"
+import { hasAdminUser } from "@/lib/db/admin"
 import { redirect } from "next/navigation"
 import { SetupForm } from "./setup-form"
 import {

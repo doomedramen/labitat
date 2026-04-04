@@ -5,18 +5,9 @@ import bcrypt from "bcryptjs"
 import { nanoid } from "nanoid"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
+import { hasAdminUser } from "@/lib/db/admin"
 import { getSession } from "@/lib/auth"
 import { eq } from "drizzle-orm"
-
-export async function hasAdminUser(): Promise<boolean> {
-  try {
-    const result = await db.select({ count: users.id }).from(users).limit(1)
-    return result.length > 0
-  } catch {
-    // Table might not exist yet if migrations haven't run
-    return false
-  }
-}
 
 export async function getUserByEmail(email: string) {
   const result = await db

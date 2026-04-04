@@ -43,6 +43,10 @@ COPY --from=builder --chown=labitat:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=labitat:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=labitat:nodejs /app/public ./public
 
+# Copy migration runner script and migrations (not included in standalone trace)
+COPY --chown=labitat:nodejs scripts/migrate.js ./scripts/migrate.js
+COPY --chown=labitat:nodejs lib/db/migrations ./lib/db/migrations
+
 # Create data directory for SQLite database and cache
 RUN mkdir -p /data/cache && chown -R labitat:nodejs /data
 

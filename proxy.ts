@@ -1,19 +1,43 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getIronSession } from "iron-session"
 import { sessionOptions, type SessionData } from "@/lib/session"
+import { hasAdminUser } from "@/lib/db/admin"
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Skip proxy for API routes and static assets
+  if (
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/_vercel") ||
+    pathname.startsWith("/favicon.ico") ||
+    pathname.startsWith("/sw.js")
+  ) {
+    return NextResponse.next()
+  }
+
+  const adminExists = await hasAdminUser()
+
+  // Redirect to setup if no admin exists
+  if (!adminExists && pathname !== "/setup") {
+    return NextResponse.redirect(new URL("/setup", request.url))
+  }
+
+  // Redirect away from setup if admin already exists
   if (pathname === "/setup") {
-    const response = NextResponse.next()
-    const session = await getIronSession<SessionData>(
-      request,
-      response,
-      sessionOptions
-    )
-    if (session.loggedIn) {
-      return NextResponse.redirect(new URL("/", request.url))
+    if (adminExists) {
+      const response = NextResponse.next()
+      const session = await getIronSession<SessionData>(
+        request,
+        response,
+        sessionOptions
+      )
+      if (session.loggedIn) {
+        return NextResponse.redirect(new URL("/", request.url))
+      }
+      // Admin exists but not logged in — let them see setup (login page)
+      return NextResponse.next()
     }
   }
 
@@ -21,5 +45,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/setup"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }

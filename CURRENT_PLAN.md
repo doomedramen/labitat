@@ -141,11 +141,11 @@
 - Add `pnpm test:unit` script
 
 ### 16. Add t3-env for Environment Validation
-- Install `@t3-oss/env-nextjs`
-- Define schema for: `SECRET_KEY`, `DATABASE_URL`, `NODE_ENV`, `PORT`
-- Validate at build and runtime
+- Install `@t3-oss/env-core` (not `env-nextjs` — all env vars are server-side only, no `NEXT_PUBLIC_` vars needed)
+- Define schema for: `SECRET_KEY`, `DATABASE_URL`, `NODE_ENV`, `PORT`, `CACHE_DIR`
+- Validate at startup (import early in server entry point)
 - Provide clear error messages for missing/invalid vars
-- Remove manual validation scattered across codebase
+- Remove manual validation scattered across codebase (`lib/session.ts`, `lib/crypto.ts`, `lib/db/index.ts`, `lib/cache.ts`)
 
 ### 17. Enable Multi-browser Testing (Deferred)
 - **Blocker**: Database needs wiping between test runs
@@ -224,7 +224,7 @@
 - **Item 7 (Disabled adapters)** — Critical for launch. Decide: test & enable, or remove from README.
 - **Item 8 (E2E tests in CI)** — Tests exist, just need CI integration.
 - **Item 17 (Multi-browser testing)** is deferred due to DB wipe conflicts between parallel browser workers. Will revisit after unit test infrastructure is in place.
-- **Item 16 (t3-env)** — user preference: use `@t3-oss/env-nextjs` for env validation.
+- **Item 16 (t3-env)** — Use `@t3-oss/env-core` (not `env-nextjs`). All env vars are server-side only; no `NEXT_PUBLIC_` exposure needed.
 - **Item 4 (install.sh)** — requires testing on clean VM; may take longer than estimated.
 - **Item 12 (Screenshots)** and **Item 23 (Demo)** — require visual assets or hosting setup.
 - **Item 19 (Telemetry)** — ✅ Completed. `NEXT_TELEMETRY_DISABLED=1` already set in Dockerfile.
