@@ -80,3 +80,7 @@
 .animate-wiggle {
   animation: wiggle 0.25s ease-in-out infinite;
 }
+
+.animate-wiggle:hover {
+  animation-play-state: paused;
+}

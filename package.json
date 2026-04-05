@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.75",
+  "version": "0.0.76",
   "type": "module",
   "private": true,
   "scripts": {
@@ -73,6 +73,8 @@
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.2.1",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
     "@types/js-yaml": "^4.0.9",
@@ -84,6 +86,7 @@
     "esbuild": "^0.27.4",
     "eslint": "^9.39.4",
     "eslint-config-next": "16.2.1",
+    "jsdom": "^29.0.1",
     "lefthook": "^2.1.4",
     "package-bump": "^1.1.7",
     "postcss": "^8",
