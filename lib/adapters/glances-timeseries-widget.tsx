@@ -76,11 +76,16 @@ export function GlancesTSWidget({ metric, value1, value2 }: GlancesTSData) {
 
   const { hist1, hist2 } = snapshot
 
+  // Dynamic scaling: use the data range with padding, capped at 100 for
+  // percentage metrics so the chart never exceeds the logical maximum.
+  const histMax = Math.max(...hist1, 0.1)
+  const scaledMax = Math.min(histMax * 1.15, 100)
+
   if (metric === "cpu") {
     return (
       <TimeSeriesChart
         history={hist1}
-        max={100}
+        max={scaledMax}
         colorClass="text-primary"
         label="CPU"
         valueLabel={`${(value1 ?? 0).toFixed(1)}%`}
@@ -92,7 +97,7 @@ export function GlancesTSWidget({ metric, value1, value2 }: GlancesTSData) {
     return (
       <TimeSeriesChart
         history={hist1}
-        max={100}
+        max={scaledMax}
         colorClass="text-blue-500"
         label="RAM"
         valueLabel={`${(value1 ?? 0).toFixed(1)}%`}
