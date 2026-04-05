@@ -43,8 +43,9 @@ export function FieldRenderer({
           {field.label}
           {field.required && <span className="text-destructive"> *</span>}
         </Label>
+        {/* Hidden input so select value is submitted with the form */}
+        <input type="hidden" name={name} value={selectValue} />
         <Select
-          name={name}
           value={selectValue}
           onValueChange={(v) => {
             if (v != null) setSelectValue(v)

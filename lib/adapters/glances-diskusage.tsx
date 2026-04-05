@@ -1,5 +1,3 @@
-"use client"
-
 import type { ServiceDefinition } from "./types"
 import { DiskDonut } from "./viz"
 import { GLANCES_BASE_FIELDS, makeGlancesGet } from "./glances-common"

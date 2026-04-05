@@ -35,7 +35,6 @@ async function buildServiceConfig(
     const formKey = "config_" + field.key
 
     if (field.type === "boolean") {
-      // Boolean fields: check for "true" value (switch submits value="true" when checked)
       const value = formData.get(formKey)
       config[field.key] = value === "true" ? "true" : "false"
     } else {
@@ -51,7 +50,6 @@ async function buildServiceConfig(
     }
   }
 
-  // Encrypt if there's any config to store
   const configEnc =
     Object.keys(config).length > 0
       ? await encrypt(JSON.stringify(config))

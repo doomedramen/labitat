@@ -62,13 +62,7 @@ export function ItemDialog({
 
   // Separate services into general widgets and service widgets, sorted alphabetically
   const allServices = getAllServices()
-  const generalIds = [
-    "openmeteo",
-    "openweathermap",
-    "datetime",
-    "glances",
-    "search",
-  ]
+  const generalIds = ["openmeteo", "openweathermap", "datetime", "search"]
   const generalWidgets = allServices
     .filter((s) => s.clientSide || generalIds.includes(s.id))
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -329,6 +323,9 @@ export function ItemDialog({
               <div
                 className="mt-2 border-t pt-4"
                 data-testid="item-service-config"
+                // Force re-mount when config finishes loading to avoid Base UI
+                // "changing defaultValue of uncontrolled FieldControl" warning
+                key={`${serviceDef.id}-${isLoadingConfig ? "loading" : "loaded"}`}
               >
                 <h4 className="mb-3 text-sm font-medium">
                   Service Configuration

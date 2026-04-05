@@ -37,13 +37,6 @@ export function EditBar({ onAddGroup, onDone }: EditBarProps) {
         </form>
       </div>
       <div className="flex items-center gap-2">
-        <span className="hidden text-xs text-muted-foreground sm:block">
-          Press{" "}
-          <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-            E
-          </kbd>{" "}
-          to exit
-        </span>
         <Button size="sm" onClick={onDone} data-testid="done-button">
           <CheckIcon data-icon="inline-start" />
           Done
