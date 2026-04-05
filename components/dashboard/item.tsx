@@ -130,6 +130,14 @@ const statusColors: Record<ServiceStatus["state"], string> = {
   unknown: "bg-muted-foreground/50",
 }
 
+const statusPulse: Record<ServiceStatus["state"], boolean> = {
+  healthy: true,
+  reachable: false,
+  unreachable: true,
+  error: true,
+  unknown: false,
+}
+
 const statusLabels: Record<ServiceStatus["state"], string> = {
   healthy: "Healthy",
   reachable: "Reachable",
@@ -145,10 +153,24 @@ function StatusDot({ status }: { status: ServiceStatus }) {
 
   const tooltipContent = reason ? `${label}: ${reason}` : label
 
+  const pulse = statusPulse[status.state]
+
   return (
     <Tooltip>
       <TooltipTrigger
-        render={<span className={cn("block size-2 rounded-full", color)} />}
+        render={
+          <span className="relative flex size-2">
+            {pulse && (
+              <span
+                className={cn(
+                  "absolute inset-0 size-2 animate-ping rounded-full opacity-75",
+                  color
+                )}
+              />
+            )}
+            <span className={cn("relative block size-2 rounded-full", color)} />
+          </span>
+        }
       />
       <TooltipContent side="top" className="text-xs">
         {tooltipContent}
@@ -355,8 +377,12 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       style={style}
       className={cn(
         "group/item relative overflow-hidden rounded-xl bg-card transition-all duration-200 ease-in-out",
-        editMode ? "border border-ring/50" : "border border-border/50",
-        item.href && !editMode && "cursor-pointer hover:shadow-md"
+        editMode
+          ? "animate-wiggle border border-ring/50"
+          : "border border-border/50",
+        item.href &&
+          !editMode &&
+          "cursor-pointer hover:scale-[1.02] hover:shadow-md"
       )}
     >
       {!editMode && item.href ? (
