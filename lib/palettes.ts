@@ -12,6 +12,12 @@ export const PALETTES = [
   { id: "dawn", label: "Dawn" },
   { id: "mist-green", label: "Mist Green" },
   { id: "vintage-paper", label: "Vintage Paper" },
+  { id: "candyland", label: "Candyland" },
+  { id: "vercel", label: "Vercel" },
+  { id: "cyberpunk", label: "Cyberpunk" },
+  { id: "sakura-blossom-neon", label: "Sakura Blossom Neon" },
+  { id: "mist-green-9000", label: "Mist Green 9000" },
+  { id: "doom-64", label: "DOOM 64" },
 ]
 
 function sortPalettes(palettes: typeof PALETTES) {
