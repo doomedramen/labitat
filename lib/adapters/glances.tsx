@@ -119,25 +119,25 @@ function GlancesWidget({
       },
     showUptime &&
       uptime !== undefined && {
-        icon: <Clock className="size-3 text-primary-foreground/60" />,
+        icon: <Clock className="size-3 text-secondary-foreground/60" />,
         value: formatUptime(uptime),
         label: "Uptime",
       },
     load &&
       load.length > 0 && {
-        icon: <Activity className="size-3 text-primary-foreground/60" />,
+        icon: <Activity className="size-3 text-secondary-foreground/60" />,
         value: load[0].toFixed(2),
         label: "Load",
       },
     showNetwork &&
       networkRx !== undefined && {
-        icon: <Download className="size-3 text-primary-foreground/60" />,
+        icon: <Download className="size-3 text-secondary-foreground/60" />,
         value: formatBytes(networkRx),
         label: "Rx",
       },
     showNetwork &&
       networkTx !== undefined && {
-        icon: <Upload className="size-3 text-primary-foreground/60" />,
+        icon: <Upload className="size-3 text-secondary-foreground/60" />,
         value: formatBytes(networkTx),
         label: "Tx",
       },
