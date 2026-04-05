@@ -129,21 +129,19 @@ export function ItemDialog({
 
   const serviceDef = selectedService
 
+  // Extract values for useEffect dependencies to avoid TypeScript narrowing issues
+  const existingLabel = existingItem?.label
+  const existingCleanMode = existingItem?.cleanMode
+
   // Auto-update label when service changes (for new items only)
   useEffect(() => {
     if (!open || isEdit || !selectedService || !labelInputRef.current) return
     const currentLabel = labelInputRef.current.value
-    const previousLabel = existingItem?.label ?? ""
+    const previousLabel = existingLabel ?? ""
     if (!currentLabel || currentLabel === previousLabel) {
       labelInputRef.current.value = selectedService.name
     }
-  }, [
-    open,
-    isEdit,
-    selectedService,
-    existingItem?.label,
-    existingItem?.cleanMode,
-  ])
+  }, [open, isEdit, selectedService, existingLabel, existingCleanMode])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
