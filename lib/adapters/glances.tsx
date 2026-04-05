@@ -69,16 +69,16 @@ function GlancesWidget({
     return `${bytes} B`
   }
 
-  const getStatusColor = (value: number) => {
-    if (value < 70) return "text-green-500"
-    if (value < 85) return "text-amber-500"
-    return "text-red-500"
+  const getStatusColor = (value: number): string | undefined => {
+    if (value < 70) return undefined
+    if (value < 85) return "text-destructive/70"
+    return "text-destructive"
   }
 
-  const getTempColor = (celsius: number) => {
-    if (celsius < 70) return "text-green-500"
-    if (celsius < 85) return "text-amber-500"
-    return "text-red-500"
+  const getTempColor = (celsius: number): string | undefined => {
+    if (celsius < 70) return undefined
+    if (celsius < 85) return "text-destructive/70"
+    return "text-destructive"
   }
 
   const stats: StatItem[] = [
