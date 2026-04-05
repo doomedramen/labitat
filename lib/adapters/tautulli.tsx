@@ -8,6 +8,7 @@ type TautulliSession = {
   full_title: string
   user: string
   progress: number
+  duration: number
   episode_number?: number
   season_number?: number
   state?: "playing" | "paused"
@@ -38,6 +39,7 @@ function TautulliWidget({ showActiveStreams, sessions }: TautulliData) {
           title: session.full_title,
           user: session.user,
           progress: session.progress,
+          duration: session.duration,
           state: session.state,
         }))}
       />
@@ -117,6 +119,8 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
           user: (s.friendly_name as string) ?? (s.user as string) ?? "",
           // view_offset is in milliseconds, convert to seconds
           progress: ((s.view_offset as number) ?? 0) / 1000,
+          // duration is in milliseconds, convert to seconds
+          duration: ((s.duration as number) ?? 0) / 1000,
           episode_number: s.episode_number as number | undefined,
           season_number: s.season_number as number | undefined,
           state: (s.state as string) === "paused" ? "paused" : "playing",

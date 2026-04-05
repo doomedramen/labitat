@@ -34,17 +34,31 @@ export function List({
 export function ListItem({
   className,
   children,
+  progress,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  /** Progress percentage (0-100) for bottom progress bar */
+  progress?: number
+}) {
   return (
-    <div
-      className={cn(
-        "flex w-full items-center justify-between gap-2 rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground",
-        className
+    <div className="relative">
+      <div
+        className={cn(
+          "flex w-full items-center justify-between gap-2 rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+      {progress !== undefined && progress > 0 && (
+        <div
+          className="absolute bottom-0 left-0 h-[2px] rounded-b-md bg-primary"
+          style={{
+            width: `${Math.min(100, Math.max(0, progress))}%`,
+          }}
+        />
       )}
-      {...props}
-    >
-      {children}
     </div>
   )
 }

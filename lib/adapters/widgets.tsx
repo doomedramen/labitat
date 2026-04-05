@@ -81,6 +81,8 @@ export type ActiveStream = {
   user: string
   /** Progress in seconds */
   progress: number
+  /** Total duration in seconds */
+  duration: number
   /** Playback state - 'playing' or 'paused' */
   state?: "playing" | "paused"
 }
@@ -117,15 +119,17 @@ export function ActiveStreamItem({
   title,
   user,
   progress,
+  duration,
   state,
 }: ActiveStream) {
+  const progressPercent = duration > 0 ? (progress / duration) * 100 : 0
   const tooltipText = `${title} (${user}) - ${formatDuration(progress)}`
 
   return (
     <Tooltip>
       <TooltipTrigger
         render={
-          <ListItem>
+          <ListItem progress={progressPercent}>
             {state === "paused" ? (
               <Pause className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
             ) : (

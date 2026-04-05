@@ -6,6 +6,7 @@ type PlexSession = {
   full_title: string
   user: string
   progress: number
+  duration: number
   state?: "playing" | "paused"
 }
 
@@ -46,6 +47,7 @@ function PlexWidget({
               title: session.full_title,
               user: session.user,
               progress: session.progress,
+              duration: session.duration,
               state: session.state,
             }))}
           />
@@ -181,6 +183,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
         const librarySectionTitle = getAttr("librarySectionTitle") // Library name
         const type = getAttr("type") // "movie" or "episode"
         const viewOffset = getAttr("viewOffset") // Progress in milliseconds
+        const duration = getAttr("duration") // Total duration in milliseconds
 
         // Build display title matching Tautulli format
         // For TV episodes: "Show - Episode Title"
@@ -224,12 +227,14 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
 
         // Convert viewOffset from milliseconds to seconds
         const progress = viewOffset ? parseInt(viewOffset, 10) / 1000 : 0
+        const durationSec = duration ? parseInt(duration, 10) / 1000 : 0
 
         sessions.push({
           title,
           full_title: fullTitle,
           user,
           progress,
+          duration: durationSec,
           state,
         })
       }
