@@ -15,6 +15,13 @@
       "when": 1775244936258,
       "tag": "0001_overjoyed_chimera",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1775330000000,
+      "tag": "0002_calm_morbius",
+      "breakpoints": true
     }
   ]
 }
