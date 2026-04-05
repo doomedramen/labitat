@@ -16,7 +16,7 @@ const adaptersDir = path.join(process.cwd(), "lib", "adapters")
 const indexPath = path.join(adaptersDir, "index.ts")
 
 // Files in lib/adapters/ that are not service adapters
-const NON_ADAPTER_FILES = new Set(["index", "types", "widgets"])
+const NON_ADAPTER_FILES = new Set(["index", "types", "widgets", "glances-common", "viz"])
 
 const indexSource = fs.readFileSync(indexPath, "utf8")
 const adapterFiles = fs.readdirSync(adaptersDir)
