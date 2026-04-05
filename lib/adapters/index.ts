@@ -23,9 +23,16 @@ import { nginxProxyManagerDefinition } from "./nginx-proxy-manager"
 import { openmeteoDefinition } from "./openmeteo"
 import { datetimeDefinition } from "./datetime"
 import { glancesDefinition } from "./glances"
+import { glancesTimeseriesDefinition } from "./glances-timeseries"
+import { glancesPerCpuDefinition } from "./glances-percpu"
+import { glancesProcessesDefinition } from "./glances-processes"
+import { glancesSensorsDefinition } from "./glances-sensors"
+import { glancesDiskUsageDefinition } from "./glances-diskusage"
 import { logoDefinition } from "./logo"
 import { openweathermapDefinition } from "./openweathermap"
 import { searchDefinition } from "./search"
+import { matrixDefinition } from "./matrix"
+import { pipesDefinition } from "./pipes"
 
 // ── Disabled widgets (not manually tested) ───────────────────────────────────
 // import { embyDefinition } from "./emby"
@@ -55,7 +62,13 @@ export type {
   ServiceRegistry,
 } from "./types"
 
-export const registry: ServiceRegistry = {
+// The registry stores heterogeneous ServiceDefinition<TData> types. Type safety
+// is enforced at the individual adapter definition site (Widget: FC<TData>).
+// The type assertion is needed because TypeScript's contravariance for function
+// types prevents direct assignment of ServiceDefinition<TData> to
+// ServiceDefinition<ServiceData>, even though usage is always type-correct
+// (fetchData returns TData, Widget is called with that same TData).
+export const registry = {
   [radarrDefinition.id]: radarrDefinition,
   [sonarrDefinition.id]: sonarrDefinition,
   [prowlarrDefinition.id]: prowlarrDefinition,
@@ -75,11 +88,19 @@ export const registry: ServiceRegistry = {
   [openmeteoDefinition.id]: openmeteoDefinition,
   [datetimeDefinition.id]: datetimeDefinition,
   [glancesDefinition.id]: glancesDefinition,
+  [glancesTimeseriesDefinition.id]: glancesTimeseriesDefinition,
+  [glancesPerCpuDefinition.id]: glancesPerCpuDefinition,
+  [glancesProcessesDefinition.id]: glancesProcessesDefinition,
+  [glancesSensorsDefinition.id]: glancesSensorsDefinition,
+  [glancesDiskUsageDefinition.id]: glancesDiskUsageDefinition,
   [logoDefinition.id]: logoDefinition,
   [openweathermapDefinition.id]: openweathermapDefinition,
   [searchDefinition.id]: searchDefinition,
+  [matrixDefinition.id]: matrixDefinition,
+  [pipesDefinition.id]: pipesDefinition,
 
   // Disabled widgets
+  // (type assertion required — see registry comment above)
   // [embyDefinition.id]: embyDefinition,
   // [jellyfinDefinition.id]: jellyfinDefinition,
   // [lidarrDefinition.id]: lidarrDefinition,
@@ -96,7 +117,7 @@ export const registry: ServiceRegistry = {
   // [jackettDefinition.id]: jackettDefinition,
   // [frigateDefinition.id]: frigateDefinition,
   // [homeassistantDefinition.id]: homeassistantDefinition,
-}
+} as ServiceRegistry
 
 /** Get a service definition by ID */
 export function getService(id: string): ServiceDefinition | undefined {

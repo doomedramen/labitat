@@ -24,8 +24,8 @@ function SabnzbdWidget({
   downloads,
 }: SabnzbdData) {
   const items = [
+    { value: queue.toLocaleString(), label: "Queue" },
     { value: speed, label: "Speed" },
-    { value: queue, label: "Queue" },
     { value: timeleft, label: "Time Left" },
   ]
 

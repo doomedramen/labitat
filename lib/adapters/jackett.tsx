@@ -10,8 +10,8 @@ type JackettData = {
 
 function JackettWidget({ configured, errored }: JackettData) {
   const items = [
-    { value: configured, label: "Configured" },
-    { value: errored, label: "Errored" },
+    { value: configured.toLocaleString(), label: "Configured" },
+    { value: errored.toLocaleString(), label: "Errored" },
   ]
 
   return <StatGrid items={items} />

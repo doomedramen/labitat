@@ -17,10 +17,10 @@ function GrafanaWidget({
   alertsTriggered,
 }: GrafanaData) {
   const items = [
-    { value: dashboards, label: "Dashboards" },
-    { value: datasources, label: "Datasources" },
-    { value: totalAlerts, label: "Total Alerts" },
-    { value: alertsTriggered, label: "Alerts Triggered" },
+    { value: dashboards.toLocaleString(), label: "Dashboards" },
+    { value: datasources.toLocaleString(), label: "Datasources" },
+    { value: totalAlerts.toLocaleString(), label: "Total Alerts" },
+    { value: alertsTriggered.toLocaleString(), label: "Alerts Triggered" },
   ]
 
   return <StatGrid items={items} />

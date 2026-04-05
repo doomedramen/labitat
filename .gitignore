@@ -9,7 +9,7 @@
 !.yarn/versions
 
 # testing
-/coverage
+/coverage # vitest coverage
 /playwright-report
 /test-results
 /test-playwright
@@ -50,3 +50,4 @@ next-env.d.ts
 /public/sw.js
 /docs/.vitepress/cache
 /docs/.vitepress/dist
+/coverage

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/refs */
 "use client"
 
 import { useState, useEffect, useCallback, useRef, useTransition } from "react"
@@ -409,15 +408,13 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             {activeType === "group" &&
               activeId &&
               (() => {
-                const group = sortedGroupsRef.current.find(
-                  (g) => g.id === activeId
-                )
+                const group = sortedGroups.find((g) => g.id === activeId)
                 return group ? <GroupDragPreview group={group} /> : null
               })()}
             {activeType === "item" &&
               activeId &&
               (() => {
-                const item = sortedGroupsRef.current
+                const item = sortedGroups
                   .flatMap((g) => g.items)
                   .find((i) => i.id === activeId)
                 return item ? <ItemCardDragPreview item={item} /> : null

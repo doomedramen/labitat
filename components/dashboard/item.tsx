@@ -1,6 +1,7 @@
 "use client"
 
 import { useTransition, useState } from "react"
+import Image from "next/image"
 import {
   GlobeIcon,
   GripVerticalIcon,
@@ -108,12 +109,12 @@ function ItemIcon({
   const src = buildIconUrl()
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <Image
       src={src}
       alt={label}
       width={36}
       height={36}
+      unoptimized
       className="size-9 flex-none object-contain"
       onError={() => setFallbackToGlobe(true)}
     />

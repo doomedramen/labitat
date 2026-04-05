@@ -15,9 +15,9 @@ function UnmanicWidget({
   queueLength,
 }: UnmanicData) {
   const items = [
-    { value: activeWorkers, label: "Active Workers" },
-    { value: totalWorkers, label: "Total Workers" },
-    { value: queueLength, label: "Queue Length" },
+    { value: activeWorkers.toLocaleString(), label: "Active Workers" },
+    { value: totalWorkers.toLocaleString(), label: "Total Workers" },
+    { value: queueLength.toLocaleString(), label: "Queue Length" },
   ]
 
   return <StatGrid items={items} />

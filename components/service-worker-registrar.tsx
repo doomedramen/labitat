@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client"
 
 import { useEffect, useState } from "react"
@@ -6,61 +5,63 @@ import { useEffect, useState } from "react"
 const IOS_INSTALL_DISMISSED_KEY = "labitat-ios-install-dismissed"
 
 export function ServiceWorkerRegistrar() {
-  const [isIOS, setIsIOS] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
-
-  useEffect(() => {
-    // Detect iOS
-    const isIOSDevice =
+  // Lazy initializers run only on the client (never during SSR) because
+  // this is a "use client" component and the initializer runs after hydration.
+  const [isIOS] = useState(() => {
+    if (typeof navigator === "undefined") return false
+    return (
       /iPad|iPhone|iPod/.test(navigator.userAgent) &&
       !(window as Window & typeof globalThis & { MSStream?: unknown }).MSStream
-    setIsIOS(isIOSDevice)
+    )
+  })
 
-    // Detect if running as PWA (standalone)
-    const isStandaloneMode =
+  const [isStandalone] = useState(() => {
+    if (typeof window === "undefined") return false
+    return (
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as Navigator & { standalone?: boolean }).standalone ===
         true
-    setIsStandalone(isStandaloneMode)
+    )
+  })
 
-    // Register service worker
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js", { scope: "/", updateViaCache: "none" })
-        .then((registration) => {
-          // Check for updates periodically
-          const intervalId = setInterval(
-            () => {
-              registration.update().catch(console.error)
-            },
-            60 * 60 * 1000
-          ) // Check every hour
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return
 
-          // Listen for updates
-          registration.addEventListener("updatefound", () => {
-            const newWorker = registration.installing
-            if (!newWorker) return
+    let intervalId: ReturnType<typeof setInterval>
 
-            newWorker.addEventListener("statechange", () => {
-              if (
-                newWorker.state === "installed" &&
-                navigator.serviceWorker.controller
-              ) {
-                // New content available — user will see refreshed content on next visit
-              }
-            })
+    navigator.serviceWorker
+      .register("/sw.js", { scope: "/", updateViaCache: "none" })
+      .then((registration) => {
+        intervalId = setInterval(
+          () => {
+            registration.update().catch(console.error)
+          },
+          60 * 60 * 1000
+        )
+
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing
+          if (!newWorker) return
+
+          newWorker.addEventListener("statechange", () => {
+            if (
+              newWorker.state === "installed" &&
+              navigator.serviceWorker.controller
+            ) {
+              // New content available — user will see refreshed content on next visit
+            }
           })
+        })
+      })
+      .catch((error) => {
+        console.error("Service Worker registration failed:", error)
+      })
 
-          // Cleanup interval on unmount
-          return () => clearInterval(intervalId)
-        })
-        .catch((error) => {
-          console.error("Service Worker registration failed:", error)
-        })
+    return () => {
+      clearInterval(intervalId)
     }
   }, [])
 
-  // Don't show iOS install prompt if already installed as PWA
   if (!isIOS || isStandalone) {
     return null
   }
@@ -69,14 +70,10 @@ export function ServiceWorkerRegistrar() {
 }
 
 function IOSInstallPrompt() {
-  const [dismissed, setDismissed] = useState(false)
-
-  useEffect(() => {
-    const dismissedBefore = localStorage.getItem(IOS_INSTALL_DISMISSED_KEY)
-    if (dismissedBefore) {
-      setDismissed(true)
-    }
-  }, [])
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof localStorage === "undefined") return false
+    return localStorage.getItem(IOS_INSTALL_DISMISSED_KEY) !== null
+  })
 
   const handleDismiss = () => {
     localStorage.setItem(IOS_INSTALL_DISMISSED_KEY, "true")

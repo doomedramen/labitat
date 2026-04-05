@@ -15,9 +15,9 @@ function NginxProxyManagerWidget({
   total,
 }: NginxProxyManagerData) {
   const items = [
-    { value: enabled, label: "Enabled" },
-    { value: disabled, label: "Disabled" },
-    { value: total, label: "Total" },
+    { value: enabled.toLocaleString(), label: "Enabled" },
+    { value: disabled.toLocaleString(), label: "Disabled" },
+    { value: total.toLocaleString(), label: "Total" },
   ]
 
   return <StatGrid items={items} />

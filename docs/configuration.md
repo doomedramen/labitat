@@ -4,22 +4,24 @@ Labitat is configured through environment variables and the built-in setup wizar
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SECRET_KEY` | **Yes** | 32+ char random string for encryption |
-| `DATABASE_URL` | No | SQLite path (default: `./data/labitat.db`) |
-| `NODE_ENV` | No | Set to `production` for deployment |
-| `PORT` | No | Override default port (3000) |
+| Variable       | Required | Description                                                                |
+| -------------- | -------- | -------------------------------------------------------------------------- |
+| `SECRET_KEY`   | No       | 32+ char random string for encryption. Auto-generated if not set (Docker). |
+| `DATABASE_URL` | No       | SQLite path (default: `./data/labitat.db`)                                 |
+| `NODE_ENV`     | No       | Set to `production` for deployment                                         |
+| `PORT`         | No       | Override default port (3000)                                               |
 
 ## Secret Key
 
-Set `SECRET_KEY` in `.env` to a random string:
+In Docker, `SECRET_KEY` is auto-generated on first run and saved to `/data/.secret_key`. No action required.
+
+To set your own key:
 
 ```bash
 openssl rand -base64 32
 ```
 
-This key encrypts stored service credentials using AES-256-GCM. **Back it up** — lose it and you lose access to saved credentials.
+This key encrypts stored service credentials using AES-256-GCM. **Back it up** — lose it and you lose access to saved credentials. When using Docker, backing up your `labitat_data` volume covers this.
 
 ## First Run: Create Admin Account
 

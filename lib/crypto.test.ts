@@ -1,7 +1,19 @@
-import { describe, it, expect } from "vitest"
-import { encrypt, decrypt } from "@/lib/crypto"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+
+// Mock the env module before importing crypto
+vi.mock("@/lib/env", () => ({
+  env: {
+    SECRET_KEY: "test-secret-key-that-is-at-least-32-characters-long!",
+  },
+}))
+
+const { encrypt, decrypt } = await import("@/lib/crypto")
 
 describe("crypto", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it("encrypts and decrypts a string", async () => {
     const plaintext = "secret-api-key-12345"
     const encrypted = await encrypt(plaintext)

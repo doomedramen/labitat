@@ -10,8 +10,8 @@ type BazarrData = {
 
 function BazarrWidget({ wantedMovies, wantedEpisodes }: BazarrData) {
   const items = [
-    { value: wantedMovies, label: "Movies Missing" },
-    { value: wantedEpisodes, label: "Episodes Missing" },
+    { value: wantedMovies.toLocaleString(), label: "Movies Missing" },
+    { value: wantedEpisodes.toLocaleString(), label: "Episodes Missing" },
   ]
 
   return <StatGrid items={items} />

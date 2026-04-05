@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.76",
+  "version": "0.0.79",
   "type": "module",
   "private": true,
   "scripts": {
@@ -25,6 +25,8 @@
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
+    "test:unit:coverage": "vitest run --coverage",
+    "test:unit:coverage:open": "vitest run --coverage && open coverage/index.html",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
@@ -81,6 +83,7 @@
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@vitest/coverage-v8": "2.1.9",
     "auto-changelog": "^2.5.0",
     "drizzle-kit": "^0.31.10",
     "esbuild": "^0.27.4",

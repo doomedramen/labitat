@@ -12,10 +12,10 @@ type RadarrData = {
 
 function RadarrWidget({ wanted, missing, queued, movies }: RadarrData) {
   const items = [
-    { value: wanted, label: "Wanted" },
-    { value: missing, label: "Missing" },
-    { value: queued, label: "Queued" },
-    { value: movies, label: "Movies" },
+    { value: wanted.toLocaleString(), label: "Wanted" },
+    { value: missing.toLocaleString(), label: "Missing" },
+    { value: queued.toLocaleString(), label: "Queued" },
+    { value: movies.toLocaleString(), label: "Movies" },
   ]
 
   return <StatGrid items={items} />

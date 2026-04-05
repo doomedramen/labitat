@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import type { ServiceDefinition } from "./types"
 import { ExternalLink } from "lucide-react"
 
@@ -14,10 +15,12 @@ type LogoData = {
 function LogoWidget({ imageUrl, linkUrl, altText }: LogoData) {
   const content = (
     <div className="flex items-center justify-center gap-2 py-2">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={imageUrl}
         alt={altText || "Logo"}
+        width={0}
+        height={0}
+        unoptimized
         className="max-h-16 w-auto object-contain"
       />
       {linkUrl && <ExternalLink className="size-4 text-muted-foreground" />}

@@ -1,36 +1,41 @@
-# Docker Compose Installation
+# Docker Installation
 
-The recommended way to run Labitat.
+The recommended way to run Labitat. No config required — a secret key is generated automatically on first run.
 
-## Setup
-
-```bash
-git clone https://github.com/DoomedRamen/labitat.git && cd labitat
-cp .env.example .env
-```
-
-Edit `.env` and set your `SECRET_KEY`:
+## Docker Run (Simplest)
 
 ```bash
-openssl rand -base64 32
-```
-
-Then start:
-
-```bash
-docker compose up -d
+docker run -d \
+  --name labitat \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v labitat_data:/data \
+  ghcr.io/doomedramen/labitat:latest
 ```
 
 Visit `http://localhost:3000` to create your admin account.
 
-## Docker Configuration
+## Docker Compose
 
-The `docker-compose.yml` includes:
+Download the compose file (no need to clone the full repo):
 
-- Port mapping `3000:3000`
-- Volume mount for persistent data
-- Non-root user (UID 1001)
-- Read-only application directory
+```bash
+curl -fsSL https://raw.githubusercontent.com/DoomedRamen/labitat/main/docker-compose.yml -o docker-compose.yml
+docker compose up -d
+```
+
+## Secret Key
+
+Labitat needs a `SECRET_KEY` (32+ chars) to encrypt stored credentials. By default, one is generated automatically on first run and saved to `/data/.secret_key` inside the volume.
+
+To set your own key instead:
+
+```bash
+export SECRET_KEY=$(openssl rand -base64 32)
+docker compose up -d
+```
+
+> Back up your `labitat_data` volume — it contains both the database and the secret key.
 
 ## Environment Variables
 
@@ -39,7 +44,6 @@ See [Configuration](/configuration) for all available environment variables.
 ## Updating
 
 ```bash
-git pull
-docker compose down
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 ```

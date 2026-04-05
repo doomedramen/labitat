@@ -12,10 +12,10 @@ type EmbyData = {
 
 function EmbyWidget({ activeStreams, movies, shows, episodes }: EmbyData) {
   const items = [
-    { value: activeStreams, label: "Active Streams" },
-    { value: movies, label: "Movies" },
-    { value: shows, label: "Shows" },
-    { value: episodes, label: "Episodes" },
+    { value: activeStreams.toLocaleString(), label: "Active Streams" },
+    { value: movies.toLocaleString(), label: "Movies" },
+    { value: shows.toLocaleString(), label: "Shows" },
+    { value: episodes.toLocaleString(), label: "Episodes" },
   ]
 
   return <StatGrid items={items} />

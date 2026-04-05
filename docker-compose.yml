@@ -9,9 +9,9 @@ services:
       - labitat_data:/data
 
     environment:
-      # Required: 32+ character random string for encryption
-      # Generate with: openssl rand -base64 32
-      - SECRET_KEY=${SECRET_KEY:-change_me_to_a_random_32_char_string_minimum}
+      # Optional: set your own key, or let Labitat generate one automatically
+      # To set: export SECRET_KEY=$(openssl rand -base64 32) before running
+      - SECRET_KEY=${SECRET_KEY:-}
       - NODE_ENV=production
       - DATABASE_URL=file:/data/labitat.db
       # Optional: customize port

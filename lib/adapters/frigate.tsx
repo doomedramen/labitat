@@ -21,7 +21,7 @@ function formatUptime(seconds: number): string {
 
 function FrigateWidget({ cameras, uptime, version }: FrigateData) {
   const items = [
-    { value: cameras, label: "Cameras" },
+    { value: cameras.toLocaleString(), label: "Cameras" },
     { value: formatUptime(uptime), label: "Uptime" },
     { value: version, label: "Version" },
   ]

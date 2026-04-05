@@ -19,8 +19,8 @@ function ProwlarrWidget({
   const items = [
     { value: (grabs ?? 0).toLocaleString(), label: "Grabs" },
     { value: (queries ?? 0).toLocaleString(), label: "Queries" },
-    { value: failedGrabs ?? 0, label: "Fail Grabs" },
-    { value: failedQueries ?? 0, label: "Fail Queries" },
+    { value: (failedGrabs ?? 0).toLocaleString(), label: "Fail Grabs" },
+    { value: (failedQueries ?? 0).toLocaleString(), label: "Fail Queries" },
   ]
 
   return <StatGrid items={items} />

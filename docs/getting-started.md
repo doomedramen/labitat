@@ -4,14 +4,15 @@ Welcome to the Labitat documentation. Labitat is a modern, self-hosted homelab d
 
 ## Quick Start
 
-The fastest way to get up and running is with Docker Compose:
+No config needed — a secret key is generated automatically on first run.
 
 ```bash
-git clone https://github.com/DoomedRamen/labitat.git && cd labitat
-cp .env.example .env
-
-# Edit .env and set SECRET_KEY (generate with: openssl rand -base64 32)
-docker compose up -d
+docker run -d \
+  --name labitat \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v labitat_data:/data \
+  ghcr.io/doomedramen/labitat:latest
 ```
 
 Visit `http://localhost:3000` — you'll be guided to create your admin account on first visit.
@@ -20,7 +21,7 @@ Visit `http://localhost:3000` — you'll be guided to create your admin account 
 
 ## Next Steps
 
-- [Installation](/installation/) — Detailed installation guides
+- [Installation](/installation/) — All installation methods (Docker Compose, native, manual)
 - [Configuration](/configuration) — Environment variables and settings
 - [Services](/services/) — Supported services and how to add them
 - [Development](/development) — How to contribute

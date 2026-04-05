@@ -21,17 +21,29 @@ A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop
 
 ## Quick Start
 
-### Docker Compose (Recommended)
+### Docker (Recommended)
+
+No config needed — a secret key is generated automatically on first run.
 
 ```bash
-git clone https://github.com/DoomedRamen/labitat.git && cd labitat
-cp .env.example .env
-
-# Edit .env and set SECRET_KEY (generate with: openssl rand -base64 32)
-docker compose up -d
+docker run -d \
+  --name labitat \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v labitat_data:/data \
+  ghcr.io/doomedramen/labitat:latest
 ```
 
 Visit `http://localhost:3000` — you'll be guided to create your admin account on first visit.
+
+Or with Docker Compose (downloads just the compose file, no full clone needed):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DoomedRamen/labitat/main/docker-compose.yml -o docker-compose.yml
+docker compose up -d
+```
+
+> **Secret key:** Auto-generated on first run and saved to `/data/.secret_key` inside the volume. Back up your `labitat_data` volume to preserve it. To set your own key: `export SECRET_KEY=$(openssl rand -base64 32)` before running.
 
 ### Native Install (Debian/Proxmox)
 
@@ -83,22 +95,20 @@ On your first visit, you'll be redirected to a setup page to create your admin a
 
 ### Secret Key
 
-Set `SECRET_KEY` in `.env` to a random string (32+ characters):
+In Docker, `SECRET_KEY` is auto-generated on first run and saved to `/data/.secret_key` inside the volume. Back up your volume to preserve it.
 
-```bash
-openssl rand -base64 32
-```
+To set your own key instead: `export SECRET_KEY=$(openssl rand -base64 32)` before starting.
 
-This key encrypts stored service credentials. **Back it up** — lose it and you lose access to saved credentials.
+This key encrypts stored service credentials using AES-256-GCM. Lose it and you lose access to saved credentials.
 
 ## Environment Variables
 
-| Variable       | Required | Description                                |
-| -------------- | -------- | ------------------------------------------ |
-| `SECRET_KEY`   | **Yes**  | 32+ char random string for encryption      |
-| `DATABASE_URL` | No       | SQLite path (default: `./data/labitat.db`) |
-| `NODE_ENV`     | No       | Set to `production` for deployment         |
-| `PORT`         | No       | Override default port (3000)               |
+| Variable       | Required | Description                                                                |
+| -------------- | -------- | -------------------------------------------------------------------------- |
+| `SECRET_KEY`   | No       | 32+ char random string for encryption. Auto-generated if not set (Docker). |
+| `DATABASE_URL` | No       | SQLite path (default: `./data/labitat.db`)                                 |
+| `NODE_ENV`     | No       | Set to `production` for deployment                                         |
+| `PORT`         | No       | Override default port (3000)                                               |
 
 ## Development
 

@@ -20,6 +20,8 @@ const eslintConfig = defineConfig([
     "docs/.vitepress/**",
     // Compiled service worker
     "public/sw.js",
+    // Coverage reports (generated)
+    "coverage/**",
   ]),
 ]);
 

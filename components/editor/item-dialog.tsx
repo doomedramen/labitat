@@ -124,8 +124,7 @@ export function ItemDialog({
       }
     }
     init()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, existingItem?.id, existingItem?.serviceType])
+  }, [open, existingItem?.id, existingItem?.serviceType, existingItem?.iconUrl])
 
   const serviceDef = selectedService
 

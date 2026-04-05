@@ -1,10 +1,23 @@
-import { describe, it, expect, beforeEach } from "vitest"
-import {
-  checkRateLimit,
-  recordFailedAttempt,
-  resetRateLimit,
-  clearRateLimits,
-} from "@/lib/rate-limit"
+import { describe, it, expect, beforeEach, vi } from "vitest"
+
+// Mock fs and path modules for jsdom environment
+const mockFs = {
+  readFileSync: vi.fn(),
+  writeFileSync: vi.fn(),
+  existsSync: vi.fn(),
+  mkdirSync: vi.fn(),
+  unlinkSync: vi.fn(),
+}
+
+vi.mock("fs", () => mockFs)
+vi.mock("path", () => ({
+  default: {
+    join: (...args: string[]) => args.join("/"),
+  },
+}))
+
+const { checkRateLimit, recordFailedAttempt, resetRateLimit, clearRateLimits } =
+  await import("@/lib/rate-limit")
 
 describe("rate-limit", () => {
   beforeEach(() => {
