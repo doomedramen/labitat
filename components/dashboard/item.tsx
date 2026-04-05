@@ -123,7 +123,7 @@ function ItemIcon({
 // ── Status dot with tooltip ────────────────────────────────────────────────────
 
 const statusColors: Record<ServiceStatus["state"], string> = {
-  healthy: "bg-chart-3",
+  healthy: "bg-primary",
   reachable: "bg-muted-foreground/50",
   unreachable: "bg-destructive",
   error: "bg-destructive",
