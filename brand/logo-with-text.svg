@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="310"
-   height="329.99951"
-   viewBox="0 0 310 329.99951"
+   width="450"
+   height="460"
+   viewBox="0 0 450 460"
    version="1.1"
    id="svg1"
    xml:space="preserve"
@@ -26,8 +26,8 @@
      inkscape:document-units="px"
      showgrid="true"
      inkscape:zoom="0.74071342"
-     inkscape:cx="72.227664"
-     inkscape:cy="295.6609"
+     inkscape:cx="141.0802"
+     inkscape:cy="309.1614"
      inkscape:window-width="1512"
      inkscape:window-height="853"
      inkscape:window-x="0"
@@ -36,8 +36,8 @@
      inkscape:current-layer="layer1"><inkscape:grid
        id="grid1"
        units="px"
-       originx="-225"
-       originy="-139.00048"
+       originx="-156.40221"
+       originy="-125.00048"
        spacingx="1"
        spacingy="1"
        empcolor="#0099e5"
@@ -111,7 +111,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-224.99999,-139.00048)"><rect
+     transform="translate(-156.4022,-125.00048)"><rect
        style="fill:none;stroke:#2b3566;stroke-width:20;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
        id="rect3"
        width="110"
@@ -153,7 +153,16 @@
        style="fill:none;stroke:url(#linearGradient12);stroke-width:20;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
        d="m 479.99999,344 v 80"
        id="path4-7"
-       sodipodi:nodetypes="cc" /><circle
+       sodipodi:nodetypes="cc" /><text
+       xml:space="preserve"
+       id="text1"
+       style="font-size:106.667px;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect1);display:inline;fill:#725ce9;fill-opacity:1;stroke-width:40;stroke-linejoin:round"
+       transform="matrix(1.241086,0,0,1.241086,-21.995739,-144.11632)"><tspan
+         x="170"
+         y="577.31554"
+         id="tspan3"><tspan
+           style="font-weight:bold;font-size:93.3333px;font-family:Exo;-inkscape-font-specification:'Exo Bold'"
+           id="tspan1">Labitat</tspan></tspan></text><circle
        style="fill:#2cdbb2;fill-opacity:1;stroke-width:40;stroke-linejoin:round"
        id="path2"
        cx="290"
