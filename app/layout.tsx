@@ -5,6 +5,7 @@ import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { SWRProvider } from "@/components/swr-provider"
+import { ReconnectionBanner } from "@/components/reconnection-banner"
 import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
 
@@ -70,6 +71,7 @@ export default async function RootLayout({
       <body>
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
           <SWRProvider>
+            <ReconnectionBanner />
             {children}
             <Toaster richColors position="top-right" />
             <ServiceWorkerRegistrar />

@@ -119,7 +119,13 @@ export function ItemDialog({
       }
     }
     init()
-  }, [open, existingItem?.id, existingItem?.serviceType, existingItem?.iconUrl])
+  }, [
+    open,
+    existingItem?.id,
+    existingItem?.serviceType,
+    existingItem?.iconUrl,
+    existingItem?.cleanMode,
+  ])
 
   const serviceDef = selectedService
 
@@ -127,11 +133,17 @@ export function ItemDialog({
   useEffect(() => {
     if (!open || isEdit || !selectedService || !labelInputRef.current) return
     const currentLabel = labelInputRef.current.value
-    const previousLabel = (existingItem as ItemRow | null)?.label ?? ""
+    const previousLabel = existingItem?.label ?? ""
     if (!currentLabel || currentLabel === previousLabel) {
       labelInputRef.current.value = selectedService.name
     }
-  }, [open, isEdit, selectedService, existingItem])
+  }, [
+    open,
+    isEdit,
+    selectedService,
+    existingItem?.label,
+    existingItem?.cleanMode,
+  ])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

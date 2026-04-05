@@ -7,11 +7,13 @@ declare const SW_VERSION: string
 const CACHE_VERSION = SW_VERSION
 const STATIC_CACHE = `labitat-static-${CACHE_VERSION}`
 const DYNAMIC_CACHE = `labitat-dynamic-${CACHE_VERSION}`
+const OFFLINE_PAGE = "/offline.html"
 
 // Assets to cache immediately on install
 const STATIC_ASSETS = [
   "/",
   "/manifest.ts",
+  "/offline.html",
   "/icons/icon-192x192.png",
   "/icons/icon-512x512.png",
 ]
@@ -81,11 +83,11 @@ async function handleRequest(request: Request) {
 
   // Strategy 2: HTML pages - Network First with cache fallback (fresh content priority)
   if (isNavigationRequest(request)) {
-    return networkFirst(request, DYNAMIC_CACHE)
+    return networkFirst(request, DYNAMIC_CACHE, true)
   }
 
-  // Strategy 3: API calls and other resources - Network First with cache fallback
-  return networkFirst(request, DYNAMIC_CACHE)
+  // Strategy 3: API calls and other resources - Stale-While-Revalidate with error handling
+  return staleWhileRevalidate(request, DYNAMIC_CACHE)
 }
 
 function isStaticAsset(url: URL) {
@@ -150,7 +152,11 @@ async function cacheFirst(request: Request, cacheName: string) {
 }
 
 // Network-First Strategy: Fresh content with offline fallback
-async function networkFirst(request: Request, cacheName: string) {
+async function networkFirst(
+  request: Request,
+  cacheName: string,
+  useOfflinePage = false
+) {
   const cache = await caches.open(cacheName)
 
   try {
@@ -169,8 +175,8 @@ async function networkFirst(request: Request, cacheName: string) {
     }
 
     // Offline and not in cache - return offline page for navigation requests
-    if (isNavigationRequest(request)) {
-      const offlinePage = await cache.match("/")
+    if (useOfflinePage) {
+      const offlinePage = await cache.match(OFFLINE_PAGE)
       if (offlinePage) {
         return offlinePage
       }
@@ -181,4 +187,46 @@ async function networkFirst(request: Request, cacheName: string) {
       statusText: "Service Unavailable",
     })
   }
+}
+
+// Stale-While-Revalidate Strategy: Return cached version immediately, update in background
+// Best for API calls - shows old data while fetching new data
+async function staleWhileRevalidate(request: Request, cacheName: string) {
+  const cache = await caches.open(cacheName)
+  const cached = await cache.match(request)
+
+  // Start network request in background
+  const networkPromise = fetch(request)
+    .then((response) => {
+      if (response.ok) {
+        cache.put(request, response.clone())
+      }
+      return response
+    })
+    .catch(() => {
+      // Network failed - we'll return cached or error
+      return null
+    })
+
+  // If we have cached data, return it immediately and update in background
+  if (cached) {
+    // Return cached version, but update cache for next time
+    networkPromise.catch(() => {
+      // Ignore errors - we already have cache
+    })
+    return cached
+  }
+
+  // No cache, wait for network
+  const response = await networkPromise
+  if (response) {
+    return response
+  }
+
+  // Both cache and network failed
+  return new Response(JSON.stringify({ error: "Offline" }), {
+    status: 503,
+    statusText: "Service Unavailable",
+    headers: { "Content-Type": "application/json" },
+  })
 }

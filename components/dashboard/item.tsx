@@ -221,25 +221,35 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       revalidateOnFocus: false,
       revalidateIfStale: true,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        // Only retry up to 3 times, then wait longer
-        if (retryCount >= 3) return
-        setTimeout(() => revalidate({ retryCount }), pollingMs)
+        // Only retry up to 5 times with exponential backoff
+        if (retryCount >= 5) return
+        const delay = Math.min(1000 * 2 ** retryCount, pollingMs)
+        setTimeout(() => revalidate({ retryCount }), delay)
       },
     }
   )
 
   // Use SWR for ping data
-  const { data: pingStatus, isLoading: isPingLoading } =
-    useSWR<ServiceStatus | null>(
-      shouldPing ? `ping:${item.id}:${item.href}` : null,
-      () => pingUrl(item.href!),
-      {
-        refreshInterval: pollingMs,
-        dedupingInterval: pollingMs,
-        revalidateOnFocus: false,
-        revalidateIfStale: true,
-      }
-    )
+  const {
+    data: pingStatus,
+    isLoading: isPingLoading,
+    error: pingError,
+  } = useSWR<ServiceStatus | null>(
+    shouldPing ? `ping:${item.id}:${item.href}` : null,
+    () => pingUrl(item.href!),
+    {
+      refreshInterval: pollingMs,
+      dedupingInterval: pollingMs,
+      revalidateOnFocus: false,
+      revalidateIfStale: true,
+      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Only retry up to 5 times with exponential backoff
+        if (retryCount >= 5) return
+        const delay = Math.min(1000 * 2 ** retryCount, pollingMs)
+        setTimeout(() => revalidate({ retryCount }), delay)
+      },
+    }
+  )
 
   // Compute derived state
   const effectiveData = editMode ? null : serviceData
@@ -257,12 +267,17 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const serviceStatus: ServiceStatus = editMode
     ? { state: "unknown" }
     : serviceError
-      ? { state: "error", reason: serviceError.message || "Failed to fetch" }
-      : pingStatus
-        ? pingStatus
-        : effectiveData
-          ? dataToStatus(effectiveData)
-          : { state: "unknown" }
+      ? {
+          state: "error",
+          reason: serviceError.message || "Failed to fetch service data",
+        }
+      : pingError
+        ? { state: "error", reason: pingError.message || "Failed to ping URL" }
+        : pingStatus
+          ? pingStatus
+          : effectiveData
+            ? dataToStatus(effectiveData)
+            : { state: "unknown" }
 
   const {
     attributes,

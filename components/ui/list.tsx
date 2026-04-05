@@ -53,7 +53,7 @@ export function ListItem({
       </div>
       {progress !== undefined && progress > 0 && (
         <div
-          className="absolute bottom-0 left-0 h-[2px] rounded-b-md bg-primary"
+          className="absolute bottom-0 left-0 h-[1px] rounded-b-md bg-primary"
           style={{
             width: `${Math.min(100, Math.max(0, progress))}%`,
           }}
