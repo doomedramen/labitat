@@ -388,11 +388,11 @@ export function ItemDialog({
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <Checkbox
-                  id="item-clean-mode"
+                  id="item-minimal-mode"
                   checked={cleanMode}
                   onCheckedChange={(checked) => setCleanMode(!!checked)}
                 />
-                <Label htmlFor="item-clean-mode">Clean/Minimal mode</Label>
+                <Label htmlFor="item-minimal-mode">Minimal mode</Label>
               </div>
               {cleanMode ? (
                 <input type="hidden" name="cleanMode" value="true" />
