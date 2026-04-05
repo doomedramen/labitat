@@ -25,17 +25,33 @@ test.describe("Glances variant widgets - config persistence", () => {
   test.beforeEach(async ({ page }) => {
     await login(page)
 
-    // Clean up any existing test groups
+    // Clean up any existing test groups and items
     await page.getByTestId("edit-button").click()
-    const deleteButtons = page.locator('[data-testid="item-delete-button"]')
-    const count = await deleteButtons.count()
-    for (let i = 0; i < count; i++) {
-      if (await deleteButtons.nth(i).isVisible()) {
-        await deleteButtons.nth(i).click()
+
+    // Delete all items first
+    const itemDeleteButtons = page.locator('[data-testid="item-delete-button"]')
+    const itemCount = await itemDeleteButtons.count()
+    for (let i = 0; i < itemCount; i++) {
+      if (await itemDeleteButtons.nth(i).isVisible()) {
+        await itemDeleteButtons.nth(i).click()
         await page.getByTestId("item-delete-confirm").click()
         await page.waitForTimeout(200)
       }
     }
+
+    // Delete all groups
+    const groupDeleteButtons = page.locator(
+      '[data-testid="group-delete-button"]'
+    )
+    const groupCount = await groupDeleteButtons.count()
+    for (let i = 0; i < groupCount; i++) {
+      if (await groupDeleteButtons.nth(i).isVisible()) {
+        await groupDeleteButtons.nth(i).click()
+        await page.getByTestId("group-delete-confirm").click()
+        await page.waitForTimeout(200)
+      }
+    }
+
     await page.getByTestId("done-button").click()
     await page.waitForTimeout(500)
   })

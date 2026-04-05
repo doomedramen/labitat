@@ -15,6 +15,36 @@ async function login(page: Page) {
 test.describe("Group Management", () => {
   test.beforeEach(async ({ page }) => {
     await login(page)
+
+    // Clean up all existing groups and items
+    await page.getByTestId("edit-button").click()
+
+    // Delete all items first
+    const itemDeleteButtons = page.locator('[data-testid="item-delete-button"]')
+    const itemCount = await itemDeleteButtons.count()
+    for (let i = 0; i < itemCount; i++) {
+      if (await itemDeleteButtons.nth(i).isVisible()) {
+        await itemDeleteButtons.nth(i).click()
+        await page.getByTestId("item-delete-confirm").click()
+        await page.waitForTimeout(200)
+      }
+    }
+
+    // Delete all groups
+    const groupDeleteButtons = page.locator(
+      '[data-testid="group-delete-button"]'
+    )
+    const groupCount = await groupDeleteButtons.count()
+    for (let i = 0; i < groupCount; i++) {
+      if (await groupDeleteButtons.nth(i).isVisible()) {
+        await groupDeleteButtons.nth(i).click()
+        await page.getByTestId("group-delete-confirm").click()
+        await page.waitForTimeout(200)
+      }
+    }
+
+    await page.getByTestId("done-button").click()
+    await page.waitForTimeout(500)
   })
 
   test("should create a new group", async ({ page }) => {
@@ -25,8 +55,9 @@ test.describe("Group Management", () => {
     await page.getByTestId("add-group-button").click()
 
     // Fill in group name
+    const groupName = `Test Group ${Date.now()}`
     await expect(page.getByTestId("group-dialog")).toBeVisible()
-    await page.getByTestId("group-name-input").fill(`Test Group ${Date.now()}`)
+    await page.getByTestId("group-name-input").fill(groupName)
 
     // Submit
     await page.getByTestId("group-dialog-submit").click()
@@ -38,8 +69,10 @@ test.describe("Group Management", () => {
     // Exit edit mode to see the group name
     await page.getByTestId("done-button").click()
 
-    // Verify group was created by checking it exists on page
-    await expect(page.getByTestId("group-name")).toContainText(/Test Group/)
+    // Verify group was created by checking the specific group we just created
+    await expect(
+      page.getByLabel(groupName).getByTestId("group-name")
+    ).toContainText(groupName)
   })
 
   test("should cancel group creation", async ({ page }) => {
