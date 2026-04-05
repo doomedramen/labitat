@@ -40,7 +40,7 @@ export function StatCard({ value, label, icon, valueClassName }: StatItem) {
       >
         {value}
       </span>
-      <span className="text-muted-foreground">{label}</span>
+      <span className="text-primary-foreground/60">{label}</span>
     </div>
   )
 }
@@ -127,13 +127,13 @@ export function ActiveStreamItem({
         render={
           <ListItem>
             {state === "paused" ? (
-              <Pause className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <Pause className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
             ) : (
-              <Play className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <Play className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
             )}
             <span className="min-w-0 truncate font-medium">{title}</span>
-            <span className="text-muted-foreground">({user})</span>
-            <div className="flex items-center gap-1 font-mono text-muted-foreground tabular-nums">
+            <span className="text-secondary-foreground/60">({user})</span>
+            <div className="flex items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
               <Clock className="h-3 w-3 shrink-0" />
               {formatDuration(progress)}
             </div>
