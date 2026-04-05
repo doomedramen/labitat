@@ -14,12 +14,12 @@ function GenericPingWidget({ status, responseTime }: GenericPingData) {
     {
       value: isOnline ? "✓" : "✗",
       label: isOnline ? "Online" : "Offline",
-      valueClassName: isOnline ? "text-green-500" : "text-red-500",
+      valueClassName: isOnline ? undefined : "text-destructive",
     },
     {
       value: `${responseTime}ms`,
       label: "Response",
-      valueClassName: isOnline ? "text-green-500" : "text-red-500",
+      valueClassName: isOnline ? undefined : "text-destructive",
     },
   ]
 

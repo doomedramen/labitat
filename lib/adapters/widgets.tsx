@@ -21,7 +21,7 @@ export type StatItem = {
   label: string
   /** Optional lucide icon rendered above the value */
   icon?: React.ReactNode
-  /** Tailwind class for the value colour, e.g. "text-green-500". Defaults to text-foreground */
+  /** Tailwind class for the value colour. Defaults to text-primary-foreground. Use text-destructive for error states. */
   valueClassName?: string
 }
 

@@ -122,12 +122,14 @@ function ItemIcon({
 
 // ── Status dot with tooltip ────────────────────────────────────────────────────
 
+// Fixed semantic colors — intentionally not theme tokens so a pink/blue primary
+// theme never produces a confusing "healthy = pink" indicator.
 const statusColors: Record<ServiceStatus["state"], string> = {
-  healthy: "bg-primary",
-  reachable: "bg-muted-foreground/50",
-  unreachable: "bg-destructive",
-  error: "bg-destructive",
-  unknown: "bg-muted-foreground/50",
+  healthy: "bg-emerald-500",
+  reachable: "bg-amber-400",
+  unreachable: "bg-red-500",
+  error: "bg-red-500",
+  unknown: "bg-zinc-400",
 }
 
 const statusPulse: Record<ServiceStatus["state"], boolean> = {
@@ -168,7 +170,12 @@ function StatusDot({ status }: { status: ServiceStatus }) {
                 )}
               />
             )}
-            <span className={cn("relative block size-2 rounded-full", color)} />
+            <span
+              className={cn(
+                "relative block size-2 rounded-full ring-1 ring-card",
+                color
+              )}
+            />
           </span>
         }
       />

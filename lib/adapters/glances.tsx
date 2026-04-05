@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import { StatGrid, type StatItem } from "./widgets"
+import { cn } from "@/lib/utils"
 import {
   Cpu,
   MemoryStick,
@@ -84,7 +85,7 @@ function GlancesWidget({
   const stats: StatItem[] = [
     showCpu &&
       cpuPercent !== undefined && {
-        icon: <Cpu className={`size-3 ${getStatusColor(cpuPercent)}`} />,
+        icon: <Cpu className={cn("size-3", getStatusColor(cpuPercent))} />,
         value: `${cpuPercent.toFixed(1)}%`,
         label: "CPU",
         valueClassName: getStatusColor(cpuPercent),
@@ -92,7 +93,9 @@ function GlancesWidget({
     showMem &&
       memoryPercent !== undefined && {
         icon: (
-          <MemoryStick className={`size-3 ${getStatusColor(memoryPercent)}`} />
+          <MemoryStick
+            className={cn("size-3", getStatusColor(memoryPercent))}
+          />
         ),
         value: `${memoryPercent.toFixed(1)}%`,
         label: "RAM",
@@ -100,39 +103,41 @@ function GlancesWidget({
       },
     showCpuTemp &&
       cpuTemp !== undefined && {
-        icon: <Thermometer className={`size-3 ${getTempColor(cpuTemp)}`} />,
+        icon: <Thermometer className={cn("size-3", getTempColor(cpuTemp))} />,
         value: `${cpuTemp.toFixed(1)}°C`,
         label: "Temp",
         valueClassName: getTempColor(cpuTemp),
       },
     showDisk &&
       diskPercent !== undefined && {
-        icon: <HardDrive className={`size-3 ${getStatusColor(diskPercent)}`} />,
+        icon: (
+          <HardDrive className={cn("size-3", getStatusColor(diskPercent))} />
+        ),
         value: `${diskPercent.toFixed(1)}%`,
         label: "Disk",
         valueClassName: getStatusColor(diskPercent),
       },
     showUptime &&
       uptime !== undefined && {
-        icon: <Clock className="size-3 text-muted-foreground" />,
+        icon: <Clock className="size-3 text-primary-foreground/60" />,
         value: formatUptime(uptime),
         label: "Uptime",
       },
     load &&
       load.length > 0 && {
-        icon: <Activity className="size-3 text-muted-foreground" />,
+        icon: <Activity className="size-3 text-primary-foreground/60" />,
         value: load[0].toFixed(2),
         label: "Load",
       },
     showNetwork &&
       networkRx !== undefined && {
-        icon: <Download className="size-3 text-muted-foreground" />,
+        icon: <Download className="size-3 text-primary-foreground/60" />,
         value: formatBytes(networkRx),
         label: "Rx",
       },
     showNetwork &&
       networkTx !== undefined && {
-        icon: <Upload className="size-3 text-muted-foreground" />,
+        icon: <Upload className="size-3 text-primary-foreground/60" />,
         value: formatBytes(networkTx),
         label: "Tx",
       },
