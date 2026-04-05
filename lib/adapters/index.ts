@@ -28,7 +28,6 @@ import { glancesPerCpuDefinition } from "./glances-percpu"
 import { glancesProcessesDefinition } from "./glances-processes"
 import { glancesSensorsDefinition } from "./glances-sensors"
 import { glancesDiskUsageDefinition } from "./glances-diskusage"
-import { logoDefinition } from "./logo"
 import { openweathermapDefinition } from "./openweathermap"
 import { searchDefinition } from "./search"
 import { matrixDefinition } from "./matrix"
@@ -93,7 +92,6 @@ export const registry = {
   [glancesProcessesDefinition.id]: glancesProcessesDefinition,
   [glancesSensorsDefinition.id]: glancesSensorsDefinition,
   [glancesDiskUsageDefinition.id]: glancesDiskUsageDefinition,
-  [logoDefinition.id]: logoDefinition,
   [openweathermapDefinition.id]: openweathermapDefinition,
   [searchDefinition.id]: searchDefinition,
   [matrixDefinition.id]: matrixDefinition,

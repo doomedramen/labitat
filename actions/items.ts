@@ -42,7 +42,7 @@ async function buildServiceConfig(
       const value = (formData.get(formKey) as string) ?? ""
       if (field.type === "password" && value) {
         config[field.key] = value
-      } else if (field.key === "url") {
+      } else if (field.type === "url") {
         config[field.key] = value
         serviceUrl = value || null
       } else if (value) {
@@ -80,6 +80,8 @@ export async function createItem(groupId: string, formData: FormData) {
   const pollingMsStr = formData.get("pollingMs") as string
   const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) * 1000 : null
 
+  const cleanMode = formData.get("cleanMode") === "true"
+
   await db.insert(items).values({
     id: nanoid(),
     groupId,
@@ -91,6 +93,7 @@ export async function createItem(groupId: string, formData: FormData) {
     apiKeyEnc: null, // deprecated - using configEnc now
     configEnc,
     pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
+    cleanMode,
     order: nextOrder,
   })
   revalidatePath("/")
@@ -110,6 +113,8 @@ export async function updateItem(id: string, formData: FormData) {
   const pollingMsStr = formData.get("pollingMs") as string
   const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) * 1000 : null
 
+  const cleanMode = formData.get("cleanMode") === "true"
+
   await db
     .update(items)
     .set({
@@ -120,6 +125,7 @@ export async function updateItem(id: string, formData: FormData) {
       serviceUrl,
       configEnc,
       pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
+      cleanMode,
     })
     .where(eq(items.id, id))
   revalidatePath("/")

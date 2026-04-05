@@ -56,6 +56,7 @@ export function ItemDialog({
   )
   const [isLoadingConfig, setIsLoadingConfig] = useState(false)
   const [showIcon, setShowIcon] = useState(existingItem?.iconUrl !== "none")
+  const [cleanMode, setCleanMode] = useState(existingItem?.cleanMode ?? false)
   const labelInputRef = useRef<HTMLInputElement>(null)
   const isEdit = existingItem !== null
 
@@ -66,7 +67,6 @@ export function ItemDialog({
     "openweathermap",
     "datetime",
     "glances",
-    "logo",
     "search",
   ]
   const generalWidgets = allServices
@@ -101,6 +101,7 @@ export function ItemDialog({
       setBooleanValues({})
       setIsLoadingConfig(false)
       setShowIcon(existingItem?.iconUrl !== "none")
+      setCleanMode(existingItem?.cleanMode ?? false)
 
       // Load decrypted config when editing an existing item
       if (existingItem?.id && existingItem?.serviceType) {
@@ -130,11 +131,11 @@ export function ItemDialog({
 
   // Auto-update label when service changes (for new items only)
   useEffect(() => {
-    if (!open || isEdit || !selectedService) return
-    const currentLabel = labelInputRef.current?.value ?? ""
+    if (!open || isEdit || !selectedService || !labelInputRef.current) return
+    const currentLabel = labelInputRef.current.value
     const previousLabel = (existingItem as ItemRow | null)?.label ?? ""
     if (!currentLabel || currentLabel === previousLabel) {
-      labelInputRef.current!.value = selectedService.name
+      labelInputRef.current.value = selectedService.name
     }
   }, [open, isEdit, selectedService, existingItem])
 
@@ -143,6 +144,13 @@ export function ItemDialog({
     if (!groupId) return
     const formData = new FormData(e.currentTarget)
     setError(null)
+
+    // Validate label is not empty
+    const label = formData.get("label") as string
+    if (!label || label.trim() === "") {
+      setError("Label is required")
+      return
+    }
 
     // Add boolean values from state (switches might not submit when unchanged)
     for (const [key, value] of Object.entries(booleanValues)) {
@@ -163,6 +171,7 @@ export function ItemDialog({
         const v = formData.get("pollingMs") as string
         return v ? parseInt(v) * 1000 : 10000
       })(),
+      cleanMode,
       order: existingItem?.order ?? 0,
       createdAt: null,
     }
@@ -207,6 +216,7 @@ export function ItemDialog({
                 name="label"
                 defaultValue={existingItem?.label ?? ""}
                 placeholder="e.g. Sonarr"
+                required
                 autoFocus
                 ref={labelInputRef}
                 data-testid="item-label-input"
@@ -374,6 +384,25 @@ export function ItemDialog({
                 </p>
               </div>
             )}
+
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="item-clean-mode"
+                  checked={cleanMode}
+                  onCheckedChange={(checked) => setCleanMode(!!checked)}
+                />
+                <Label htmlFor="item-clean-mode">Clean/Minimal mode</Label>
+              </div>
+              {cleanMode ? (
+                <input type="hidden" name="cleanMode" value="true" />
+              ) : (
+                <input type="hidden" name="cleanMode" value="false" />
+              )}
+              <p className="text-xs text-muted-foreground">
+                Removes padding, margins, title, and icon for a minimal look
+              </p>
+            </div>
 
             {error && (
               <p

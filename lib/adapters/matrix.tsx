@@ -6,7 +6,25 @@ import type { ServiceDefinition } from "./types"
 // ── Matrix digital rain ───────────────────────────────────────────────────────
 
 const CHARS =
-  "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF"
+  "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789"
+
+const CELL = 16
+const MIN_SPEED = 2 // frames between steps (fast)
+const MAX_SPEED = 6 // frames between steps (slow)
+const MIN_LEN = 8
+const MAX_LEN = 28
+
+type Column = {
+  y: number // current head row (can be negative = not yet visible)
+  speed: number // frames per step
+  length: number // trail length in cells
+  chars: string[] // fixed characters for each trail cell
+  tick: number // frame counter for this column
+}
+
+function randomChar() {
+  return CHARS[Math.floor(Math.random() * CHARS.length)]
+}
 
 function MatrixWidget() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -17,53 +35,82 @@ function MatrixWidget() {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    const FONT_SIZE = 11
     let rafId: number
     let cols: number
-    let drops: number[]
+    let rows: number
+    let columns: Column[] = []
+
+    const spawnColumn = (col: number, immediate: boolean): Column => {
+      const length = MIN_LEN + Math.floor(Math.random() * (MAX_LEN - MIN_LEN))
+      return {
+        y: immediate
+          ? Math.floor(Math.random() * rows) // start anywhere on screen
+          : -Math.floor(Math.random() * rows), // stagger entry from above
+        speed: MIN_SPEED + Math.floor(Math.random() * (MAX_SPEED - MIN_SPEED)),
+        length,
+        chars: Array.from({ length: length + 1 }, randomChar),
+        tick: 0,
+      }
+    }
 
     const init = () => {
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
-      cols = Math.floor(canvas.width / FONT_SIZE)
-      drops = Array.from({ length: cols }, () =>
-        Math.floor(Math.random() * -(canvas.height / FONT_SIZE))
-      )
+      cols = Math.floor(canvas.width / CELL)
+      rows = Math.ceil(canvas.height / CELL)
+      ctx.fillStyle = "#000"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      // First init: stagger columns so they don't all arrive at once
+      columns = Array.from({ length: cols }, (_, i) => spawnColumn(i, false))
     }
 
     const draw = () => {
-      // Fade the previous frame
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)"
+      rafId = requestAnimationFrame(draw)
+
+      // Clear to black each frame — trails come from per-column history
+      ctx.fillStyle = "#000"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      ctx.font = `${FONT_SIZE}px monospace`
+      ctx.font = `bold ${CELL}px monospace`
+      ctx.textAlign = "left"
+      ctx.textBaseline = "top"
 
-      drops.forEach((y, i) => {
-        const char = CHARS[Math.floor(Math.random() * CHARS.length)]
-        const x = i * FONT_SIZE
-
-        // Head char: bright green
-        ctx.fillStyle = "#7fff7f"
-        ctx.fillText(char, x, y * FONT_SIZE)
-
-        // Trail: dim green
-        if (y > 1) {
-          ctx.fillStyle = "#00cc44"
-          ctx.fillText(
-            CHARS[Math.floor(Math.random() * CHARS.length)],
-            x,
-            (y - 1) * FONT_SIZE
-          )
+      columns.forEach((col, i) => {
+        col.tick++
+        if (col.tick >= col.speed) {
+          col.tick = 0
+          col.y++
+          // Mutate head character each step for shimmer
+          col.chars[0] = randomChar()
+          // Reset when trail has fully scrolled off-screen
+          if (col.y - col.length > rows) {
+            columns[i] = spawnColumn(i, false)
+            return
+          }
         }
 
-        // Reset column randomly once it exits the canvas
-        if (y * FONT_SIZE > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0
+        const x = i * CELL
+
+        for (let t = 0; t <= col.length; t++) {
+          const row = col.y - t
+          if (row < 0 || row >= rows) continue
+
+          const y = row * CELL
+          const char = col.chars[t] ?? randomChar()
+
+          if (t === 0) {
+            // Head: bright white
+            ctx.fillStyle = "#e0ffe0"
+          } else {
+            // Trail: fade from bright green to near-black
+            const fade = 1 - t / col.length
+            const g = Math.round(180 * fade * fade)
+            ctx.fillStyle = `rgb(0,${g},0)`
+          }
+
+          ctx.fillText(char, x, y)
         }
-        drops[i]++
       })
-
-      rafId = requestAnimationFrame(draw)
     }
 
     init()
@@ -71,8 +118,6 @@ function MatrixWidget() {
 
     const ro = new ResizeObserver(() => {
       init()
-      ctx.fillStyle = "black"
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
     })
     ro.observe(canvas)
 

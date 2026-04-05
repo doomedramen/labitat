@@ -321,58 +321,73 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const inner = (
     <div
       className={cn(
-        "relative px-3 transition-all duration-200 ease-in-out",
-        hasWidget ? "py-2.5" : "py-2"
+        "relative transition-all duration-200 ease-in-out",
+        item.cleanMode && !editMode
+          ? "p-0"
+          : hasWidget
+            ? "px-3 py-2.5"
+            : "px-3 py-2"
       )}
       data-testid="item-card"
       data-item-id={item.id}
     >
       {/* Status dot - absolute top right - only show if item has href or service with fetchData */}
-      {!editMode && hasStatus && (
+      {!editMode && hasStatus && !item.cleanMode && (
         <div className="absolute top-3 right-3">
           <StatusDot status={serviceStatus} />
         </div>
       )}
       {/* Main row: drag handle | icon | title */}
-      <div className="flex items-center gap-3">
-        {/* Drag handle - left side in edit mode */}
-        {editMode && (
-          <button
-            ref={setActivatorNodeRef}
-            {...attributes}
-            {...listeners}
-            className="-ml-1 flex-none cursor-grab touch-none text-muted-foreground/50 hover:text-muted-foreground active:cursor-grabbing"
-            aria-label="Drag to reorder item"
-          >
-            <GripVerticalIcon className="size-4" />
-          </button>
-        )}
-        <ItemIcon iconUrl={item.iconUrl} label={item.label} href={item.href} />
-        <div className="min-w-0 flex-1 pr-4">
-          <p className="truncate text-sm leading-snug font-medium">
-            {editMode
-              ? item.label || serviceDef?.name || item.href
-              : item.label}
-          </p>
+      {(!item.cleanMode || editMode) && (
+        <div className="flex items-center gap-3">
+          {/* Drag handle - left side in edit mode */}
           {editMode && (
-            <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
-              {serviceDef && <span>{serviceDef.name}</span>}
-              {item.href && <span className="truncate">{item.href}</span>}
-              <span>{pollingMs / 1000}s poll</span>
-            </div>
+            <button
+              ref={setActivatorNodeRef}
+              {...attributes}
+              {...listeners}
+              className="-ml-1 flex-none cursor-grab touch-none text-muted-foreground/50 hover:text-muted-foreground active:cursor-grabbing"
+              aria-label="Drag to reorder item"
+            >
+              <GripVerticalIcon className="size-4" />
+            </button>
           )}
+          <ItemIcon
+            iconUrl={item.iconUrl}
+            label={item.label}
+            href={item.href}
+          />
+          <div className="min-w-0 flex-1 pr-4">
+            <p className="truncate text-sm leading-snug font-medium">
+              {editMode
+                ? item.label || serviceDef?.name || item.href
+                : item.label}
+            </p>
+            {editMode && (
+              <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
+                {serviceDef && <span>{serviceDef.name}</span>}
+                {item.href && <span className="truncate">{item.href}</span>}
+                <span>{pollingMs / 1000}s poll</span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       {/* Widget below or loading skeleton */}
       {showWidgetSkeleton && (
-        <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
+        <div
+          className={cn(
+            "grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5",
+            item.cleanMode ? "" : "mt-2"
+          )}
+        >
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-[52px] rounded-md" />
           ))}
         </div>
       )}
       {hasWidget && !effectiveLoading && (
-        <div className="mt-2">
+        <div className={cn(item.cleanMode ? "" : "mt-2")}>
           <Widget {...widgetProps} />
         </div>
       )}

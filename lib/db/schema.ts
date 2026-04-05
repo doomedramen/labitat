@@ -30,6 +30,7 @@ export const items = sqliteTable("items", {
   configEnc: text("config_enc"),
   order: integer("order").notNull(),
   pollingMs: integer("polling_ms").default(10000),
+  cleanMode: integer("clean_mode", { mode: "boolean" }).default(false),
   createdAt: text("created_at").default(sql`(current_timestamp)`),
 })
 
