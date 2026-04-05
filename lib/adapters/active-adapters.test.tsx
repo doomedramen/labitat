@@ -51,12 +51,12 @@ describe("radarr adapter", () => {
     testWidgetRendersText(
       radarrDefinition,
       {
-        wanted: 10,
-        missing: 5,
-        queued: 2,
-        movies: 100,
+        wanted: 1000,
+        missing: 500,
+        queued: 200,
+        movies: 10000,
       },
-      ["10", "Wanted", "5", "Missing", "2", "Queued", "100", "Movies"]
+      ["1,000", "Wanted", "500", "Missing", "200", "Queued", "10,000", "Movies"]
     )
   })
 
@@ -88,11 +88,11 @@ describe("sonarr adapter", () => {
     testWidgetRendersText(
       sonarrDefinition,
       {
-        wanted: 15,
-        queued: 3,
-        series: 25,
+        wanted: 1500,
+        queued: 300,
+        series: 2500,
       },
-      ["15", "Wanted", "3", "Queued", "25", "Series"]
+      ["1,500", "Wanted", "300", "Queued", "2,500", "Series"]
     )
   })
 
@@ -124,19 +124,19 @@ describe("prowlarr adapter", () => {
     testWidgetRendersText(
       prowlarrDefinition,
       {
-        grabs: 150,
-        queries: 300,
-        failedGrabs: 5,
-        failedQueries: 10,
+        grabs: 15000,
+        queries: 30000,
+        failedGrabs: 500,
+        failedQueries: 1000,
       },
       [
-        "150",
+        "15,000",
         "Grabs",
-        "300",
+        "30,000",
         "Queries",
-        "5",
+        "500",
         "Fail Grabs",
-        "10",
+        "1,000",
         "Fail Queries",
       ]
     )
@@ -195,11 +195,11 @@ describe("sabnzbd adapter", () => {
     testWidgetRendersText(
       sabnzbdDefinition,
       {
-        queue: 5,
+        queue: 50,
         speed: "10.5 MB/s",
         timeleft: "2:30:00",
       },
-      ["10.5 MB/s", "Speed", "5", "Queue", "2:30:00", "Time Left"]
+      ["10.5 MB/s", "Speed", "50", "Queue", "2:30:00", "Time Left"]
     )
   })
 })
@@ -302,10 +302,10 @@ describe("bazarr adapter", () => {
     testWidgetRendersText(
       bazarrDefinition,
       {
-        wantedMovies: 20,
-        wantedEpisodes: 35,
+        wantedMovies: 2000,
+        wantedEpisodes: 3500,
       },
-      ["20", "Movies Missing", "35", "Episodes Missing"]
+      ["2,000", "Movies Missing", "3,500", "Episodes Missing"]
     )
   })
 })
@@ -390,11 +390,11 @@ describe("unmanic adapter", () => {
     testWidgetRendersText(
       unmanicDefinition,
       {
-        activeWorkers: 2,
-        totalWorkers: 4,
-        queueLength: 5,
+        activeWorkers: 20,
+        totalWorkers: 40,
+        queueLength: 500,
       },
-      ["2", "Active Workers", "4", "Total Workers", "5", "Queue Length"]
+      ["20", "Active Workers", "40", "Total Workers", "500", "Queue Length"]
     )
   })
 })
@@ -488,11 +488,11 @@ describe("nginx-proxy-manager adapter", () => {
     testWidgetRendersText(
       nginxProxyManagerDefinition,
       {
-        enabled: 8,
-        disabled: 2,
-        total: 10,
+        enabled: 800,
+        disabled: 200,
+        total: 1000,
       },
-      ["8", "Enabled", "2", "Disabled", "10", "Total"]
+      ["800", "Enabled", "200", "Disabled", "1,000", "Total"]
     )
   })
 })

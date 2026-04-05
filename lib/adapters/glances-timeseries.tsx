@@ -30,18 +30,21 @@ function createHistoryStore(
   initialV1: number,
   initialV2?: number
 ): HistoryStore {
-  const state = {
-    hist1: [initialV1],
-    hist2: initialV2 !== undefined ? [initialV2] : [],
-  }
+  const hist1 = [initialV1]
+  const hist2 = initialV2 !== undefined ? [initialV2] : []
   const listeners = new Set<() => void>()
+  // Cached snapshot — same reference until update() is called, which is required
+  // by useSyncExternalStore to avoid triggering an infinite render loop.
+  let snapshot = { hist1, hist2 }
 
   return {
     update(v1: number, v2?: number) {
-      state.hist1 = [...state.hist1.slice(-(MAX_POINTS - 1)), v1]
-      if (v2 !== undefined) {
-        state.hist2 = [...state.hist2.slice(-(MAX_POINTS - 1)), v2]
-      }
+      const newHist1 = [...snapshot.hist1.slice(-(MAX_POINTS - 1)), v1]
+      const newHist2 =
+        v2 !== undefined
+          ? [...snapshot.hist2.slice(-(MAX_POINTS - 1)), v2]
+          : snapshot.hist2
+      snapshot = { hist1: newHist1, hist2: newHist2 }
       for (const listener of listeners) {
         listener()
       }
@@ -53,7 +56,7 @@ function createHistoryStore(
       }
     },
     getSnapshot() {
-      return { hist1: state.hist1, hist2: state.hist2 }
+      return snapshot
     },
   }
 }

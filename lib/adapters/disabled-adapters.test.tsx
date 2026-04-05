@@ -54,11 +54,20 @@ describe("emby adapter (disabled)", () => {
       embyDefinition,
       {
         activeStreams: 3,
-        movies: 150,
-        shows: 25,
-        episodes: 500,
+        movies: 1500,
+        shows: 250,
+        episodes: 5000,
       },
-      ["3", "Active Streams", "150", "Movies", "25", "Shows", "500", "Episodes"]
+      [
+        "3",
+        "Active Streams",
+        "1,500",
+        "Movies",
+        "250",
+        "Shows",
+        "5,000",
+        "Episodes",
+      ]
     )
   })
 })
@@ -115,11 +124,11 @@ describe("lidarr adapter (disabled)", () => {
     testWidgetRendersText(
       lidarrDefinition,
       {
-        queued: 5,
-        wanted: 15,
-        artists: 50,
+        queued: 50,
+        wanted: 1500,
+        artists: 5000,
       },
-      ["15", "Wanted", "5", "Queued", "50", "Artists"]
+      ["1,500", "Wanted", "50", "Queued", "5,000", "Artists"]
     )
   })
 })
@@ -218,11 +227,11 @@ describe("portainer adapter (disabled)", () => {
     testWidgetRendersText(
       portainerDefinition,
       {
-        running: 15,
-        stopped: 5,
-        total: 20,
+        running: 1500,
+        stopped: 500,
+        total: 2000,
       },
-      ["15", "Running", "5", "Stopped", "20", "Total"]
+      ["1,500", "Running", "500", "Stopped", "2,000", "Total"]
     )
   })
 })
@@ -245,11 +254,11 @@ describe("traefik adapter (disabled)", () => {
     testWidgetRendersText(
       traefikDefinition,
       {
-        routers: 20,
-        services: 25,
-        middlewares: 10,
+        routers: 200,
+        services: 2500,
+        middlewares: 1000,
       },
-      ["20", "Routers", "25", "Services", "10", "Middlewares"]
+      ["200", "Routers", "2,500", "Services", "1,000", "Middlewares"]
     )
   })
 })
@@ -302,19 +311,19 @@ describe("grafana adapter (disabled)", () => {
     testWidgetRendersText(
       grafanaDefinition,
       {
-        dashboards: 25,
-        datasources: 10,
-        totalAlerts: 15,
-        alertsTriggered: 3,
+        dashboards: 250,
+        datasources: 100,
+        totalAlerts: 1500,
+        alertsTriggered: 30,
       },
       [
-        "25",
+        "250",
         "Dashboards",
-        "10",
+        "100",
         "Datasources",
-        "15",
+        "1,500",
         "Total Alerts",
-        "3",
+        "30",
         "Alerts Triggered",
       ]
     )
@@ -470,10 +479,10 @@ describe("jackett adapter (disabled)", () => {
     testWidgetRendersText(
       jackettDefinition,
       {
-        configured: 15,
-        errored: 2,
+        configured: 150,
+        errored: 20,
       },
-      ["15", "Configured", "2", "Errored"]
+      ["150", "Configured", "20", "Errored"]
     )
   })
 })
@@ -496,11 +505,11 @@ describe("frigate adapter (disabled)", () => {
     testWidgetRendersText(
       frigateDefinition,
       {
-        cameras: 8,
+        cameras: 80,
         uptime: 864000,
         version: "0.14.0",
       },
-      ["8", "Cameras", "10d", "Uptime", "0.14.0", "Version"]
+      ["80", "Cameras", "10d", "Uptime", "0.14.0", "Version"]
     )
   })
 })
@@ -526,12 +535,21 @@ describe("homeassistant adapter (disabled)", () => {
     testWidgetRendersText(
       homeassistantDefinition,
       {
-        entities: 250,
-        sensors: 100,
-        lights: 50,
-        switches: 30,
+        entities: 2500,
+        sensors: 1000,
+        lights: 500,
+        switches: 300,
       },
-      ["250", "Entities", "100", "Sensors", "50", "Lights", "30", "Switches"]
+      [
+        "2,500",
+        "Entities",
+        "1,000",
+        "Sensors",
+        "500",
+        "Lights",
+        "300",
+        "Switches",
+      ]
     )
   })
 })
