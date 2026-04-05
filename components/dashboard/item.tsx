@@ -323,7 +323,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       className={cn(
         "relative transition-all duration-200 ease-in-out",
         item.cleanMode && !editMode
-          ? "p-0"
+          ? "p-2"
           : hasWidget
             ? "px-3 py-2.5"
             : "px-3 py-2"
