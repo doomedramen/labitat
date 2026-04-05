@@ -30,17 +30,17 @@ export type StatItem = {
  */
 export function StatCard({ value, label, icon, valueClassName }: StatItem) {
   return (
-    <div className="flex h-full flex-col items-center justify-center rounded-md bg-primary px-2 py-1.5 text-center text-primary-foreground">
+    <div className="flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground">
       {icon && <div className="mb-0.5">{icon}</div>}
       <span
         className={cn(
           "font-medium tabular-nums",
-          valueClassName ?? "text-primary-foreground"
+          valueClassName ?? "text-secondary-foreground"
         )}
       >
         {value}
       </span>
-      <span className="text-primary-foreground/60">{label}</span>
+      <span className="text-secondary-foreground/60">{label}</span>
     </div>
   )
 }
