@@ -17,6 +17,8 @@ const indexPath = path.join(adaptersDir, "index.ts")
 
 // Files in lib/adapters/ that are not service adapters
 const NON_ADAPTER_FILES = new Set(["index", "types", "widgets", "glances-common", "viz"])
+// Widget component files (client-side, imported by adapter definitions, not standalone)
+const NON_ADAPTER_SUFFIXES = new Set(["-widget"])
 
 const indexSource = fs.readFileSync(indexPath, "utf8")
 const adapterFiles = fs.readdirSync(adaptersDir)
@@ -32,6 +34,9 @@ for (const file of adapterFiles) {
 
   const base = path.basename(file, ext)
   if (NON_ADAPTER_FILES.has(base)) continue
+
+  // Skip widget component files (e.g. glances-timeseries-widget.tsx)
+  if ([...NON_ADAPTER_SUFFIXES].some((suffix) => base.endsWith(suffix))) continue
 
   // Match `./${base}` regardless of surrounding quote style
   if (!indexSource.includes(`./${base}`)) {
