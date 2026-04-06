@@ -287,7 +287,7 @@ export function MiniBar({
 
   return (
     <div className={cn("flex items-center gap-2 text-xs", className)}>
-      <span className="w-6 shrink-0 text-right font-mono text-muted-foreground">
+      <span className="w-6 shrink-0 text-left font-mono text-muted-foreground">
         {label}
       </span>
       <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
