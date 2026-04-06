@@ -9,11 +9,15 @@ import { ReconnectionBanner } from "@/components/reconnection-banner"
 import { ThemeColorUpdater } from "@/components/theme-color-updater"
 import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
+import packageJson from "@/package.json"
 
 const PALETTE_COOKIE = "labitat-palette"
 const THEME_COOKIE = "labitat-theme"
 const DEFAULT_PALETTE = "default"
 const DEFAULT_THEME = "system"
+
+// Icon cache version from package.json - busts cache on every release
+const ICON_VERSION = packageJson.version
 
 async function getPalette(): Promise<string> {
   try {
@@ -46,24 +50,29 @@ async function getAppTitle(): Promise<string> {
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = await getAppTitle()
+  const v = `?v=${ICON_VERSION}`
 
   return {
     title,
     icons: {
       icon: [
-        { url: "/favicon.ico", type: "image/x-icon" },
-        { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-        { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { url: `/favicon.ico${v}`, type: "image/x-icon" },
+        { url: `/favicon-16x16.png${v}`, sizes: "16x16", type: "image/png" },
+        { url: `/favicon-32x32.png${v}`, sizes: "32x32", type: "image/png" },
       ],
       apple: [
-        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
         {
-          url: "/apple-touch-icon-120x120.png",
+          url: `/apple-touch-icon.png${v}`,
+          sizes: "180x180",
+          type: "image/png",
+        },
+        {
+          url: `/apple-touch-icon-120x120.png${v}`,
           sizes: "120x120",
           type: "image/png",
         },
         {
-          url: "/apple-touch-icon-152x152.png",
+          url: `/apple-touch-icon-152x152.png${v}`,
           sizes: "152x152",
           type: "image/png",
         },

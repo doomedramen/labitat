@@ -1,6 +1,12 @@
 import type { MetadataRoute } from "next"
+import packageJson from "@/package.json"
+
+// Icon cache version from package.json - must match layout.tsx
+const ICON_VERSION = packageJson.version
 
 export default function manifest(): MetadataRoute.Manifest {
+  const v = `?v=${ICON_VERSION}`
+
   return {
     name: "Labitat",
     short_name: "Labitat",
@@ -15,42 +21,42 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["productivity", "utilities"],
     icons: [
       {
-        src: "/icons/icon-96x96.png",
+        src: `/icons/icon-96x96.png${v}`,
         sizes: "96x96",
         type: "image/png",
       },
       {
-        src: "/icons/icon-128x128.png",
+        src: `/icons/icon-128x128.png${v}`,
         sizes: "128x128",
         type: "image/png",
       },
       {
-        src: "/icons/icon-144x144.png",
+        src: `/icons/icon-144x144.png${v}`,
         sizes: "144x144",
         type: "image/png",
       },
       {
-        src: "/icons/icon-152x152.png",
+        src: `/icons/icon-152x152.png${v}`,
         sizes: "152x152",
         type: "image/png",
       },
       {
-        src: "/icons/icon-192x192.png",
+        src: `/icons/icon-192x192.png${v}`,
         sizes: "192x192",
         type: "image/png",
       },
       {
-        src: "/icons/icon-384x384.png",
+        src: `/icons/icon-384x384.png${v}`,
         sizes: "384x384",
         type: "image/png",
       },
       {
-        src: "/icons/icon-512x512.png",
+        src: `/icons/icon-512x512.png${v}`,
         sizes: "512x512",
         type: "image/png",
       },
       {
-        src: "/icons/icon-maskable-512x512.png",
+        src: `/icons/icon-maskable-512x512.png${v}`,
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
