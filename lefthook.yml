@@ -23,6 +23,8 @@ pre-push:
       run: pnpm typecheck
     check-adapters:
       run: pnpm check-adapters
+    check-doc-coverage:
+      run: pnpm check-doc-coverage
     build:
       run: pnpm build
 

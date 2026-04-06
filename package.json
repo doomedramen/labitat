@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.103",
+  "version": "0.0.104",
   "type": "module",
   "private": true,
   "scripts": {
@@ -20,6 +20,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "check-adapters": "node scripts/check-adapters.mjs",
+    "check-doc-coverage": "node scripts/check-doc-coverage.mjs",
     "new-service": "node scripts/new-service.mjs",
     "prepare": "lefthook install",
     "test": "npm run test:unit && npm run test:e2e",
