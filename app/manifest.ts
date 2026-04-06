@@ -8,6 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
+    // Default palette light mode colors (fallback for PWA splash screen)
+    // Actual theme colors are set via meta tags in layout.tsx
     background_color: "#f2f4fa",
     theme_color: "#f2f4fa",
     categories: ["productivity", "utilities"],

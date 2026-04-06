@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { SWRProvider } from "@/components/swr-provider"
 import { ReconnectionBanner } from "@/components/reconnection-banner"
+import { ThemeColorUpdater } from "@/components/theme-color-updater"
 import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
 
@@ -45,6 +46,7 @@ async function getAppTitle(): Promise<string> {
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = await getAppTitle()
+
   return {
     title,
     icons: {
@@ -65,6 +67,14 @@ export async function generateMetadata(): Promise<Metadata> {
           sizes: "152x152",
           type: "image/png",
         },
+      ],
+    },
+    // Default theme colors for initial render (updated client-side by ThemeColorUpdater)
+    // These use the default palette, which is the most common case
+    other: {
+      "theme-color": [
+        { media: "(prefers-color-scheme: light)", color: "#f2f4fa" },
+        { media: "(prefers-color-scheme: dark)", color: "#1d2035" },
       ],
     },
   }
@@ -92,6 +102,7 @@ export default async function RootLayout({
     >
       <body>
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
+          <ThemeColorUpdater />
           <SWRProvider>
             <ReconnectionBanner />
             {children}
