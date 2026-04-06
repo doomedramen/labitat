@@ -135,8 +135,10 @@ export function ActiveStreamItem({
             ) : (
               <Play className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
             )}
-            <span className="min-w-0 truncate font-medium">{title}</span>
-            <span className="max-w-[10ch] min-w-0 truncate text-secondary-foreground/60">
+            <span className="min-w-0 flex-[3] truncate font-medium">
+              {title}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-secondary-foreground/60">
               ({user})
             </span>
             <div className="flex items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">

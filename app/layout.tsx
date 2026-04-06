@@ -45,7 +45,29 @@ async function getAppTitle(): Promise<string> {
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = await getAppTitle()
-  return { title }
+  return {
+    title,
+    icons: {
+      icon: [
+        { url: "/favicon.ico", type: "image/x-icon" },
+        { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+        { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      ],
+      apple: [
+        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+        {
+          url: "/apple-touch-icon-120x120.png",
+          sizes: "120x120",
+          type: "image/png",
+        },
+        {
+          url: "/apple-touch-icon-152x152.png",
+          sizes: "152x152",
+          type: "image/png",
+        },
+      ],
+    },
+  }
 }
 
 export const viewport: Viewport = {

@@ -14,8 +14,11 @@ const STATIC_ASSETS = [
   "/",
   "/manifest.ts",
   "/offline.html",
+  "/icons/icon-96x96.png",
+  "/icons/icon-144x144.png",
   "/icons/icon-192x192.png",
   "/icons/icon-512x512.png",
+  "/icons/icon-maskable-512x512.png",
 ]
 
 // Install event - cache static assets
