@@ -1,5 +1,6 @@
 "use client"
 
+import { useTransition } from "react"
 import { CheckIcon, PlusIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logout } from "@/actions/auth"
@@ -10,6 +11,13 @@ type EditBarProps = {
 }
 
 export function EditBar({ onAddGroup, onDone }: EditBarProps) {
+  const [, startTransition] = useTransition()
+
+  const handleLogout = () => {
+    onDone()
+    startTransition(() => logout())
+  }
+
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-4 border-t bg-popover/95 px-6 py-3 backdrop-blur-sm"
@@ -25,16 +33,14 @@ export function EditBar({ onAddGroup, onDone }: EditBarProps) {
           <PlusIcon data-icon="inline-start" />
           Add group
         </Button>
-        <form action={logout}>
-          <Button
-            variant="ghost"
-            size="sm"
-            type="submit"
-            data-testid="logout-button"
-          >
-            Sign out
-          </Button>
-        </form>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleLogout}
+          data-testid="logout-button"
+        >
+          Sign out
+        </Button>
       </div>
       <div className="flex items-center gap-2">
         <Button size="sm" onClick={onDone} data-testid="done-button">

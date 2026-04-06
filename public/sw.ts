@@ -70,6 +70,16 @@ self.addEventListener("fetch", (event: FetchEvent) => {
     return
   }
 
+  // Skip Next.js server actions and API routes (POST requests with query params)
+  // These should never be cached as they contain dynamic data
+  if (
+    url.pathname.includes("_next/data") ||
+    url.searchParams.has("action") ||
+    url.searchParams.has("action_id")
+  ) {
+    return
+  }
+
   event.respondWith(handleRequest(request))
 })
 

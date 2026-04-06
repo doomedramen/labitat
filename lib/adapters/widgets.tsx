@@ -136,7 +136,9 @@ export function ActiveStreamItem({
               <Play className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
             )}
             <span className="min-w-0 truncate font-medium">{title}</span>
-            <span className="text-secondary-foreground/60">({user})</span>
+            <span className="max-w-[10ch] min-w-0 truncate text-secondary-foreground/60">
+              ({user})
+            </span>
             <div className="flex items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
               <Clock className="h-3 w-3 shrink-0" />
               {formatDuration(progress)}

@@ -41,10 +41,10 @@ export function ListItem({
   progress?: number
 }) {
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden rounded-md">
       <div
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground",
+          "flex w-full items-center justify-between gap-2 bg-secondary px-2 py-1 text-xs text-secondary-foreground",
           className
         )}
         {...props}
@@ -53,7 +53,7 @@ export function ListItem({
       </div>
       {progress !== undefined && progress > 0 && (
         <div
-          className="absolute bottom-0 left-0 h-[1px] rounded-b-md bg-primary"
+          className="absolute bottom-0 left-0 h-[1px] bg-primary"
           style={{
             width: `${Math.min(100, Math.max(0, progress))}%`,
           }}

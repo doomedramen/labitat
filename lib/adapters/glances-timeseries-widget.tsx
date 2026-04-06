@@ -16,7 +16,7 @@ export type GlancesTSData = {
 
 // ── Time series history store (external state management) ─────────────────────
 
-const MAX_POINTS = 60
+const MAX_POINTS = 20
 
 type HistoryStore = {
   update: (v1: number, v2?: number) => void
