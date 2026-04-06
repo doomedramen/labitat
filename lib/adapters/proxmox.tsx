@@ -134,25 +134,25 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
     }
 
     const resourcesData = await resourcesRes.json()
-    const data = resourcesData.data
+    const data = resourcesData.data as ProxmoxResource[]
 
     // Filter by node if specified
     const vms = data.filter(
-      (item: ProxmoxResource): item is ProxmoxVM =>
+      (item): item is ProxmoxVM =>
         item.type === "qemu" &&
         item.template === 0 &&
         (!node || item.node === node)
     )
 
     const lxc = data.filter(
-      (item: ProxmoxResource): item is ProxmoxLXC =>
+      (item): item is ProxmoxLXC =>
         item.type === "lxc" &&
         item.template === 0 &&
         (!node || item.node === node)
     )
 
     const nodes = data.filter(
-      (item: ProxmoxResource): item is ProxmoxNode =>
+      (item): item is ProxmoxNode =>
         item.type === "node" &&
         item.status === "online" &&
         (!node || item.node === node)
