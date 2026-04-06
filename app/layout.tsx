@@ -69,15 +69,9 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
-    // Default theme colors for initial render (updated client-side by ThemeColorUpdater)
-    // These use the default palette, which is the most common case
-    other: {
-      "theme-color": [
-        { media: "(prefers-color-scheme: light)", color: "#f2f4fa" },
-        { media: "(prefers-color-scheme: dark)", color: "#1d2035" },
-      ],
-      // Apple status bar - translucent lets our bg color show through
-      "apple-mobile-web-app-status-bar-style": "black-translucent",
+    // Apple status bar - translucent lets our bg color show through
+    appleWebApp: {
+      statusBarStyle: "black-translucent",
     },
   }
 }
