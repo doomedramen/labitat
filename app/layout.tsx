@@ -76,6 +76,8 @@ export async function generateMetadata(): Promise<Metadata> {
         { media: "(prefers-color-scheme: light)", color: "#f2f4fa" },
         { media: "(prefers-color-scheme: dark)", color: "#1d2035" },
       ],
+      // Apple status bar - translucent lets our bg color show through
+      "apple-mobile-web-app-status-bar-style": "black-translucent",
     },
   }
 }
@@ -85,6 +87,7 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#f2f4fa" },
     { media: "(prefers-color-scheme: dark)", color: "#1d2035" },
   ],
+  colorScheme: "light dark",
 }
 
 export default async function RootLayout({
