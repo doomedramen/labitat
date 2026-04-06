@@ -1,98 +1,108 @@
+#!/usr/bin/env node
+
+/**
+ * Icon Generator Script
+ * Generates all required icon sizes from logo.svg
+ *
+ * Usage: node scripts/generate-icons.js
+ */
+
 import sharp from "sharp"
-import path from "path"
-import fs from "fs"
+import { mkdirSync, existsSync } from "fs"
+import { join, dirname } from "path"
 import { fileURLToPath } from "url"
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __dirname = dirname(__filename)
+const ROOT_DIR = join(__dirname, "..")
 
-const SVG_PATH = path.join(__dirname, "../labitat_icons/labitat.svg")
-const PUBLIC_ICONS = path.join(__dirname, "../public/icons")
-const PUBLIC_ROOT = path.join(__dirname, "../public")
+// Source SVG
+const SOURCE_SVG = join(ROOT_DIR, "logo.svg")
 
-const ICON_SIZES = [
-  { name: "icon-96x96.png", width: 96, height: 96 },
-  { name: "icon-128x128.png", width: 128, height: 128 },
-  { name: "icon-144x144.png", width: 144, height: 144 },
-  { name: "icon-152x152.png", width: 152, height: 152 },
-  { name: "icon-192x192.png", width: 192, height: 192 },
-  { name: "icon-384x384.png", width: 384, height: 384 },
-  { name: "icon-512x512.png", width: 512, height: 512 },
-  { name: "icon-maskable-512x512.png", width: 512, height: 512 },
+// Define all required icon sizes
+const ICONS = [
+  // Favicon files (public/)
+  { size: 16, output: "public/favicon-16x16.png" },
+  { size: 32, output: "public/favicon-32x32.png" },
+  { size: 32, output: "public/favicon.png" },
+  { size: 32, output: "public/favicon.ico" },
+
+  // Apple touch icons (public/)
+  { size: 120, output: "public/apple-touch-icon-120x120.png" },
+  { size: 152, output: "public/apple-touch-icon-152x152.png" },
+  { size: 180, output: "public/apple-touch-icon.png" },
+
+  // PWA icons (public/icons/)
+  { size: 96, output: "public/icons/icon-96x96.png" },
+  { size: 128, output: "public/icons/icon-128x128.png" },
+  { size: 144, output: "public/icons/icon-144x144.png" },
+  { size: 152, output: "public/icons/icon-152x152.png" },
+  { size: 192, output: "public/icons/icon-192x192.png" },
+  { size: 384, output: "public/icons/icon-384x384.png" },
+  { size: 512, output: "public/icons/icon-512x512.png" },
+  { size: 512, output: "public/icons/icon-maskable-512x512.png" },
 ]
 
-async function generateIcons() {
-  console.log("Generating icons from:", SVG_PATH)
+async function generateIcon(size, outputPath) {
+  const relativePath = outputPath.replace(ROOT_DIR + "/", "")
 
-  // Ensure directories exist
-  if (!fs.existsSync(PUBLIC_ICONS)) {
-    fs.mkdirSync(PUBLIC_ICONS, { recursive: true })
-  }
+  try {
+    // Ensure output directory exists
+    const outputDir = dirname(outputPath)
+    if (!existsSync(outputDir)) {
+      mkdirSync(outputDir, { recursive: true })
+    }
 
-  // Generate PWA icons
-  for (const size of ICON_SIZES) {
-    const outputPath = path.join(PUBLIC_ICONS, size.name)
-    console.log(`Generating ${size.name}...`)
-
-    await sharp(SVG_PATH)
-      .resize(size.width, size.height, {
+    await sharp(SOURCE_SVG)
+      .resize(size, size, {
         fit: "contain",
-        position: "center",
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
       })
       .png()
       .toFile(outputPath)
 
-    console.log(`✓ ${size.name}`)
+    console.log(`✓ Generated ${relativePath} (${size}x${size})`)
+    return true
+  } catch (error) {
+    console.error(`✗ Failed to generate ${relativePath}: ${error.message}`)
+    return false
   }
-
-  // Generate favicon.ico (32x32 is standard, but let's include multiple sizes)
-  const faviconPath = path.join(PUBLIC_ROOT, "favicon.ico")
-  console.log("Generating favicon.ico...")
-
-  await sharp(SVG_PATH)
-    .resize(32, 32, {
-      fit: "contain",
-      position: "center",
-    })
-    .png()
-    .toFile(faviconPath.replace(".ico", ".png"))
-
-  // For .ico format, we can use the 32x32 PNG
-  // Sharp doesn't natively support .ico multi-size, so we'll use a 32x32 PNG renamed to .ico
-  // Or better, let's create a proper multi-size ico using the png file we just created
-  await sharp(SVG_PATH)
-    .resize(32, 32, {
-      fit: "contain",
-      position: "center",
-    })
-    .toFormat("png")
-    .toFile(faviconPath)
-
-  console.log("✓ favicon.ico")
-
-  // Generate Apple touch icons
-  const appleIcons = [
-    { name: "apple-touch-icon.png", width: 180, height: 180 },
-    { name: "apple-touch-icon-120x120.png", width: 120, height: 120 },
-    { name: "apple-touch-icon-152x152.png", width: 152, height: 152 },
-  ]
-
-  for (const icon of appleIcons) {
-    const outputPath = path.join(PUBLIC_ROOT, icon.name)
-    console.log(`Generating ${icon.name}...`)
-
-    await sharp(SVG_PATH)
-      .resize(icon.width, icon.height, {
-        fit: "contain",
-        position: "center",
-      })
-      .png()
-      .toFile(outputPath)
-
-    console.log(`✓ ${icon.name}`)
-  }
-
-  console.log("\nAll icons generated successfully!")
 }
 
-generateIcons().catch(console.error)
+async function main() {
+  // Check if source SVG exists
+  if (!existsSync(SOURCE_SVG)) {
+    console.error(`Error: Source SVG not found at ${SOURCE_SVG}`)
+    process.exit(1)
+  }
+
+  console.log("Generating icons from logo.svg...\n")
+
+  let successCount = 0
+  let failCount = 0
+
+  for (const icon of ICONS) {
+    const outputPath = join(ROOT_DIR, icon.output)
+    const success = await generateIcon(icon.size, outputPath)
+
+    if (success) {
+      successCount++
+    } else {
+      failCount++
+    }
+  }
+
+  console.log(`\n${"=".repeat(50)}`)
+  console.log(`Generation complete!`)
+  console.log(`✓ ${successCount} succeeded`)
+  if (failCount > 0) {
+    console.log(`✗ ${failCount} failed`)
+  }
+  console.log(`${"=".repeat(50)}`)
+
+  if (failCount > 0) {
+    process.exit(1)
+  }
+}
+
+main()

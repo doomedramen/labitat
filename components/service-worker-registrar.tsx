@@ -48,7 +48,9 @@ export function ServiceWorkerRegistrar() {
               newWorker.state === "installed" &&
               navigator.serviceWorker.controller
             ) {
-              // New content available — user will see refreshed content on next visit
+              // New content available - reload to activate the new service worker
+              // This ensures users get the latest version after a server restart
+              window.location.reload()
             }
           })
         })

@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.117",
+  "version": "0.0.120",
   "type": "module",
   "private": true,
   "scripts": {
@@ -33,7 +33,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
-    "changelog": "auto-changelog --starting-version 0.0.1 --commit-limit false --package"
+    "changelog": "auto-changelog --starting-version 0.0.1 --commit-limit false --package",
+    "generate:icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

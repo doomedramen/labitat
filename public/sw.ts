@@ -165,6 +165,7 @@ async function cacheFirst(request: Request, cacheName: string) {
 }
 
 // Network-First Strategy: Fresh content with offline fallback
+// IMPORTANT: Never cache error responses (404/5xx)
 async function networkFirst(
   request: Request,
   cacheName: string,
@@ -175,10 +176,21 @@ async function networkFirst(
   try {
     // Try network first
     const response = await fetch(request)
+
+    // Only cache successful responses
     if (response.ok) {
-      // Update cache with fresh version
       cache.put(request, response.clone())
+      return response
     }
+
+    // For error responses, try to serve from cache if available
+    if (response.status === 404 || response.status >= 500) {
+      const cached = await cache.match(request)
+      if (cached) {
+        return cached
+      }
+    }
+
     return response
   } catch {
     // Network failed, try cache
@@ -201,7 +213,6 @@ async function networkFirst(
     })
   }
 }
-
 // Stale-While-Revalidate Strategy: Return cached version immediately, update in background
 // Best for API calls - shows old data while fetching new data
 async function staleWhileRevalidate(request: Request, cacheName: string) {
