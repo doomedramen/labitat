@@ -156,6 +156,11 @@ export function ItemDialog({
       return
     }
 
+    // Set iconUrl to "none" when showIcon is unchecked
+    if (!showIcon) {
+      formData.set("iconUrl", "none")
+    }
+
     // Add boolean values from state (switches might not submit when unchanged)
     for (const [key, value] of Object.entries(booleanValues)) {
       formData.set(`config_${key}`, value ? "true" : "false")
@@ -248,47 +253,37 @@ export function ItemDialog({
                 />
                 <Label htmlFor="item-show-icon">Show icon</Label>
               </div>
-              {showIcon ? (
-                <>
-                  <Input
-                    id="item-icon"
-                    name="iconUrl"
-                    defaultValue={
-                      existingItem?.iconUrl === "none"
-                        ? ""
-                        : (existingItem?.iconUrl ?? "")
-                    }
-                    placeholder="sonarr  or  https://…/icon.svg"
-                    data-testid="item-icon-input"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Enter a{" "}
-                    <a
-                      href="https://selfh.st/icons"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline underline-offset-2"
-                    >
-                      selfh.st
-                    </a>{" "}
-                    slug or a full image URL
-                  </p>
-                </>
-              ) : (
-                <input type="hidden" name="iconUrl" value="none" />
-              )}
+              <div className={showIcon ? "" : "hidden"}>
+                <Input
+                  id="item-icon"
+                  name="iconUrl"
+                  defaultValue={
+                    existingItem?.iconUrl === "none"
+                      ? ""
+                      : (existingItem?.iconUrl ?? "")
+                  }
+                  placeholder="sonarr  or  https://…/icon.svg"
+                  data-testid="item-icon-input"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter a{" "}
+                  <a
+                    href="https://selfh.st/icons"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2"
+                  >
+                    selfh.st
+                  </a>{" "}
+                  slug or a full image URL
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="item-service">Service Type</Label>
-              {/* Hidden input for form submission */}
-              <input
-                type="hidden"
-                name="serviceType"
-                value={selectedService?.id ?? ""}
-                data-testid="item-service-type-hidden"
-              />
               <Combobox
+                name="serviceType"
                 value={selectedService}
                 onValueChange={(v) => setSelectedService(v || null)}
                 items={groupedItems}
@@ -396,16 +391,14 @@ export function ItemDialog({
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="item-minimal-mode"
+                  name="cleanMode"
+                  value="true"
+                  uncheckedValue="false"
                   checked={cleanMode}
                   onCheckedChange={(checked) => setCleanMode(!!checked)}
                 />
                 <Label htmlFor="item-minimal-mode">Minimal mode</Label>
               </div>
-              {cleanMode ? (
-                <input type="hidden" name="cleanMode" value="true" />
-              ) : (
-                <input type="hidden" name="cleanMode" value="false" />
-              )}
               <p className="text-xs text-muted-foreground">
                 Removes padding, margins, title, and icon for a minimal look
               </p>

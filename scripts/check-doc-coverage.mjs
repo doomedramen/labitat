@@ -30,20 +30,6 @@ const NON_ADAPTER_FILES = new Set([
 // Widget component files (client-side, imported by adapter definitions, not standalone)
 const NON_ADAPTER_SUFFIXES = ["-widget"]
 
-// Category mapping from adapter category to docs subdirectory
-const CATEGORY_TO_DOC_DIR = {
-  media: "media",
-  downloads: "downloads",
-  networking: "networking",
-  monitoring: "monitoring",
-  storage: "other",
-  automation: "other",
-  security: "networking",
-  finance: "other",
-  productivity: "other",
-  info: "other",
-}
-
 /**
  * Extract adapter IDs from adapter files
  */

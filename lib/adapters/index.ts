@@ -18,6 +18,9 @@ import { unmanicDefinition } from "./unmanic"
 import { apcupsDefinition } from "./apcups"
 import { unifiDefinition } from "./unifi"
 import { nginxProxyManagerDefinition } from "./nginx-proxy-manager"
+import { proxmoxDefinition } from "./proxmox"
+import { proxmoxBackupServerDefinition } from "./proxmox-backup-server"
+import { calibreWebDefinition } from "./calibre-web"
 
 // ── General widgets ──────────────────────────────────────────────────────────
 import { openmeteoDefinition } from "./openmeteo"
@@ -82,6 +85,9 @@ export const registry = {
   [apcupsDefinition.id]: apcupsDefinition,
   [unifiDefinition.id]: unifiDefinition,
   [nginxProxyManagerDefinition.id]: nginxProxyManagerDefinition,
+  [proxmoxDefinition.id]: proxmoxDefinition,
+  [proxmoxBackupServerDefinition.id]: proxmoxBackupServerDefinition,
+  [calibreWebDefinition.id]: calibreWebDefinition,
 
   // General widgets
   [openmeteoDefinition.id]: openmeteoDefinition,
