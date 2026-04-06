@@ -17,7 +17,7 @@ export function List({
   return (
     <div
       className={cn(
-        "mt-2 flex flex-col gap-1.5 text-xs",
+        "flex flex-col gap-1.5 text-xs",
         bordered && "border-t pt-2",
         className
       )}
