@@ -57,14 +57,14 @@ export function useNetworkState(): NetworkState {
     isCheckingRef.current = true
 
     try {
-      // Use a simple HEAD request to check server availability
+      // Use the health endpoint to check server availability
       // Add a cache-busting parameter to avoid cached responses
-      const response = await fetch("/manifest.ts?t=" + Date.now(), {
-        method: "HEAD",
+      const response = await fetch("/api/health?t=" + Date.now(), {
+        method: "GET",
         signal: AbortSignal.timeout(5000), // 5 second timeout
       })
 
-      const isAvailable = response.ok || response.status === 304
+      const isAvailable = response.ok
 
       setState((prev) => ({
         ...prev,
