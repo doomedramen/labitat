@@ -188,7 +188,7 @@ export function Group({
       </div>
 
       {/* Items grid — collapsible in view mode */}
-      <CollapsibleContent className="overflow-hidden">
+      <CollapsibleContent>
         <div className="p-0.5">
           <SortableContext items={itemIds} strategy={rectSortingStrategy}>
             <div
