@@ -35,7 +35,7 @@ test.describe("Offline Handling", () => {
     // Monitor network requests for health checks
     const healthCheckRequests: string[] = []
     page.on("request", (request) => {
-      if (request.url().includes("/manifest.ts")) {
+      if (request.url().includes("/api/health")) {
         healthCheckRequests.push(request.url())
       }
     })
