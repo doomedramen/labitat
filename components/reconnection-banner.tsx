@@ -54,7 +54,7 @@ export function ReconnectionBanner() {
   return (
     <div
       className={cn(
-        "fixed top-0 right-0 left-0 z-50 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium shadow-lg transition-all duration-300",
+        "pointer-events-none fixed top-0 right-0 left-0 z-50 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium shadow-lg transition-all duration-300",
         isOnline ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
       )}
       role="alert"
@@ -79,7 +79,7 @@ export function ReconnectionBanner() {
           </span>
           <button
             onClick={() => setDismissed(true)}
-            className="ml-2 rounded px-2 py-0.5 text-xs opacity-80 hover:opacity-100"
+            className="pointer-events-auto ml-2 rounded px-2 py-0.5 text-xs opacity-80 hover:opacity-100"
             aria-label="Dismiss"
           >
             Dismiss
