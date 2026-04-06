@@ -136,26 +136,30 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
     const resourcesData = await resourcesRes.json()
     const data = resourcesData.data as ProxmoxResource[]
 
-    // Filter by node if specified
+    // Filter by node if specified (case-insensitive comparison)
+    const normalizedNode = node?.trim()
     const vms = data.filter(
       (item): item is ProxmoxVM =>
         item.type === "qemu" &&
         item.template === 0 &&
-        (!node || item.node === node)
+        (!normalizedNode ||
+          item.node.toLowerCase() === normalizedNode.toLowerCase())
     )
 
     const lxc = data.filter(
       (item): item is ProxmoxLXC =>
         item.type === "lxc" &&
         item.template === 0 &&
-        (!node || item.node === node)
+        (!normalizedNode ||
+          item.node.toLowerCase() === normalizedNode.toLowerCase())
     )
 
     const nodes = data.filter(
       (item): item is ProxmoxNode =>
         item.type === "node" &&
         item.status === "online" &&
-        (!node || item.node === node)
+        (!normalizedNode ||
+          item.node.toLowerCase() === normalizedNode.toLowerCase())
     )
 
     const runningVMs = vms.filter((vm) => vm.status === "running").length

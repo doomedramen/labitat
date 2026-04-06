@@ -13,7 +13,23 @@ type ProxmoxBackupServerData = {
 type PBSDatastore = {
   store: string
   used: number
+  avail: number
   total: number
+}
+
+type PBSTask = {
+  type: string
+  status: string
+  starttime?: number
+  endtime?: number
+}
+
+type PBSNodeStatus = {
+  cpu: number
+  memory: {
+    used: number
+    total: number
+  }
 }
 
 function ProxmoxBackupServerWidget({
@@ -109,10 +125,9 @@ export const proxmoxBackupServerDefinition: ServiceDefinition<ProxmoxBackupServe
       }
 
       // Fetch datastore usage
-      const datastoreRes = await fetch(
-        `${baseUrl}/api2/json/status/datastore-usage`,
-        { headers }
-      )
+      const datastoreRes = await fetch(`${baseUrl}/api2/json/admin/datastore`, {
+        headers,
+      })
 
       if (!datastoreRes.ok) {
         throw new Error(
@@ -121,66 +136,88 @@ export const proxmoxBackupServerDefinition: ServiceDefinition<ProxmoxBackupServe
       }
 
       const datastoreData = await datastoreRes.json()
-
-      // Fetch recent tasks
-      const since = Date.now() - 24 * 60 * 60 * 1000
-      const tasksRes = await fetch(
-        `${baseUrl}/api2/json/nodes/localhost/tasks?errors=true&limit=100&since=${since}`,
-        { headers }
-      )
-
-      if (!tasksRes.ok) {
-        throw new Error(`Failed to fetch tasks: ${tasksRes.status}`)
-      }
-
-      const tasksData = await tasksRes.json()
-
-      // Fetch host status
-      const hostRes = await fetch(
-        `${baseUrl}/api2/json/nodes/localhost/status`,
-        { headers }
-      )
-
-      if (!hostRes.ok) {
-        throw new Error(`Failed to fetch host status: ${hostRes.status}`)
-      }
-
-      const hostData = await hostRes.json()
+      const datastores = (datastoreData.data as PBSDatastore[]) || []
 
       // Calculate datastore usage
-      const datastores = datastoreData.data
       let datastoreUsage = "0%"
-
-      if (datastore) {
-        const dsIndex = datastores.findIndex(
-          (ds: PBSDatastore) => ds.store === datastore
-        )
-        if (dsIndex > -1) {
-          const ds = datastores[dsIndex]
-          datastoreUsage = `${((ds.used / ds.total) * 100).toFixed(1)}%`
+      if (datastores.length > 0) {
+        if (datastore) {
+          const ds = datastores.find((d: PBSDatastore) => d.store === datastore)
+          if (ds && ds.total > 0) {
+            datastoreUsage = `${((ds.used / ds.total) * 100).toFixed(1)}%`
+          } else {
+            datastoreUsage = "N/A"
+          }
+        } else {
+          const totalUsed = datastores.reduce(
+            (sum: number, ds: PBSDatastore) => sum + (ds.used || 0),
+            0
+          )
+          const totalCapacity = datastores.reduce(
+            (sum: number, ds: PBSDatastore) => sum + (ds.total || 0),
+            0
+          )
+          if (totalCapacity > 0) {
+            datastoreUsage = `${((totalUsed / totalCapacity) * 100).toFixed(1)}%`
+          }
         }
-      } else {
-        const totalUsed = datastores.reduce(
-          (sum: number, ds: PBSDatastore) => sum + ds.used,
-          0
-        )
-        const totalCapacity = datastores.reduce(
-          (sum: number, ds: PBSDatastore) => sum + ds.total,
-          0
-        )
-        datastoreUsage = `${((totalUsed / totalCapacity) * 100).toFixed(1)}%`
       }
 
-      // Get CPU and memory usage
-      const cpuUsage = `${(hostData.data.cpu * 100).toFixed(1)}%`
-      const memoryUsage = `${(
-        (hostData.data.memory.used / hostData.data.memory.total) *
-        100
-      ).toFixed(1)}%`
+      // Fetch node list to get the actual node name
+      const nodesRes = await fetch(`${baseUrl}/api2/json/nodes`, { headers })
 
-      // Get failed tasks count
-      const failedTasks =
-        tasksData.total >= 100 ? "99+" : tasksData.total.toString()
+      let cpuUsage = "0%"
+      let memoryUsage = "0%"
+
+      if (nodesRes.ok) {
+        const nodesData = await nodesRes.json()
+        const nodes = nodesData.data || []
+
+        if (nodes.length > 0) {
+          const nodeName = nodes[0].node
+
+          // Fetch node status for CPU and memory
+          const statusRes = await fetch(
+            `${baseUrl}/api2/json/nodes/${nodeName}/status`,
+            { headers }
+          )
+
+          if (statusRes.ok) {
+            const statusData = await statusRes.json()
+            const status = statusData.data as PBSNodeStatus
+
+            if (status.cpu !== undefined) {
+              cpuUsage = `${(status.cpu * 100).toFixed(1)}%`
+            }
+
+            if (status.memory?.total > 0) {
+              memoryUsage = `${(
+                (status.memory.used / status.memory.total) *
+                100
+              ).toFixed(1)}%`
+            }
+          }
+        }
+      }
+
+      // Fetch recent tasks and count failed ones
+      const since = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000)
+      const tasksRes = await fetch(
+        `${baseUrl}/api2/json/admin/tasks?since=${since}`,
+        { headers }
+      )
+
+      let failedTasks = "0"
+      if (tasksRes.ok) {
+        const tasksData = await tasksRes.json()
+        const tasks = tasksData.data || []
+
+        const failedCount = tasks.filter(
+          (task: PBSTask) => task.status === "failed" || task.status === "error"
+        ).length
+
+        failedTasks = failedCount > 99 ? "99+" : failedCount.toString()
+      }
 
       return {
         _status: "ok" as const,
