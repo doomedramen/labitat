@@ -44,14 +44,15 @@ describe("session configuration", () => {
       expect(options.cookieOptions?.secure).toBe(false)
     })
 
-    it("uses empty string when SECRET_KEY is not set", async () => {
+    it("throws when SECRET_KEY is not set", async () => {
       delete process.env.SECRET_KEY
       ;(process.env as Record<string, string>).NODE_ENV = "test"
 
       const { getSessionOptions } = await import("@/lib/session")
-      const options = getSessionOptions()
 
-      expect(options.password).toBe("")
+      expect(() => getSessionOptions()).toThrow(
+        "SECRET_KEY environment variable is not set"
+      )
     })
   })
 })
