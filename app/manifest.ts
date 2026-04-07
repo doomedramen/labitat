@@ -61,6 +61,17 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
         purpose: "maskable",
       },
+      // Larger icons for iOS splash screen and high-DPI displays
+      {
+        src: `/apple-touch-icon-512x512.png${v}`,
+        sizes: "512x512",
+        type: "image/png",
+      },
+      {
+        src: `/apple-touch-icon-1024x1024.png${v}`,
+        sizes: "1024x1024",
+        type: "image/png",
+      },
     ],
   }
 }

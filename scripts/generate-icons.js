@@ -28,9 +28,14 @@ const ICONS = [
   { size: 32, output: "public/favicon.ico" },
 
   // Apple touch icons (public/)
+  // iOS uses the largest available icon for the device's pixel density
+  // 180x180 is standard for iPhone, but larger icons improve sharpness on newer devices
   { size: 120, output: "public/apple-touch-icon-120x120.png" },
   { size: 152, output: "public/apple-touch-icon-152x152.png" },
+  { size: 167, output: "public/apple-touch-icon-167x167.png" }, // iPad Pro
   { size: 180, output: "public/apple-touch-icon.png" },
+  { size: 512, output: "public/apple-touch-icon-512x512.png" }, // High-DPI iOS devices
+  { size: 1024, output: "public/apple-touch-icon-1024x1024.png" }, // App Store / max quality
 
   // PWA icons (public/icons/)
   { size: 96, output: "public/icons/icon-96x96.png" },

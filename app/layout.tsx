@@ -76,6 +76,21 @@ export async function generateMetadata(): Promise<Metadata> {
           sizes: "152x152",
           type: "image/png",
         },
+        {
+          url: `/apple-touch-icon-167x167.png${v}`,
+          sizes: "167x167",
+          type: "image/png",
+        },
+        {
+          url: `/apple-touch-icon-512x512.png${v}`,
+          sizes: "512x512",
+          type: "image/png",
+        },
+        {
+          url: `/apple-touch-icon-1024x1024.png${v}`,
+          sizes: "1024x1024",
+          type: "image/png",
+        },
       ],
     },
     // Apple status bar - translucent lets our bg color show through
