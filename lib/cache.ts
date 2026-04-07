@@ -80,6 +80,15 @@ export async function getCached<T>(
   return entry.data as T
 }
 
+// Get cached data without TTL check - useful for offline fallback
+export async function getCachedAny<T>(key: string): Promise<T | null> {
+  await loadCacheFromFile()
+
+  const entry = memoryCache.get(key)
+  if (!entry) return null
+  return entry.data as T
+}
+
 export async function setCached<T>(key: string, data: T): Promise<void> {
   await loadCacheFromFile()
 

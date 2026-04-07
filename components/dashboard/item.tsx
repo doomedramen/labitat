@@ -21,6 +21,7 @@ import { getService } from "@/lib/adapters"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import useSWR from "swr"
+import { useNetworkState } from "@/hooks/use-network-state"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -198,6 +199,7 @@ type ItemCardProps = {
 
 export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const [isPending, startTransition] = useTransition()
+  const { isOnline, isServerAvailable } = useNetworkState()
 
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
@@ -207,20 +209,29 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const shouldFetchService = !editMode && item.serviceType && serviceDef
   const shouldPing = !editMode && !item.serviceType && item.href
 
+  // When offline, don't attempt to fetch at all - prevents skeleton flickering
+  const isEffectivelyOffline = !isOnline || !isServerAvailable
+
   // Use SWR for service data fetching (keeps API keys on server)
   const {
     data: serviceData,
     isLoading: isServiceLoading,
     error: serviceError,
   } = useSWR<ServiceData | null>(
-    shouldFetchService && !isClientSide ? `widget:${item.id}` : null,
+    shouldFetchService && !isClientSide && !isEffectivelyOffline
+      ? `widget:${item.id}`
+      : null,
     () => getWidgetData(item.id),
     {
-      refreshInterval: pollingMs,
+      refreshInterval: isEffectivelyOffline ? 0 : pollingMs,
       dedupingInterval: pollingMs,
       revalidateOnFocus: false,
       revalidateIfStale: true,
+      // Don't retry when offline - prevents flickering
+      shouldRetryOnError: !isEffectivelyOffline,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Don't retry when offline
+        if (isEffectivelyOffline) return
         // Only retry up to 5 times with exponential backoff
         if (retryCount >= 5) return
         const delay = Math.min(1000 * 2 ** retryCount, pollingMs)
@@ -235,14 +246,18 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
     isLoading: isPingLoading,
     error: pingError,
   } = useSWR<ServiceStatus | null>(
-    shouldPing ? `ping:${item.id}:${item.href}` : null,
+    shouldPing && !isEffectivelyOffline ? `ping:${item.id}:${item.href}` : null,
     () => pingUrl(item.href!),
     {
-      refreshInterval: pollingMs,
+      refreshInterval: isEffectivelyOffline ? 0 : pollingMs,
       dedupingInterval: pollingMs,
       revalidateOnFocus: false,
       revalidateIfStale: true,
+      // Don't retry when offline - prevents flickering
+      shouldRetryOnError: !isEffectivelyOffline,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Don't retry when offline
+        if (isEffectivelyOffline) return
         // Only retry up to 5 times with exponential backoff
         if (retryCount >= 5) return
         const delay = Math.min(1000 * 2 ** retryCount, pollingMs)
@@ -255,29 +270,36 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const effectiveData = editMode ? null : serviceData
   const effectiveLoading = editMode
     ? false
-    : shouldFetchService && !isClientSide
-      ? isServiceLoading
-      : shouldPing
-        ? isPingLoading
-        : false
+    : isEffectivelyOffline
+      ? false // Never show loading when offline
+      : shouldFetchService && !isClientSide
+        ? isServiceLoading
+        : shouldPing
+          ? isPingLoading
+          : false
 
   // Compute status from service data or ping
   // Only show status if item has href (for ping)
   const hasStatus = !!item.href
   const serviceStatus: ServiceStatus = editMode
     ? { state: "unknown" }
-    : serviceError
-      ? {
-          state: "error",
-          reason: serviceError.message || "Failed to fetch service data",
-        }
-      : pingError
-        ? { state: "error", reason: pingError.message || "Failed to ping URL" }
-        : pingStatus
-          ? pingStatus
-          : effectiveData
-            ? dataToStatus(effectiveData)
-            : { state: "unknown" }
+    : isEffectivelyOffline
+      ? { state: "unreachable", reason: "You're offline" }
+      : serviceError
+        ? {
+            state: "error",
+            reason: serviceError.message || "Failed to fetch service data",
+          }
+        : pingError
+          ? {
+              state: "error",
+              reason: pingError.message || "Failed to ping URL",
+            }
+          : pingStatus
+            ? pingStatus
+            : effectiveData
+              ? dataToStatus(effectiveData)
+              : { state: "unknown" }
 
   const {
     attributes,
@@ -308,13 +330,18 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
 
   // For client-side widgets, always render the Widget (it handles its own state)
   // For server-side widgets, only render if we have data
+  // When offline, show cached data if available (SWR keepsPreviousData)
   const hasWidget =
     !editMode &&
     Widget &&
     serviceDef &&
     (isClientSide || (effectiveData && serviceStatus.state !== "error"))
   const showWidgetSkeleton =
-    !editMode && !!item.serviceType && effectiveLoading && !isClientSide
+    !editMode &&
+    !!item.serviceType &&
+    effectiveLoading &&
+    !isClientSide &&
+    !isEffectivelyOffline // Never show skeleton when offline
 
   // For client-side widgets, pass the initial config data
   const widgetProps =

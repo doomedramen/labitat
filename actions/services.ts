@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { items } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { decrypt } from "@/lib/crypto"
-import { getCached, setCached } from "@/lib/cache"
+import { getCached, getCachedAny, setCached } from "@/lib/cache"
 import { getService } from "@/lib/adapters"
 import type { ServiceData } from "@/lib/adapters/types"
 
@@ -28,11 +28,16 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
 
   const pollingMs = item.pollingMs ?? adapter.defaultPollingMs ?? 10000
 
-  // Check cache
+  // Check cache (with normal TTL)
   const cached = await getCached<ServiceData>(`service:${itemId}`, pollingMs)
   if (cached) {
     return cached
   }
+
+  // If cache expired, try to get expired cache as fallback
+  // This helps when offline or when service is temporarily unavailable
+  const expiredCache = await getCachedAny<ServiceData>(`service:${itemId}`)
+  const hasExpiredCache = expiredCache !== null
 
   // Build config object - decrypt password fields
   const config: Record<string, string> = {}
@@ -89,7 +94,17 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
     await setCached(`service:${itemId}`, responseData)
     return responseData
   } catch (err) {
-    // Log detailed error server-side for debugging
+    // If we have expired cache data, return it as fallback with a warning
+    // Don't log errors when we have cached fallback - prevents console spam when offline
+    if (hasExpiredCache) {
+      return {
+        ...expiredCache,
+        _status: "warn" as const,
+        _statusText: "Showing cached data - unable to reach service",
+      }
+    }
+
+    // Only log errors when we don't have cached fallback
     console.error(
       `[labitat] Failed to fetch data for item ${itemId} (${item.serviceType}):`,
       err

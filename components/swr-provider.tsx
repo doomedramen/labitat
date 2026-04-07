@@ -32,6 +32,8 @@ export function SWRProvider({ children }: { children: React.ReactNode }) {
         keepPreviousData: true,
         // Don't hang on errors - show them immediately
         suspense: false,
+        // Keep data even if revalidation fails - critical for offline support
+        revalidateOnMount: true,
       }}
     >
       {children}
