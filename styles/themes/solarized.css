@@ -58,7 +58,7 @@
   --secondary: oklch(0.3600 0.0430 218.0);     /* between base02 and base01 */
   --secondary-foreground: oklch(0.6252 0.0306 208.0);
   --muted: oklch(0.2546 0.0494 220.0);
-  --muted-foreground: oklch(0.4820 0.0352 208.0); /* #586E75 base01 */
+  --muted-foreground: oklch(0.4200 0.0300 210.0); /* #586E75 base01 — dimmed for placeholder */
   --accent: oklch(0.6208 0.1009 187.0);        /* #2AA198 cyan   */
   --accent-foreground: oklch(0.2223 0.0502 223.0);
   --destructive: oklch(0.5173 0.2105 29.0);    /* #DC322F red    */

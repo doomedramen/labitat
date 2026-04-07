@@ -52,8 +52,11 @@ export const apcupsDefinition: ServiceDefinition<ApcupsData> = {
   ],
 
   async fetchData(config) {
-    const host = config.host ?? "127.0.0.1"
+    let host = config.host ?? "127.0.0.1"
     const port = parseInt(config.port ?? "3551", 10)
+
+    // Strip protocol prefixes if accidentally included
+    host = host.replace(/^(https?:\/\/|tcp:\/\/|udp:\/\/)/i, "").trim()
 
     try {
       const data = await getApcupsStatus(host, port)

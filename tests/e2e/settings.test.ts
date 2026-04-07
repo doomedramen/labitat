@@ -12,6 +12,18 @@ async function login(page: Page) {
   await page.waitForURL("/")
 }
 
+async function waitForEditMode(page: Page) {
+  await expect(page.getByTestId("edit-bar")).toBeVisible()
+}
+
+async function waitForExitEditMode(page: Page) {
+  await expect(page.getByTestId("edit-bar")).not.toBeVisible()
+}
+
+async function waitForGroupDialogClose(page: Page) {
+  await expect(page.getByTestId("group-dialog")).not.toBeVisible()
+}
+
 test.describe("Settings - Dashboard Title", () => {
   test.beforeEach(async ({ page }) => {
     await login(page)
@@ -22,6 +34,7 @@ test.describe("Settings - Dashboard Title", () => {
 
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Title should become editable input
     const titleInput = page.getByTestId("dashboard-title-input")
@@ -30,8 +43,7 @@ test.describe("Settings - Dashboard Title", () => {
 
     // Exit edit mode with Done button to save
     await page.getByTestId("done-button").click()
-
-    await page.waitForTimeout(500)
+    await waitForExitEditMode(page)
 
     // Verify title changed - check the h1 element
     await expect(page.getByTestId("dashboard-title")).toContainText(newTitle)
@@ -40,6 +52,7 @@ test.describe("Settings - Dashboard Title", () => {
   test("should cancel title edit with Escape", async ({ page }) => {
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Get original title
     const titleInput = page.getByTestId("dashboard-title-input")
@@ -63,6 +76,7 @@ test.describe("Settings - Dashboard Title", () => {
   test("should show Done button when editing title", async ({ page }) => {
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Title input should be visible
     await expect(page.getByTestId("dashboard-title-input")).toBeVisible()
@@ -94,7 +108,8 @@ test.describe("Settings - Theme", () => {
         await page.getByTestId("theme-dark").click()
       }
 
-      await page.waitForTimeout(500)
+      // Wait for theme class to change
+      await expect(html).not.toHaveClass(initialClass || "none")
 
       // Verify theme changed
       const newClass = (await html.getAttribute("class")) || ""
@@ -118,14 +133,16 @@ test.describe("Settings - Theme", () => {
 
       // Select dark theme
       await page.getByTestId("theme-dark").click()
-      await page.waitForTimeout(300)
+
+      // Wait for theme to apply
+      const html = page.locator("html")
+      await expect(html).toHaveClass(/dark/)
 
       // Reload page
       await page.reload()
-      await page.waitForTimeout(300)
+      await page.waitForLoadState("domcontentloaded")
 
       // Theme should persist - check if dark class is present
-      const html = page.locator("html")
       const afterReloadClass = (await html.getAttribute("class")) || ""
 
       expect(afterReloadClass.includes("dark")).toBe(true)
@@ -141,6 +158,7 @@ test.describe("Keyboard Shortcuts", () => {
   test("should close dialogs with Escape key", async ({ page }) => {
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Open add group dialog
     await page.getByTestId("add-group-button").click()
@@ -150,7 +168,6 @@ test.describe("Keyboard Shortcuts", () => {
     await page.keyboard.press("Escape")
 
     // Dialog should close
-    await page.waitForTimeout(300)
     await expect(page.getByTestId("group-dialog")).not.toBeVisible()
   })
 })

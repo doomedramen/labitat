@@ -12,28 +12,46 @@ async function login(page: Page) {
   await page.waitForURL("/")
 }
 
+async function waitForEditMode(page: Page) {
+  await expect(page.getByTestId("edit-bar")).toBeVisible()
+}
+
+async function waitForExitEditMode(page: Page) {
+  await expect(page.getByTestId("edit-bar")).not.toBeVisible()
+}
+
+async function waitForGroupDialogClose(page: Page) {
+  await expect(page.getByTestId("group-dialog")).not.toBeVisible()
+}
+
+async function waitForItemDialogClose(page: Page) {
+  await expect(page.getByTestId("item-dialog")).not.toBeVisible()
+}
+
 test.describe("Item Management", () => {
   test.beforeEach(async ({ page }) => {
     await login(page)
 
     // Clean up any existing test groups
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
     const deleteButtons = page.locator('[data-testid="item-delete-button"]')
     const count = await deleteButtons.count()
     for (let i = 0; i < count; i++) {
       if (await deleteButtons.nth(i).isVisible()) {
         await deleteButtons.nth(i).click()
         await page.getByTestId("item-delete-confirm").click()
-        await page.waitForTimeout(200)
+        await expect(page.getByTestId("item-delete-confirm")).not.toBeVisible()
       }
     }
     await page.getByTestId("done-button").click()
-    await page.waitForTimeout(500)
+    await waitForExitEditMode(page)
   })
 
   test("should create a new item in a group", async ({ page }) => {
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Create a group first
     const groupName = `Test Group ${Date.now()}`
@@ -41,7 +59,7 @@ test.describe("Item Management", () => {
     await page.getByTestId("add-group-button").click()
     await page.getByTestId("group-name-input").fill(groupName)
     await page.getByTestId("group-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForGroupDialogClose(page)
 
     // Click Add item in the specific group
     await page.getByLabel(groupName).getByTestId("add-item-button").click()
@@ -53,10 +71,7 @@ test.describe("Item Management", () => {
 
     // Submit
     await page.getByTestId("item-dialog-submit").click()
-
-    // Dialog should close
-    await page.waitForTimeout(500)
-    await expect(page.getByTestId("item-dialog")).not.toBeVisible()
+    await waitForItemDialogClose(page)
 
     // Verify item was created
     await expect(
@@ -67,6 +82,7 @@ test.describe("Item Management", () => {
   test("should create item with service type", async ({ page }) => {
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Create a group
     const groupName = `Service Group ${Date.now()}`
@@ -74,7 +90,7 @@ test.describe("Item Management", () => {
     await page.getByTestId("add-group-button").click()
     await page.getByTestId("group-name-input").fill(groupName)
     await page.getByTestId("group-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForGroupDialogClose(page)
 
     // Click Add item in the specific group
     await page.getByLabel(groupName).getByTestId("add-item-button").click()
@@ -92,7 +108,7 @@ test.describe("Item Management", () => {
 
     // Submit
     await page.getByTestId("item-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForItemDialogClose(page)
 
     // Verify item was created
     await expect(
@@ -107,12 +123,13 @@ test.describe("Item Management", () => {
 
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Create group and item
     await page.getByTestId("add-group-button").click()
     await page.getByTestId("group-name-input").fill(groupName)
     await page.getByTestId("group-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForGroupDialogClose(page)
 
     // Add item in the specific group
     await page.getByLabel(groupName).getByTestId("add-item-button").click()
@@ -122,11 +139,13 @@ test.describe("Item Management", () => {
       .getByTestId("item-href-input")
       .fill("https://original.example.com")
     await page.getByTestId("item-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForItemDialogClose(page)
 
     // Exit and re-enter edit mode
     await page.getByTestId("done-button").click()
+    await waitForExitEditMode(page)
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Find and click edit on the item - use the item card within the group
     const itemCard = page
@@ -141,7 +160,7 @@ test.describe("Item Management", () => {
     if (await page.getByTestId("item-dialog").isVisible()) {
       await page.getByTestId("item-label-input").fill(newItemName)
       await page.getByTestId("item-dialog-submit").click()
-      await page.waitForTimeout(500)
+      await waitForItemDialogClose(page)
 
       // Verify change
       await expect(
@@ -159,19 +178,20 @@ test.describe("Item Management", () => {
 
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Create group and item
     await page.getByTestId("add-group-button").click()
     await page.getByTestId("group-name-input").fill(groupName)
     await page.getByTestId("group-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForGroupDialogClose(page)
 
     // Add item in the specific group
     await page.getByLabel(groupName).getByTestId("add-item-button").click()
 
     await page.getByTestId("item-label-input").fill(itemName)
     await page.getByTestId("item-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForItemDialogClose(page)
 
     // Find and delete the item - use the delete button within the group
     const deleteButton = page
@@ -182,10 +202,10 @@ test.describe("Item Management", () => {
     if (await deleteButton.isVisible()) {
       await deleteButton.click()
       await page.getByTestId("item-delete-confirm").click()
+      await expect(page.getByTestId("item-delete-confirm")).not.toBeVisible()
     }
 
     // Item should be removed
-    await page.waitForTimeout(500)
     await expect(
       page.getByLabel(groupName).getByText(itemName, { exact: true }).first()
     ).not.toBeVisible()
@@ -201,24 +221,25 @@ test.describe("Item Management", () => {
 
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Create group
     await page.getByTestId("add-group-button").click()
     await page.getByTestId("group-name-input").fill(groupName)
     await page.getByTestId("group-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForGroupDialogClose(page)
 
     // Add first item in the specific group
     await page.getByLabel(groupName).getByTestId("add-item-button").click()
     await page.getByTestId("item-label-input").fill(item1Name)
     await page.getByTestId("item-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForItemDialogClose(page)
 
     // Add second item in the specific group
     await page.getByLabel(groupName).getByTestId("add-item-button").click()
     await page.getByTestId("item-label-input").fill(item2Name)
     await page.getByTestId("item-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForItemDialogClose(page)
 
     // Get the item cards
     const group = page.getByLabel(groupName)

@@ -12,6 +12,22 @@ async function login(page: Page) {
   await page.waitForURL("/")
 }
 
+async function waitForEditMode(page: Page) {
+  await expect(page.getByTestId("edit-bar")).toBeVisible()
+}
+
+async function waitForExitEditMode(page: Page) {
+  await expect(page.getByTestId("edit-bar")).not.toBeVisible()
+}
+
+async function waitForGroupDialogClose(page: Page) {
+  await expect(page.getByTestId("group-dialog")).not.toBeVisible()
+}
+
+async function waitForItemDialogClose(page: Page) {
+  await expect(page.getByTestId("item-dialog")).not.toBeVisible()
+}
+
 // All Glances variant service types (not the main "Glances" widget)
 const GLANCES_VARIANTS = [
   { id: "glances-timeseries", name: "Glances Time Series" },
@@ -27,6 +43,7 @@ test.describe("Glances variant widgets - config persistence", () => {
 
     // Clean up any existing test groups and items
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Delete all items first
     const itemDeleteButtons = page.locator('[data-testid="item-delete-button"]')
@@ -35,7 +52,8 @@ test.describe("Glances variant widgets - config persistence", () => {
       if (await itemDeleteButtons.nth(i).isVisible()) {
         await itemDeleteButtons.nth(i).click()
         await page.getByTestId("item-delete-confirm").click()
-        await page.waitForTimeout(200)
+        // Wait for the confirm dialog to close
+        await expect(page.getByTestId("item-delete-confirm")).not.toBeVisible()
       }
     }
 
@@ -48,12 +66,13 @@ test.describe("Glances variant widgets - config persistence", () => {
       if (await groupDeleteButtons.nth(i).isVisible()) {
         await groupDeleteButtons.nth(i).click()
         await page.getByTestId("group-delete-confirm").click()
-        await page.waitForTimeout(200)
+        // Wait for the confirm dialog to close
+        await expect(page.getByTestId("group-delete-confirm")).not.toBeVisible()
       }
     }
 
     await page.getByTestId("done-button").click()
-    await page.waitForTimeout(500)
+    await waitForExitEditMode(page)
   })
 
   for (const variant of GLANCES_VARIANTS) {
@@ -64,12 +83,13 @@ test.describe("Glances variant widgets - config persistence", () => {
 
       // Enter edit mode
       await page.getByTestId("edit-button").click()
+      await waitForEditMode(page)
 
       // Create a group
       await page.getByTestId("add-group-button").click()
       await page.getByTestId("group-name-input").fill(groupName)
       await page.getByTestId("group-dialog-submit").click()
-      await page.waitForTimeout(500)
+      await waitForGroupDialogClose(page)
 
       // Click Add item in the specific group
       await page.getByLabel(groupName).getByTestId("add-item-button").click()
@@ -93,7 +113,7 @@ test.describe("Glances variant widgets - config persistence", () => {
 
       // Submit
       await page.getByTestId("item-dialog-submit").click()
-      await page.waitForTimeout(500)
+      await waitForItemDialogClose(page)
 
       // Verify item was created
       await expect(
@@ -102,10 +122,11 @@ test.describe("Glances variant widgets - config persistence", () => {
 
       // Exit edit mode
       await page.getByTestId("done-button").click()
-      await page.waitForTimeout(500)
+      await waitForExitEditMode(page)
 
       // Re-enter edit mode and click the item's edit button
       await page.getByTestId("edit-button").click()
+      await waitForEditMode(page)
 
       // Click the edit button on the item card
       const itemEditButton = page
@@ -115,12 +136,11 @@ test.describe("Glances variant widgets - config persistence", () => {
       await itemEditButton.click()
 
       // Wait for dialog to load config
-      await page.waitForTimeout(1000)
+      await expect(page.getByTestId("item-dialog")).toBeVisible()
+      await expect(page.getByLabel(/Glances URL/)).toBeVisible()
 
       // Verify the Glances URL was persisted
-      const urlInputAfterEdit = page.getByLabel(/Glances URL/)
-      await expect(urlInputAfterEdit).toBeVisible()
-      await expect(urlInputAfterEdit).toHaveValue(testUrl)
+      await expect(page.getByLabel(/Glances URL/)).toHaveValue(testUrl)
     })
   }
 
@@ -135,12 +155,13 @@ test.describe("Glances variant widgets - config persistence", () => {
 
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Create a group
     await page.getByTestId("add-group-button").click()
     await page.getByTestId("group-name-input").fill(groupName)
     await page.getByTestId("group-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForGroupDialogClose(page)
 
     // Click Add item in the specific group
     await page.getByLabel(groupName).getByTestId("add-item-button").click()
@@ -164,14 +185,15 @@ test.describe("Glances variant widgets - config persistence", () => {
 
     // Submit
     await page.getByTestId("item-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForItemDialogClose(page)
 
     // Exit edit mode
     await page.getByTestId("done-button").click()
-    await page.waitForTimeout(500)
+    await waitForExitEditMode(page)
 
     // Re-enter edit mode and click the item's edit button
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Click the edit button on the item card
     const itemEditButton = page
@@ -181,7 +203,8 @@ test.describe("Glances variant widgets - config persistence", () => {
     await itemEditButton.click()
 
     // Wait for dialog to load config
-    await page.waitForTimeout(500)
+    await expect(page.getByTestId("item-dialog")).toBeVisible()
+    await expect(page.getByLabel(/Glances URL/)).toBeVisible()
 
     // Verify all fields were persisted
     await expect(page.getByLabel(/Glances URL/)).toHaveValue(testUrl)
@@ -199,12 +222,13 @@ test.describe("Glances variant widgets - config persistence", () => {
 
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Create a group
     await page.getByTestId("add-group-button").click()
     await page.getByTestId("group-name-input").fill(groupName)
     await page.getByTestId("group-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForGroupDialogClose(page)
 
     // Click Add item in the specific group
     await page.getByLabel(groupName).getByTestId("add-item-button").click()
@@ -227,18 +251,18 @@ test.describe("Glances variant widgets - config persistence", () => {
     // Select "Memory Usage" from the Metric dropdown
     await page.getByLabel(/Metric/).click()
     await page.getByRole("option", { name: "Memory Usage" }).click()
-    await page.waitForTimeout(300) // Wait for React state to update hidden input
 
     // Submit
     await page.getByTestId("item-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForItemDialogClose(page)
 
     // Exit edit mode
     await page.getByTestId("done-button").click()
-    await page.waitForTimeout(500)
+    await waitForExitEditMode(page)
 
     // Re-enter edit mode and click the item's edit button
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Click the edit button on the item card
     const itemEditButton = page
@@ -248,7 +272,8 @@ test.describe("Glances variant widgets - config persistence", () => {
     await itemEditButton.click()
 
     // Wait for dialog to load config
-    await page.waitForTimeout(500)
+    await expect(page.getByTestId("item-dialog")).toBeVisible()
+    await expect(page.getByLabel(/Glances URL/)).toBeVisible()
 
     // Verify URL was persisted
     await expect(page.getByLabel(/Glances URL/)).toHaveValue(testUrl)
@@ -268,12 +293,13 @@ test.describe("Glances variant widgets - config persistence", () => {
 
     // Enter edit mode
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Create a group
     await page.getByTestId("add-group-button").click()
     await page.getByTestId("group-name-input").fill(groupName)
     await page.getByTestId("group-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForGroupDialogClose(page)
 
     // Click Add item in the specific group
     await page.getByLabel(groupName).getByTestId("add-item-button").click()
@@ -296,23 +322,22 @@ test.describe("Glances variant widgets - config persistence", () => {
     // Select "10 processes" from count dropdown
     await page.getByLabel(/Process count/).click()
     await page.getByRole("option", { name: "10 processes" }).click()
-    await page.waitForTimeout(300)
 
     // Select "Memory usage" from sort by dropdown
     await page.getByLabel(/Sort by/).click()
     await page.getByRole("option", { name: "Memory usage" }).click()
-    await page.waitForTimeout(300)
 
     // Submit
     await page.getByTestId("item-dialog-submit").click()
-    await page.waitForTimeout(500)
+    await waitForItemDialogClose(page)
 
     // Exit edit mode
     await page.getByTestId("done-button").click()
-    await page.waitForTimeout(500)
+    await waitForExitEditMode(page)
 
     // Re-enter edit mode and click the item's edit button
     await page.getByTestId("edit-button").click()
+    await waitForEditMode(page)
 
     // Click the edit button on the item card
     const itemEditButton = page
@@ -322,7 +347,8 @@ test.describe("Glances variant widgets - config persistence", () => {
     await itemEditButton.click()
 
     // Wait for dialog to load config
-    await page.waitForTimeout(500)
+    await expect(page.getByTestId("item-dialog")).toBeVisible()
+    await expect(page.getByLabel(/Glances URL/)).toBeVisible()
 
     // Verify URL was persisted
     await expect(page.getByLabel(/Glances URL/)).toHaveValue(testUrl)

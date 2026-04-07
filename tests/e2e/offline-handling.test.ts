@@ -4,8 +4,8 @@ test.describe("Offline Handling", () => {
   test.beforeEach(async ({ page }) => {
     // Go to dashboard first to ensure service worker is registered
     await page.goto("/")
-    // Wait for service worker to be ready
-    await page.waitForTimeout(1000)
+    // Wait for page to be fully interactive
+    await page.waitForLoadState("networkidle")
   })
 
   test("should show offline banner when network goes offline", async ({
@@ -42,18 +42,18 @@ test.describe("Offline Handling", () => {
       .first()
     await expect(offlineBanner).toBeVisible({ timeout: 10000 })
 
-    // Dismiss the banner
-    const dismissBtn = offlineBanner.getByRole("button", { name: /dismiss/i })
-    if (await dismissBtn.isVisible()) {
-      await dismissBtn.click()
-    }
-
-    // Go back online
+    // Go back online first (before dismissing)
     await page.context().setOffline(false)
 
-    // Wait for health check to detect we're back online
-    // The banner should briefly show during revalidation
-    await page.waitForTimeout(2000)
+    // Wait for the "Server is back online" banner to appear
+    const reconnectedBanner = page
+      .getByRole("alert")
+      .filter({ hasText: /server is back online|refreshing data/i })
+      .first()
+    await expect(reconnectedBanner).toBeVisible({ timeout: 10000 })
+
+    // Wait for it to auto-dismiss (3 seconds) or dismiss manually
+    await expect(reconnectedBanner).not.toBeVisible({ timeout: 5000 })
 
     // Page should still be functional
     await expect(page.locator("body")).toBeVisible()
@@ -63,18 +63,16 @@ test.describe("Offline Handling", () => {
     page,
   }) => {
     // Monitor network requests for health checks
-    const healthCheckRequests: string[] = []
-    page.on("request", (request) => {
-      if (request.url().includes("/api/health")) {
-        healthCheckRequests.push(request.url())
-      }
-    })
+    const healthCheckPromise = page.waitForRequest(
+      (request) => request.url().includes("/api/health"),
+      { timeout: 10000 }
+    )
 
-    // Wait for health checks to occur
-    await page.waitForTimeout(4000)
+    // Wait for at least one health check request
+    const healthCheckRequest = await healthCheckPromise
 
     // Should have made at least one health check request
-    expect(healthCheckRequests.length).toBeGreaterThan(0)
+    expect(healthCheckRequest.url()).toContain("/api/health")
   })
 
   test("should revalidate data when server comes back online", async ({
@@ -91,26 +89,18 @@ test.describe("Offline Handling", () => {
       .filter({ hasText: /offline|server unavailable/i })
     await expect(offlineBanners.first()).toBeVisible({ timeout: 10000 })
 
-    // Dismiss all offline banners
-    const bannerCount = await offlineBanners.count()
-    for (let i = 0; i < bannerCount; i++) {
-      const banner = offlineBanners.nth(i)
-      if (await banner.isVisible()) {
-        const dismissBtn = banner.getByRole("button", { name: /dismiss/i })
-        if (await dismissBtn.isVisible()) {
-          await dismissBtn.click()
-        }
-      }
-    }
-
-    // Wait a moment for dismissals to take effect
-    await page.waitForTimeout(500)
-
     // Go back online
     await page.context().setOffline(false)
 
-    // Wait for health check and SWR revalidation
-    await page.waitForTimeout(6000)
+    // Wait for the "Server is back online" banner to appear
+    const reconnectedBanner = page
+      .getByRole("alert")
+      .filter({ hasText: /server is back online|refreshing data/i })
+      .first()
+    await expect(reconnectedBanner).toBeVisible({ timeout: 10000 })
+
+    // Wait for it to auto-dismiss
+    await expect(reconnectedBanner).not.toBeVisible({ timeout: 5000 })
 
     // Verify page is still functional after coming back online
     // Should NOT have done a full page reload

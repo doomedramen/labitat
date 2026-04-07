@@ -83,12 +83,18 @@ test.describe("Dashboard - Content", () => {
     )
 
     if (await themeButton.isVisible()) {
+      // Get initial class
+      const html = page.locator("html")
+      const initialClass = (await html.getAttribute("class")) || ""
+
       // Click theme toggle
       await themeButton.click()
-      await page.waitForTimeout(300)
+
+      // Wait for theme class to change
+      await expect(html).not.toHaveClass(initialClass || "none")
 
       // Theme class should have changed
-      const newClass = (await page.locator("html").getAttribute("class")) || ""
+      const newClass = (await html.getAttribute("class")) || ""
       // Just verify the click worked - class might have changed
       expect(typeof newClass).toBe("string")
     }

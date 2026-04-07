@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import { StatGrid } from "./widgets"
+import { Agent } from "https"
 
 type NginxProxyManagerData = {
   _status?: "ok" | "warn" | "error"
@@ -54,10 +55,28 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         required: true,
         placeholder: "Your Nginx Proxy Manager password",
       },
+      {
+        key: "skipTLSVerify",
+        label: "Skip TLS Verification",
+        type: "boolean",
+        required: false,
+        helperText:
+          "Enable to skip SSL certificate verification (use with self-signed certificates)",
+      },
     ],
 
     async fetchData(config) {
       const baseUrl = config.url.replace(/\/$/, "")
+      const skipTLSVerify = config.skipTLSVerify === "true"
+
+      const fetchOptions: RequestInit = {}
+
+      if (skipTLSVerify) {
+        // @ts-expect-error - Node.js specific option not in standard types
+        fetchOptions.dispatcher = new Agent({
+          rejectUnauthorized: false,
+        })
+      }
 
       // Authenticate to get access token
       const authRes = await fetch(`${baseUrl}/api/tokens`, {
@@ -67,6 +86,7 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
           identity: config.email,
           secret: config.password,
         }),
+        ...fetchOptions,
       })
 
       if (!authRes.ok) {
@@ -89,6 +109,7 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
       // Fetch proxy hosts only (like Homepage)
       const proxyRes = await fetch(`${baseUrl}/api/nginx/proxy-hosts`, {
         headers,
+        ...fetchOptions,
       })
 
       if (!proxyRes.ok) {
