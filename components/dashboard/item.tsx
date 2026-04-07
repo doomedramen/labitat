@@ -20,7 +20,7 @@ import { dataToStatus } from "@/lib/adapters/types"
 import { getService } from "@/lib/adapters"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import useSWR from "swr"
+import useSWR, { type SWRConfiguration } from "swr"
 import { useNetworkState } from "@/hooks/use-network-state"
 import {
   AlertDialog,
@@ -38,6 +38,26 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+
+// ── Icon helpers ──────────────────────────────────────────────────────────────
+
+function buildIconUrl(effectiveUrl: string): string {
+  if (effectiveUrl.startsWith("http")) return effectiveUrl
+
+  const slug = effectiveUrl.toLowerCase()
+
+  if (slug.endsWith(".png")) {
+    return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${slug.replace(".png", "")}.png`
+  }
+  if (slug.endsWith(".webp")) {
+    return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/${slug.replace(".webp", "")}.webp`
+  }
+  if (slug.endsWith(".svg")) {
+    return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/${slug.replace(".svg", "")}.svg`
+  }
+
+  return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${slug}.png`
+}
 
 // ── Icon ─────────────────────────────────────────────────────────────────────
 
@@ -78,36 +98,7 @@ function ItemIcon({
     )
   }
 
-  // Build icon URL - determine format from extension (like Homepage)
-  const buildIconUrl = () => {
-    // Custom or auto-detected URL
-    if (effectiveUrl.startsWith("http")) {
-      return effectiveUrl
-    }
-
-    // selfh.st slug - check if extension is specified
-    const slug = effectiveUrl.toLowerCase()
-
-    if (slug.endsWith(".png")) {
-      const iconName = slug.replace(".png", "")
-      return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${iconName}.png`
-    }
-
-    if (slug.endsWith(".webp")) {
-      const iconName = slug.replace(".webp", "")
-      return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/${iconName}.webp`
-    }
-
-    if (slug.endsWith(".svg")) {
-      const iconName = slug.replace(".svg", "")
-      return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/${iconName}.svg`
-    }
-
-    // No extension - default to PNG (most widely available)
-    return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${slug}.png`
-  }
-
-  const src = buildIconUrl()
+  const src = buildIconUrl(effectiveUrl)
 
   return (
     <Image
@@ -212,6 +203,21 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   // When offline, don't attempt to fetch at all - prevents skeleton flickering
   const isEffectivelyOffline = !isOnline || !isServerAvailable
 
+  const onErrorRetry: SWRConfiguration["onErrorRetry"] = (
+    _error,
+    _key,
+    _config,
+    revalidate,
+    { retryCount }
+  ) => {
+    if (isEffectivelyOffline) return
+    if (retryCount >= 5) return
+    setTimeout(
+      () => revalidate({ retryCount }),
+      Math.min(1000 * 2 ** retryCount, pollingMs)
+    )
+  }
+
   // Use SWR for service data fetching (keeps API keys on server)
   const {
     data: serviceData,
@@ -227,16 +233,8 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       dedupingInterval: pollingMs,
       revalidateOnFocus: false,
       revalidateIfStale: true,
-      // Don't retry when offline - prevents flickering
       shouldRetryOnError: !isEffectivelyOffline,
-      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        // Don't retry when offline
-        if (isEffectivelyOffline) return
-        // Only retry up to 5 times with exponential backoff
-        if (retryCount >= 5) return
-        const delay = Math.min(1000 * 2 ** retryCount, pollingMs)
-        setTimeout(() => revalidate({ retryCount }), delay)
-      },
+      onErrorRetry,
     }
   )
 
@@ -253,16 +251,8 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       dedupingInterval: pollingMs,
       revalidateOnFocus: false,
       revalidateIfStale: true,
-      // Don't retry when offline - prevents flickering
       shouldRetryOnError: !isEffectivelyOffline,
-      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        // Don't retry when offline
-        if (isEffectivelyOffline) return
-        // Only retry up to 5 times with exponential backoff
-        if (retryCount >= 5) return
-        const delay = Math.min(1000 * 2 ** retryCount, pollingMs)
-        setTimeout(() => revalidate({ retryCount }), delay)
-      },
+      onErrorRetry,
     }
   )
 
@@ -279,8 +269,8 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
           : false
 
   // Compute status from service data or ping
-  // Only show status if item has href (for ping)
-  const hasStatus = !!item.href
+  // Only show status if item has href and is not a client-side widget (which manages its own state)
+  const hasStatus = !!item.href && !isClientSide
   const serviceStatus: ServiceStatus = editMode
     ? { state: "unknown" }
     : isEffectivelyOffline
@@ -418,6 +408,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       {/* Widget below or loading skeleton */}
       {showWidgetSkeleton && (
         <div
+          suppressHydrationWarning
           className={cn(
             "grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5",
             item.cleanMode ? "" : "mt-2"

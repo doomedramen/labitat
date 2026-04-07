@@ -1,17 +1,23 @@
 "use client"
 
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { WifiOff, RefreshCw } from "lucide-react"
+import { useNetworkState } from "@/hooks/use-network-state"
 
 export default function OfflinePageClient() {
+  const router = useRouter()
+  const { isOnline, isServerAvailable } = useNetworkState()
+
   useEffect(() => {
-    // Auto-reload when connection is restored
-    const handleOnline = () => {
-      window.location.reload()
+    if (isOnline && isServerAvailable) {
+      router.replace("/")
     }
-    window.addEventListener("online", handleOnline)
-    return () => window.removeEventListener("online", handleOnline)
-  }, [])
+  }, [isOnline, isServerAvailable, router])
+
+  if (isOnline && isServerAvailable) {
+    return null
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-600 text-gray-800">
