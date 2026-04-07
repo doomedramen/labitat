@@ -11,9 +11,10 @@ export default function OfflinePageClient() {
 
   useEffect(() => {
     if (isOnline && isServerAvailable) {
-      router.replace("/")
+      // Use hard navigation to bypass service worker client-side routing
+      window.location.href = "/"
     }
-  }, [isOnline, isServerAvailable, router])
+  }, [isOnline, isServerAvailable])
 
   if (isOnline && isServerAvailable) {
     return null
