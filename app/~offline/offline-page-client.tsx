@@ -40,7 +40,7 @@ export default function OfflinePageClient() {
 
         <div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => (window.location.href = "/")}
             className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-6 py-3 text-sm text-white transition-colors hover:bg-gray-700"
           >
             <RefreshCw className="size-4" />
