@@ -1,12 +1,10 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { WifiOff, RefreshCw } from "lucide-react"
 import { useNetworkState } from "@/hooks/use-network-state"
 
 export default function OfflinePageClient() {
-  const router = useRouter()
   const { isOnline, isServerAvailable } = useNetworkState()
 
   useEffect(() => {
