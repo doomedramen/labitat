@@ -323,7 +323,7 @@ User enters API key
 
 ## Adding a New Service
 
-See [Adding a Service](./adding-a-service.md) for a step-by-step guide. In brief:
+See [Adding a Service](../adding-a-service.md) for a step-by-step guide. In brief:
 
 1. Run `pnpm new-service` to scaffold
 2. Define `TData` type
