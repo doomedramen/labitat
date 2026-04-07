@@ -1,64 +1,19 @@
 "use client"
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  createContext,
-  useContext,
-} from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Wifi, RefreshCw, ServerOff } from "lucide-react"
 import { useNetworkState } from "@/hooks/use-network-state"
 import { mutate } from "swr"
 import { cn } from "@/lib/utils"
-
-// Context to ensure only one banner instance manages recovery state
-const ReconnectionContext = createContext<{
-  wasOffline: boolean
-  markOffline: () => void
-  markRecovered: () => void
-}>({
-  wasOffline: false,
-  markOffline: () => {},
-  markRecovered: () => {},
-})
-
-function ReconnectionProvider({ children }: { children: React.ReactNode }) {
-  const [wasOffline, setWasOffline] = useState(false)
-
-  const markOffline = useCallback(() => setWasOffline(true), [])
-  const markRecovered = useCallback(() => setWasOffline(false), [])
-
-  return (
-    <ReconnectionContext.Provider
-      value={{ wasOffline, markOffline, markRecovered }}
-    >
-      {children}
-    </ReconnectionContext.Provider>
-  )
-}
-
-function useReconnection() {
-  return useContext(ReconnectionContext)
-}
 
 /**
  * Banner that shows when the app is offline or server is unavailable
  * Automatically refreshes data when the server comes back online
  */
 export function ReconnectionBanner() {
-  return (
-    <ReconnectionProvider>
-      <ReconnectionBannerContent />
-    </ReconnectionProvider>
-  )
-}
-
-function ReconnectionBannerContent() {
   const { isOnline, isServerAvailable, lastOffline, isChecking } =
     useNetworkState()
-  const { wasOffline, markOffline, markRecovered } = useReconnection()
+  const wasOfflineRef = useRef(false)
   const [showReconnected, setShowReconnected] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const [isRevalidating, setIsRevalidating] = useState(false)
@@ -69,7 +24,7 @@ function ReconnectionBannerContent() {
     setShowReconnected(true)
     setDismissed(false)
     setIsRevalidating(true)
-    markRecovered()
+    wasOfflineRef.current = false
 
     // Revalidate all SWR caches to refresh data without full page reload
     try {
@@ -87,28 +42,22 @@ function ReconnectionBannerContent() {
     dismissTimerRef.current = setTimeout(() => {
       setShowReconnected(false)
     }, 3000)
-  }, [markRecovered])
+  }, [])
 
   // Track offline state and trigger recovery when back online
   useEffect(() => {
     if (isCurrentlyOffline) {
-      markOffline()
+      wasOfflineRef.current = true
       return
     }
 
-    if (wasOffline && !showReconnected) {
+    if (wasOfflineRef.current && !showReconnected) {
       const recoveryId = setTimeout(() => {
         handleServerRecovered()
       }, 0)
       return () => clearTimeout(recoveryId)
     }
-  }, [
-    isCurrentlyOffline,
-    wasOffline,
-    showReconnected,
-    handleServerRecovered,
-    markOffline,
-  ])
+  }, [isCurrentlyOffline, showReconnected, handleServerRecovered])
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -145,7 +94,7 @@ function ReconnectionBannerContent() {
             className={cn("size-4", isRevalidating && "animate-spin")}
           />
         </>
-      ) : isCurrentlyOffline ? (
+      ) : (
         <>
           {isChecking ? (
             <>
@@ -172,12 +121,6 @@ function ReconnectionBannerContent() {
               </button>
             </>
           )}
-        </>
-      ) : (
-        <>
-          <Wifi className="size-4" />
-          <span>Back online! Data is refreshing...</span>
-          <RefreshCw className="size-4 animate-spin" />
         </>
       )}
     </div>

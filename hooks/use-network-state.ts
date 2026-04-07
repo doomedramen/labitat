@@ -17,6 +17,7 @@ const INITIAL_CHECK_INTERVAL = 3000 // 3 seconds
 const MAX_CHECK_INTERVAL = 60000 // 60 seconds
 const BACKOFF_MULTIPLIER = 1.5
 const CONSECUTIVE_FAILURES_TO_MARK_OFFLINE = 2
+const isClient = typeof navigator !== "undefined"
 
 /**
  * Hook to monitor network connectivity and server availability
@@ -24,7 +25,6 @@ const CONSECUTIVE_FAILURES_TO_MARK_OFFLINE = 2
  * with exponential backoff to avoid excessive requests
  */
 export function useNetworkState(): NetworkState {
-  const isClient = typeof navigator !== "undefined"
   const [state, setState] = useState<NetworkState>(() => ({
     isOnline: isClient ? navigator.onLine : true,
     isServerAvailable: true, // Assume available until proven otherwise
@@ -48,9 +48,12 @@ export function useNetworkState(): NetworkState {
       isOnline: true,
       lastOnline: new Date(),
     }))
-    // Reset backoff on online event
+    // Reset backoff on online event and immediately recheck server
     consecutiveFailuresRef.current = 0
     currentIntervalRef.current = INITIAL_CHECK_INTERVAL
+    if (checkFnRef.current) {
+      checkFnRef.current()
+    }
   }, [])
 
   const handleOffline = useCallback(() => {
@@ -141,7 +144,7 @@ export function useNetworkState(): NetworkState {
       if (hasInitialCheckRef.current && shouldMarkOffline) {
         const isNetworkError =
           error instanceof TypeError ||
-          (error instanceof DOMException && error.name === "AbortError")
+          (error instanceof DOMException && error.name === "TimeoutError")
 
         setState((prev) => ({
           ...prev,

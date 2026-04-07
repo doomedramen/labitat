@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition, useState } from "react"
+import { useTransition, useState, useSyncExternalStore } from "react"
 import Image from "next/image"
 import {
   GlobeIcon,
@@ -190,6 +190,11 @@ type ItemCardProps = {
 
 export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const [isPending, startTransition] = useTransition()
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
   const { isOnline, isServerAvailable } = useNetworkState()
 
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
@@ -364,7 +369,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       data-item-id={item.id}
     >
       {/* Status dot - absolute top right - only show if item has href or service with fetchData */}
-      {!editMode && hasStatus && !item.cleanMode && (
+      {mounted && !editMode && hasStatus && !item.cleanMode && (
         <div className="absolute top-3 right-3">
           <StatusDot status={serviceStatus} />
         </div>
@@ -406,9 +411,8 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
         </div>
       )}
       {/* Widget below or loading skeleton */}
-      {showWidgetSkeleton && (
+      {mounted && showWidgetSkeleton && (
         <div
-          suppressHydrationWarning
           className={cn(
             "grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5",
             item.cleanMode ? "" : "mt-2"
