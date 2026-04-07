@@ -40,9 +40,7 @@ async function deriveKey(): Promise<CryptoKey> {
 
 export async function encrypt(plaintext: string): Promise<string> {
   const key = await deriveKey()
-  const iv = crypto.getRandomValues(
-    new Uint8Array(12) as Uint8Array<ArrayBuffer>
-  )
+  const iv = crypto.getRandomValues(new Uint8Array(12))
   const data = new TextEncoder().encode(plaintext)
   const ciphertext = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv },
@@ -58,7 +56,7 @@ export async function encrypt(plaintext: string): Promise<string> {
 export async function decrypt(encoded: string): Promise<string> {
   const key = await deriveKey()
   const combined = Buffer.from(encoded, "base64")
-  const iv = combined.subarray(0, 12) as Uint8Array<ArrayBuffer>
+  const iv = combined.subarray(0, 12)
   const ciphertext = combined.subarray(12)
   const plaintext = await crypto.subtle.decrypt(
     { name: "AES-GCM", iv },

@@ -3,16 +3,11 @@
 import { revalidatePath } from "next/cache"
 import { eq, max } from "drizzle-orm"
 import { nanoid } from "nanoid"
-import { getSession } from "@/lib/auth"
+import { requireAuth } from "@/lib/auth-guard"
 import { db } from "@/lib/db"
 import { items } from "@/lib/db/schema"
 import { encrypt, decrypt } from "@/lib/crypto"
 import { getService } from "@/lib/adapters"
-
-async function requireAuth() {
-  const session = await getSession()
-  if (!session.loggedIn) throw new Error("Unauthorized")
-}
 
 /** Extract and encrypt service config from form data */
 async function buildServiceConfig(
@@ -63,7 +58,9 @@ export async function createItem(groupId: string, formData: FormData) {
 
   const label = (formData.get("label") as string | null)?.trim() ?? ""
 
-  const serviceType = (formData.get("serviceType") as string) || null
+  const rawServiceType = (formData.get("serviceType") as string) || null
+  const serviceType =
+    rawServiceType && getService(rawServiceType) ? rawServiceType : null
   const { configEnc, serviceUrl } = await buildServiceConfig(
     serviceType,
     formData
@@ -102,7 +99,9 @@ export async function updateItem(id: string, formData: FormData) {
 
   const label = (formData.get("label") as string | null)?.trim() ?? ""
 
-  const serviceType = (formData.get("serviceType") as string) || null
+  const rawServiceType = (formData.get("serviceType") as string) || null
+  const serviceType =
+    rawServiceType && getService(rawServiceType) ? rawServiceType : null
   const { configEnc, serviceUrl } = await buildServiceConfig(
     serviceType,
     formData

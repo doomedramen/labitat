@@ -45,22 +45,23 @@ async function loadCacheFromFile() {
   }
 }
 
-// Save cache to disk (debounced)
+// Save cache to disk (debounced, with sequential write queue to prevent interleaving)
 let saveTimeout: NodeJS.Timeout | null = null
-async function saveCacheToFile() {
-  if (saveTimeout) {
-    clearTimeout(saveTimeout)
-  }
+let writeChain: Promise<void> = Promise.resolve()
 
-  saveTimeout = setTimeout(async () => {
-    try {
-      await ensureCacheDir()
-      // Convert Map to plain object for JSON serialization
-      const obj = Object.fromEntries(memoryCache.entries())
-      await fs.writeFile(CACHE_FILE, JSON.stringify(obj), "utf-8")
-    } catch (err) {
-      console.error("[cache] Failed to save cache:", err)
-    }
+function saveCacheToFile() {
+  if (saveTimeout) clearTimeout(saveTimeout)
+
+  saveTimeout = setTimeout(() => {
+    writeChain = writeChain.then(async () => {
+      try {
+        await ensureCacheDir()
+        const obj = Object.fromEntries(memoryCache.entries())
+        await fs.writeFile(CACHE_FILE, JSON.stringify(obj), "utf-8")
+      } catch (err) {
+        console.error("[cache] Failed to save cache:", err)
+      }
+    })
   }, 100) // Debounce saves by 100ms to avoid excessive disk writes
 }
 
@@ -87,6 +88,22 @@ export async function getCachedAny<T>(key: string): Promise<T | null> {
   const entry = memoryCache.get(key)
   if (!entry) return null
   return entry.data as T
+}
+
+// Get both fresh and expired cache in a single lookup
+export async function getCachedWithFallback<T>(
+  key: string,
+  ttlMs: number
+): Promise<{ fresh: T | null; expired: T | null }> {
+  await loadCacheFromFile()
+
+  const entry = memoryCache.get(key)
+  if (!entry) return { fresh: null, expired: null }
+
+  if (Date.now() - entry.timestamp > ttlMs) {
+    return { fresh: null, expired: entry.data as T }
+  }
+  return { fresh: entry.data as T, expired: null }
 }
 
 export async function setCached<T>(key: string, data: T): Promise<void> {

@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { items } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { decrypt } from "@/lib/crypto"
-import { getCached, getCachedAny, setCached } from "@/lib/cache"
+import { getCachedWithFallback, setCached } from "@/lib/cache"
 import { getService } from "@/lib/adapters"
 import type { ServiceData } from "@/lib/adapters/types"
 
@@ -28,15 +28,10 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
 
   const pollingMs = item.pollingMs ?? adapter.defaultPollingMs ?? 10000
 
-  // Check cache (with normal TTL)
-  const cached = await getCached<ServiceData>(`service:${itemId}`, pollingMs)
-  if (cached) {
-    return cached
-  }
-
-  // If cache expired, try to get expired cache as fallback
-  // This helps when offline or when service is temporarily unavailable
-  const expiredCache = await getCachedAny<ServiceData>(`service:${itemId}`)
+  // Single lookup: returns fresh data if within TTL, or expired data as offline fallback
+  const { fresh, expired: expiredCache } =
+    await getCachedWithFallback<ServiceData>(`service:${itemId}`, pollingMs)
+  if (fresh) return fresh
   const hasExpiredCache = expiredCache !== null
 
   // Build config object - decrypt password fields
@@ -57,12 +52,12 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
         `[labitat] Failed to decrypt config for item ${itemId} (${item.serviceType}):`,
         err instanceof Error ? err.message : err
       )
-      const errorResponse: ServiceData = {
+      // Don't cache decryption failures — if SECRET_KEY rotates, a cached error
+      // would permanently block the item until the cache file is cleared.
+      return {
         _status: "error",
         _statusText: "Failed to decrypt credentials — check SECRET_KEY",
       }
-      await setCached(`service:${itemId}`, errorResponse)
-      return errorResponse
     }
   }
 

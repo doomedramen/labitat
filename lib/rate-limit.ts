@@ -145,11 +145,13 @@ export function recordFailedAttempt(key: string) {
       firstAttempt: Date.now(),
     })
   } else {
-    // Reset window if expired
+    // Reset window if expired, but preserve an active lock
     if (Date.now() - entry.firstAttempt > WINDOW_MS) {
       entry.count = 1
       entry.firstAttempt = Date.now()
-      entry.lockedUntil = undefined
+      if (!entry.lockedUntil || Date.now() >= entry.lockedUntil) {
+        entry.lockedUntil = undefined
+      }
     } else {
       entry.count++
     }

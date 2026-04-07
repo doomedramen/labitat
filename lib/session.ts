@@ -6,8 +6,10 @@ export type SessionData = {
 }
 
 export function getSessionOptions(): SessionOptions {
+  const secret = process.env.SECRET_KEY
+  if (!secret) throw new Error("SECRET_KEY environment variable is not set")
   return {
-    password: process.env.SECRET_KEY ?? "",
+    password: secret,
     cookieName: "labitat_session",
     cookieOptions: {
       secure: process.env.NODE_ENV === "production",

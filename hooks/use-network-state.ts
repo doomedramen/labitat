@@ -24,8 +24,9 @@ const CONSECUTIVE_FAILURES_TO_MARK_OFFLINE = 2
  * with exponential backoff to avoid excessive requests
  */
 export function useNetworkState(): NetworkState {
+  const isClient = typeof navigator !== "undefined"
   const [state, setState] = useState<NetworkState>(() => ({
-    isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
+    isOnline: isClient ? navigator.onLine : true,
     isServerAvailable: true, // Assume available until proven otherwise
     isChecking: false,
   }))
@@ -91,7 +92,7 @@ export function useNetworkState(): NetworkState {
   // Check server availability by making a lightweight request
   const checkServerAvailability = useCallback(async () => {
     // Skip fetch when browser reports offline — rely on 'online' event to re-trigger
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
+    if (isClient && !navigator.onLine) {
       scheduleNextCheck()
       return
     }

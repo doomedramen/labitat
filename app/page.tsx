@@ -11,18 +11,26 @@ import { DashboardSkeleton } from "@/components/dashboard/skeleton"
 export const revalidate = 30
 
 async function DashboardContent() {
-  const [session, groupsWithItems, titleSetting] = await Promise.all([
-    getSession(),
-    db.query.groups.findMany({
-      orderBy: (g, { asc }) => [asc(g.order)],
-      with: {
-        items: {
-          orderBy: (i, { asc }) => [asc(i.order)],
+  let session, groupsWithItems, titleSetting
+  try {
+    ;[session, groupsWithItems, titleSetting] = await Promise.all([
+      getSession(),
+      db.query.groups.findMany({
+        orderBy: (g, { asc }) => [asc(g.order)],
+        with: {
+          items: {
+            orderBy: (i, { asc }) => [asc(i.order)],
+          },
         },
-      },
-    }),
-    db.query.settings.findFirst({ where: eq(settings.key, "dashboardTitle") }),
-  ])
+      }),
+      db.query.settings.findFirst({
+        where: eq(settings.key, "dashboardTitle"),
+      }),
+    ])
+  } catch (err) {
+    console.error("[labitat] Failed to load dashboard data:", err)
+    throw err
+  }
 
   return (
     <Dashboard

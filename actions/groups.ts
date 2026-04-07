@@ -3,14 +3,9 @@
 import { revalidatePath } from "next/cache"
 import { eq, max } from "drizzle-orm"
 import { nanoid } from "nanoid"
-import { getSession } from "@/lib/auth"
+import { requireAuth } from "@/lib/auth-guard"
 import { db } from "@/lib/db"
 import { groups } from "@/lib/db/schema"
-
-async function requireAuth() {
-  const session = await getSession()
-  if (!session.loggedIn) throw new Error("Unauthorized")
-}
 
 export async function createGroup(formData: FormData) {
   await requireAuth()

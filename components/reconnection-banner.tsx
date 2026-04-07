@@ -112,11 +112,8 @@ function ReconnectionBannerContent() {
 
   // Cleanup timers on unmount
   useEffect(() => {
-    const currentDismissTimer = dismissTimerRef.current
     return () => {
-      if (currentDismissTimer) {
-        clearTimeout(currentDismissTimer)
-      }
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current)
     }
   }, [])
 
