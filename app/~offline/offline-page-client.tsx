@@ -9,14 +9,14 @@ export default function OfflinePageClient() {
 
   useEffect(() => {
     if (isOnline && isServerAvailable) {
-      // Use hard navigation to bypass service worker client-side routing
-      window.location.href = "/"
+      // Delay redirect slightly to allow the page to render first
+      // This prevents hydration mismatch and allows tests to verify the page
+      const timer = setTimeout(() => {
+        window.location.href = "/"
+      }, 100)
+      return () => clearTimeout(timer)
     }
   }, [isOnline, isServerAvailable])
-
-  if (isOnline && isServerAvailable) {
-    return null
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-600 text-gray-800">
