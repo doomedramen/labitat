@@ -89,9 +89,21 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
     await setCached(`service:${itemId}`, responseData)
     return responseData
   } catch (err) {
+    // Log detailed error server-side for debugging
+    console.error(
+      `[labitat] Failed to fetch data for item ${itemId} (${item.serviceType}):`,
+      err
+    )
+
+    // Sanitize error message for client - don't expose internal details
+    const isProduction = process.env.NODE_ENV === "production"
     const errorResponse: ServiceData = {
       _status: "error",
-      _statusText: err instanceof Error ? err.message : "Failed to fetch data",
+      _statusText: isProduction
+        ? "Failed to fetch service data"
+        : err instanceof Error
+          ? err.message
+          : "Failed to fetch data",
     }
     // Cache errors briefly to avoid hammering
     await setCached(`service:${itemId}`, errorResponse)

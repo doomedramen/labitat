@@ -1,6 +1,12 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef, useTransition } from "react"
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useReducer,
+  useTransition,
+} from "react"
 
 import { toast } from "sonner"
 import {
@@ -50,6 +56,121 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+// ── Groups reducer for drag-and-drop state management ────────────────────────
+
+export type GroupsAction =
+  | { type: "SYNC"; groups: GroupWithItems[] }
+  | { type: "DRAG_OVER"; activeId: string; overId: string }
+  | { type: "DRAG_END_GROUP"; activeId: string; overId: string }
+  | { type: "DRAG_END_ITEM"; activeId: string; overId: string }
+  | { type: "ADD_ITEM"; groupId: string; item: ItemRow }
+  | { type: "UPDATE_ITEM"; item: ItemRow }
+  | { type: "DELETE_ITEM"; itemId: string }
+  | { type: "ADD_GROUP"; group: GroupWithItems }
+  | { type: "UPDATE_GROUP"; groupId: string; name: string }
+  | { type: "DELETE_GROUP"; groupId: string }
+
+export function groupsReducer(
+  state: GroupWithItems[],
+  action: GroupsAction
+): GroupWithItems[] {
+  switch (action.type) {
+    case "SYNC":
+      return action.groups
+
+    case "DRAG_OVER": {
+      const { activeId, overId } = action
+      if (activeId === overId) return state
+
+      const srcGroup = state.find((g) => g.items.some((i) => i.id === activeId))
+      const draggedItem = srcGroup?.items.find((i) => i.id === activeId)
+      if (!srcGroup || !draggedItem) return state
+
+      const destGroup =
+        state.find((g) => g.items.some((i) => i.id === overId)) ??
+        state.find((g) => g.id === overId)
+
+      if (!destGroup || srcGroup.id === destGroup.id) return state
+
+      return state.map((g) => {
+        if (g.id === srcGroup.id)
+          return { ...g, items: g.items.filter((i) => i.id !== activeId) }
+        if (g.id === destGroup.id) {
+          const overIdx = g.items.findIndex((i) => i.id === overId)
+          const newItems = [...g.items]
+          newItems.splice(
+            overIdx >= 0 ? overIdx : newItems.length,
+            0,
+            draggedItem
+          )
+          return { ...g, items: newItems }
+        }
+        return g
+      })
+    }
+
+    case "DRAG_END_GROUP": {
+      const oldIdx = state.findIndex((g) => g.id === action.activeId)
+      const newIdx = state.findIndex((g) => g.id === action.overId)
+      if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return state
+      return arrayMove(state, oldIdx, newIdx)
+    }
+
+    case "DRAG_END_ITEM": {
+      const destGroup = state.find((g) =>
+        g.items.some((i) => i.id === action.activeId)
+      )
+      if (!destGroup) return state
+
+      const activeIdx = destGroup.items.findIndex(
+        (i) => i.id === action.activeId
+      )
+      const overIdx = destGroup.items.findIndex((i) => i.id === action.overId)
+
+      if (activeIdx !== -1 && overIdx !== -1 && activeIdx !== overIdx) {
+        const reordered = arrayMove(destGroup.items, activeIdx, overIdx)
+        return state.map((g) =>
+          g.id === destGroup.id ? { ...g, items: reordered } : g
+        )
+      }
+      return state
+    }
+
+    case "ADD_ITEM":
+      return state.map((g) =>
+        g.id === action.groupId ? { ...g, items: [...g.items, action.item] } : g
+      )
+
+    case "UPDATE_ITEM":
+      return state.map((g) => ({
+        ...g,
+        items: g.items.map((i) =>
+          i.id === action.item.id ? { ...i, ...action.item } : i
+        ),
+      }))
+
+    case "DELETE_ITEM":
+      return state.map((g) => ({
+        ...g,
+        items: g.items.filter((i) => i.id !== action.itemId),
+      }))
+
+    case "ADD_GROUP":
+      return [...state, action.group]
+
+    case "UPDATE_GROUP":
+      return state.map((g) =>
+        g.id === action.groupId ? { ...g, name: action.name } : g
+      )
+
+    case "DELETE_GROUP":
+      return state.filter((g) => g.id !== action.groupId)
+
+    default:
+      return state
+  }
+}
+
 type DashboardProps = {
   groups: GroupWithItems[]
   isLoggedIn: boolean
@@ -62,26 +183,25 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
   // ── Edit mode ──────────────────────────────────────────────────────────────
   const [editMode, setEditMode] = useState(false)
-  const [dashboardTitle, setDashboardTitle] = useState(title)
   const [titleChanged, setTitleChanged] = useState(false)
 
-  // Sync title when server data changes
-  useEffect(() => {
-    setDashboardTitle(title)
-    setTitleChanged(false)
-  }, [title])
+  // Use key to force re-render when server title changes, avoiding useEffect
+  // Derive dashboardTitle from props + local edits
+  const [localTitle, setLocalTitle] = useState<string | null>(null)
+  const dashboardTitle = localTitle ?? title
 
-  // ── Sorted groups (local optimistic state) ─────────────────────────────────
-  const [sortedGroups, setSortedGroups] = useState<GroupWithItems[]>(groups)
-  // Keep a ref so drag event handlers always see fresh state
-  const sortedGroupsRef = useRef(sortedGroups)
-  useEffect(() => {
-    sortedGroupsRef.current = sortedGroups
-  }, [sortedGroups])
+  // Reset local title when server title changes
+  const handleTitleReset = useCallback(() => {
+    setLocalTitle(null)
+    setTitleChanged(false)
+  }, [])
+
+  // ── Groups state with reducer (no ref needed!) ─────────────────────────────
+  const [sortedGroups, dispatch] = useReducer(groupsReducer, groups)
 
   // Sync when server sends updated data (after mutations / revalidatePath)
   useEffect(() => {
-    setSortedGroups(groups)
+    dispatch({ type: "SYNC", groups })
   }, [groups])
 
   // ── DnD setup ──────────────────────────────────────────────────────────────
@@ -110,44 +230,10 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     if (!over || active.id === over.id) return
     if (active.data.current?.type !== "item") return
 
-    const activeId = String(active.id)
-    const overId = String(over.id)
-    const groups = sortedGroupsRef.current
-
-    // Identify source group from current local state (not from stale dnd data)
-    const srcGroupId = groups.find((g) =>
-      g.items.some((i) => i.id === activeId)
-    )?.id
-    // Destination: either an item's group or a group container directly
-    const destGroupId =
-      over.data.current?.type === "item"
-        ? groups.find((g) => g.items.some((i) => i.id === overId))?.id
-        : over.data.current?.type === "group"
-          ? overId
-          : undefined
-
-    if (!srcGroupId || !destGroupId || srcGroupId === destGroupId) return
-
-    setSortedGroups((prev) => {
-      const srcGroup = prev.find((g) => g.id === srcGroupId)
-      const draggedItem = srcGroup?.items.find((i) => i.id === activeId)
-      if (!srcGroup || !draggedItem) return prev
-
-      return prev.map((g) => {
-        if (g.id === srcGroupId)
-          return { ...g, items: g.items.filter((i) => i.id !== activeId) }
-        if (g.id === destGroupId) {
-          const overIdx = g.items.findIndex((i) => i.id === overId)
-          const newItems = [...g.items]
-          newItems.splice(
-            overIdx >= 0 ? overIdx : newItems.length,
-            0,
-            draggedItem
-          )
-          return { ...g, items: newItems }
-        }
-        return g
-      })
+    dispatch({
+      type: "DRAG_OVER",
+      activeId: String(active.id),
+      overId: String(over.id),
     })
   }, [])
 
@@ -161,22 +247,16 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
       const activeId = String(active.id)
       const overId = String(over.id)
       const type = active.data.current?.type as "group" | "item"
-      const groups = sortedGroupsRef.current
 
       if (type === "group") {
-        const oldIdx = groups.findIndex((g) => g.id === activeId)
-        const newIdx = groups.findIndex((g) => g.id === overId)
-        if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return
-        const reordered = arrayMove(groups, oldIdx, newIdx)
-        setSortedGroups(reordered)
-        startTransition(() => reorderGroups(reordered.map((g) => g.id)))
+        dispatch({ type: "DRAG_END_GROUP", activeId, overId })
+        startTransition(() => reorderGroups(sortedGroups.map((g) => g.id)))
         return
       }
 
       if (type === "item") {
-        // The item is already in its final group (thanks to onDragOver).
-        // We may still need within-group reordering if over is a sibling item.
-        const destGroup = groups.find((g) =>
+        // Check if within-group reordering is needed
+        const destGroup = sortedGroups.find((g) =>
           g.items.some((i) => i.id === activeId)
         )
         if (!destGroup) return
@@ -185,12 +265,9 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         const overIdx = destGroup.items.findIndex((i) => i.id === overId)
 
         if (activeIdx !== -1 && overIdx !== -1 && activeIdx !== overIdx) {
+          // Within-group reorder
+          dispatch({ type: "DRAG_END_ITEM", activeId, overId })
           const reordered = arrayMove(destGroup.items, activeIdx, overIdx)
-          setSortedGroups((prev) =>
-            prev.map((g) =>
-              g.id === destGroup.id ? { ...g, items: reordered } : g
-            )
-          )
           startTransition(() =>
             reorderItems(
               destGroup.id,
@@ -208,7 +285,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         }
       }
     },
-    [startTransition]
+    [sortedGroups, startTransition]
   )
 
   // ── Dialog state ───────────────────────────────────────────────────────────
@@ -239,31 +316,17 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
   // ── Optimistic handlers ────────────────────────────────────────────────────
   const handleItemCreated = useCallback((groupId: string, item: ItemRow) => {
-    setSortedGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId ? { ...g, items: [...g.items, item] } : g
-      )
-    )
+    dispatch({ type: "ADD_ITEM", groupId, item })
     toast.success(`${item.label || "Item"} added`)
   }, [])
 
   const handleItemUpdated = useCallback((item: ItemRow) => {
-    setSortedGroups((prev) =>
-      prev.map((g) => ({
-        ...g,
-        items: g.items.map((i) => (i.id === item.id ? { ...i, ...item } : i)),
-      }))
-    )
+    dispatch({ type: "UPDATE_ITEM", item })
     toast.success(`${item.label || "Item"} saved`)
   }, [])
 
   const handleItemDeleted = useCallback((itemId: string) => {
-    setSortedGroups((prev) =>
-      prev.map((g) => ({
-        ...g,
-        items: g.items.filter((i) => i.id !== itemId),
-      }))
-    )
+    dispatch({ type: "DELETE_ITEM", itemId })
     toast.success("Item deleted")
   }, [])
 
@@ -276,21 +339,19 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         createdAt: null,
         items: [],
       }
-      setSortedGroups((prev) => [...prev, tempGroup])
+      dispatch({ type: "ADD_GROUP", group: tempGroup })
       toast.success(`${name || "Group"} added`)
     },
     [sortedGroups.length]
   )
 
   const handleGroupUpdated = useCallback((groupId: string, name: string) => {
-    setSortedGroups((prev) =>
-      prev.map((g) => (g.id === groupId ? { ...g, name } : g))
-    )
+    dispatch({ type: "UPDATE_GROUP", groupId, name })
     toast.success(`${name || "Group"} saved`)
   }, [])
 
   const handleGroupDeleted = useCallback((groupId: string) => {
-    setSortedGroups((prev) => prev.filter((g) => g.id !== groupId))
+    dispatch({ type: "DELETE_GROUP", groupId })
     toast.success("Group deleted")
   }, [])
 
@@ -306,15 +367,14 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             <Input
               value={dashboardTitle}
               onChange={(e) => {
-                setDashboardTitle(e.target.value)
+                setLocalTitle(e.target.value)
                 setTitleChanged(true)
               }}
               className="h-8 w-full max-w-[200px]"
               data-testid="dashboard-title-input"
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
-                  setDashboardTitle(title)
-                  setTitleChanged(false)
+                  handleTitleReset()
                   setEditMode(false)
                 }
               }}
@@ -430,7 +490,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             if (titleChanged && dashboardTitle.trim()) {
               startTransition(() => {
                 updateDashboardTitle(dashboardTitle.trim()).then(() => {
-                  setTitleChanged(false)
+                  handleTitleReset()
                   setEditMode(false)
                   toast.success("Dashboard saved")
                 })

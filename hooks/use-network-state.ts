@@ -18,11 +18,13 @@ type NetworkState = {
 export function useNetworkState(): NetworkState {
   const [state, setState] = useState<NetworkState>(() => ({
     isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
-    isServerAvailable: true,
+    isServerAvailable: true, // Assume available until proven otherwise
   }))
 
   const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const isCheckingRef = useRef(false)
+  // Track if we've completed at least one successful check
+  const hasInitialCheckRef = useRef(false)
 
   const handleOnline = useCallback(() => {
     setState((prev) => ({
@@ -42,16 +44,6 @@ export function useNetworkState(): NetworkState {
 
   // Check server availability by making a lightweight request
   const checkServerAvailability = useCallback(async () => {
-    // Don't check if we're offline (navigator.onLine is false)
-    if (!navigator.onLine) {
-      setState((prev) => ({
-        ...prev,
-        isServerAvailable: false,
-        lastServerUnavailable: new Date(),
-      }))
-      return
-    }
-
     // Prevent concurrent checks
     if (isCheckingRef.current) return
     isCheckingRef.current = true
@@ -68,6 +60,7 @@ export function useNetworkState(): NetworkState {
 
       setState((prev) => ({
         ...prev,
+        isOnline: true, // If we got a response, we're online
         isServerAvailable: isAvailable,
         lastServerAvailable: isAvailable
           ? new Date()
@@ -76,13 +69,27 @@ export function useNetworkState(): NetworkState {
           ? new Date()
           : prev.lastServerUnavailable,
       }))
-    } catch {
-      // Server is unavailable
-      setState((prev) => ({
-        ...prev,
-        isServerAvailable: false,
-        lastServerUnavailable: new Date(),
-      }))
+
+      hasInitialCheckRef.current = true
+    } catch (error) {
+      // Only mark as offline if we've completed the initial check
+      // This prevents false positives during page load
+      if (hasInitialCheckRef.current) {
+        setState((prev) => ({
+          ...prev,
+          isServerAvailable: false,
+          lastServerUnavailable: new Date(),
+        }))
+      }
+      // If it's an abort error and we're offline per navigator, update isOnline
+      if (error instanceof DOMException && error.name === "AbortError") {
+        if (!navigator.onLine) {
+          setState((prev) => ({
+            ...prev,
+            isOnline: false,
+          }))
+        }
+      }
     } finally {
       isCheckingRef.current = false
     }

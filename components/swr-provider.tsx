@@ -11,11 +11,8 @@ export function SWRProvider({ children }: { children: React.ReactNode }) {
   // Revalidate all SWR caches when reconnecting after being offline
   useEffect(() => {
     if (wasOnlineRef.current === false && isOnline === true) {
-      // Small delay to ensure server is ready
-      const timer = setTimeout(() => {
-        mutate(() => true, undefined, { revalidate: true })
-      }, 1000)
-      return () => clearTimeout(timer)
+      // Revalidate immediately - server is already confirmed available
+      mutate(() => true, undefined, { revalidate: true })
     }
     wasOnlineRef.current = isOnline
   }, [isOnline])

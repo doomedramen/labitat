@@ -12,6 +12,11 @@ type RateLimitEntry = {
 // In-memory store
 const limits = new Map<string, RateLimitEntry>()
 
+// Debounced save state
+let saveTimeout: NodeJS.Timeout | null = null
+const SAVE_DEBOUNCE_MS = 5000 // Batch writes every 5 seconds
+let dirty = false // Track if we have unsaved changes
+
 // Load from disk on startup
 function loadLimits() {
   try {
@@ -25,8 +30,27 @@ function loadLimits() {
   }
 }
 
-// Save to disk (sync, called infrequently)
+/**
+ * Schedule a debounced save to disk.
+ * Multiple rapid calls will be batched into a single write.
+ */
+function scheduleSave() {
+  dirty = true
+
+  if (saveTimeout !== null) {
+    return // Already scheduled
+  }
+
+  saveTimeout = setTimeout(() => {
+    saveLimits()
+    saveTimeout = null
+  }, SAVE_DEBOUNCE_MS)
+}
+
+// Save to disk (called debounced)
 function saveLimits() {
+  if (!dirty) return
+
   try {
     const dir = path.dirname(RATE_LIMIT_FILE)
     if (!fs.existsSync(dir)) {
@@ -34,9 +58,31 @@ function saveLimits() {
     }
     const obj = Object.fromEntries(limits.entries())
     fs.writeFileSync(RATE_LIMIT_FILE, JSON.stringify(obj), "utf-8")
+    dirty = false
   } catch {
     // Ignore save errors
   }
+}
+
+/**
+ * Force immediate save (e.g., before process exit).
+ */
+export function flushRateLimits() {
+  if (saveTimeout !== null) {
+    clearTimeout(saveTimeout)
+    saveTimeout = null
+  }
+  saveLimits()
+}
+
+// Register graceful shutdown to flush pending writes
+if (typeof process !== "undefined") {
+  process.on("SIGTERM", () => {
+    flushRateLimits()
+  })
+  process.on("SIGINT", () => {
+    flushRateLimits()
+  })
 }
 
 loadLimits()
@@ -70,14 +116,14 @@ export function checkRateLimit(key: string): {
   // Check if window has expired
   if (Date.now() - entry.firstAttempt > WINDOW_MS) {
     limits.delete(key)
-    saveLimits()
+    scheduleSave()
     return { allowed: true }
   }
 
   // Still within window
   if (entry.count >= MAX_ATTEMPTS) {
     entry.lockedUntil = Date.now() + LOCKOUT_MS
-    saveLimits()
+    scheduleSave()
     return {
       allowed: false,
       retryAfterMs: LOCKOUT_MS,
@@ -109,7 +155,7 @@ export function recordFailedAttempt(key: string) {
     }
   }
 
-  saveLimits()
+  scheduleSave()
 }
 
 /**
@@ -117,7 +163,7 @@ export function recordFailedAttempt(key: string) {
  */
 export function resetRateLimit(key: string) {
   limits.delete(key)
-  saveLimits()
+  scheduleSave()
 }
 
 /**
@@ -125,6 +171,11 @@ export function resetRateLimit(key: string) {
  */
 export function clearRateLimits() {
   limits.clear()
+  dirty = false
+  if (saveTimeout !== null) {
+    clearTimeout(saveTimeout)
+    saveTimeout = null
+  }
   try {
     fs.unlinkSync(RATE_LIMIT_FILE)
   } catch {

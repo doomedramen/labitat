@@ -6,8 +6,9 @@ import { settings } from "@/lib/db/schema"
 import { Dashboard } from "@/components/dashboard/dashboard"
 import { DashboardSkeleton } from "@/components/dashboard/skeleton"
 
-// Revalidate every 60 seconds - serves cached HTML instantly
-export const revalidate = 60
+// Revalidate every 30 seconds - balances freshness with server load
+// Client-side SWR polling handles real-time widget updates
+export const revalidate = 30
 
 async function DashboardContent() {
   const [session, groupsWithItems, titleSetting] = await Promise.all([

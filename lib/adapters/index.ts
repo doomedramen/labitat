@@ -64,64 +64,79 @@ export type {
   ServiceRegistry,
 } from "./types"
 
-// The registry stores heterogeneous ServiceDefinition<TData> types. Type safety
-// is enforced at the individual adapter definition site (Widget: FC<TData>).
-// The type assertion is needed because TypeScript's contravariance for function
-// types prevents direct assignment of ServiceDefinition<TData> to
-// ServiceDefinition<ServiceData>, even though usage is always type-correct
-// (fetchData returns TData, Widget is called with that same TData).
-export const registry = {
-  [radarrDefinition.id]: radarrDefinition,
-  [sonarrDefinition.id]: sonarrDefinition,
-  [prowlarrDefinition.id]: prowlarrDefinition,
-  [seerrDefinition.id]: seerrDefinition,
-  [sabnzbdDefinition.id]: sabnzbdDefinition,
-  [qbittorrentDefinition.id]: qbittorrentDefinition,
-  [adguardDefinition.id]: adguardDefinition,
-  [bazarrDefinition.id]: bazarrDefinition,
-  [tautulliDefinition.id]: tautulliDefinition,
-  [plexDefinition.id]: plexDefinition,
-  [unmanicDefinition.id]: unmanicDefinition,
-  [apcupsDefinition.id]: apcupsDefinition,
-  [unifiDefinition.id]: unifiDefinition,
-  [nginxProxyManagerDefinition.id]: nginxProxyManagerDefinition,
-  [proxmoxDefinition.id]: proxmoxDefinition,
-  [proxmoxBackupServerDefinition.id]: proxmoxBackupServerDefinition,
-  [calibreWebDefinition.id]: calibreWebDefinition,
+/**
+ * Build the service registry from an array of service definitions.
+ *
+ * Why do we need `definitions: unknown[]` and a type assertion?
+ * TypeScript's contravariance for function types prevents assigning
+ * ServiceDefinition<TData> to ServiceDefinition<ServiceData> because
+ * FC<TData> is contravariant in TData. However, this is safe because:
+ * - fetchData() returns TData (covariant - safe)
+ * - Widget is called with TData from fetchData (contravariant but safe in practice)
+ *
+ * Type safety is enforced at each adapter's definition site where
+ * Widget: FC<TData> must match the TData returned by fetchData().
+ */
+function buildRegistry(definitions: unknown[]): ServiceRegistry {
+  const registry: Record<string, ServiceDefinition> = {}
+  for (const def of definitions as ServiceDefinition[]) {
+    registry[def.id] = def
+  }
+  return registry as ServiceRegistry
+}
+
+export const registry = buildRegistry([
+  // Active widgets (manually tested)
+  radarrDefinition,
+  sonarrDefinition,
+  prowlarrDefinition,
+  seerrDefinition,
+  sabnzbdDefinition,
+  qbittorrentDefinition,
+  adguardDefinition,
+  bazarrDefinition,
+  tautulliDefinition,
+  plexDefinition,
+  unmanicDefinition,
+  apcupsDefinition,
+  unifiDefinition,
+  nginxProxyManagerDefinition,
+  proxmoxDefinition,
+  proxmoxBackupServerDefinition,
+  calibreWebDefinition,
 
   // General widgets
-  [openmeteoDefinition.id]: openmeteoDefinition,
-  [datetimeDefinition.id]: datetimeDefinition,
-  [glancesDefinition.id]: glancesDefinition,
-  [glancesTimeseriesDefinition.id]: glancesTimeseriesDefinition,
-  [glancesPerCpuDefinition.id]: glancesPerCpuDefinition,
-  [glancesProcessesDefinition.id]: glancesProcessesDefinition,
-  [glancesSensorsDefinition.id]: glancesSensorsDefinition,
-  [glancesDiskUsageDefinition.id]: glancesDiskUsageDefinition,
-  [openweathermapDefinition.id]: openweathermapDefinition,
-  [searchDefinition.id]: searchDefinition,
-  [matrixDefinition.id]: matrixDefinition,
-  [pipesDefinition.id]: pipesDefinition,
+  openmeteoDefinition,
+  datetimeDefinition,
+  glancesDefinition,
+  glancesTimeseriesDefinition,
+  glancesPerCpuDefinition,
+  glancesProcessesDefinition,
+  glancesSensorsDefinition,
+  glancesDiskUsageDefinition,
+  openweathermapDefinition,
+  searchDefinition,
+  matrixDefinition,
+  pipesDefinition,
 
-  // Disabled widgets
-  // (type assertion required — see registry comment above)
-  // [embyDefinition.id]: embyDefinition,
-  // [jellyfinDefinition.id]: jellyfinDefinition,
-  // [lidarrDefinition.id]: lidarrDefinition,
-  // [readarrDefinition.id]: readarrDefinition,
-  // [piholeDefinition.id]: piholeDefinition,
-  // [portainerDefinition.id]: portainerDefinition,
-  // [traefikDefinition.id]: traefikDefinition,
-  // [uptimeKumaDefinition.id]: uptimeKumaDefinition,
-  // [grafanaDefinition.id]: grafanaDefinition,
-  // [genericPingDefinition.id]: genericPingDefinition,
-  // [genericRestDefinition.id]: genericRestDefinition,
-  // [transmissionDefinition.id]: transmissionDefinition,
-  // [immichDefinition.id]: immichDefinition,
-  // [jackettDefinition.id]: jackettDefinition,
-  // [frigateDefinition.id]: frigateDefinition,
-  // [homeassistantDefinition.id]: homeassistantDefinition,
-} as ServiceRegistry
+  // Disabled widgets (not manually tested)
+  // embyDefinition,
+  // jellyfinDefinition,
+  // lidarrDefinition,
+  // readarrDefinition,
+  // piholeDefinition,
+  // portainerDefinition,
+  // traefikDefinition,
+  // uptimeKumaDefinition,
+  // grafanaDefinition,
+  // genericPingDefinition,
+  // genericRestDefinition,
+  // transmissionDefinition,
+  // immichDefinition,
+  // jackettDefinition,
+  // frigateDefinition,
+  // homeassistantDefinition,
+])
 
 /** Get a service definition by ID */
 export function getService(id: string): ServiceDefinition | undefined {
