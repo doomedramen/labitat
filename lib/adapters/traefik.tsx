@@ -11,9 +11,9 @@ type TraefikData = {
 
 function TraefikWidget({ routers, services, middlewares }: TraefikData) {
   const items = [
-    { value: routers.toLocaleString(), label: "Routers" },
-    { value: services.toLocaleString(), label: "Services" },
-    { value: middlewares.toLocaleString(), label: "Middlewares" },
+    { value: (routers ?? 0).toLocaleString(), label: "Routers" },
+    { value: (services ?? 0).toLocaleString(), label: "Services" },
+    { value: (middlewares ?? 0).toLocaleString(), label: "Middlewares" },
   ]
 
   return <StatGrid items={items} />

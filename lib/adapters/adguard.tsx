@@ -12,10 +12,10 @@ type AdGuardData = {
 
 function AdGuardWidget({ queries, blocked, filtered, latency }: AdGuardData) {
   const items = [
-    { value: queries.toLocaleString(), label: "Queries" },
-    { value: blocked.toLocaleString(), label: "Blocked" },
-    { value: filtered.toLocaleString(), label: "Filtered" },
-    { value: `${latency.toFixed(0)}ms`, label: "Latency" },
+    { value: (queries ?? 0).toLocaleString(), label: "Queries" },
+    { value: (blocked ?? 0).toLocaleString(), label: "Blocked" },
+    { value: (filtered ?? 0).toLocaleString(), label: "Filtered" },
+    { value: `${(latency ?? 0).toFixed(0)}ms`, label: "Latency" },
   ]
 
   return <StatGrid items={items} />

@@ -17,10 +17,10 @@ function HomeAssistantWidget({
   switches,
 }: HomeAssistantData) {
   const items = [
-    { value: entities.toLocaleString(), label: "Entities" },
-    { value: sensors.toLocaleString(), label: "Sensors" },
-    { value: lights.toLocaleString(), label: "Lights" },
-    { value: switches.toLocaleString(), label: "Switches" },
+    { value: (entities ?? 0).toLocaleString(), label: "Entities" },
+    { value: (sensors ?? 0).toLocaleString(), label: "Sensors" },
+    { value: (lights ?? 0).toLocaleString(), label: "Lights" },
+    { value: (switches ?? 0).toLocaleString(), label: "Switches" },
   ]
 
   return <StatGrid items={items} />

@@ -17,10 +17,10 @@ function CalibreWebWidget({
   series,
 }: CalibreWebData) {
   const items = [
-    { value: books.toLocaleString(), label: "Books" },
-    { value: authors.toLocaleString(), label: "Authors" },
-    { value: categories.toLocaleString(), label: "Categories" },
-    { value: series.toLocaleString(), label: "Series" },
+    { value: (books ?? 0).toLocaleString(), label: "Books" },
+    { value: (authors ?? 0).toLocaleString(), label: "Authors" },
+    { value: (categories ?? 0).toLocaleString(), label: "Categories" },
+    { value: (series ?? 0).toLocaleString(), label: "Series" },
   ]
 
   return <StatGrid items={items} />

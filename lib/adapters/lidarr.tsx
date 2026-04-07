@@ -11,9 +11,9 @@ type LidarrData = {
 
 function LidarrWidget({ queued, wanted, artists }: LidarrData) {
   const items = [
-    { value: wanted.toLocaleString(), label: "Wanted" },
-    { value: queued.toLocaleString(), label: "Queued" },
-    { value: artists.toLocaleString(), label: "Artists" },
+    { value: (wanted ?? 0).toLocaleString(), label: "Wanted" },
+    { value: (queued ?? 0).toLocaleString(), label: "Queued" },
+    { value: (artists ?? 0).toLocaleString(), label: "Artists" },
   ]
 
   return <StatGrid items={items} />

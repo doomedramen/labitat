@@ -11,9 +11,9 @@ type PortainerData = {
 
 function PortainerWidget({ running, stopped, total }: PortainerData) {
   const items = [
-    { value: running.toLocaleString(), label: "Running" },
-    { value: stopped.toLocaleString(), label: "Stopped" },
-    { value: total.toLocaleString(), label: "Total" },
+    { value: (running ?? 0).toLocaleString(), label: "Running" },
+    { value: (stopped ?? 0).toLocaleString(), label: "Stopped" },
+    { value: (total ?? 0).toLocaleString(), label: "Total" },
   ]
 
   return <StatGrid items={items} />

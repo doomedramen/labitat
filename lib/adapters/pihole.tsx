@@ -17,10 +17,10 @@ function PiholeWidget({
   domainsBlocked,
 }: PiholeData) {
   const items = [
-    { value: queries.toLocaleString(), label: "Queries" },
-    { value: blocked.toLocaleString(), label: "Blocked" },
+    { value: (queries ?? 0).toLocaleString(), label: "Queries" },
+    { value: (blocked ?? 0).toLocaleString(), label: "Blocked" },
     { value: percentBlocked, label: "Blocked %" },
-    { value: domainsBlocked.toLocaleString(), label: "Domains" },
+    { value: (domainsBlocked ?? 0).toLocaleString(), label: "Domains" },
   ]
 
   return <StatGrid items={items} />

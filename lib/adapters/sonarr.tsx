@@ -11,9 +11,9 @@ type SonarrData = {
 
 function SonarrWidget({ wanted, queued, series }: SonarrData) {
   const items = [
-    { value: wanted.toLocaleString(), label: "Wanted" },
-    { value: queued.toLocaleString(), label: "Queued" },
-    { value: series.toLocaleString(), label: "Series" },
+    { value: (wanted ?? 0).toLocaleString(), label: "Wanted" },
+    { value: (queued ?? 0).toLocaleString(), label: "Queued" },
+    { value: (series ?? 0).toLocaleString(), label: "Series" },
   ]
 
   return <StatGrid items={items} />

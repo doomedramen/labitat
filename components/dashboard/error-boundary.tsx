@@ -1,6 +1,7 @@
 "use client"
 
 import { Component, type ReactNode } from "react"
+import { AlertTriangle } from "lucide-react"
 
 type Props = {
   children: ReactNode
@@ -33,8 +34,9 @@ export class WidgetErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="px-3 py-2 text-xs text-muted-foreground">
-          Failed to load widget
+        <div className="flex items-center gap-2 rounded-md bg-red-500/10 px-2.5 py-2 text-xs text-red-500">
+          <AlertTriangle className="size-3.5 shrink-0" />
+          <span className="font-medium">Failed to load widget</span>
         </div>
       )
     }
