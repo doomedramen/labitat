@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.124",
+  "version": "0.0.125",
   "type": "module",
   "private": true,
   "scripts": {
@@ -8,8 +8,6 @@
     "docs:dev": "DOCS_BASE=/ vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "DOCS_BASE=/ vitepress preview docs",
-    "build:sw": "node scripts/build-sw.js",
-    "prebuild": "npm run build:sw",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -64,6 +62,7 @@
     "react-dom": "^19.2.4",
     "react-resizable-panels": "^4.8.0",
     "recharts": "3.8.1",
+    "serwist": "^9.5.7",
     "shadcn": "^4.1.1",
     "sonner": "^2.0.7",
     "swr": "^2.4.1",
@@ -76,6 +75,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.58.2",
+    "@serwist/turbopack": "^9.5.7",
     "@tailwindcss/postcss": "^4.2.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",

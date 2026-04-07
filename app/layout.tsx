@@ -7,6 +7,7 @@ import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { SWRProvider } from "@/components/swr-provider"
 import { ReconnectionBanner } from "@/components/reconnection-banner"
 import { ThemeColorUpdater } from "@/components/theme-color-updater"
+import { SerwistProvider } from "@/components/serwist-provider"
 import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
 import packageJson from "@/package.json"
@@ -123,13 +124,15 @@ export default async function RootLayout({
     >
       <body>
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
-          <ThemeColorUpdater />
-          <SWRProvider>
-            <ReconnectionBanner />
-            {children}
-            <Toaster richColors position="top-right" />
-            <ServiceWorkerRegistrar />
-          </SWRProvider>
+          <SerwistProvider swUrl="/serwist/sw.js">
+            <ThemeColorUpdater />
+            <SWRProvider>
+              <ReconnectionBanner />
+              {children}
+              <Toaster richColors position="top-right" />
+              <ServiceWorkerRegistrar />
+            </SWRProvider>
+          </SerwistProvider>
         </ThemeProvider>
       </body>
     </html>

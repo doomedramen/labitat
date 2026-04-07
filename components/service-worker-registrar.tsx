@@ -1,9 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
+import { RefreshCw, X } from "lucide-react"
 
 const IOS_INSTALL_DISMISSED_KEY = "labitat-ios-install-dismissed"
+const SW_UPDATE_DISMISSED_KEY = "labitat-sw-update-dismissed"
 
+/**
+ * Handles service worker update notifications and iOS install prompts.
+ * Service worker registration is handled by @serwist/next automatically.
+ */
 export function ServiceWorkerRegistrar() {
   // Lazy initializers run only on the client (never during SSR) because
   // this is a "use client" component and the initializer runs after hydration.
@@ -24,20 +30,32 @@ export function ServiceWorkerRegistrar() {
     )
   })
 
+  const [updateAvailable, setUpdateAvailable] = useState(false)
+  const [updateDismissed, setUpdateDismissed] = useState(() => {
+    if (typeof sessionStorage === "undefined") return false
+    return sessionStorage.getItem(SW_UPDATE_DISMISSED_KEY) !== null
+  })
+
+  const handleUpdateReload = useCallback(() => {
+    // Clear the dismissal flag when user clicks to reload
+    sessionStorage.removeItem(SW_UPDATE_DISMISSED_KEY)
+    window.location.reload()
+  }, [])
+
+  const handleDismissUpdate = useCallback(() => {
+    sessionStorage.setItem(SW_UPDATE_DISMISSED_KEY, "true")
+    setUpdateDismissed(true)
+  }, [])
+
+  // Listen for service worker updates from the already-registered SW
+  // Serwist registers the SW at /serwist/sw.js
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return
 
-    let intervalId: ReturnType<typeof setInterval>
-
     navigator.serviceWorker
-      .register("/sw.js", { scope: "/", updateViaCache: "none" })
+      .getRegistration("/serwist/sw.js")
       .then((registration) => {
-        intervalId = setInterval(
-          () => {
-            registration.update().catch(console.error)
-          },
-          60 * 60 * 1000
-        )
+        if (!registration) return
 
         registration.addEventListener("updatefound", () => {
           const newWorker = registration.installing
@@ -48,21 +66,39 @@ export function ServiceWorkerRegistrar() {
               newWorker.state === "installed" &&
               navigator.serviceWorker.controller
             ) {
-              // New content available - reload to activate the new service worker
-              // This ensures users get the latest version after a server restart
-              window.location.reload()
+              // New content available - show update banner instead of auto-reloading
+              setUpdateAvailable(true)
+              setUpdateDismissed(false)
             }
           })
         })
       })
-      .catch((error) => {
-        console.error("Service Worker registration failed:", error)
-      })
-
-    return () => {
-      clearInterval(intervalId)
-    }
+      .catch(console.error)
   }, [])
+
+  // Show update available banner
+  if (updateAvailable && !updateDismissed) {
+    return (
+      <div className="pointer-events-none fixed top-0 right-0 left-0 z-50 flex items-center justify-center gap-2 bg-blue-500 px-4 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300">
+        <RefreshCw className="size-4" />
+        <span>New version available</span>
+        <button
+          onClick={handleUpdateReload}
+          className="pointer-events-auto rounded bg-white px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
+          aria-label="Refresh to update"
+        >
+          Refresh
+        </button>
+        <button
+          onClick={handleDismissUpdate}
+          className="pointer-events-auto ml-2 rounded px-2 py-0.5 text-xs opacity-80 hover:opacity-100"
+          aria-label="Dismiss"
+        >
+          <X className="size-3" />
+        </button>
+      </div>
+    )
+  }
 
   if (!isIOS || isStandalone) {
     return null

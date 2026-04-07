@@ -22,6 +22,8 @@ const eslintConfig = defineConfig([
     "public/sw.js",
     // Coverage reports (generated)
     "coverage/**",
+    // Cloned Serwist repo (has its own lint config)
+    "serwist/**",
   ]),
 ]);
 

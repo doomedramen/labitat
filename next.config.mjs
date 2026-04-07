@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+import { withSerwist } from "@serwist/turbopack"
+
 const nextConfig = {
   // Required for Docker standalone output
   output: 'standalone',
@@ -47,7 +49,7 @@ const nextConfig = {
         ],
       },
       {
-        source: '/sw.js',
+        source: '/serwist/sw.js',
         headers: [
           { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
           { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
@@ -58,4 +60,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default withSerwist(nextConfig)
