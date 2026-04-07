@@ -34,7 +34,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://radarr.home.lab",
+      placeholder: "https://radarr.example.org",
       helperText: "The base URL of your Radarr instance",
     },
     {
@@ -42,7 +42,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Radarr API key",
+      placeholder: "Your Radarr password or API key",
       helperText: "Found in Settings → General → Security",
     },
   ],

@@ -39,7 +39,7 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://jellyfin.home.lab",
+      placeholder: "https://jellyfin.example.org",
       helperText: "The base URL of your Jellyfin instance",
     },
     {
@@ -47,7 +47,7 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Jellyfin API key",
+      placeholder: "Your Jellyfin password or API key",
       helperText: "Found in Dashboard → Advanced → API Keys",
     },
     {

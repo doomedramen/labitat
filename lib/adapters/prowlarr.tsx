@@ -39,7 +39,7 @@ export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://prowlarr.home.lab",
+      placeholder: "https://prowlarr.example.org",
       helperText: "The base URL of your Prowlarr instance",
     },
     {
@@ -47,7 +47,7 @@ export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Prowlarr API key",
+      placeholder: "Your Prowlarr password or API key",
       helperText: "Found in Settings → General → Security",
     },
   ],

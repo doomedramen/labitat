@@ -74,7 +74,7 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://qbittorrent.home.lab",
+      placeholder: "https://qbittorrent.example.org",
       helperText: "The base URL of your qBittorrent WebUI",
     },
     {

@@ -48,6 +48,7 @@ We use Lefthook for pre-commit hooks:
 - **Commitlint**: Conventional commit message validation
 
 Install hooks with:
+
 ```bash
 pnpm add -D lefthook
 pnpm lefthook install
@@ -95,7 +96,7 @@ export const yourServiceDefinition: ServiceDefinition<YourServiceData> = {
       label: 'URL',
       type: 'url',
       required: true,
-      placeholder: 'http://10.0.0.1',
+      placeholder: 'https://service_name.example.org',
     },
     {
       key: 'apiKey',
@@ -109,7 +110,7 @@ export const yourServiceDefinition: ServiceDefinition<YourServiceData> = {
     const res = await fetch(`${config.url}/api/endpoint`, {
       headers: { 'X-Api-Key': config.apiKey },
     })
-    
+
     if (!res.ok) {
       if (res.status === 401) throw new Error('Invalid API key')
       if (res.status === 404) throw new Error('Service not found')
@@ -133,7 +134,7 @@ export const yourServiceDefinition: ServiceDefinition<YourServiceData> = {
 Add to `lib/adapters/index.ts`:
 
 ```typescript
-import { yourServiceDefinition } from './your-service'
+import { yourServiceDefinition } from "./your-service"
 
 export const registry: ServiceRegistry = {
   // ...existing
@@ -165,6 +166,7 @@ chore: maintenance tasks
 ```
 
 Breaking changes:
+
 ```
 feat!: breaking change description
 
@@ -172,6 +174,7 @@ BREAKING CHANGE: description of the breaking change
 ```
 
 The version is automatically bumped based on commit type:
+
 - `feat` → minor version bump
 - `fix` → patch version bump
 - `BREAKING CHANGE` → major version bump
@@ -188,18 +191,22 @@ The version is automatically bumped based on commit type:
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 How did you test this?
 
 ## Checklist
+
 - [ ] Code follows project guidelines
 - [ ] Self-review completed
 - [ ] Comments added where necessary

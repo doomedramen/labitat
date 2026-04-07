@@ -60,7 +60,7 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://tautulli.home.lab",
+      placeholder: "https://tautulli.example.org",
       helperText: "The base URL of your Tautulli instance",
     },
     {
@@ -68,8 +68,7 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Tautulli API key",
-      helperText: "Found in Settings → Web Interface → API",
+      placeholder: "Your Tautulli password or API key",
     },
     {
       key: "showActiveStreams",

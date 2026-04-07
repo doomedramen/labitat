@@ -34,7 +34,7 @@ export const unifiDefinition: ServiceDefinition<UniFiData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://ui.home.lab",
+      placeholder: "https://unifi.example.org",
       helperText: "The URL of your UniFi Network Controller",
     },
     {

@@ -53,7 +53,7 @@ export const sabnzbdDefinition: ServiceDefinition<SabnzbdData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://sabnzbd.home.lab",
+      placeholder: "https://sabnzbd.example.org",
       helperText: "The base URL of your SABnzbd instance",
     },
     {
@@ -61,7 +61,7 @@ export const sabnzbdDefinition: ServiceDefinition<SabnzbdData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your SABnzbd API key",
+      placeholder: "Your SABnzbd password or API key",
       helperText: "Found in Config → General → API Key",
     },
     {

@@ -32,7 +32,7 @@ export const portainerDefinition: ServiceDefinition<PortainerData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://portainer.home.lab",
+      placeholder: "https://portainer.example.org",
       helperText: "The base URL of your Portainer instance",
     },
     {

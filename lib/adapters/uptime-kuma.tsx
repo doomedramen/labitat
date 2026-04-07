@@ -32,7 +32,7 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://uptime.home.lab",
+      placeholder: "https://uptime-kuma.example.org",
       helperText: "The base URL of your Uptime Kuma instance",
     },
     {

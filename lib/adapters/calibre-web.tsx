@@ -39,7 +39,7 @@ export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://calibre-web.local:8083",
+      placeholder: "https://calibre-web.example.org",
       helperText: "Calibre-Web URL",
     },
   ],

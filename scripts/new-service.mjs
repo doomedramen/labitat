@@ -125,7 +125,7 @@ export const ${camelName}Definition: ServiceDefinition<${pascalName}Data> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://10.0.0.1",
+      placeholder: "https://service_name.example.org",
     },
     {
       key: "apiKey",

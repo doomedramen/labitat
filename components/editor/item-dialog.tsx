@@ -239,7 +239,7 @@ export function ItemDialog({
                 name="href"
                 type="url"
                 defaultValue={existingItem?.href ?? ""}
-                placeholder="https://sonarr.home.lab"
+                placeholder="https://service.example.org"
                 data-testid="item-href-input"
               />
             </div>

@@ -32,7 +32,7 @@ export const traefikDefinition: ServiceDefinition<TraefikData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://traefik.home.lab",
+      placeholder: "https://traefik.example.org",
       helperText: "The base URL of your Traefik dashboard",
     },
     {
@@ -47,7 +47,7 @@ export const traefikDefinition: ServiceDefinition<TraefikData> = {
       label: "Password",
       type: "password",
       required: false,
-      placeholder: "Your Traefik dashboard password",
+      placeholder: "Your Traefik password or API key",
     },
   ],
 

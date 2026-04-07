@@ -39,7 +39,7 @@ export const grafanaDefinition: ServiceDefinition<GrafanaData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://grafana.home.lab",
+      placeholder: "https://grafana.example.org",
       helperText: "The base URL of your Grafana instance",
     },
     {
@@ -47,7 +47,7 @@ export const grafanaDefinition: ServiceDefinition<GrafanaData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Grafana service account token",
+      placeholder: "Your Grafana password or API key",
       helperText: "Found in Configuration → Service Accounts",
     },
   ],

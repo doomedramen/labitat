@@ -39,7 +39,7 @@ export const genericPingDefinition: ServiceDefinition<GenericPingData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://10.0.0.1",
+      placeholder: "https://example.org",
       helperText: "The URL or IP to ping",
     },
     {

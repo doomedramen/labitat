@@ -74,7 +74,7 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://10.0.0.2:9091",
+      placeholder: "https://transmission.example.org",
       helperText: "The base URL of your Transmission Web UI",
     },
     {

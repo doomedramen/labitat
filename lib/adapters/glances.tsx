@@ -159,7 +159,7 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://glances.home.lab:61208",
+      placeholder: "https://glances.example.org",
       helperText: "The base URL of your Glances instance",
     },
     {
@@ -186,8 +186,7 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
       label: "Password",
       type: "password",
       required: false,
-      placeholder: "Your Glances password",
-      helperText: "Optional - only if authentication is enabled",
+      placeholder: "Your Glances password or API key",
     },
     {
       key: "showCpu",

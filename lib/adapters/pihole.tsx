@@ -39,7 +39,7 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://10.0.0.2",
+      placeholder: "https://pihole.example.org",
       helperText: "The base URL of your Pi-hole instance",
     },
     {
@@ -47,8 +47,7 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
       label: "Password",
       type: "password",
       required: true,
-      placeholder: "Your Pi-hole web password",
-      helperText: "Found in Settings → Web Interface → Password",
+      placeholder: "Your Pi-hole password or API key",
     },
   ],
 

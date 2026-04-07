@@ -34,7 +34,7 @@ export const seerrDefinition: ServiceDefinition<SeerrData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://seerr.home.lab",
+      placeholder: "https://seerr.example.org",
       helperText: "The base URL of your Seerr instance",
     },
     {
@@ -42,7 +42,7 @@ export const seerrDefinition: ServiceDefinition<SeerrData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Seerr API key",
+      placeholder: "Your Seerr password or API key",
       helperText: "Found in Settings → General → API Key",
     },
   ],

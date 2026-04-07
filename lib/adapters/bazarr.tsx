@@ -30,7 +30,7 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://bazarr.home.lab",
+      placeholder: "https://bazarr.example.org",
       helperText: "The base URL of your Bazarr instance",
     },
     {
@@ -38,7 +38,7 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Bazarr API key",
+      placeholder: "Your Bazarr password or API key",
       helperText: "Found in Settings → General → Security",
     },
   ],

@@ -39,7 +39,7 @@ export const homeassistantDefinition: ServiceDefinition<HomeAssistantData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://homeassistant.local:8123",
+      placeholder: "https://homeassistant.example.org",
       helperText: "The base URL of your Home Assistant instance",
     },
     {
@@ -47,7 +47,7 @@ export const homeassistantDefinition: ServiceDefinition<HomeAssistantData> = {
       label: "Long-Lived Access Token",
       type: "password",
       required: true,
-      placeholder: "Your access token",
+      placeholder: "Your Home Assistant access token",
       helperText: "Created in Profile → Security → Long-Lived Access Tokens",
     },
   ],

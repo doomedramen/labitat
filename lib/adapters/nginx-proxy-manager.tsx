@@ -37,7 +37,7 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         label: "URL",
         type: "url",
         required: true,
-        placeholder: "http://10.0.0.2:81",
+        placeholder: "https://nginx-proxy-manager.example.org",
         helperText: "The base URL of your Nginx Proxy Manager instance",
       },
       {
@@ -52,7 +52,7 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         label: "Password",
         type: "password",
         required: true,
-        placeholder: "Your NPM password",
+        placeholder: "Your Nginx Proxy Manager password",
       },
     ],
 

@@ -32,7 +32,7 @@ export const readarrDefinition: ServiceDefinition<ReadarrData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://readarr.home.lab",
+      placeholder: "https://readarr.example.org",
       helperText: "The base URL of your Readarr instance",
     },
     {
@@ -40,7 +40,7 @@ export const readarrDefinition: ServiceDefinition<ReadarrData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Readarr API key",
+      placeholder: "Your Readarr password or API key",
       helperText: "Found in Settings → General → Security",
     },
   ],

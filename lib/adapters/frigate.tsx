@@ -42,7 +42,7 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://10.0.0.2:5000",
+      placeholder: "https://frigate.example.org",
       helperText: "The base URL of your Frigate instance",
     },
     {
@@ -58,8 +58,7 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
       label: "Password",
       type: "password",
       required: false,
-      placeholder: "Your Frigate password",
-      helperText: "Required if Frigate has authentication enabled",
+      placeholder: "Your Frigate password or API key",
     },
   ],
 

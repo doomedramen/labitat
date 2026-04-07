@@ -30,7 +30,7 @@ export const jackettDefinition: ServiceDefinition<JackettData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "http://10.0.0.2:9117",
+      placeholder: "https://jackett.example.org",
       helperText: "The base URL of your Jackett instance",
     },
     {
@@ -38,8 +38,7 @@ export const jackettDefinition: ServiceDefinition<JackettData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Jackett API key",
-      helperText: "Found in Jackett UI → API Key",
+      placeholder: "Your Jackett password or API key",
     },
     {
       key: "password",
@@ -47,7 +46,6 @@ export const jackettDefinition: ServiceDefinition<JackettData> = {
       type: "password",
       required: false,
       placeholder: "Your Jackett admin password",
-      helperText: "Required if Jackett has admin password enabled",
     },
   ],
 

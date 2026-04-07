@@ -64,7 +64,7 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://proxmox.local:8006",
+      placeholder: "https://proxmox.example.org",
       helperText: "Proxmox VE API URL",
     },
     {
@@ -80,7 +80,7 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
       label: "Password",
       type: "password",
       required: true,
-      placeholder: "Your password",
+      placeholder: "Your Proxmox VE password",
       helperText: "Proxmox password",
     },
     {

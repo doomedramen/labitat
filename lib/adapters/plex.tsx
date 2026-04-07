@@ -70,7 +70,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://plex.home.lab",
+      placeholder: "https://plex.example.org",
       helperText: "The base URL of your Plex instance",
     },
     {
@@ -78,7 +78,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
       label: "Token",
       type: "password",
       required: true,
-      placeholder: "Your Plex token",
+      placeholder: "Your Plex authentication token",
       helperText: "Found in Plex Web → Settings → General (view XML)",
     },
     {

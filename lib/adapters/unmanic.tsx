@@ -36,7 +36,7 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://unmanic.home.lab",
+      placeholder: "https://unmanic.example.org",
       helperText: "The base URL of your Unmanic instance",
     },
   ],

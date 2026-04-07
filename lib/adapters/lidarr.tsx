@@ -32,7 +32,7 @@ export const lidarrDefinition: ServiceDefinition<LidarrData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://lidarr.home.lab",
+      placeholder: "https://lidarr.example.org",
       helperText: "The base URL of your Lidarr instance",
     },
     {
@@ -40,7 +40,7 @@ export const lidarrDefinition: ServiceDefinition<LidarrData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Lidarr API key",
+      placeholder: "Your Lidarr password or API key",
       helperText: "Found in Settings → General → Security",
     },
   ],

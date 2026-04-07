@@ -34,7 +34,7 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://emby.home.lab",
+      placeholder: "https://emby.example.org",
       helperText: "The base URL of your Emby instance",
     },
     {
@@ -42,7 +42,7 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Emby API key",
+      placeholder: "Your Emby password or API key",
       helperText: "Found in Dashboard → Advanced → API Keys",
     },
   ],

@@ -32,7 +32,7 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://sonarr.home.lab",
+      placeholder: "https://sonarr.example.org",
       helperText: "The base URL of your Sonarr instance",
     },
     {
@@ -40,7 +40,7 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Sonarr API key",
+      placeholder: "Your Sonarr password or API key",
       helperText: "Found in Settings → General → Security",
     },
   ],

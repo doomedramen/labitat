@@ -25,7 +25,7 @@ export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
       label: "API URL",
       type: "url",
       required: true,
-      placeholder: "http://10.0.0.1/api/status",
+      placeholder: "https://api.example.org/status",
       helperText: "The full URL of the REST API endpoint",
     },
     {
@@ -59,7 +59,7 @@ export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
       label: "API Key (optional)",
       type: "password",
       required: false,
-      placeholder: "Bearer token or API key",
+      placeholder: "Your Bearer token or API key",
     },
   ],
 

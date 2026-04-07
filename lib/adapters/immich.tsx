@@ -47,7 +47,7 @@ export const immichDefinition: ServiceDefinition<ImmichData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://immich.home.lab",
+      placeholder: "https://immich.example.org",
       helperText: "The base URL of your Immich instance",
     },
     {
@@ -55,7 +55,7 @@ export const immichDefinition: ServiceDefinition<ImmichData> = {
       label: "API Key",
       type: "password",
       required: true,
-      placeholder: "Your Immich API key",
+      placeholder: "Your Immich password or API key",
       helperText: "Found in Account Settings → API Keys",
     },
     {
