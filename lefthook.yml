@@ -25,6 +25,8 @@ pre-push:
       run: pnpm check-adapters
     check-doc-coverage:
       run: pnpm check-doc-coverage
+    e2e-tests:
+      run: pnpm test:e2e
     build:
       run: pnpm build
 

@@ -90,6 +90,12 @@ export function useNetworkState(): NetworkState {
 
   // Check server availability by making a lightweight request
   const checkServerAvailability = useCallback(async () => {
+    // Skip fetch when browser reports offline — rely on 'online' event to re-trigger
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      scheduleNextCheck()
+      return
+    }
+
     // Prevent concurrent checks
     if (isCheckingRef.current) return
     isCheckingRef.current = true
@@ -101,7 +107,7 @@ export function useNetworkState(): NetworkState {
       // Add a cache-busting parameter to avoid cached responses
       const response = await fetch("/api/health?t=" + Date.now(), {
         method: "GET",
-        signal: AbortSignal.timeout(5000), // 5 second timeout
+        signal: AbortSignal.timeout(10000), // 10 second timeout
       })
 
       const isAvailable = response.ok

@@ -15,7 +15,7 @@ const isDevOrTest =
 const serwistRoute = createSerwistRoute({
   additionalPrecacheEntries: [
     { url: "/", revision },
-    { url: "/offline", revision },
+    { url: "/~offline", revision },
   ],
   swSrc: "app/sw.ts",
   useNativeEsbuild: true,
