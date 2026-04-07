@@ -49,8 +49,8 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       Object.assign(config, decryptedConfig)
     } catch (err) {
       console.error(
-        `[labitat] Failed to decrypt config for item ${itemId}:`,
-        err
+        `[labitat] Failed to decrypt config for item ${itemId} (${item.serviceType}):`,
+        err instanceof Error ? err.message : err
       )
       const errorResponse: ServiceData = {
         _status: "error",
