@@ -64,12 +64,8 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const inner = (
     <div
       className={cn(
-        "relative transition-all duration-200 ease-in-out",
-        item.cleanMode && !editMode
-          ? "p-2"
-          : effectiveData && serviceDef?.Widget && !isClientSide
-            ? "px-3 py-2.5"
-            : "px-3 py-2"
+        "relative",
+        item.cleanMode && !editMode ? "p-2" : "px-3 py-2.5"
       )}
       data-testid="item-card"
       data-item-id={item.id}
@@ -134,7 +130,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group/item relative overflow-hidden rounded-xl bg-card transition-all duration-200 ease-in-out",
+        "group/item relative overflow-hidden rounded-xl bg-card transition-all duration-300 ease-in-out",
         editMode ? "border border-ring/50" : "border border-border/50",
         !editMode && "cursor-pointer hover:scale-[1.02] hover:shadow-md"
       )}

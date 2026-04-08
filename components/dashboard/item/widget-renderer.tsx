@@ -52,25 +52,25 @@ export function WidgetRenderer({
         }
       : effectiveData
 
-  if (!hasWidget && !showWidgetSkeleton) {
-    return null
-  }
+  // Always render the container to avoid layout jumps, use opacity/visibility for transitions
+  const isVisible = hasWidget && !effectiveLoading
 
   return (
-    <div className={cn(cleanMode ? "" : "mt-2")}>
+    <div
+      className={cn(
+        "overflow-hidden transition-all duration-300 ease-in-out",
+        cleanMode ? "" : "mt-2",
+        isVisible ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+      )}
+    >
       {showWidgetSkeleton && (
-        <div
-          className={cn(
-            "grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5",
-            cleanMode ? "" : "mt-2"
-          )}
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-[52px] rounded-md" />
           ))}
         </div>
       )}
-      {hasWidget && !effectiveLoading && Widget && (
+      {isVisible && Widget && (
         <Widget {...(widgetProps as Record<string, unknown>)} />
       )}
     </div>
