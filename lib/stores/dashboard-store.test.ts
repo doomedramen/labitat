@@ -5,15 +5,11 @@ import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
 
 describe("dashboard store", () => {
   beforeEach(() => {
-    // Clear localStorage before each test
-    localStorage.removeItem("labitat-dashboard-cache")
     // Reset store to initial state
     useDashboardStore.setState({
       groups: [],
       widgetData: {},
       pingStatus: {},
-      lastUpdated: null,
-      _hasHydrated: true,
     })
   })
 
@@ -32,15 +28,10 @@ describe("dashboard store", () => {
       const state = useDashboardStore.getState()
       expect(state.pingStatus).toEqual({})
     })
-
-    it("should have null lastUpdated", () => {
-      const state = useDashboardStore.getState()
-      expect(state.lastUpdated).toBeNull()
-    })
   })
 
   describe("setGroups", () => {
-    it("should update groups and set lastUpdated", () => {
+    it("should update groups", () => {
       const mockGroups: GroupWithItems[] = [
         {
           id: "group-1",
@@ -55,28 +46,6 @@ describe("dashboard store", () => {
 
       const state = useDashboardStore.getState()
       expect(state.groups).toEqual(mockGroups)
-      expect(state.lastUpdated).not.toBeNull()
-      expect(state.lastUpdated).toBeGreaterThan(0)
-    })
-
-    it("should persist groups to localStorage", () => {
-      const mockGroups: GroupWithItems[] = [
-        {
-          id: "group-1",
-          name: "Media",
-          order: 0,
-          createdAt: null,
-          items: [],
-        },
-      ]
-
-      useDashboardStore.getState().setGroups(mockGroups)
-
-      const stored = localStorage.getItem("labitat-dashboard-cache")
-      expect(stored).not.toBeNull()
-
-      const parsed = JSON.parse(stored!)
-      expect(parsed.state.groups).toEqual(mockGroups)
     })
   })
 
@@ -92,19 +61,6 @@ describe("dashboard store", () => {
 
       const state = useDashboardStore.getState()
       expect(state.widgetData["item-1"]).toEqual(mockData)
-    })
-
-    it("should persist widget data to localStorage", () => {
-      const mockData: ServiceData = {
-        _status: "ok",
-        temperature: 72,
-      }
-
-      useDashboardStore.getState().setWidgetData("item-1", mockData)
-
-      const stored = localStorage.getItem("labitat-dashboard-cache")
-      const parsed = JSON.parse(stored!)
-      expect(parsed.state.widgetData["item-1"]).toEqual(mockData)
     })
 
     it("should allow setting null widget data", () => {
@@ -126,18 +82,6 @@ describe("dashboard store", () => {
 
       const state = useDashboardStore.getState()
       expect(state.pingStatus["item-1"]).toEqual(mockStatus)
-    })
-
-    it("should persist ping status to localStorage", () => {
-      const mockStatus: ServiceStatus = {
-        state: "reachable",
-      }
-
-      useDashboardStore.getState().setPingStatus("item-1", mockStatus)
-
-      const stored = localStorage.getItem("labitat-dashboard-cache")
-      const parsed = JSON.parse(stored!)
-      expect(parsed.state.pingStatus["item-1"]).toEqual(mockStatus)
     })
   })
 
@@ -372,63 +316,6 @@ describe("dashboard store", () => {
       expect(state.groups).toEqual([])
       expect(state.widgetData).toEqual({})
       expect(state.pingStatus).toEqual({})
-      expect(state.lastUpdated).toBeNull()
-    })
-  })
-
-  describe("localStorage persistence", () => {
-    it("should load from localStorage on initialization", () => {
-      const mockData = {
-        state: {
-          groups: [
-            {
-              id: "cached-group",
-              name: "Cached Group",
-              order: 0,
-              createdAt: null,
-              serviceUrl: null,
-              apiKeyEnc: null,
-              configEnc: null,
-              items: [],
-            },
-          ],
-          widgetData: { "item-1": { _status: "ok" } },
-          pingStatus: { "item-1": { state: "healthy" } },
-          lastUpdated: 1234567890,
-        },
-        version: 0,
-      }
-
-      localStorage.setItem("labitat-dashboard-cache", JSON.stringify(mockData))
-
-      // Create a new store instance to trigger rehydration
-      useDashboardStore.getState()
-
-      // Note: In test environment, the store may not auto-rehydrate
-      // This test verifies the storage format is correct
-      const stored = localStorage.getItem("labitat-dashboard-cache")
-      expect(stored).not.toBeNull()
-
-      const parsed = JSON.parse(stored!)
-      expect(parsed.state.groups[0].name).toBe("Cached Group")
-    })
-
-    it("should handle corrupted localStorage gracefully", () => {
-      localStorage.setItem("labitat-dashboard-cache", "invalid json{")
-
-      // Should not throw
-      expect(() => {
-        localStorage.getItem("labitat-dashboard-cache")
-      }).not.toThrow()
-    })
-  })
-
-  describe("hydration", () => {
-    it("should set _hasHydrated flag after rehydration", () => {
-      useDashboardStore.getState().setHasHydrated()
-
-      const state = useDashboardStore.getState()
-      expect(state._hasHydrated).toBe(true)
     })
   })
 })

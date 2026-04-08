@@ -5,7 +5,6 @@ import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { SWRProvider } from "@/components/swr-provider"
-import { ReconnectionBanner } from "@/components/reconnection-banner"
 import { ThemeColorUpdater } from "@/components/theme-color-updater"
 import { SerwistProvider } from "@/components/serwist-provider"
 import { cn } from "@/lib/utils"
@@ -127,7 +126,6 @@ export default async function RootLayout({
           <SerwistProvider swUrl="/serwist/sw.js">
             <ThemeColorUpdater />
             <SWRProvider>
-              <ReconnectionBanner />
               {children}
               <Toaster richColors position="top-right" />
               <ServiceWorkerRegistrar />

@@ -5,6 +5,7 @@ import { items } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { decrypt } from "@/lib/crypto"
 import { getCachedWithFallback, setCached } from "@/lib/cache"
+import { cacheWidgetData } from "@/lib/last-datapoints"
 import { getService } from "@/lib/adapters"
 import type { ServiceData } from "@/lib/adapters/types"
 
@@ -87,16 +88,19 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       _status: data._status ?? "ok",
     }
     await setCached(`service:${itemId}`, responseData)
+    await cacheWidgetData(itemId, responseData)
     return responseData
   } catch (err) {
     // If we have expired cache data, return it as fallback with a warning
     // Don't log errors when we have cached fallback - prevents console spam when offline
     if (hasExpiredCache) {
-      return {
+      const fallbackResponse: ServiceData = {
         ...expiredCache,
         _status: "warn" as const,
         _statusText: "Showing cached data - unable to reach service",
       }
+      await cacheWidgetData(itemId, fallbackResponse)
+      return fallbackResponse
     }
 
     // Only log errors when we don't have cached fallback
@@ -117,6 +121,7 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
     }
     // Cache errors briefly to avoid hammering
     await setCached(`service:${itemId}`, errorResponse)
+    await cacheWidgetData(itemId, errorResponse)
     return errorResponse
   }
 }

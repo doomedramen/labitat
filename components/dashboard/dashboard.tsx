@@ -29,6 +29,7 @@ import { reorderGroups } from "@/actions/groups"
 import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
+import type { ItemDatapoint } from "@/lib/last-datapoints"
 import { useDashboardStore } from "@/lib/stores/dashboard-store"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -56,7 +57,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useOfflineTitleSuffix } from "@/components/reconnection-banner"
 
 // ── Groups reducer for drag-and-drop state management ────────────────────────
 
@@ -175,13 +175,17 @@ export function groupsReducer(
 
 type DashboardProps = {
   groups: GroupWithItems[]
+  initialDatapoints: Record<string, ItemDatapoint>
   isLoggedIn: boolean
   title: string
 }
 
-export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
-  const offlineSuffix = useOfflineTitleSuffix()
-
+export function Dashboard({
+  groups,
+  initialDatapoints,
+  isLoggedIn,
+  title,
+}: DashboardProps) {
   // ── Login dialog ───────────────────────────────────────────────────────────
   const [loginOpen, setLoginOpen] = useState(false)
 
@@ -202,39 +206,29 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
   // ── Zustand store for caching ──────────────────────────────────────────────
   const setGroups = useDashboardStore((s) => s.setGroups)
+  const setWidgetData = useDashboardStore((s) => s.setWidgetData)
+  const setPingStatus = useDashboardStore((s) => s.setPingStatus)
 
   // ── Groups state with reducer ──────────────────────────────────────────────
-  // Use cached data immediately if available (after hydration), else start with server data
-  const [sortedGroups, dispatch] = useReducer(
-    groupsReducer,
-    groups,
-    (defaultState) => {
-      // Synchronously check localStorage for cached data
-      try {
-        const stored = localStorage.getItem("labitat-dashboard-cache")
-        if (stored) {
-          const parsed = JSON.parse(stored)
-          if (
-            parsed?.state?.groups &&
-            Array.isArray(parsed.state.groups) &&
-            parsed.state.groups.length > 0
-          ) {
-            return parsed.state.groups
-          }
-        }
-      } catch {
-        // Ignore parse errors
-      }
-      return defaultState
-    }
-  )
+  // Initialize from SSR data (no localStorage needed)
+  const [sortedGroups, dispatch] = useReducer(groupsReducer, groups)
 
   // Sync when server sends updated data (after mutations / revalidatePath)
-  // Also update the cache with fresh server data
+  // Initialize Zustand store with SSR data on mount
   useEffect(() => {
     dispatch({ type: "SYNC", groups })
     setGroups(groups)
-  }, [groups, setGroups])
+
+    // Initialize widget and ping data from SSR-preloaded datapoints
+    for (const [itemId, datapoint] of Object.entries(initialDatapoints)) {
+      if (datapoint.widgetData) {
+        setWidgetData(itemId, datapoint.widgetData)
+      }
+      if (datapoint.pingStatus) {
+        setPingStatus(itemId, datapoint.pingStatus)
+      }
+    }
+  }, [groups, setGroups, setWidgetData, setPingStatus, initialDatapoints])
 
   // ── DnD setup ──────────────────────────────────────────────────────────────
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -431,7 +425,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           ) : (
             <h1 className="text-lg font-semibold" data-testid="dashboard-title">
               {dashboardTitle}
-              {offlineSuffix}
             </h1>
           )}
           <div className="flex items-center gap-2">

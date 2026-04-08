@@ -1,22 +1,8 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import { SWRConfig, mutate } from "swr"
-import { useNetworkState } from "@/hooks/use-network-state"
+import { SWRConfig } from "swr"
 
 export function SWRProvider({ children }: { children: React.ReactNode }) {
-  const { isOnline } = useNetworkState()
-  const wasOnlineRef = useRef(isOnline)
-
-  // Revalidate all SWR caches when reconnecting after being offline
-  useEffect(() => {
-    if (wasOnlineRef.current === false && isOnline === true) {
-      // Revalidate immediately - server is already confirmed available
-      mutate(() => true, undefined, { revalidate: true })
-    }
-    wasOnlineRef.current = isOnline
-  }, [isOnline])
-
   return (
     <SWRConfig
       value={{

@@ -7,6 +7,7 @@ type NetworkState = {
   isServerAvailable: boolean
   isChecking: boolean
   isInitialized: boolean
+  justReconnected: boolean
   lastOffline?: Date
   lastOnline?: Date
   lastServerUnavailable?: Date
@@ -14,6 +15,7 @@ type NetworkState = {
 }
 
 const RECONNECT_DELAY = 3_000 // 3 seconds between reconnect attempts
+const RECONNECTED_DISPLAY_MS = 3_000
 const isClient = typeof window !== "undefined"
 
 /**
@@ -29,6 +31,7 @@ export function useNetworkState(): NetworkState {
   const [isServerAvailable, setIsServerAvailable] = useState(false)
   const [isChecking, setIsChecking] = useState(isClient)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [justReconnected, setJustReconnected] = useState(false)
   const [lastOffline, setLastOffline] = useState<Date | undefined>()
   const [lastOnline, setLastOnline] = useState<Date | undefined>()
   const [lastServerUnavailable, setLastServerUnavailable] = useState<
@@ -40,8 +43,11 @@ export function useNetworkState(): NetworkState {
 
   const esRef = useRef<EventSource | null>(null)
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const unmountedRef = useRef(false)
   const connectRef = useRef<(() => void) | null>(null)
+  const wasOfflineRef = useRef(false)
+  const serverAvailableRef = useRef(false)
 
   const connect = useCallback(() => {
     if (!isClient || unmountedRef.current) return
@@ -52,13 +58,27 @@ export function useNetworkState(): NetworkState {
     esRef.current = es
 
     es.onopen = () => {
+      const wasServerDown = !serverAvailableRef.current
+      serverAvailableRef.current = true
       setIsServerAvailable(true)
       setLastServerAvailable(new Date())
       setIsChecking(false)
       setIsInitialized(true)
+
+      // Track server reconnection
+      if (wasServerDown && wasOfflineRef.current) {
+        wasOfflineRef.current = false
+        setJustReconnected(true)
+        if (reconnectedTimerRef.current)
+          clearTimeout(reconnectedTimerRef.current)
+        reconnectedTimerRef.current = setTimeout(() => {
+          if (!unmountedRef.current) setJustReconnected(false)
+        }, RECONNECTED_DISPLAY_MS)
+      }
     }
 
     es.onmessage = () => {
+      serverAvailableRef.current = true
       setIsServerAvailable(true)
       setLastServerAvailable(new Date())
     }
@@ -66,6 +86,7 @@ export function useNetworkState(): NetworkState {
     es.onerror = () => {
       es.close()
       esRef.current = null
+      serverAvailableRef.current = false
       setIsServerAvailable(false)
       setLastServerUnavailable(new Date())
       setIsChecking(false)
@@ -88,6 +109,7 @@ export function useNetworkState(): NetworkState {
       unmountedRef.current = true
       esRef.current?.close()
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
+      if (reconnectedTimerRef.current) clearTimeout(reconnectedTimerRef.current)
     }
   }, [connect])
 
@@ -98,6 +120,18 @@ export function useNetworkState(): NetworkState {
     const handleOnline = () => {
       setIsOnline(true)
       setLastOnline(new Date())
+
+      // Track reconnection transition
+      if (wasOfflineRef.current) {
+        wasOfflineRef.current = false
+        setJustReconnected(true)
+        if (reconnectedTimerRef.current)
+          clearTimeout(reconnectedTimerRef.current)
+        reconnectedTimerRef.current = setTimeout(() => {
+          if (!unmountedRef.current) setJustReconnected(false)
+        }, RECONNECTED_DISPLAY_MS)
+      }
+
       // Reconnect SSE immediately
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
       esRef.current?.close()
@@ -109,6 +143,10 @@ export function useNetworkState(): NetworkState {
       setIsServerAvailable(false)
       setLastOffline(new Date())
       setIsInitialized(true)
+      wasOfflineRef.current = true
+      // Clear reconnected state
+      setJustReconnected(false)
+      if (reconnectedTimerRef.current) clearTimeout(reconnectedTimerRef.current)
       // Close SSE — no point keeping it open
       esRef.current?.close()
       esRef.current = null
@@ -156,6 +194,7 @@ export function useNetworkState(): NetworkState {
     isServerAvailable,
     isChecking,
     isInitialized,
+    justReconnected,
     lastOffline,
     lastOnline,
     lastServerUnavailable,

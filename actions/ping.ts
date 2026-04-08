@@ -1,5 +1,6 @@
 "use server"
 
+import { cachePingStatus } from "@/lib/last-datapoints"
 import type { ServiceStatus } from "@/lib/adapters/types"
 
 export async function pingUrl(url: string): Promise<ServiceStatus> {
@@ -52,4 +53,16 @@ export async function pingUrl(url: string): Promise<ServiceStatus> {
     }
     return { state: "unreachable", reason: "Unknown error" }
   }
+}
+
+/**
+ * Ping a URL and cache the result for SSR preloading.
+ */
+export async function pingAndCache(
+  itemId: string,
+  url: string
+): Promise<ServiceStatus> {
+  const status = await pingUrl(url)
+  await cachePingStatus(itemId, status)
+  return status
 }

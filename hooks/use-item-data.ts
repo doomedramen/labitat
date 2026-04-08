@@ -1,10 +1,9 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useSyncExternalStore } from "react"
 import useSWR, { type SWRConfiguration } from "swr"
 import { getWidgetData } from "@/actions/widget-data"
 import { pingUrl } from "@/actions/ping"
-import { useNetworkState } from "@/hooks/use-network-state"
 import { useDashboardStore } from "@/lib/stores/dashboard-store"
 import { getService } from "@/lib/adapters"
 import type { ItemRow } from "@/lib/types"
@@ -26,12 +25,31 @@ interface UseItemDataResult {
   isClientSide: boolean
 }
 
+const isClient = typeof window !== "undefined"
+
+function subscribeToOnlineState(callback: () => void) {
+  if (!isClient) return () => {}
+  window.addEventListener("online", callback)
+  window.addEventListener("offline", callback)
+  return () => {
+    window.removeEventListener("online", callback)
+    window.removeEventListener("offline", callback)
+  }
+}
+
+function getOnlineState() {
+  return isClient ? navigator.onLine : true
+}
+
 export function useItemData({
   editMode,
   item,
 }: UseItemDataOptions): UseItemDataResult {
-  const { isOnline, isServerAvailable } = useNetworkState()
-  const isEffectivelyOffline = !isOnline || !isServerAvailable
+  const isOnline = useSyncExternalStore(
+    subscribeToOnlineState,
+    getOnlineState,
+    () => true
+  )
 
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
@@ -55,7 +73,7 @@ export function useItemData({
     revalidate,
     { retryCount }
   ) => {
-    if (isEffectivelyOffline) return
+    if (!isOnline) return
     if (retryCount >= 5) return
     setTimeout(
       () => revalidate({ retryCount }),
@@ -69,16 +87,16 @@ export function useItemData({
     isLoading: isServiceLoading,
     error: serviceError,
   } = useSWR<ServiceData | null>(
-    shouldFetchService && !isClientSide && !isEffectivelyOffline
+    shouldFetchService && !isClientSide && isOnline
       ? `widget:${item.id}`
       : null,
     () => getWidgetData(item.id),
     {
-      refreshInterval: isEffectivelyOffline ? 0 : pollingMs,
+      refreshInterval: isOnline ? pollingMs : 0,
       dedupingInterval: pollingMs,
       revalidateOnFocus: false,
       revalidateIfStale: true,
-      shouldRetryOnError: !isEffectivelyOffline,
+      shouldRetryOnError: isOnline,
       onErrorRetry,
     }
   )
@@ -89,14 +107,14 @@ export function useItemData({
     isLoading: isPingLoading,
     error: pingError,
   } = useSWR<ServiceStatus | null>(
-    shouldPing && !isEffectivelyOffline ? `ping:${item.id}:${item.href}` : null,
+    shouldPing && isOnline ? `ping:${item.id}:${item.href}` : null,
     () => pingUrl(item.href!),
     {
-      refreshInterval: isEffectivelyOffline ? 0 : pollingMs,
+      refreshInterval: isOnline ? pollingMs : 0,
       dedupingInterval: pollingMs,
       revalidateOnFocus: false,
       revalidateIfStale: true,
-      shouldRetryOnError: !isEffectivelyOffline,
+      shouldRetryOnError: isOnline,
       onErrorRetry,
     }
   )
@@ -121,7 +139,7 @@ export function useItemData({
 
   const effectiveLoading = editMode
     ? false
-    : isEffectivelyOffline
+    : !isOnline
       ? false
       : shouldFetchService && !isClientSide
         ? isServiceLoading && !cachedWidgetData
@@ -134,7 +152,7 @@ export function useItemData({
 
   const serviceStatus: ServiceStatus = editMode
     ? { state: "unknown" }
-    : isEffectivelyOffline
+    : !isOnline
       ? { state: "unreachable", reason: "You're offline" }
       : serviceError
         ? {

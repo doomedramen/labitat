@@ -1,6 +1,7 @@
 "use server"
 
 import { fetchServiceData } from "./services"
+import { preloadDatapoints } from "@/lib/last-datapoints"
 import type { ServiceData } from "@/lib/adapters/types"
 
 /**
@@ -36,4 +37,12 @@ export async function getBatchWidgetData(
     })
   )
   return Object.fromEntries(results)
+}
+
+/**
+ * Preload all cached datapoints for SSR.
+ * Returns the last known state for each item.
+ */
+export async function preloadAllDatapoints(itemIds: string[]) {
+  return preloadDatapoints(itemIds)
 }
