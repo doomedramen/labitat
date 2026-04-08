@@ -187,6 +187,11 @@ test.describe("Glances variant widgets - config persistence", () => {
     await page.getByTestId("item-dialog-submit").click()
     await waitForItemDialogClose(page)
 
+    // Verify item was created (waits for revalidatePath to sync the real server ID)
+    await expect(
+      page.getByLabel(groupName).getByText(itemName, { exact: true }).first()
+    ).toBeVisible()
+
     // Exit edit mode
     await page.getByTestId("done-button").click()
     await waitForExitEditMode(page)
