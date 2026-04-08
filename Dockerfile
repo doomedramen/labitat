@@ -24,6 +24,9 @@ COPY . .
 # SKIP_ENV_VALIDATION suppresses the t3-env startup check during `next build`.
 RUN SKIP_ENV_VALIDATION=1 pnpm build
 
+# Ensure drizzle migrations directory exists (may be empty if no migrations generated yet)
+RUN mkdir -p /app/drizzle
+
 # ── Stage 2: Runner ───────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 
@@ -44,9 +47,10 @@ COPY --from=builder --chown=labitat:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=labitat:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=labitat:nodejs /app/public ./public
 
-# Copy migration runner script and migrations (not included in standalone trace)
+# Copy migration runner script (not included in standalone trace)
 COPY --chown=labitat:nodejs scripts/migrate.js ./scripts/migrate.js
-COPY --chown=labitat:nodejs drizzle ./drizzle
+# Copy drizzle migrations if they exist (generated locally, not at build time)
+COPY --from=builder --chown=labitat:nodejs /app/drizzle ./drizzle
 # Copy drizzle-orm and better-sqlite3 for migration runner (not in standalone trace)
 COPY --from=builder --chown=labitat:nodejs /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
 COPY --from=builder --chown=labitat:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
