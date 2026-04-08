@@ -104,7 +104,7 @@ export function GroupCard({
           {editMode && (
             <button
               onClick={onAddItem}
-              className="flex min-h-[5rem] items-center justify-center rounded-xl border-2 border-dashed border-border/50 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+              className="flex min-h-20 items-center justify-center rounded-xl border-2 border-dashed border-border/50 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
             >
               <Plus className="mr-1.5 h-4 w-4" />
               Add Item
