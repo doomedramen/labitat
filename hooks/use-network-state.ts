@@ -124,6 +124,33 @@ export function useNetworkState(): NetworkState {
     }
   }, [connect])
 
+  // Handle PWA background/foreground transitions.
+  // When a PWA is backgrounded on mobile, the SSE connection is silently
+  // dropped. On return, navigator.onLine may still be true, so the stale
+  // reconnect loop never recovers. Force a fresh reconnect on visibility change.
+  useEffect(() => {
+    if (!isClient) return
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        // Close any stale SSE connection and reconnect fresh
+        if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
+        esRef.current?.close()
+        esRef.current = null
+        // Optimistically assume server is available to prevent a flash of
+        // "You're offline" while the new SSE connection establishes.
+        setIsServerAvailable(true)
+        connect()
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
+  }, [connect])
+
   return {
     isOnline,
     isServerAvailable,
