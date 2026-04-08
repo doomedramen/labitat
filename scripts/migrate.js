@@ -48,7 +48,8 @@ try {
   migrate(db, { migrationsFolder })
   console.log("Migrations complete.")
 } catch (err) {
-  if (err.message && err.message.includes("already exists")) {
+  const errMsg = err.cause?.message || err.message || ""
+  if (errMsg.includes("already exists")) {
     console.log(
       "Schema already applied, ensuring migrations tracking table exists..."
     )
