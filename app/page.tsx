@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
 import { Dashboard } from "@/components/dashboard/dashboard"
 import { DashboardSkeleton } from "@/components/dashboard/skeleton"
+import { SWRFallbackProvider } from "@/components/swr-fallback-provider"
 import { preloadAllDatapoints } from "@/actions/widget-data"
 import { pingAndCache } from "@/actions/ping"
 
@@ -34,14 +35,20 @@ async function DashboardContent() {
     throw err
   }
 
-  // Preload cached datapoints for all items (fast, no network requests)
+  // Load last-known datapoints for all items from the server-side cache
   const allItems = groupsWithItems.flatMap((g) => g.items)
-  const itemIds = allItems.map((i) => i.id)
+  const datapoints = await preloadAllDatapoints(allItems.map((i) => i.id))
 
-  const datapoints = await preloadAllDatapoints(itemIds)
+  // Build SWR fallback map so widgets render with cached data on first paint
+  const swrFallback: Record<string, unknown> = {}
+  for (const item of allItems) {
+    const dp = datapoints[item.id]
+    if (dp?.widgetData) swrFallback[`widget:${item.id}`] = dp.widgetData
+    if (dp?.pingStatus && item.href)
+      swrFallback[`ping:${item.id}:${item.href}`] = dp.pingStatus
+  }
 
-  // Refresh ping statuses in background for items without serviceType
-  // Don't await - these are fire-and-forget for next SSR
+  // Refresh ping statuses in background (fire-and-forget for next SSR)
   const pingItems = allItems.filter((item) => !item.serviceType && item.href)
   if (pingItems.length > 0) {
     Promise.all(
@@ -50,12 +57,13 @@ async function DashboardContent() {
   }
 
   return (
-    <Dashboard
-      groups={groupsWithItems}
-      initialDatapoints={datapoints}
-      isLoggedIn={!!session.loggedIn}
-      title={titleSetting?.value ?? "Labitat"}
-    />
+    <SWRFallbackProvider fallback={swrFallback}>
+      <Dashboard
+        groups={groupsWithItems}
+        isLoggedIn={!!session.loggedIn}
+        title={titleSetting?.value ?? "Labitat"}
+      />
+    </SWRFallbackProvider>
   )
 }
 
