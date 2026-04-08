@@ -9,10 +9,7 @@
 !.yarn/versions
 
 # testing
-/coverage # vitest coverage
-/playwright-report
-/test-results
-/test-playwright
+/coverage
 
 # next.js
 /.next/
@@ -34,23 +31,7 @@ pnpm-debug.log*
 # env files
 .env*.local
 
-# local config (contains password hash — use config.yaml.example as template)
-config.yaml
-
-# sqlite database
-/data/
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.env
-/homepage
-
-# service worker (generated)
-/public/sw.js
-/docs/.vitepress/cache
-/docs/.vitepress/dist
-/coverage
-/labitat_icons
-/NEW_ICONS
-/BET
+/data

@@ -6,7 +6,7 @@ pre-commit:
   commands:
     lint:
       glob: "*.{ts,tsx,js,jsx}"
-      run: pnpm lint --fix {staged_files}
+      run: pnpm lint:fix {staged_files}
       stage_fixed: true
     format:
       glob: "*.{ts,tsx,js,jsx,md,json}"

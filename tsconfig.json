@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -18,11 +18,9 @@
         "name": "next"
       }
     ],
-    "ignoreDeprecations": "6.0",
-    "allowArbitraryExtensions": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
@@ -33,5 +31,5 @@
     ".next/dev/types/**/*.ts",
     ".next/dev/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "public/sw.ts"]
+  "exclude": ["node_modules"]
 }

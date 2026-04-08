@@ -1,0 +1,155 @@
+import type { ServiceDefinition } from "./types"
+import { StatGrid, DownloadList, type DownloadItem } from "@/components/widgets"
+
+type QBittorrentData = {
+  _status?: "ok" | "warn" | "error"
+  _statusText?: string
+  downSpeed: string
+  upSpeed: string
+  activeDownloads: number
+  queued: number
+  downloads?: DownloadItem[]
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B"
+  const k = 1024
+  const sizes = ["B", "KB", "MB", "GB", "TB"]
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
+}
+
+function formatSpeed(bytesPerSec: number): string {
+  return `${formatBytes(bytesPerSec)}/s`
+}
+
+function formatTime(seconds: number): string {
+  if (seconds < 0 || !isFinite(seconds)) return "∞"
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  if (h > 0) return `${h}:${m.toString().padStart(2, "0")}h`
+  return `${m} min`
+}
+
+function QBittorrentWidget({
+  downSpeed,
+  upSpeed,
+  activeDownloads,
+  queued,
+  downloads,
+}: QBittorrentData) {
+  return (
+    <div className="space-y-2">
+      <StatGrid
+        items={[
+          { value: downSpeed, label: "Down" },
+          { value: upSpeed, label: "Up" },
+          { value: activeDownloads, label: "Active" },
+          { value: queued, label: "Queued" },
+        ]}
+      />
+      {downloads && downloads.length > 0 && (
+        <DownloadList downloads={downloads} />
+      )}
+    </div>
+  )
+}
+
+export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
+  id: "qbittorrent",
+  name: "qBittorrent",
+  icon: "qbittorrent",
+  category: "downloads",
+  defaultPollingMs: 10_000,
+  configFields: [
+    {
+      key: "url",
+      label: "URL",
+      type: "url",
+      required: true,
+      placeholder: "https://qbittorrent.example.org",
+    },
+    {
+      key: "username",
+      label: "Username",
+      type: "text",
+      required: true,
+      placeholder: "admin",
+    },
+    {
+      key: "password",
+      label: "Password",
+      type: "password",
+      required: true,
+      placeholder: "Your qBittorrent password",
+    },
+  ],
+  async fetchData(config) {
+    const baseUrl = config.url.replace(/\/$/, "")
+
+    // Login
+    const loginRes = await fetch(`${baseUrl}/api/v2/auth/login`, {
+      method: "POST",
+      body: new URLSearchParams({
+        username: config.username,
+        password: config.password,
+      }),
+    })
+    if (!loginRes.ok)
+      throw new Error(`qBittorrent login failed: ${loginRes.status}`)
+    const cookie = loginRes.headers.getSetCookie?.()[0] ?? ""
+
+    const headers = { Cookie: cookie }
+
+    // Get transfer info and torrent list
+    const [infoRes, torrentsRes] = await Promise.all([
+      fetch(`${baseUrl}/api/v2/transfer/info`, { headers }),
+      fetch(`${baseUrl}/api/v2/torrents/info?filter=downloading`, { headers }),
+    ])
+
+    if (!infoRes.ok) throw new Error(`qBittorrent error: ${infoRes.status}`)
+
+    const info = await infoRes.json()
+    const torrents = await torrentsRes.json()
+
+    // Get queued count
+    const queuedRes = await fetch(
+      `${baseUrl}/api/v2/torrents/info?filter=queuedDL`,
+      { headers }
+    )
+    const queued = queuedRes.ok ? (await queuedRes.json()).length : 0
+
+    // Build active download list (top 3 by speed)
+    const downloads = torrents
+      .sort(
+        (a: { dlspeed: number }, b: { dlspeed: number }) =>
+          b.dlspeed - a.dlspeed
+      )
+      .slice(0, 3)
+      .map(
+        (t: {
+          name: string
+          progress: number
+          eta: number
+          dlspeed: number
+          size: number
+        }) => ({
+          title: t.name,
+          progress: Math.round(t.progress * 100),
+          timeLeft: formatTime(t.eta),
+          activity: "downloading",
+          size: formatBytes(t.size),
+        })
+      )
+
+    return {
+      _status: "ok",
+      downSpeed: formatSpeed(info.dl_info_speed ?? 0),
+      upSpeed: formatSpeed(info.up_info_speed ?? 0),
+      activeDownloads: torrents.length,
+      queued,
+      downloads,
+    }
+  },
+  Widget: QBittorrentWidget,
+}

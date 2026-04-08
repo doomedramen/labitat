@@ -3,49 +3,9 @@
    viewBox="0 0 1024 1024"
    version="1.1"
    id="svg3"
-   sodipodi:docname="logo.svg"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
-   inkscape:export-filename="ICON.png"
-   inkscape:export-xdpi="192"
-   inkscape:export-ydpi="192"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview3"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="0.45110467"
-     inkscape:cx="364.66038"
-     inkscape:cy="547.54476"
-     inkscape:window-width="1512"
-     inkscape:window-height="853"
-     inkscape:window-x="0"
-     inkscape:window-y="33"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="svg3" />
-  <!-- Background -->
-  <defs
-     id="defs2">
-    <linearGradient
-       id="linearGradient1"
-       inkscape:collect="always">
-      <stop
-         style="stop-color:#0a84ff;stop-opacity:1;"
-         offset="0"
-         id="stop3" />
-      <stop
-         style="stop-color:#5e5ce6;stop-opacity:1;"
-         offset="1"
-         id="stop4" />
-    </linearGradient>
+  <defs>
     <linearGradient
        id="bg"
        x1="0"
@@ -54,48 +14,26 @@
        y2="1">
       <stop
          offset="0"
-         stop-color="#22c55e"
-         id="stop1"
-         style="stop-color:#577e63;stop-opacity:1;" />
+         stop-color="#577e63" />
       <stop
          offset="1"
-         stop-color="#166534"
-         id="stop2"
-         style="stop-color:#7ec6a2;stop-opacity:1;" />
+         stop-color="#7ec6a2" />
     </linearGradient>
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient1"
-       id="linearGradient4"
-       x1="874.0387"
-       y1="149.96138"
-       x2="149.96126"
-       y2="874.03882"
-       gradientUnits="userSpaceOnUse" />
   </defs>
   <rect
      width="1024"
      height="1024"
-     fill="url(#bg)"
-     id="rect2"
-     style="fill:url(#linearGradient4);fill-opacity:1;fill-rule:nonzero" />
-  <!-- Centered Leaf -->
+     fill="url(#bg)" />
   <g
      transform="matrix(34.710466,0,0,34.710466,112.82964,112.82804)"
      fill="none"
      stroke="#ffffff"
      stroke-width="2.2"
      stroke-linecap="round"
-     stroke-linejoin="round"
-     id="g3"
-     style="fill:none;stroke:#ffffff;stroke-width:2.2;stroke-dasharray:none;stroke-opacity:1">
+     stroke-linejoin="round">
     <path
-       d="M 11,20 A 7,7 0 0 1 9.8,6.1 C 15.5,5 17,4.48 19,2 c 1,2 2,4.18 2,8 0,5.5 -4.78,10 -10,10 z"
-       id="path2"
-       style="fill:none;stroke:#ffffff;stroke-width:2.2;stroke-dasharray:none;stroke-opacity:1" />
+       d="M 11,20 A 7,7 0 0 1 9.8,6.1 C 15.5,5 17,4.48 19,2 c 1,2 2,4.18 2,8 0,5.5 -4.78,10 -10,10 z" />
     <path
-       d="M 2,21 C 2,18 3.85,15.64 7.08,15 9.5,14.52 12,13 13,12"
-       id="path3"
-       style="fill:none;stroke:#ffffff;stroke-width:2.2;stroke-dasharray:none;stroke-opacity:1" />
+       d="M 2,21 C 2,18 3.85,15.64 7.08,15 9.5,14.52 12,13 13,12" />
   </g>
 </svg>

@@ -12,18 +12,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Test files should not be linted with React rules
-    "tests/**",
-    // Homepage clone should be ignored
-    "homepage/**",
-    // VitePress generated files
-    "docs/.vitepress/**",
-    // Compiled service worker
-    "public/sw.js",
-    // Coverage reports (generated)
-    "coverage/**",
-    // Cloned Serwist repo (has its own lint config)
-    "serwist/**",
   ]),
 ]);
 

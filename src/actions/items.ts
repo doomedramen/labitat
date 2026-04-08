@@ -1,0 +1,162 @@
+"use server"
+
+import { revalidatePath } from "next/cache"
+import { eq, max } from "drizzle-orm"
+import { nanoid } from "nanoid"
+import { requireAuth } from "@/lib/auth/guard"
+import { db } from "@/lib/db"
+import { items } from "@/lib/db/schema"
+import { encrypt, decrypt } from "@/lib/crypto"
+import { getService } from "@/lib/adapters"
+
+async function buildServiceConfig(
+  serviceType: string | null,
+  formData: FormData
+): Promise<{ configEnc: string | null; serviceUrl: string | null }> {
+  if (!serviceType) {
+    return { configEnc: null, serviceUrl: null }
+  }
+
+  const adapter = getService(serviceType)
+  if (!adapter) {
+    return { configEnc: null, serviceUrl: null }
+  }
+
+  const config: Record<string, string> = {}
+  let serviceUrl: string | null = null
+
+  for (const field of adapter.configFields) {
+    const formKey = "config_" + field.key
+
+    if (field.type === "boolean") {
+      const value = formData.get(formKey)
+      config[field.key] = value === "true" ? "true" : "false"
+    } else {
+      const value = (formData.get(formKey) as string) ?? ""
+      if (field.type === "password" && value) {
+        config[field.key] = value
+      } else if (field.type === "url") {
+        config[field.key] = value
+        serviceUrl = value || null
+      } else if (value) {
+        config[field.key] = value
+      }
+    }
+  }
+
+  const configEnc =
+    Object.keys(config).length > 0
+      ? await encrypt(JSON.stringify(config))
+      : null
+
+  return { configEnc, serviceUrl }
+}
+
+export async function createItem(groupId: string, formData: FormData) {
+  await requireAuth()
+
+  const label = (formData.get("label") as string | null)?.trim() ?? ""
+
+  const rawServiceType = (formData.get("serviceType") as string) || null
+  const serviceType =
+    rawServiceType && getService(rawServiceType) ? rawServiceType : null
+  const { configEnc, serviceUrl } = await buildServiceConfig(
+    serviceType,
+    formData
+  )
+
+  const [result] = await db
+    .select({ maxOrder: max(items.order) })
+    .from(items)
+    .where(eq(items.groupId, groupId))
+  const nextOrder = (result?.maxOrder ?? -1) + 1
+
+  const pollingMsStr = formData.get("pollingMs") as string
+  const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) * 1000 : null
+
+  const cleanMode = formData.get("cleanMode") === "true"
+
+  await db.insert(items).values({
+    id: nanoid(),
+    groupId,
+    label,
+    href: (formData.get("href") as string) || null,
+    iconUrl: (formData.get("iconUrl") as string) || null,
+    serviceType,
+    serviceUrl,
+    apiKeyEnc: null,
+    configEnc,
+    pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
+    cleanMode,
+    order: nextOrder,
+  })
+  revalidatePath("/")
+}
+
+export async function updateItem(id: string, formData: FormData) {
+  await requireAuth()
+
+  const label = (formData.get("label") as string | null)?.trim() ?? ""
+
+  const rawServiceType = (formData.get("serviceType") as string) || null
+  const serviceType =
+    rawServiceType && getService(rawServiceType) ? rawServiceType : null
+  const { configEnc, serviceUrl } = await buildServiceConfig(
+    serviceType,
+    formData
+  )
+
+  const pollingMsStr = formData.get("pollingMs") as string
+  const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) * 1000 : null
+
+  const cleanMode = formData.get("cleanMode") === "true"
+
+  await db
+    .update(items)
+    .set({
+      label,
+      href: (formData.get("href") as string) || null,
+      iconUrl: (formData.get("iconUrl") as string) || null,
+      serviceType,
+      serviceUrl,
+      configEnc,
+      pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
+      cleanMode,
+    })
+    .where(eq(items.id, id))
+  revalidatePath("/")
+}
+
+export async function deleteItem(id: string) {
+  await requireAuth()
+  await db.delete(items).where(eq(items.id, id))
+  revalidatePath("/")
+}
+
+export async function reorderItems(groupId: string, orderedIds: string[]) {
+  await requireAuth()
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      db.update(items).set({ order: index, groupId }).where(eq(items.id, id))
+    )
+  )
+  revalidatePath("/")
+}
+
+export async function getItemConfig(
+  id: string
+): Promise<Record<string, string>> {
+  await requireAuth()
+
+  const [item] = await db.select().from(items).where(eq(items.id, id))
+  if (!item || !item.configEnc) {
+    return {}
+  }
+
+  try {
+    const decrypted = await decrypt(item.configEnc)
+    return JSON.parse(decrypted)
+  } catch {
+    return {}
+  }
+}
