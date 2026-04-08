@@ -12,21 +12,19 @@ function GlancesTimeseriesWidget({
   cpuHistory,
   memHistory,
 }: GlancesTimeseriesData) {
+  const cpu = cpuHistory ?? []
+  const mem = memHistory ?? []
   const avgCpu =
-    cpuHistory.length > 0
-      ? Math.round(cpuHistory.reduce((a, b) => a + b, 0) / cpuHistory.length)
-      : 0
+    cpu.length > 0 ? Math.round(cpu.reduce((a, b) => a + b, 0) / cpu.length) : 0
   const avgMem =
-    memHistory.length > 0
-      ? Math.round(memHistory.reduce((a, b) => a + b, 0) / memHistory.length)
-      : 0
+    mem.length > 0 ? Math.round(mem.reduce((a, b) => a + b, 0) / mem.length) : 0
 
   return (
     <StatGrid
       items={[
         { value: `${avgCpu}%`, label: "Avg CPU" },
         { value: `${avgMem}%`, label: "Avg RAM" },
-        { value: cpuHistory.length, label: "Samples" },
+        { value: cpu.length, label: "Samples" },
       ]}
     />
   )

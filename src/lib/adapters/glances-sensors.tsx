@@ -14,19 +14,19 @@ function GlancesSensorsWidget({
   maxTemp,
   fanSpeed,
 }: GlancesSensorsData) {
+  const cpu = cpuTemp ?? 0
+  const max = maxTemp ?? 0
+  const fan = fanSpeed ?? 0
+
   const tempColor =
-    cpuTemp > 80
-      ? "text-destructive"
-      : cpuTemp > 60
-        ? "text-amber-500"
-        : undefined
+    cpu > 80 ? "text-destructive" : cpu > 60 ? "text-amber-500" : undefined
 
   return (
     <StatGrid
       items={[
-        { value: `${cpuTemp}°C`, label: "CPU Temp", valueClassName: tempColor },
-        { value: `${maxTemp}°C`, label: "Max Temp" },
-        { value: fanSpeed > 0 ? `${fanSpeed} RPM` : "N/A", label: "Fan" },
+        { value: `${cpu}°C`, label: "CPU Temp", valueClassName: tempColor },
+        { value: `${max}°C`, label: "Max Temp" },
+        { value: fan > 0 ? `${fan} RPM` : "N/A", label: "Fan" },
       ]}
     />
   )

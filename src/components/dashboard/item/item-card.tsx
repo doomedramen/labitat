@@ -83,7 +83,11 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
             </button>
           )}
 
-          <ItemIcon iconUrl={item.iconUrl} label={item.label} />
+          <ItemIcon
+            iconUrl={item.iconUrl}
+            label={item.label}
+            serviceIcon={serviceDef?.icon ?? null}
+          />
 
           <div className="min-w-0 flex-1 pr-4">
             <p className="truncate text-sm leading-snug font-medium">
@@ -155,7 +159,11 @@ export function ItemCardDragPreview({ item }: { item: ItemWithCache }) {
 
   return (
     <div className="flex min-h-[3.25rem] items-center gap-3 rounded-xl bg-popover/90 px-3 py-2.5 shadow-lg ring-2 ring-ring backdrop-blur-sm">
-      <ItemIcon iconUrl={item.iconUrl} label={item.label} />
+      <ItemIcon
+        iconUrl={item.iconUrl}
+        label={item.label}
+        serviceIcon={serviceDef?.icon ?? null}
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm leading-snug font-medium">
           {item.label}

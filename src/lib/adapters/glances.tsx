@@ -36,18 +36,23 @@ function GlancesWidget({
   load1,
   uptime,
 }: GlancesData) {
-  const cpuColor = cpuPercent > 90 ? "text-destructive" : undefined
-  const memColor = memPercent > 90 ? "text-destructive" : undefined
+  const cpu = cpuPercent ?? 0
+  const mem = memPercent ?? 0
+  const swap = swapPercent ?? 0
+  const load = load1 ?? 0
+
+  const cpuColor = cpu > 90 ? "text-destructive" : undefined
+  const memColor = mem > 90 ? "text-destructive" : undefined
 
   return (
     <StatGrid
       items={[
-        { value: `${cpuPercent}%`, label: "CPU", valueClassName: cpuColor },
-        { value: `${memPercent}%`, label: "RAM", valueClassName: memColor },
-        { value: memUsed, label: "Memory" },
-        { value: `${swapPercent}%`, label: "Swap" },
-        { value: load1?.toFixed(2) ?? "—", label: "Load" },
-        { value: uptime, label: "Uptime" },
+        { value: `${cpu}%`, label: "CPU", valueClassName: cpuColor },
+        { value: `${mem}%`, label: "RAM", valueClassName: memColor },
+        { value: memUsed ?? "—", label: "Memory" },
+        { value: `${swap}%`, label: "Swap" },
+        { value: load.toFixed(2), label: "Load" },
+        { value: uptime ?? "—", label: "Uptime" },
       ]}
     />
   )

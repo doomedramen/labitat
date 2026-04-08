@@ -1,0 +1,180 @@
+import { render, screen } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { tautulliDefinition } from "@/lib/adapters/tautulli"
+import { TooltipProvider } from "@/components/ui/tooltip"
+
+function renderWithTooltipProvider(ui: React.ReactElement) {
+  return render(<TooltipProvider>{ui}</TooltipProvider>)
+}
+
+describe("tautulli definition", () => {
+  it("has correct metadata", () => {
+    expect(tautulliDefinition.id).toBe("tautulli")
+    expect(tautulliDefinition.name).toBe("Tautulli")
+    expect(tautulliDefinition.icon).toBe("tautulli")
+    expect(tautulliDefinition.category).toBe("media")
+    expect(tautulliDefinition.defaultPollingMs).toBe(10_000)
+  })
+
+  it("has configFields defined", () => {
+    expect(tautulliDefinition.configFields).toBeDefined()
+    expect(tautulliDefinition.configFields).toHaveLength(2)
+    expect(tautulliDefinition.configFields[0].key).toBe("url")
+    expect(tautulliDefinition.configFields[0].type).toBe("url")
+    expect(tautulliDefinition.configFields[0].required).toBe(true)
+    expect(tautulliDefinition.configFields[1].key).toBe("apiKey")
+    expect(tautulliDefinition.configFields[1].type).toBe("password")
+    expect(tautulliDefinition.configFields[1].required).toBe(true)
+  })
+
+  describe("fetchData", () => {
+    beforeEach(() => {
+      vi.resetAllMocks()
+    })
+
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it("fetches data successfully with sessions", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              response: {
+                data: {
+                  sessions: [
+                    {
+                      title: "Movie 1",
+                      user: "user1",
+                      progress_percent: 50,
+                      duration: 7200,
+                      state: "playing",
+                      video_decision: "transcode",
+                      bandwidth: 5000000,
+                    },
+                    {
+                      title: "Show S01E01",
+                      user: "user2",
+                      progress_percent: 25,
+                      duration: 3600,
+                      state: "paused",
+                      video_decision: "direct play",
+                      bandwidth: 2000000,
+                    },
+                  ],
+                },
+              },
+            }),
+        })
+      )
+
+      const result = await tautulliDefinition.fetchData!({
+        url: "https://tautulli.example.com/",
+        apiKey: "test-key",
+      })
+
+      expect(result._status).toBe("ok")
+      expect(result.streamCount).toBe(2)
+      expect(result.transcodeStreams).toBe(1)
+      expect(result.directPlayStreams).toBe(1)
+      expect(result.directStreamStreams).toBe(0)
+      expect(result.sessions).toHaveLength(2)
+      expect(result.sessions?.[0].title).toBe("Movie 1")
+      expect(result.sessions?.[0].state).toBe("playing")
+      expect(result.sessions?.[1].state).toBe("paused")
+    })
+
+    it("throws on error response", async () => {
+      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 500 }))
+
+      await expect(
+        tautulliDefinition.fetchData!({
+          url: "https://tautulli.example.com",
+          apiKey: "bad-key",
+        })
+      ).rejects.toThrow("Tautulli error: 500")
+    })
+
+    it("handles empty sessions", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ response: { data: {} } }),
+        })
+      )
+
+      const result = await tautulliDefinition.fetchData!({
+        url: "https://tautulli.example.com",
+        apiKey: "test-key",
+      })
+
+      expect(result.streamCount).toBe(0)
+      expect(result.totalBandwidth).toBe("0 B/s")
+      expect(result.sessions).toEqual([])
+    })
+
+    it("includes API key in URL", async () => {
+      const mockFetch = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ response: { data: {} } }),
+        })
+      )
+      vi.stubGlobal("fetch", mockFetch)
+
+      await tautulliDefinition.fetchData!({
+        url: "https://tautulli.example.com",
+        apiKey: "secret-key",
+      })
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://tautulli.example.com/api/v2?apikey=secret-key&cmd=get_activity"
+      )
+    })
+  })
+
+  describe("Widget", () => {
+    it("renders with sample data", () => {
+      renderWithTooltipProvider(
+        <tautulliDefinition.Widget
+          streamCount={3}
+          totalBandwidth="15.0 MB/s"
+          transcodeStreams={2}
+          directPlayStreams={5}
+          directStreamStreams={8}
+          sessions={[
+            {
+              title: "Movie",
+              user: "user1",
+              progress: 3600,
+              duration: 7200,
+              state: "playing",
+            },
+          ]}
+        />
+      )
+      expect(screen.getByText("3")).toBeInTheDocument()
+      expect(screen.getByText("15.0 MB/s")).toBeInTheDocument()
+      expect(screen.getByText("2")).toBeInTheDocument()
+      expect(screen.getByText("5")).toBeInTheDocument()
+      expect(screen.getByText("8")).toBeInTheDocument()
+      expect(screen.getByText("Movie")).toBeInTheDocument()
+    })
+
+    it("renders without sessions", () => {
+      renderWithTooltipProvider(
+        <tautulliDefinition.Widget
+          streamCount={0}
+          totalBandwidth="0 B/s"
+          transcodeStreams={0}
+          directPlayStreams={0}
+          directStreamStreams={0}
+        />
+      )
+      expect(screen.getByText("0 B/s")).toBeInTheDocument()
+      expect(screen.getAllByText("0")).toHaveLength(4)
+    })
+  })
+})

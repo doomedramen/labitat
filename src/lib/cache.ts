@@ -18,13 +18,16 @@ const CACHE_DIR =
     : join(process.cwd(), "data", "cache"))
 const CACHE_FILE = join(CACHE_DIR, "widget-cache.json")
 
+// Ensure cache directory exists synchronously at startup
+try {
+  await fs.mkdir(CACHE_DIR, { recursive: true })
+} catch (err) {
+  console.error("[cache] Failed to create cache directory:", err)
+}
+
 // Initialize cache directory
 async function ensureCacheDir() {
-  try {
-    await fs.mkdir(CACHE_DIR, { recursive: true })
-  } catch (err) {
-    console.error("[cache] Failed to create cache directory:", err)
-  }
+  await fs.mkdir(CACHE_DIR, { recursive: true })
 }
 
 // Load cache from disk on first access
@@ -58,7 +61,6 @@ function saveCacheToFile() {
   saveTimeout = setTimeout(() => {
     writeChain = writeChain.then(async () => {
       try {
-        await ensureCacheDir()
         const obj = Object.fromEntries(memoryCache.entries())
         await fs.writeFile(CACHE_FILE, JSON.stringify(obj), "utf-8")
       } catch (err) {

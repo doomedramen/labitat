@@ -1,10 +1,3 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-
 /**
  * Resolve an icon slug to a full selfh.st CDN URL.
  * If the icon is already a full URL (http:// or https://), return as-is.

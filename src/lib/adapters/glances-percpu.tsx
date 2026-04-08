@@ -13,9 +13,9 @@ function GlancesPerCpuWidget({ cores, maxCore, avgCpu }: GlancesPerCpuData) {
   return (
     <StatGrid
       items={[
-        { value: cores, label: "Cores" },
-        { value: `${maxCore}%`, label: "Max Core" },
-        { value: `${avgCpu}%`, label: "Average" },
+        { value: cores ?? 0, label: "Cores" },
+        { value: `${maxCore ?? 0}%`, label: "Max Core" },
+        { value: `${avgCpu ?? 0}%`, label: "Average" },
       ]}
     />
   )

@@ -21,9 +21,12 @@ function ProxmoxWidget({
   return (
     <StatGrid
       items={[
-        { value: nodes, label: "Nodes" },
-        { value: `${runningVMs}/${vms}`, label: "VMs" },
-        { value: `${runningContainers}/${containers}`, label: "LXCs" },
+        { value: nodes ?? 0, label: "Nodes" },
+        { value: `${runningVMs ?? 0}/${vms ?? 0}`, label: "VMs" },
+        {
+          value: `${runningContainers ?? 0}/${containers ?? 0}`,
+          label: "LXCs",
+        },
       ]}
     />
   )

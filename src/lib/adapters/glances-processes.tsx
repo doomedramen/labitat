@@ -21,11 +21,11 @@ function GlancesProcessesWidget({
   return (
     <StatGrid
       items={[
-        { value: total, label: "Total" },
-        { value: running, label: "Running" },
-        { value: sleeping, label: "Sleeping" },
-        { value: topCpu, label: "Top CPU" },
-        { value: topMem, label: "Top Mem" },
+        { value: total ?? 0, label: "Total" },
+        { value: running ?? 0, label: "Running" },
+        { value: sleeping ?? 0, label: "Sleeping" },
+        { value: topCpu ?? "—", label: "Top CPU" },
+        { value: topMem ?? "—", label: "Top Mem" },
       ]}
     />
   )

@@ -18,17 +18,20 @@ function APCUPSWidget({
   temperature,
   status,
 }: APCUPSData) {
-  const timeLeftMin =
-    timeLeft > 60 ? `${(timeLeft / 60).toFixed(0)}m` : `${timeLeft ?? 0}s`
+  const load = loadPercent ?? 0
+  const battery = batteryCharge ?? 0
+  const time = timeLeft ?? 0
+  const temp = temperature ?? 0
+  const timeLeftMin = time > 60 ? `${(time / 60).toFixed(0)}m` : `${time}s`
 
   return (
     <StatGrid
       items={[
-        { value: `${loadPercent}%`, label: "Load" },
-        { value: `${batteryCharge}%`, label: "Battery" },
+        { value: `${load}%`, label: "Load" },
+        { value: `${battery}%`, label: "Battery" },
         { value: timeLeftMin, label: "Time Left" },
-        { value: `${temperature}°C`, label: "Temp" },
-        { value: status, label: "Status" },
+        { value: `${temp}°C`, label: "Temp" },
+        { value: status ?? "—", label: "Status" },
       ]}
     />
   )

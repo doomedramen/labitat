@@ -24,20 +24,18 @@ function GlancesDiskUsageWidget({
   total,
   free,
 }: GlancesDiskUsageData) {
+  const pct = usedPercent ?? 0
+
   const color =
-    usedPercent > 90
-      ? "text-destructive"
-      : usedPercent > 75
-        ? "text-amber-500"
-        : undefined
+    pct > 90 ? "text-destructive" : pct > 75 ? "text-amber-500" : undefined
 
   return (
     <StatGrid
       items={[
-        { value: `${usedPercent}%`, label: "Used", valueClassName: color },
-        { value: used, label: "Used Space" },
-        { value: free, label: "Free" },
-        { value: total, label: "Total" },
+        { value: `${pct}%`, label: "Used", valueClassName: color },
+        { value: used ?? "—", label: "Used Space" },
+        { value: free ?? "—", label: "Free" },
+        { value: total ?? "—", label: "Total" },
       ]}
     />
   )

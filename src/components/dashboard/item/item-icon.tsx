@@ -2,14 +2,18 @@
 
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { resolveIconUrl } from "@/lib/icons"
 
 interface ItemIconProps {
   iconUrl: string | null
   label: string
+  serviceIcon?: string | null // Service definition icon (fallback)
 }
 
-export function ItemIcon({ iconUrl, label }: ItemIconProps) {
-  const iconSrc = iconUrl || `/icons/fallback.svg`
+export function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
+  // Use custom iconUrl if provided, otherwise fall back to service icon
+  const rawIcon = iconUrl || serviceIcon || null
+  const iconSrc = resolveIconUrl(rawIcon)
 
   return (
     <div
@@ -18,9 +22,9 @@ export function ItemIcon({ iconUrl, label }: ItemIconProps) {
         "bg-secondary"
       )}
     >
-      {iconUrl ? (
+      {iconSrc ? (
         <Image
-          src={iconUrl}
+          src={iconSrc}
           alt={label}
           width={20}
           height={20}
