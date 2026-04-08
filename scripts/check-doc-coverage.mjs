@@ -12,10 +12,10 @@ import fs from "fs"
 import path from "path"
 
 const projectRoot = process.cwd()
-const adaptersDir = path.join(projectRoot, "lib", "adapters")
+const adaptersDir = path.join(projectRoot, "src", "lib", "adapters")
 const docsServicesDir = path.join(projectRoot, "docs", "services")
 
-// Files in lib/adapters/ that are not service adapters
+// Files in src/lib/adapters/ that are not service adapters
 const NON_ADAPTER_FILES = new Set([
   "index",
   "types",
