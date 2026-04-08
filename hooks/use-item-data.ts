@@ -1,14 +1,13 @@
 "use client"
 
-import { useEffect, useSyncExternalStore } from "react"
+import { useSyncExternalStore } from "react"
 import useSWR, { type SWRConfiguration } from "swr"
 import { getWidgetData } from "@/actions/widget-data"
 import { pingUrl } from "@/actions/ping"
-import { useDashboardStore } from "@/lib/stores/dashboard-store"
-import { getService } from "@/lib/adapters"
 import type { ItemRow } from "@/lib/types"
 import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
 import { dataToStatus } from "@/lib/adapters/types"
+import { getService } from "@/lib/adapters"
 
 // ── Hook: useItemData ─────────────────────────────────────────────────────────
 
@@ -55,17 +54,9 @@ export function useItemData({
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
   const isClientSide = serviceDef?.clientSide ?? false
 
-  // Read cached data from store
-  const cachedWidgetData = useDashboardStore((s) => s.widgetData[item.id])
-  const cachedPingStatus = useDashboardStore((s) => s.pingStatus[item.id])
-  const setWidgetData = useDashboardStore((s) => s.setWidgetData)
-  const setPingStatus = useDashboardStore((s) => s.setPingStatus)
-
-  // Determine what to fetch
   const shouldFetchService = !editMode && item.serviceType && serviceDef
   const shouldPing = !editMode && !item.serviceType && item.href
 
-  // Error retry logic with exponential backoff
   const onErrorRetry: SWRConfiguration["onErrorRetry"] = (
     _error,
     _key,
@@ -81,7 +72,9 @@ export function useItemData({
     )
   }
 
-  // SWR for service data
+  // SWR key matches the fallback key set in Dashboard from SSR-preloaded data.
+  // On first render (SSR + hydration) SWR returns the fallback — no loading flash.
+  // After mount, SWR revalidates in the background per pollingMs.
   const {
     data: serviceData,
     isLoading: isServiceLoading,
@@ -101,9 +94,8 @@ export function useItemData({
     }
   )
 
-  // SWR for ping data
   const {
-    data: pingStatus,
+    data: pingData,
     isLoading: isPingLoading,
     error: pingError,
   } = useSWR<ServiceStatus | null>(
@@ -119,35 +111,19 @@ export function useItemData({
     }
   )
 
-  // Update store with fresh data
-  useEffect(() => {
-    if (serviceData) {
-      setWidgetData(item.id, serviceData)
-    }
-  }, [serviceData, item.id, setWidgetData])
+  const effectiveData = editMode ? null : (serviceData ?? null)
 
-  useEffect(() => {
-    if (pingStatus) {
-      setPingStatus(item.id, pingStatus)
-    }
-  }, [pingStatus, item.id, setPingStatus])
-
-  // Compute derived state
-  const effectiveData = editMode
-    ? null
-    : (serviceData ?? cachedWidgetData ?? null)
-
+  // isLoading is false when SWR has any data (including SSR fallback), so no flash
   const effectiveLoading = editMode
     ? false
     : !isOnline
       ? false
       : shouldFetchService && !isClientSide
-        ? isServiceLoading && !cachedWidgetData
+        ? isServiceLoading
         : shouldPing
-          ? isPingLoading && !cachedPingStatus
+          ? isPingLoading
           : false
 
-  // Compute status
   const hasStatus = !!item.href && !isClientSide
 
   const serviceStatus: ServiceStatus = editMode
@@ -164,13 +140,11 @@ export function useItemData({
               state: "error",
               reason: pingError.message || "Failed to ping URL",
             }
-          : pingStatus
-            ? pingStatus
-            : cachedPingStatus
-              ? cachedPingStatus
-              : effectiveData
-                ? dataToStatus(effectiveData)
-                : { state: "unknown" }
+          : pingData
+            ? pingData
+            : effectiveData
+              ? dataToStatus(effectiveData)
+              : { state: "unknown" }
 
   return {
     effectiveData,

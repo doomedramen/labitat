@@ -6,9 +6,11 @@ import {
   useCallback,
   useReducer,
   useTransition,
+  useMemo,
 } from "react"
 
 import { toast } from "sonner"
+import { SWRConfig } from "swr"
 import {
   DndContext,
   DragOverlay,
@@ -30,7 +32,6 @@ import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
 import type { ItemDatapoint } from "@/lib/last-datapoints"
-import { useDashboardStore } from "@/lib/stores/dashboard-store"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -204,31 +205,32 @@ export function Dashboard({
     setTitleChanged(false)
   }, [])
 
-  // ── Zustand store for caching ──────────────────────────────────────────────
-  const setGroups = useDashboardStore((s) => s.setGroups)
-  const setWidgetData = useDashboardStore((s) => s.setWidgetData)
-  const setPingStatus = useDashboardStore((s) => s.setPingStatus)
-
   // ── Groups state with reducer ──────────────────────────────────────────────
-  // Initialize from SSR data (no localStorage needed)
   const [sortedGroups, dispatch] = useReducer(groupsReducer, groups)
 
-  // Sync when server sends updated data (after mutations / revalidatePath)
-  // Initialize Zustand store with SSR data on mount
+  // Sync reducer when server pushes updated groups (after mutations / revalidatePath)
   useEffect(() => {
     dispatch({ type: "SYNC", groups })
-    setGroups(groups)
+  }, [groups])
 
-    // Initialize widget and ping data from SSR-preloaded datapoints
-    for (const [itemId, datapoint] of Object.entries(initialDatapoints)) {
-      if (datapoint.widgetData) {
-        setWidgetData(itemId, datapoint.widgetData)
-      }
-      if (datapoint.pingStatus) {
-        setPingStatus(itemId, datapoint.pingStatus)
+  // ── SWR fallback: pre-populate SWR cache with SSR-preloaded datapoints ─────
+  // This makes cached widget/ping data available on the first render (SSR + hydration)
+  // without any loading flash. SWR then revalidates in the background.
+  const swrFallback = useMemo(() => {
+    const fallback: Record<string, unknown> = {}
+    for (const group of groups) {
+      for (const item of group.items) {
+        const dp = initialDatapoints[item.id]
+        if (dp?.widgetData) {
+          fallback[`widget:${item.id}`] = dp.widgetData
+        }
+        if (dp?.pingStatus && item.href) {
+          fallback[`ping:${item.id}:${item.href}`] = dp.pingStatus
+        }
       }
     }
-  }, [groups, setGroups, setWidgetData, setPingStatus, initialDatapoints])
+    return fallback
+  }, [groups, initialDatapoints])
 
   // ── DnD setup ──────────────────────────────────────────────────────────────
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -341,36 +343,20 @@ export function Dashboard({
   }, [])
 
   // ── Optimistic handlers ────────────────────────────────────────────────────
-  const updateItem = useDashboardStore((s) => s.updateItem)
-  const deleteItem = useDashboardStore((s) => s.deleteItem)
-  const addItem = useDashboardStore((s) => s.addItem)
+  const handleItemCreated = useCallback((groupId: string, item: ItemRow) => {
+    dispatch({ type: "ADD_ITEM", groupId, item })
+    toast.success(`${item.label || "Item"} added`)
+  }, [])
 
-  const handleItemCreated = useCallback(
-    (groupId: string, item: ItemRow) => {
-      dispatch({ type: "ADD_ITEM", groupId, item })
-      addItem(groupId, item)
-      toast.success(`${item.label || "Item"} added`)
-    },
-    [addItem]
-  )
+  const handleItemUpdated = useCallback((item: ItemRow) => {
+    dispatch({ type: "UPDATE_ITEM", item })
+    toast.success(`${item.label || "Item"} saved`)
+  }, [])
 
-  const handleItemUpdated = useCallback(
-    (item: ItemRow) => {
-      dispatch({ type: "UPDATE_ITEM", item })
-      updateItem(item)
-      toast.success(`${item.label || "Item"} saved`)
-    },
-    [updateItem]
-  )
-
-  const handleItemDeleted = useCallback(
-    (itemId: string) => {
-      dispatch({ type: "DELETE_ITEM", itemId })
-      deleteItem(itemId)
-      toast.success("Item deleted")
-    },
-    [deleteItem]
-  )
+  const handleItemDeleted = useCallback((itemId: string) => {
+    dispatch({ type: "DELETE_ITEM", itemId })
+    toast.success("Item deleted")
+  }, [])
 
   const handleGroupCreated = useCallback(
     (name: string) => {
@@ -475,54 +461,56 @@ export function Dashboard({
           </div>
         </header>
 
-        {/* Dashboard body */}
-        <DndContext
-          sensors={sensors}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={groupIds}
-            strategy={verticalListSortingStrategy}
+        {/* Dashboard body — wrapped in SWRConfig so widgets get SSR-cached data as fallback */}
+        <SWRConfig value={{ fallback: swrFallback }}>
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
           >
-            {sortedGroups.length === 0 ? (
-              <EmptyState isLoggedIn={isLoggedIn} editMode={editMode} />
-            ) : (
-              <div className="flex flex-col gap-8">
-                {sortedGroups.map((group) => (
-                  <Group
-                    key={group.id}
-                    group={group}
-                    editMode={editMode}
-                    onEditGroup={openEditGroup}
-                    onAddItem={openAddItem}
-                    onEditItem={openEditItem}
-                    onGroupDeleted={handleGroupDeleted}
-                    onItemDeleted={handleItemDeleted}
-                  />
-                ))}
-              </div>
-            )}
-          </SortableContext>
+            <SortableContext
+              items={groupIds}
+              strategy={verticalListSortingStrategy}
+            >
+              {sortedGroups.length === 0 ? (
+                <EmptyState isLoggedIn={isLoggedIn} editMode={editMode} />
+              ) : (
+                <div className="flex flex-col gap-8">
+                  {sortedGroups.map((group) => (
+                    <Group
+                      key={group.id}
+                      group={group}
+                      editMode={editMode}
+                      onEditGroup={openEditGroup}
+                      onAddItem={openAddItem}
+                      onEditItem={openEditItem}
+                      onGroupDeleted={handleGroupDeleted}
+                      onItemDeleted={handleItemDeleted}
+                    />
+                  ))}
+                </div>
+              )}
+            </SortableContext>
 
-          <DragOverlay>
-            {activeType === "group" &&
-              activeId &&
-              (() => {
-                const group = sortedGroups.find((g) => g.id === activeId)
-                return group ? <GroupDragPreview group={group} /> : null
-              })()}
-            {activeType === "item" &&
-              activeId &&
-              (() => {
-                const item = sortedGroups
-                  .flatMap((g) => g.items)
-                  .find((i) => i.id === activeId)
-                return item ? <ItemCardDragPreview item={item} /> : null
-              })()}
-          </DragOverlay>
-        </DndContext>
+            <DragOverlay>
+              {activeType === "group" &&
+                activeId &&
+                (() => {
+                  const group = sortedGroups.find((g) => g.id === activeId)
+                  return group ? <GroupDragPreview group={group} /> : null
+                })()}
+              {activeType === "item" &&
+                activeId &&
+                (() => {
+                  const item = sortedGroups
+                    .flatMap((g) => g.items)
+                    .find((i) => i.id === activeId)
+                  return item ? <ItemCardDragPreview item={item} /> : null
+                })()}
+            </DragOverlay>
+          </DndContext>
+        </SWRConfig>
       </div>
 
       {editMode && isLoggedIn && (
