@@ -46,7 +46,7 @@ function GlancesWidget({
         { value: `${memPercent}%`, label: "RAM", valueClassName: memColor },
         { value: memUsed, label: "Memory" },
         { value: `${swapPercent}%`, label: "Swap" },
-        { value: load1.toFixed(2), label: "Load" },
+        { value: load1?.toFixed(2) ?? "—", label: "Load" },
         { value: uptime, label: "Uptime" },
       ]}
     />

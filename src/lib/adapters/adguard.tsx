@@ -41,7 +41,10 @@ function AdGuardWidget({
     items.push({ value: blocked, label: "Blocked" })
   }
   if (showBlockedPercent) {
-    items.push({ value: `${blockedPercent.toFixed(1)}%`, label: "Block Rate" })
+    items.push({
+      value: `${blockedPercent?.toFixed(1) ?? 0}%`,
+      label: "Block Rate",
+    })
   }
   if (showParentalBlocked) {
     items.push({ value: parentalBlocked, label: "Parental" })

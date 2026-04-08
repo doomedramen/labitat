@@ -19,7 +19,7 @@ function APCUPSWidget({
   status,
 }: APCUPSData) {
   const timeLeftMin =
-    timeLeft > 60 ? `${(timeLeft / 60).toFixed(0)}m` : `${timeLeft}s`
+    timeLeft > 60 ? `${(timeLeft / 60).toFixed(0)}m` : `${timeLeft ?? 0}s`
 
   return (
     <StatGrid
