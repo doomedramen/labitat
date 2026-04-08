@@ -39,8 +39,36 @@ if (!fs.existsSync(migrationsFolder)) {
   process.exit(0)
 }
 
-migrate(db, { migrationsFolder })
+// Read migration journal
+const journalPath = path.join(migrationsFolder, "meta", "_journal.json")
+const journal = JSON.parse(fs.readFileSync(journalPath, "utf-8"))
 
-console.log("Migrations complete.")
+// Run migrations
+try {
+  migrate(db, { migrationsFolder })
+  console.log("Migrations complete.")
+} catch (err) {
+  if (err.message && err.message.includes("already exists")) {
+    console.log(
+      "Schema already applied, ensuring migrations tracking table exists..."
+    )
+    // Ensure tracking table exists
+    sqlite
+      .prepare(
+        "CREATE TABLE IF NOT EXISTS __drizzle_migrations (version TEXT PRIMARY KEY, applied_at TEXT DEFAULT (current_timestamp))"
+      )
+      .run()
+    // Mark all journal entries as applied
+    const insertStmt = sqlite.prepare(
+      "INSERT OR IGNORE INTO __drizzle_migrations (version) VALUES (?)"
+    )
+    for (const entry of journal.entries) {
+      insertStmt.run(entry.tag)
+    }
+    console.log("Migrations tracking updated.")
+  } else {
+    throw err
+  }
+}
 
 sqlite.close()
