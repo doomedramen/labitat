@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.164",
+  "version": "0.0.165",
   "type": "module",
   "private": true,
   "scripts": {
@@ -20,6 +20,7 @@
     "check-adapters": "node scripts/check-adapters.mjs",
     "check-doc-coverage": "node scripts/check-doc-coverage.mjs",
     "new-service": "node scripts/new-service.mjs",
+    "export-data": "node scripts/export-data.mjs",
     "prepare": "lefthook install",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",
