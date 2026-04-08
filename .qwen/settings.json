@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(~/.volta/bin/pnpm *)",
+      "Bash(pnpm rebuild *)"
+    ]
+  },
+  "$version": 3
+}

@@ -29,6 +29,7 @@ import { reorderGroups } from "@/actions/groups"
 import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
 import type { GroupRow, GroupWithItems, ItemRow } from "@/lib/types"
+import { useDashboardStore } from "@/lib/stores/dashboard-store"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -196,13 +197,33 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     setTitleChanged(false)
   }, [])
 
-  // ── Groups state with reducer (no ref needed!) ─────────────────────────────
-  const [sortedGroups, dispatch] = useReducer(groupsReducer, groups)
+  // ── Zustand store for caching ──────────────────────────────────────────────
+  const setGroups = useDashboardStore((s) => s.setGroups)
+
+  // ── Groups state with reducer ──────────────────────────────────────────────
+  // Use cached data immediately if available (after hydration), else start with server data
+  const [sortedGroups, dispatch] = useReducer(groupsReducer, groups, (defaultState) => {
+    // Synchronously check localStorage for cached data
+    try {
+      const stored = localStorage.getItem("labitat-dashboard-cache")
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed?.state?.groups && Array.isArray(parsed.state.groups) && parsed.state.groups.length > 0) {
+          return parsed.state.groups
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return defaultState
+  })
 
   // Sync when server sends updated data (after mutations / revalidatePath)
+  // Also update the cache with fresh server data
   useEffect(() => {
     dispatch({ type: "SYNC", groups })
-  }, [groups])
+    setGroups(groups)
+  }, [groups, setGroups])
 
   // ── DnD setup ──────────────────────────────────────────────────────────────
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -315,20 +336,36 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   }, [])
 
   // ── Optimistic handlers ────────────────────────────────────────────────────
-  const handleItemCreated = useCallback((groupId: string, item: ItemRow) => {
-    dispatch({ type: "ADD_ITEM", groupId, item })
-    toast.success(`${item.label || "Item"} added`)
-  }, [])
+  const updateItem = useDashboardStore((s) => s.updateItem)
+  const deleteItem = useDashboardStore((s) => s.deleteItem)
+  const addItem = useDashboardStore((s) => s.addItem)
 
-  const handleItemUpdated = useCallback((item: ItemRow) => {
-    dispatch({ type: "UPDATE_ITEM", item })
-    toast.success(`${item.label || "Item"} saved`)
-  }, [])
+  const handleItemCreated = useCallback(
+    (groupId: string, item: ItemRow) => {
+      dispatch({ type: "ADD_ITEM", groupId, item })
+      addItem(groupId, item)
+      toast.success(`${item.label || "Item"} added`)
+    },
+    [addItem]
+  )
 
-  const handleItemDeleted = useCallback((itemId: string) => {
-    dispatch({ type: "DELETE_ITEM", itemId })
-    toast.success("Item deleted")
-  }, [])
+  const handleItemUpdated = useCallback(
+    (item: ItemRow) => {
+      dispatch({ type: "UPDATE_ITEM", item })
+      updateItem(item)
+      toast.success(`${item.label || "Item"} saved`)
+    },
+    [updateItem]
+  )
+
+  const handleItemDeleted = useCallback(
+    (itemId: string) => {
+      dispatch({ type: "DELETE_ITEM", itemId })
+      deleteItem(itemId)
+      toast.success("Item deleted")
+    },
+    [deleteItem]
+  )
 
   const handleGroupCreated = useCallback(
     (name: string) => {

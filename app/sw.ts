@@ -155,6 +155,24 @@ const serwist = new Serwist({
         ],
       }),
     },
+    // Selfhst icons from jsdelivr CDN: cache-first (immutable, versioned URLs)
+    {
+      matcher: ({ url }) =>
+        url.hostname === "cdn.jsdelivr.net" &&
+        url.pathname.startsWith("/gh/selfhst/icons"),
+      handler: new CacheFirst({
+        cacheName: "selfhst-icons",
+        plugins: [
+          new CacheableResponsePlugin({ statuses: [200] }),
+          new ExpirationPlugin({
+            maxEntries: 128,
+            maxAgeSeconds: 30 * 24 * 60 * 60, // 1 month
+            maxAgeFrom: "last-used",
+            purgeOnQuotaError: true,
+          }),
+        ],
+      }),
+    },
     // Cross-origin requests (e.g. weather API)
     {
       matcher: ({ sameOrigin }) => !sameOrigin,
