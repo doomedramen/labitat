@@ -90,7 +90,6 @@ test.describe("Sub-150ms render sequence", () => {
   })
 
   test("widget data appears immediately from SSR", async ({ page }) => {
-    await page.waitForTimeout(3000)
     // With SSR preloading, widget data should be present on first paint
     await page.addInitScript({ content: monitorScript })
 
