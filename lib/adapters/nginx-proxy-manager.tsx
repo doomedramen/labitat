@@ -106,31 +106,33 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         "Content-Type": "application/json",
       }
 
-      // Fetch proxy hosts only (like Homepage)
-      const proxyRes = await fetch(`${baseUrl}/api/nginx/proxy-hosts`, {
+      // Fetch summary data from the root API endpoint (more efficient)
+      const summaryRes = await fetch(`${baseUrl}/api/`, {
         headers,
         ...fetchOptions,
       })
 
-      if (!proxyRes.ok) {
-        throw new Error(`NPM error: ${proxyRes.status}`)
+      if (!summaryRes.ok) {
+        throw new Error(`NPM error: ${summaryRes.status}`)
       }
 
-      const proxyData = await proxyRes.json()
+      const summaryData = await summaryRes.json()
 
-      // Count enabled and disabled hosts
-      const enabled = Array.isArray(proxyData)
-        ? proxyData.filter((h: { enabled: boolean }) => h.enabled).length
-        : 0
-      const disabled = Array.isArray(proxyData)
-        ? proxyData.filter((h: { enabled: boolean }) => !h.enabled).length
-        : 0
+      // Extract counts from the summary data
+      // The /api/ endpoint returns: { proxy: X, redirection: X, stream: X, dead: X }
+      const enabled = summaryData?.proxy ?? 0
+      const disabled = summaryData?.dead ?? 0
+      const total =
+        enabled +
+        (summaryData?.redirection ?? 0) +
+        (summaryData?.stream ?? 0) +
+        disabled
 
       return {
         _status: "ok" as const,
         enabled,
         disabled,
-        total: Array.isArray(proxyData) ? proxyData.length : 0,
+        total,
       }
     },
 
