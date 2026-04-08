@@ -58,8 +58,7 @@ export const useDashboardStore = create<DashboardState>()(
       lastUpdated: null,
       _hasHydrated: false,
 
-      setGroups: (groups) =>
-        set({ groups, lastUpdated: Date.now() }),
+      setGroups: (groups) => set({ groups, lastUpdated: Date.now() }),
 
       setWidgetData: (itemId, data) =>
         set((state) => ({

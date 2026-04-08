@@ -1,63 +1,57 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import { Wifi, RefreshCw, ServerOff } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Wifi, ServerOff } from "lucide-react"
 import { useNetworkState } from "@/hooks/use-network-state"
-import { mutate } from "swr"
+import { useOfflineBannerStore } from "@/lib/stores/offline-banner-store"
 import { cn } from "@/lib/utils"
 
+const BASE_TITLE = "Labitat"
+
 /**
- * Banner that shows when the app is offline or server is unavailable
- * Automatically refreshes data when the server comes back online
+ * Banner that shows when the app is offline or the server is unreachable.
+ * Uses browser online/offline events + server health polling.
+ * When dismissed while offline, appends "(offline)" to the page/tab title.
  */
 export function ReconnectionBanner() {
-  const { isOnline, isServerAvailable, lastOffline, isChecking } =
+  const { isOnline, isServerAvailable, isInitialized, lastOffline } =
     useNetworkState()
+  const [dismissed, setDismissed] = useState(false)
   const wasOfflineRef = useRef(false)
   const [showReconnected, setShowReconnected] = useState(false)
-  const [dismissed, setDismissed] = useState(false)
-  const [isRevalidating, setIsRevalidating] = useState(false)
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const setDismissedWhileOffline = useOfflineBannerStore(
+    (s) => s.setDismissedWhileOffline
+  )
+
   const isCurrentlyOffline = !isOnline || !isServerAvailable
 
-  const handleServerRecovered = useCallback(async () => {
-    setShowReconnected(true)
-    setDismissed(false)
-    setIsRevalidating(true)
-    wasOfflineRef.current = false
-
-    // Revalidate all SWR caches to refresh data without full page reload
-    try {
-      await mutate(() => true, undefined, { revalidate: true })
-      setIsRevalidating(false)
-    } catch {
-      // Revalidation failed, keep showing the banner
-      setIsRevalidating(false)
-    }
-
-    // Auto-dismiss after 3 seconds
-    if (dismissTimerRef.current) {
-      clearTimeout(dismissTimerRef.current)
-    }
-    dismissTimerRef.current = setTimeout(() => {
-      setShowReconnected(false)
-    }, 3000)
-  }, [])
-
-  // Track offline state and trigger recovery when back online
+  // Track transitions from offline -> online (only after first check resolves)
   useEffect(() => {
+    if (!isInitialized) return
+
     if (isCurrentlyOffline) {
       wasOfflineRef.current = true
       return
     }
 
-    if (wasOfflineRef.current && !showReconnected) {
-      const recoveryId = setTimeout(() => {
-        handleServerRecovered()
-      }, 0)
-      return () => clearTimeout(recoveryId)
+    if (wasOfflineRef.current) {
+      wasOfflineRef.current = false
+      setDismissedWhileOffline(false)
+
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- transition tracking requires synchronous state update
+      setShowReconnected(true)
+      setDismissed(false)
+
+      // Auto-dismiss reconnected message after 3 seconds
+      if (dismissTimerRef.current) {
+        clearTimeout(dismissTimerRef.current)
+      }
+      dismissTimerRef.current = setTimeout(() => {
+        setShowReconnected(false)
+      }, 3000)
     }
-  }, [isCurrentlyOffline, showReconnected, handleServerRecovered])
+  }, [isCurrentlyOffline, isInitialized, setDismissedWhileOffline])
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -66,11 +60,21 @@ export function ReconnectionBanner() {
     }
   }, [])
 
+  // Don't show anything until the first health check has completed
+  if (!isInitialized) return null
+
   // Don't show anything if online, server available, and no recent reconnection
   if (isOnline && isServerAvailable && !showReconnected) return null
 
-  // Dismissed state
-  if (dismissed) return null
+  // Dismissed state — track in store so dashboard can show "(offline)" suffix
+  if (dismissed) {
+    if (isCurrentlyOffline) {
+      setDismissedWhileOffline(true)
+    }
+    return null
+  }
+
+  const handleDismiss = () => setDismissed(true)
 
   return (
     <div
@@ -83,46 +87,53 @@ export function ReconnectionBanner() {
       )}
       role="alert"
       aria-live="assertive"
+      data-testid={isCurrentlyOffline ? "offline-banner" : "reconnected-banner"}
     >
       {showReconnected ? (
         <>
           <Wifi className="size-4" />
-          <span>
-            {isRevalidating ? "Refreshing data..." : "Server is back online!"}
-          </span>
-          <RefreshCw
-            className={cn("size-4", isRevalidating && "animate-spin")}
-          />
+          <span>Back online!</span>
         </>
       ) : (
         <>
-          {isChecking ? (
-            <>
-              <RefreshCw className="size-4 animate-spin" />
-              <span>Checking connection...</span>
-            </>
-          ) : (
-            <>
-              <ServerOff className="size-4" />
-              <span>
-                {isOnline ? "Server unavailable" : "You're offline"}
-                {lastOffline && (
-                  <span className="ml-1 text-xs opacity-90">
-                    (since {lastOffline.toLocaleTimeString()})
-                  </span>
-                )}
+          <ServerOff className="size-4" />
+          <span>
+            {isOnline ? "Server unavailable" : "You're offline"}
+            {lastOffline && (
+              <span className="ml-1 text-xs opacity-90">
+                (since {lastOffline.toLocaleTimeString()})
               </span>
-              <button
-                onClick={() => setDismissed(true)}
-                className="pointer-events-auto ml-2 rounded px-2 py-0.5 text-xs opacity-80 hover:opacity-100"
-                aria-label="Dismiss"
-              >
-                Dismiss
-              </button>
-            </>
-          )}
+            )}
+          </span>
+          <button
+            onClick={handleDismiss}
+            className="pointer-events-auto ml-2 rounded px-2 py-0.5 text-xs opacity-80 hover:opacity-100"
+            aria-label="Dismiss"
+          >
+            Dismiss
+          </button>
         </>
       )}
     </div>
   )
+}
+
+/**
+ * Hook that returns a title suffix. Returns "(offline)" when the user
+ * has dismissed the offline banner while currently offline.
+ */
+export function useOfflineTitleSuffix(): string {
+  const dismissedWhileOffline = useOfflineBannerStore(
+    (s) => s.dismissedWhileOffline
+  )
+  const { isOnline, isServerAvailable } = useNetworkState()
+  const isCurrentlyOffline = !isOnline || !isServerAvailable
+
+  useEffect(() => {
+    const suffix =
+      dismissedWhileOffline && isCurrentlyOffline ? " (offline)" : ""
+    document.title = `${BASE_TITLE}${suffix}`
+  }, [dismissedWhileOffline, isCurrentlyOffline])
+
+  return dismissedWhileOffline && isCurrentlyOffline ? " (offline)" : ""
 }

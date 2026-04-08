@@ -33,10 +33,7 @@ export function WidgetRenderer({
     serviceDef &&
     (isClientSide || (effectiveData && effectiveData._status !== "error"))
 
-  const showWidgetSkeleton =
-    !editMode &&
-    effectiveLoading &&
-    !isClientSide
+  const showWidgetSkeleton = !editMode && effectiveLoading && !isClientSide
 
   // For client-side widgets, pass the initial config data
   const widgetProps =
@@ -74,7 +71,7 @@ export function WidgetRenderer({
         </div>
       )}
       {hasWidget && !effectiveLoading && Widget && (
-        <Widget {...(widgetProps as any)} />
+        <Widget {...(widgetProps as Record<string, unknown>)} />
       )}
     </div>
   )

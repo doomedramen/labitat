@@ -1,188 +1,137 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 
 type NetworkState = {
   isOnline: boolean
   isServerAvailable: boolean
   isChecking: boolean
+  isInitialized: boolean
   lastOffline?: Date
   lastOnline?: Date
   lastServerUnavailable?: Date
   lastServerAvailable?: Date
 }
 
-// Exponential backoff configuration
-const INITIAL_CHECK_INTERVAL = 3000 // 3 seconds
-const MAX_CHECK_INTERVAL = 60000 // 60 seconds
-const BACKOFF_MULTIPLIER = 1.5
-const CONSECUTIVE_FAILURES_TO_MARK_OFFLINE = 2
-const isClient = typeof navigator !== "undefined"
+const RECONNECT_DELAY = 3_000 // 3 seconds between reconnect attempts
+const isClient = typeof window !== "undefined"
 
 /**
- * Hook to monitor network connectivity and server availability
- * Listens to online/offline events and periodically checks server health
- * with exponential backoff to avoid excessive requests
+ * Hook to monitor network connectivity and server availability.
+ * - Uses browser `navigator.onLine` + `online`/`offline` events for network state
+ * - Maintains a persistent SSE connection to `/api/health/stream` to detect
+ *   server reachability instantly — no polling needed
  */
 export function useNetworkState(): NetworkState {
-  const [state, setState] = useState<NetworkState>(() => ({
-    isOnline: isClient ? navigator.onLine : true,
-    isServerAvailable: true, // Assume available until proven otherwise
-    isChecking: false,
-  }))
+  const [isOnline, setIsOnline] = useState(() =>
+    isClient ? navigator.onLine : true
+  )
+  const [isServerAvailable, setIsServerAvailable] = useState(false)
+  const [isChecking, setIsChecking] = useState(isClient)
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [lastOffline, setLastOffline] = useState<Date | undefined>()
+  const [lastOnline, setLastOnline] = useState<Date | undefined>()
+  const [lastServerUnavailable, setLastServerUnavailable] = useState<
+    Date | undefined
+  >()
+  const [lastServerAvailable, setLastServerAvailable] = useState<
+    Date | undefined
+  >()
 
-  const checkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isCheckingRef = useRef(false)
-  // Track if we've completed at least one successful check
-  const hasInitialCheckRef = useRef(false)
-  // Track consecutive failures for debouncing
-  const consecutiveFailuresRef = useRef(0)
-  // Track current backoff interval
-  const currentIntervalRef = useRef(INITIAL_CHECK_INTERVAL)
-  // Ref to store the check function to avoid circular dependencies
-  const checkFnRef = useRef<(() => Promise<void>) | null>(null)
+  const esRef = useRef<EventSource | null>(null)
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const unmountedRef = useRef(false)
+  const connectRef = useRef<(() => void) | null>(null)
 
-  const handleOnline = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      isOnline: true,
-      lastOnline: new Date(),
-    }))
-    // Reset backoff on online event and immediately recheck server
-    consecutiveFailuresRef.current = 0
-    currentIntervalRef.current = INITIAL_CHECK_INTERVAL
-    if (checkFnRef.current) {
-      checkFnRef.current()
+  const connect = useCallback(() => {
+    if (!isClient || unmountedRef.current) return
+
+    setIsChecking(true)
+
+    const es = new EventSource("/api/health/stream")
+    esRef.current = es
+
+    es.onopen = () => {
+      setIsServerAvailable(true)
+      setLastServerAvailable(new Date())
+      setIsChecking(false)
+      setIsInitialized(true)
+    }
+
+    es.onmessage = () => {
+      setIsServerAvailable(true)
+      setLastServerAvailable(new Date())
+    }
+
+    es.onerror = () => {
+      es.close()
+      esRef.current = null
+      setIsServerAvailable(false)
+      setLastServerUnavailable(new Date())
+      setIsChecking(false)
+      setIsInitialized(true)
+
+      // Reconnect after delay unless offline or unmounted
+      reconnectTimerRef.current = setTimeout(() => {
+        if (!unmountedRef.current && navigator.onLine) connectRef.current?.()
+      }, RECONNECT_DELAY)
     }
   }, [])
 
-  const handleOffline = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      isOnline: false,
-      lastOffline: new Date(),
-    }))
-  }, [])
-
-  // Schedule next check with exponential backoff
-  const scheduleNextCheck = useCallback(() => {
-    if (checkTimeoutRef.current) {
-      clearTimeout(checkTimeoutRef.current)
-    }
-
-    const interval = currentIntervalRef.current
-    checkTimeoutRef.current = setTimeout(() => {
-      if (checkFnRef.current) {
-        checkFnRef.current()
-      }
-    }, interval)
-  }, [])
-
-  // Increase backoff interval after failure
-  const increaseBackoff = useCallback(() => {
-    currentIntervalRef.current = Math.min(
-      Math.round(currentIntervalRef.current * BACKOFF_MULTIPLIER),
-      MAX_CHECK_INTERVAL
-    )
-  }, [])
-
-  // Reset backoff to initial interval after success
-  const resetBackoff = useCallback(() => {
-    consecutiveFailuresRef.current = 0
-    currentIntervalRef.current = INITIAL_CHECK_INTERVAL
-  }, [])
-
-  // Check server availability by making a lightweight request
-  const checkServerAvailability = useCallback(async () => {
-    // Skip fetch when browser reports offline — rely on 'online' event to re-trigger
-    if (isClient && !navigator.onLine) {
-      scheduleNextCheck()
-      return
-    }
-
-    // Prevent concurrent checks
-    if (isCheckingRef.current) return
-    isCheckingRef.current = true
-
-    setState((prev) => ({ ...prev, isChecking: true }))
-
-    try {
-      // Use the health endpoint to check server availability
-      // Add a cache-busting parameter to avoid cached responses
-      const response = await fetch("/api/health?t=" + Date.now(), {
-        method: "GET",
-        signal: AbortSignal.timeout(10000), // 10 second timeout
-      })
-
-      const isAvailable = response.ok
-
-      setState((prev) => ({
-        ...prev,
-        isOnline: true, // If we got a response, we're online
-        isServerAvailable: isAvailable,
-        isChecking: false,
-        lastServerAvailable: isAvailable
-          ? new Date()
-          : prev.lastServerAvailable,
-        lastServerUnavailable: !isAvailable
-          ? new Date()
-          : prev.lastServerUnavailable,
-      }))
-
-      hasInitialCheckRef.current = true
-      consecutiveFailuresRef.current = 0
-      resetBackoff()
-      scheduleNextCheck()
-    } catch (error) {
-      consecutiveFailuresRef.current += 1
-
-      const shouldMarkOffline =
-        consecutiveFailuresRef.current >= CONSECUTIVE_FAILURES_TO_MARK_OFFLINE
-
-      // Only mark as offline if we've completed the initial check
-      // and we have enough consecutive failures (debouncing)
-      if (hasInitialCheckRef.current && shouldMarkOffline) {
-        const isNetworkError =
-          error instanceof TypeError ||
-          (error instanceof DOMException && error.name === "TimeoutError")
-
-        setState((prev) => ({
-          ...prev,
-          isServerAvailable: false,
-          isChecking: false,
-          isOnline: isNetworkError ? false : prev.isOnline,
-          lastServerUnavailable: new Date(),
-        }))
-      } else {
-        setState((prev) => ({ ...prev, isChecking: false }))
-      }
-
-      // Increase backoff interval for next check
-      increaseBackoff()
-      scheduleNextCheck()
-    } finally {
-      isCheckingRef.current = false
-    }
-  }, [scheduleNextCheck, increaseBackoff, resetBackoff])
-
-  // Store the check function in ref for scheduling
-  checkFnRef.current = checkServerAvailability
-
+  // Manage SSE connection lifecycle
   useEffect(() => {
+    unmountedRef.current = false
+    connectRef.current = connect
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSE init on mount is a valid effect
+    connect()
+    return () => {
+      unmountedRef.current = true
+      esRef.current?.close()
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
+    }
+  }, [connect])
+
+  // Listen to browser online/offline events
+  useEffect(() => {
+    if (!isClient) return
+
+    const handleOnline = () => {
+      setIsOnline(true)
+      setLastOnline(new Date())
+      // Reconnect SSE immediately
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
+      esRef.current?.close()
+      connect()
+    }
+
+    const handleOffline = () => {
+      setIsOnline(false)
+      setIsServerAvailable(false)
+      setLastOffline(new Date())
+      setIsInitialized(true)
+      // Close SSE — no point keeping it open
+      esRef.current?.close()
+      esRef.current = null
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
+    }
+
     window.addEventListener("online", handleOnline)
     window.addEventListener("offline", handleOffline)
-
-    // Initial check
-    checkServerAvailability()
 
     return () => {
       window.removeEventListener("online", handleOnline)
       window.removeEventListener("offline", handleOffline)
-      if (checkTimeoutRef.current) {
-        clearTimeout(checkTimeoutRef.current)
-      }
     }
-  }, [handleOnline, handleOffline, checkServerAvailability])
+  }, [connect])
 
-  return state
+  return {
+    isOnline,
+    isServerAvailable,
+    isChecking,
+    isInitialized,
+    lastOffline,
+    lastOnline,
+    lastServerUnavailable,
+    lastServerAvailable,
+  }
 }

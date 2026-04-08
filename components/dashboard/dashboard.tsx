@@ -56,6 +56,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useOfflineTitleSuffix } from "@/components/reconnection-banner"
 
 // ── Groups reducer for drag-and-drop state management ────────────────────────
 
@@ -179,6 +180,8 @@ type DashboardProps = {
 }
 
 export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
+  const offlineSuffix = useOfflineTitleSuffix()
+
   // ── Login dialog ───────────────────────────────────────────────────────────
   const [loginOpen, setLoginOpen] = useState(false)
 
@@ -202,21 +205,29 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
   // ── Groups state with reducer ──────────────────────────────────────────────
   // Use cached data immediately if available (after hydration), else start with server data
-  const [sortedGroups, dispatch] = useReducer(groupsReducer, groups, (defaultState) => {
-    // Synchronously check localStorage for cached data
-    try {
-      const stored = localStorage.getItem("labitat-dashboard-cache")
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        if (parsed?.state?.groups && Array.isArray(parsed.state.groups) && parsed.state.groups.length > 0) {
-          return parsed.state.groups
+  const [sortedGroups, dispatch] = useReducer(
+    groupsReducer,
+    groups,
+    (defaultState) => {
+      // Synchronously check localStorage for cached data
+      try {
+        const stored = localStorage.getItem("labitat-dashboard-cache")
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (
+            parsed?.state?.groups &&
+            Array.isArray(parsed.state.groups) &&
+            parsed.state.groups.length > 0
+          ) {
+            return parsed.state.groups
+          }
         }
+      } catch {
+        // Ignore parse errors
       }
-    } catch {
-      // Ignore parse errors
+      return defaultState
     }
-    return defaultState
-  })
+  )
 
   // Sync when server sends updated data (after mutations / revalidatePath)
   // Also update the cache with fresh server data
@@ -420,6 +431,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           ) : (
             <h1 className="text-lg font-semibold" data-testid="dashboard-title">
               {dashboardTitle}
+              {offlineSuffix}
             </h1>
           )}
           <div className="flex items-center gap-2">

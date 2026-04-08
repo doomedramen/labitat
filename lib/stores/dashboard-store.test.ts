@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { describe, it, expect, beforeEach } from "vitest"
 import { useDashboardStore } from "./dashboard-store"
 import type { GroupWithItems, ItemRow } from "@/lib/types"
 import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
@@ -384,7 +384,7 @@ describe("dashboard store", () => {
       localStorage.setItem("labitat-dashboard-cache", JSON.stringify(mockData))
 
       // Create a new store instance to trigger rehydration
-      const newState = useDashboardStore.getState()
+      useDashboardStore.getState()
 
       // Note: In test environment, the store may not auto-rehydrate
       // This test verifies the storage format is correct
