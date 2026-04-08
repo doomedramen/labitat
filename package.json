@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.174",
+  "version": "0.0.175",
   "type": "module",
   "private": true,
   "scripts": {

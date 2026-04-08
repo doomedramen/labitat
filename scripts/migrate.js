@@ -30,7 +30,7 @@ sqlite.pragma("foreign_keys = ON")
 const db = drizzle(sqlite)
 
 // Migrations folder — resolve relative to this script's parent directory
-const migrationsFolder = path.resolve(__dirname, "../src/lib/db/migrations")
+const migrationsFolder = path.resolve(__dirname, "../drizzle")
 
 // Skip if migrations folder doesn't exist
 if (!fs.existsSync(migrationsFolder)) {
