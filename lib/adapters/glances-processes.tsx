@@ -31,12 +31,11 @@ function GlancesProcessesWidget({ processes, sortBy }: GlancesProcessesData) {
     return <p className="text-xs text-muted-foreground">No processes</p>
 
   const primaryKey = sortBy === "memory" ? "mem" : "cpu"
-  const primaryMax = Math.max(...processes.map((p) => p[primaryKey]), 0.1)
 
   return (
     <div className="space-y-1">
       {processes.map((proc) => {
-        const barPct = Math.min(100, (proc[primaryKey] / primaryMax) * 100)
+        const barPct = Math.min(100, proc[primaryKey])
         return (
           <div key={proc.pid} className="flex items-center gap-2 text-xs">
             {/* Name */}
