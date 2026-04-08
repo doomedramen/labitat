@@ -53,18 +53,28 @@ try {
     console.log(
       "Schema already applied, ensuring migrations tracking table exists..."
     )
-    // Ensure tracking table exists
-    sqlite
-      .prepare(
-        "CREATE TABLE IF NOT EXISTS __drizzle_migrations (version TEXT PRIMARY KEY, applied_at TEXT DEFAULT (current_timestamp))"
-      )
-      .run()
+    // Check if tracking table has correct schema
+    const tableInfo = sqlite
+      .prepare("PRAGMA table_info(__drizzle_migrations)")
+      .all()
+    const hasHashColumn = tableInfo.some((col) => col.name === "hash")
+
+    if (!hasHashColumn) {
+      // Table exists but wrong schema — recreate it
+      sqlite.prepare("DROP TABLE IF EXISTS __drizzle_migrations").run()
+      sqlite
+        .prepare(
+          "CREATE TABLE __drizzle_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, hash TEXT NOT NULL, created_at NUMERIC)"
+        )
+        .run()
+    }
+
     // Mark all journal entries as applied
     const insertStmt = sqlite.prepare(
-      "INSERT OR IGNORE INTO __drizzle_migrations (version) VALUES (?)"
+      "INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)"
     )
     for (const entry of journal.entries) {
-      insertStmt.run(entry.tag)
+      insertStmt.run(entry.tag, entry.when)
     }
     console.log("Migrations tracking updated.")
   } else {
