@@ -2,44 +2,39 @@
 
 import { useEffect, useState } from "react"
 
+const HEALTH_CHECK_INTERVAL = 3_000
+
 export default function OfflinePageClient() {
-  const [isOnline, setIsOnline] = useState<boolean | null>(null)
+  const [isDown, setIsDown] = useState(true)
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-    window.addEventListener("online", handleOnline)
-    window.addEventListener("offline", handleOffline)
-    // Set initial state after mount via event handlers
-    handleOnline()
-    if (!navigator.onLine) {
-      handleOffline()
+    const check = async () => {
+      try {
+        const res = await fetch("/api/health")
+        if (res.ok) {
+          window.location.href = "/"
+          return
+        }
+      } catch {
+        // server unreachable
+      }
+      setIsDown(true)
     }
-    return () => {
-      window.removeEventListener("online", handleOnline)
-      window.removeEventListener("offline", handleOffline)
-    }
+
+    check()
+    const id = setInterval(check, HEALTH_CHECK_INTERVAL)
+    return () => clearInterval(id)
   }, [])
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
       <div className="text-6xl">📡</div>
-      <h1 className="text-2xl font-bold">You&apos;re offline</h1>
+      <h1 className="text-2xl font-bold">Service unavailable</h1>
       <p className="text-muted-foreground">
-        {isOnline === null
-          ? "Checking connection..."
-          : isOnline
-            ? "Connection restored!"
-            : "Check your internet connection and try again."}
+        {isDown
+          ? "We're having trouble reaching the server. We'll reconnect automatically."
+          : "Reconnecting..."}
       </p>
-      {isOnline && (
-        <button
-          onClick={() => window.location.reload()}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          Reload page
-        </button>
-      )}
     </div>
   )
 }
