@@ -36,6 +36,7 @@ function hasSufficientEntropy(value: string): boolean {
 }
 
 export const env = createEnv({
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   server: {
     SECRET_KEY: z
       .string()

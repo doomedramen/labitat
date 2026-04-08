@@ -20,7 +20,9 @@ RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild better-sqlit
 COPY . .
 
 # Build the application
-RUN pnpm build
+# SECRET_KEY is not needed at build time; it is injected at runtime via the entrypoint.
+# SKIP_ENV_VALIDATION suppresses the t3-env startup check during `next build`.
+RUN SKIP_ENV_VALIDATION=1 pnpm build
 
 # ── Stage 2: Runner ───────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
