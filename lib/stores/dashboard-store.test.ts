@@ -160,6 +160,9 @@ describe("dashboard store", () => {
             pollingMs: null,
             cleanMode: false,
             createdAt: null,
+            serviceUrl: null,
+            apiKeyEnc: null,
+            configEnc: null,
           },
         ],
       },
@@ -215,6 +218,9 @@ describe("dashboard store", () => {
             pollingMs: null,
             cleanMode: false,
             createdAt: null,
+            serviceUrl: null,
+            apiKeyEnc: null,
+            configEnc: null,
           },
           {
             id: "item-2",
@@ -227,6 +233,9 @@ describe("dashboard store", () => {
             pollingMs: null,
             cleanMode: false,
             createdAt: null,
+            serviceUrl: null,
+            apiKeyEnc: null,
+            configEnc: null,
           },
         ],
       },
@@ -302,6 +311,9 @@ describe("dashboard store", () => {
         pollingMs: null,
         cleanMode: false,
         createdAt: null,
+        serviceUrl: null,
+        apiKeyEnc: null,
+        configEnc: null,
       }
 
       useDashboardStore.getState().addItem("group-1", newItem)
@@ -324,6 +336,9 @@ describe("dashboard store", () => {
         pollingMs: null,
         cleanMode: false,
         createdAt: null,
+        serviceUrl: null,
+        apiKeyEnc: null,
+        configEnc: null,
       }
 
       useDashboardStore.getState().addItem("group-1", newItem)
@@ -371,6 +386,9 @@ describe("dashboard store", () => {
               name: "Cached Group",
               order: 0,
               createdAt: null,
+              serviceUrl: null,
+              apiKeyEnc: null,
+              configEnc: null,
               items: [],
             },
           ],
