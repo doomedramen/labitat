@@ -36,3 +36,4 @@ pnpm-debug.log*
 next-env.d.ts
 /data
 /docs
+/test-results
