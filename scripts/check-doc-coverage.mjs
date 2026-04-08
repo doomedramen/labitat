@@ -19,12 +19,6 @@ const docsServicesDir = path.join(projectRoot, "docs", "services")
 const NON_ADAPTER_FILES = new Set([
   "index",
   "types",
-  "widgets",
-  "glances-common",
-  "viz",
-  "disabled-adapters.test",
-  "active-adapters.test",
-  "index.test",
 ])
 
 // Widget component files (client-side, imported by adapter definitions, not standalone)

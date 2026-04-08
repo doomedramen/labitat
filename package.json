@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.169",
+  "version": "0.0.170",
   "type": "module",
   "private": true,
   "scripts": {
@@ -13,6 +13,9 @@
     "typecheck": "tsc --noEmit",
     "check-adapters": "node scripts/check-adapters.mjs",
     "check-doc-coverage": "node scripts/check-doc-coverage.mjs",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -94,6 +97,7 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
+    "vitepress": "^1.6.4",
     "vitest": "^2.1.9"
   },
   "pnpm": {
