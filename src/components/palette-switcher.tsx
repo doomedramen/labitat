@@ -18,7 +18,11 @@ export function PaletteSwitcher({ onSelect }: { onSelect?: () => void }) {
   return (
     <DropdownMenuRadioGroup value={palette} onValueChange={handleChange}>
       {SORTED_PALETTES.map((p) => (
-        <DropdownMenuRadioItem key={p.id} value={p.id}>
+        <DropdownMenuRadioItem
+          key={p.id}
+          value={p.id}
+          onSelect={(e) => e.preventDefault()}
+        >
           {p.label}
         </DropdownMenuRadioItem>
       ))}

@@ -1,33 +1,17 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+
+export type { GlancesTimeseriesData }
+
+type DataPoint = {
+  timestamp: number
+  cpu: number
+  mem: number
+}
 
 type GlancesTimeseriesData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
-  cpuHistory: number[]
-  memHistory: number[]
-}
-
-function GlancesTimeseriesWidget({
-  cpuHistory,
-  memHistory,
-}: GlancesTimeseriesData) {
-  const cpu = cpuHistory ?? []
-  const mem = memHistory ?? []
-  const avgCpu =
-    cpu.length > 0 ? Math.round(cpu.reduce((a, b) => a + b, 0) / cpu.length) : 0
-  const avgMem =
-    mem.length > 0 ? Math.round(mem.reduce((a, b) => a + b, 0) / mem.length) : 0
-
-  return (
-    <StatGrid
-      items={[
-        { value: `${avgCpu}%`, label: "Avg CPU" },
-        { value: `${avgMem}%`, label: "Avg RAM" },
-        { value: cpu.length, label: "Samples" },
-      ]}
-    />
-  )
+  history: DataPoint[]
 }
 
 export const glancesTimeseriesDefinition: ServiceDefinition<GlancesTimeseriesData> =
@@ -67,26 +51,50 @@ export const glancesTimeseriesDefinition: ServiceDefinition<GlancesTimeseriesDat
           `Basic ${btoa(`${config.username}:${config.password}`)}`
       }
 
-      const res = await fetch(`${baseUrl}/api/4/history`, { headers })
-      if (!res.ok) throw new Error(`Glances error: ${res.status}`)
+      // Fetch CPU and memory history in parallel
+      const [cpuRes, memRes] = await Promise.all([
+        fetch(`${baseUrl}/api/4/cpu/history/20`, { headers }),
+        fetch(`${baseUrl}/api/4/mem/history/20`, { headers }),
+      ])
 
-      const data = await res.json()
-      const history = data.history ?? []
+      if (!cpuRes.ok)
+        throw new Error(`Glances CPU history error: ${cpuRes.status}`)
+      if (!memRes.ok)
+        throw new Error(`Glances mem history error: ${memRes.status}`)
 
-      // Get last 20 samples
-      const recent = history.slice(-20)
-      const cpuHistory = recent.map((h: { cpu: number }) =>
-        Math.round(h.cpu ?? 0)
-      )
-      const memHistory = recent.map((h: { mem: number }) =>
-        Math.round(h.mem ?? 0)
-      )
+      const cpuData = await cpuRes.json()
+      const memData = await memRes.json()
+
+      // CPU history: { "total": [[timestamp, value], ...], "user": [...], ... }
+      // Mem history: { "percent": [[timestamp, value], ...], ... }
+      const cpuEntries = cpuData.total ?? cpuData.user ?? []
+      const memEntries = memData.percent ?? []
+
+      // Build merged timeline
+      const history: DataPoint[] = []
+      const maxLen = Math.max(cpuEntries.length, memEntries.length)
+
+      for (let i = 0; i < maxLen; i++) {
+        const cpuEntry = cpuEntries[i]
+        const memEntry = memEntries[i]
+
+        const timestamp = cpuEntry?.[0]
+          ? new Date(cpuEntry[0]).getTime()
+          : memEntry?.[0]
+            ? new Date(memEntry[0]).getTime()
+            : Date.now()
+
+        history.push({
+          timestamp,
+          cpu: Math.round(cpuEntry?.[1] ?? 0),
+          mem: Math.round(memEntry?.[1] ?? 0),
+        })
+      }
 
       return {
         _status: "ok",
-        cpuHistory,
-        memHistory,
+        history,
       }
     },
-    Widget: GlancesTimeseriesWidget,
+    Widget: () => null, // Placeholder - real widget is client-side
   }

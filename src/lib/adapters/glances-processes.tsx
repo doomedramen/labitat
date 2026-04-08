@@ -1,34 +1,19 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+
+export type { GlancesProcessesData }
+
+type ProcessInfo = {
+  name: string
+  cpu: number
+  memory: number
+  pid: number
+}
 
 type GlancesProcessesData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
-  total: number
-  running: number
-  sleeping: number
-  topCpu: string
-  topMem: string
-}
-
-function GlancesProcessesWidget({
-  total,
-  running,
-  sleeping,
-  topCpu,
-  topMem,
-}: GlancesProcessesData) {
-  return (
-    <StatGrid
-      items={[
-        { value: total ?? 0, label: "Total" },
-        { value: running ?? 0, label: "Running" },
-        { value: sleeping ?? 0, label: "Sleeping" },
-        { value: topCpu ?? "—", label: "Top CPU" },
-        { value: topMem ?? "—", label: "Top Mem" },
-      ]}
-    />
-  )
+  processes: ProcessInfo[]
+  sortBy: "cpu" | "memory"
 }
 
 export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData> =
@@ -58,6 +43,24 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
         type: "password",
         required: false,
       },
+      {
+        key: "topCount",
+        label: "Top processes count",
+        type: "number",
+        required: false,
+        placeholder: "10",
+        helperText: "Number of top processes to show",
+      },
+      {
+        key: "sortBy",
+        label: "Sort by",
+        type: "select",
+        required: false,
+        options: [
+          { label: "CPU usage", value: "cpu" },
+          { label: "Memory usage", value: "memory" },
+        ],
+      },
     ],
     async fetchData(config) {
       const baseUrl = config.url.replace(/\/$/, "")
@@ -68,47 +71,41 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
           `Basic ${btoa(`${config.username}:${config.password}`)}`
       }
 
+      const topCount = parseInt(config.topCount ?? "10", 10) || 10
+      const sortBy = config.sortBy ?? "cpu"
+
+      // Fetch process list from Glances
       const res = await fetch(`${baseUrl}/api/4/processlist`, { headers })
       if (!res.ok) throw new Error(`Glances error: ${res.status}`)
 
-      const processes = await res.json()
-      const procList = Array.isArray(processes)
-        ? processes
-        : (processes.processes ?? [])
+      const procList = await res.json()
 
-      const total = procList.length
-      const running = procList.filter(
-        (p: { status: string }) => p.status === "running"
-      ).length
-      const sleeping = procList.filter(
-        (p: { status: string }) => p.status === "sleeping"
-      ).length
+      // Response is an array of process objects
+      if (!Array.isArray(procList)) {
+        throw new Error("Unexpected processlist response format")
+      }
 
-      // Top processes by CPU and memory
-      const sortedByCpu = [...procList].sort(
-        (a: { cpu_percent: number }, b: { cpu_percent: number }) =>
-          b.cpu_percent - a.cpu_percent
-      )
-      const sortedByMem = [...procList].sort(
-        (a: { memory_percent: number }, b: { memory_percent: number }) =>
-          b.memory_percent - a.memory_percent
+      // Sort processes by CPU or memory
+      const sorted = [...procList].sort(
+        (a: { cpu_percent?: number }, b: { cpu_percent?: number }) =>
+          sortBy === "memory"
+            ? (b.memory_percent ?? 0) - (a.memory_percent ?? 0)
+            : (b.cpu_percent ?? 0) - (a.cpu_percent ?? 0)
       )
 
-      const topCpuProc = sortedByCpu[0]
-      const topMemProc = sortedByMem[0]
+      // Take top N processes
+      const topProcesses = sorted.slice(0, topCount).map((p) => ({
+        name: p.name ?? "unknown",
+        cpu: p.cpu_percent ?? 0,
+        memory: p.memory_percent ?? 0,
+        pid: p.pid ?? 0,
+      }))
 
       return {
         _status: "ok",
-        total,
-        running,
-        sleeping,
-        topCpu: topCpuProc
-          ? `${topCpuProc.name?.slice(0, 10) ?? "?"} ${topCpuProc.cpu_percent?.toFixed(0) ?? 0}%`
-          : "—",
-        topMem: topMemProc
-          ? `${topMemProc.name?.slice(0, 10) ?? "?"} ${topMemProc.memory_percent?.toFixed(0) ?? 0}%`
-          : "—",
+        processes: topProcesses,
+        sortBy: sortBy as "cpu" | "memory",
       }
     },
-    Widget: GlancesProcessesWidget,
+    Widget: () => null, // Placeholder - real widget is client-side
   }

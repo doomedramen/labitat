@@ -59,11 +59,11 @@
   --border: oklch(0.853 0.129 330.594 / 50%);
   --input: oklch(0.853 0.129 330.594 / 50%);
   --ring: oklch(0.875 0.090 340.400 / 84%);
-  --chart-1: oklch(0.551 0.153 254.176);
-  --chart-2: oklch(0.914 0.135 190.457);
-  --chart-3: oklch(0.893 0.192 109.752);
-  --chart-4: oklch(0.679 0.282 328.133);
-  --chart-5: oklch(0.619 0.217 26.301);
+  --chart-1: oklch(0.700 0.200 345.0);       /* sakura pink */
+  --chart-2: oklch(0.650 0.180 320.0);       /* blossom purple */
+  --chart-3: oklch(0.750 0.150 300.0);       /* neon violet */
+  --chart-4: oklch(0.600 0.200 15.0);        /* coral accent */
+  --chart-5: oklch(0.550 0.180 280.0);       /* deep purple */
   --sidebar: oklch(0.226 0.021 280.476);
   --sidebar-foreground: oklch(0.875 0.090 340.400 / 85%);
   --sidebar-primary: oklch(0.875 0.090 340.400);
