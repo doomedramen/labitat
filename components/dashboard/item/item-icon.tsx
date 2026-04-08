@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import { GlobeIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 // ── Icon URL builder ──────────────────────────────────────────────────────────
 
@@ -33,7 +34,9 @@ interface ItemIconProps {
 }
 
 export function ItemIcon({ iconUrl, label, href }: ItemIconProps) {
-  const [fallbackToGlobe, setFallbackToGlobe] = useState(false)
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">(
+    "loading"
+  )
 
   // Explicitly disabled
   if (iconUrl === "none") return null
@@ -52,8 +55,8 @@ export function ItemIcon({ iconUrl, label, href }: ItemIconProps) {
 
   const effectiveUrl = iconUrl || faviconUrl
 
-  // Show globe icon if nothing to show or loading failed
-  if (!effectiveUrl || fallbackToGlobe) {
+  // Show globe icon if nothing to show or image failed to load
+  if (!effectiveUrl || status === "error") {
     return (
       <div className="flex size-9 flex-none items-center justify-center bg-muted">
         <GlobeIcon className="size-4 text-muted-foreground" />
@@ -64,14 +67,21 @@ export function ItemIcon({ iconUrl, label, href }: ItemIconProps) {
   const src = buildIconUrl(effectiveUrl)
 
   return (
+    // Image is invisible while loading to prevent the browser's broken-image
+    // icon from flashing on error (e.g. favicon.ico 404). Cached images load
+    // in ~1 frame so the transparent state is imperceptible.
     <Image
       src={src}
       alt={label}
       width={36}
       height={36}
       unoptimized
-      className="size-9 flex-none object-contain"
-      onError={() => setFallbackToGlobe(true)}
+      className={cn(
+        "size-9 flex-none object-contain",
+        status !== "loaded" && "invisible"
+      )}
+      onLoad={() => setStatus("loaded")}
+      onError={() => setStatus("error")}
     />
   )
 }

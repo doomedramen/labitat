@@ -118,16 +118,14 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       )}
 
       {/* Widget renderer */}
-      {mounted && (
-        <WidgetRenderer
-          serviceDef={serviceDef ?? null}
-          effectiveData={effectiveData}
-          effectiveLoading={effectiveLoading}
-          isClientSide={isClientSide}
-          editMode={editMode}
-          cleanMode={item.cleanMode ?? undefined}
-        />
-      )}
+      <WidgetRenderer
+        serviceDef={serviceDef ?? null}
+        effectiveData={effectiveData}
+        effectiveLoading={effectiveLoading}
+        isClientSide={isClientSide}
+        editMode={editMode}
+        cleanMode={item.cleanMode ?? undefined}
+      />
     </div>
   )
 
