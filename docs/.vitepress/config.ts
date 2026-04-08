@@ -1,4 +1,4 @@
-import { defineConfig } from "vitepress"
+import { defineConfig, DefaultTheme } from "vitepress"
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
@@ -27,9 +27,11 @@ function getSubdirs(dir: string): string[] {
     .sort()
 }
 
-function buildServicesSidebar(): any[] {
+function buildServicesSidebar(): DefaultTheme.SidebarItem[] {
   const servicesDir = path.join(docsDir, "services")
-  const items: any[] = [{ text: "Overview", link: "/services/" }]
+  const items: DefaultTheme.SidebarItem[] = [
+    { text: "Overview", link: "/services/" },
+  ]
 
   const subdirs = getSubdirs(servicesDir)
   for (const subdir of subdirs) {
@@ -53,16 +55,18 @@ function buildServicesSidebar(): any[] {
       ...rootFiles.map((f) => ({
         text: slugToTitle(f),
         link: `/services/${f}`,
-      }))
+      })),
     )
   }
 
   return items
 }
 
-function buildInstallationSidebar(): any[] {
+function buildInstallationSidebar(): DefaultTheme.SidebarItem[] {
   const installDir = path.join(docsDir, "installation")
-  const items = [{ text: "Overview", link: "/installation/" }]
+  const items: DefaultTheme.SidebarItem[] = [
+    { text: "Overview", link: "/installation/" },
+  ]
 
   const files = getMarkdownFiles(installDir)
   if (files.length > 0) {
@@ -70,7 +74,7 @@ function buildInstallationSidebar(): any[] {
       ...files.map((f) => ({
         text: slugToTitle(f),
         link: `/installation/${f}`,
-      }))
+      })),
     )
   }
 
