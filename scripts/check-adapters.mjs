@@ -12,7 +12,7 @@ import fs from "fs"
 import path from "path"
 
 // process.cwd() is always the project root when invoked via a pnpm script
-const adaptersDir = path.join(process.cwd(), "lib", "adapters")
+const adaptersDir = path.join(process.cwd(), "src", "lib", "adapters")
 const indexPath = path.join(adaptersDir, "index.ts")
 
 // Files in lib/adapters/ that are not service adapters
@@ -40,7 +40,7 @@ for (const file of adapterFiles) {
 
   // Match `./${base}` regardless of surrounding quote style
   if (!indexSource.includes(`./${base}`)) {
-    console.error(`✗ "${file}" is not imported in lib/adapters/index.ts`)
+    console.error(`✗ "${file}" is not imported in src/lib/adapters/index.ts`)
     missing++
   }
 }
@@ -48,7 +48,7 @@ for (const file of adapterFiles) {
 if (missing > 0) {
   console.error(
     `\nFound ${missing} unregistered adapter file(s). ` +
-      "Add them to lib/adapters/index.ts or run `pnpm new-service` to scaffold correctly.",
+      "Add them to src/lib/adapters/index.ts or run `pnpm new-service` to scaffold correctly.",
   )
   process.exit(1)
 } else {
