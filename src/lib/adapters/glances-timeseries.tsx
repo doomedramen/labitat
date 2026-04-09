@@ -96,5 +96,5 @@ export const glancesTimeseriesDefinition: ServiceDefinition<GlancesTimeseriesDat
         history,
       }
     },
-    Widget: () => null, // Placeholder - real widget is client-side
+    renderWidget: () => null, // Placeholder - real widget is client-side
   }

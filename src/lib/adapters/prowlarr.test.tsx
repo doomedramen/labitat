@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { prowlarrDefinition } from "@/lib/adapters/prowlarr"
 
@@ -98,22 +97,31 @@ describe("prowlarr definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <prowlarrDefinition.Widget queries={150} grabs={42} indexers={10} />
-      )
-      expect(screen.getByText("150")).toBeInTheDocument()
-      expect(screen.getByText("42")).toBeInTheDocument()
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("Queries")).toBeInTheDocument()
-      expect(screen.getByText("Grabs")).toBeInTheDocument()
-      expect(screen.getByText("Indexers")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = prowlarrDefinition.toPayload!({
+        _status: "ok",
+        queries: 150,
+        grabs: 42,
+        indexers: 10,
+      })
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].value).toBe(150)
+      expect(payload.stats[0].label).toBe("Queries")
+      expect(payload.stats[1].value).toBe(42)
+      expect(payload.stats[1].label).toBe("Grabs")
+      expect(payload.stats[2].value).toBe(10)
+      expect(payload.stats[2].label).toBe("Indexers")
     })
 
-    it("renders zero values", () => {
-      render(<prowlarrDefinition.Widget queries={0} grabs={0} indexers={0} />)
-      expect(screen.getAllByText("0")).toHaveLength(3)
+    it("handles zero values", () => {
+      const payload = prowlarrDefinition.toPayload!({
+        _status: "ok",
+        queries: 0,
+        grabs: 0,
+        indexers: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

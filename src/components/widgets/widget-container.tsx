@@ -24,9 +24,9 @@ export function WidgetContainer({ payload }: { payload: WidgetPayload }) {
     <div className="space-y-2">
       {hasStats && <WidgetStatGrid items={payload.stats} />}
 
-      {hasStreams && <ActiveStreamList streams={payload.streams} />}
+      {hasStreams && <ActiveStreamList streams={payload.streams!} />}
 
-      {hasDownloads && <DownloadList downloads={payload.downloads} />}
+      {hasDownloads && <DownloadList downloads={payload.downloads!} />}
 
       {payload.customComponent}
     </div>

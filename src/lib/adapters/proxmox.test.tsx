@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { proxmoxDefinition } from "@/lib/adapters/proxmox"
 
@@ -151,37 +150,37 @@ describe("proxmox definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <proxmoxDefinition.Widget
-          nodes={2}
-          vms={5}
-          containers={3}
-          runningVMs={4}
-          runningContainers={2}
-        />
-      )
-      expect(screen.getByText("2")).toBeInTheDocument()
-      expect(screen.getByText("4/5")).toBeInTheDocument()
-      expect(screen.getByText("2/3")).toBeInTheDocument()
-      expect(screen.getByText("Nodes")).toBeInTheDocument()
-      expect(screen.getByText("VMs")).toBeInTheDocument()
-      expect(screen.getByText("LXCs")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = proxmoxDefinition.toPayload!({
+        _status: "ok",
+        nodes: 2,
+        vms: 5,
+        containers: 3,
+        runningVMs: 4,
+        runningContainers: 2,
+      })
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].value).toBe(2)
+      expect(payload.stats[0].label).toBe("Nodes")
+      expect(payload.stats[1].value).toBe("4/5")
+      expect(payload.stats[1].label).toBe("VMs")
+      expect(payload.stats[2].value).toBe("2/3")
+      expect(payload.stats[2].label).toBe("LXCs")
     })
 
-    it("renders zero values", () => {
-      render(
-        <proxmoxDefinition.Widget
-          nodes={0}
-          vms={0}
-          containers={0}
-          runningVMs={0}
-          runningContainers={0}
-        />
-      )
-      expect(screen.getByText("0")).toBeInTheDocument()
-      expect(screen.getAllByText("0/0")).toHaveLength(2)
+    it("handles zero values", () => {
+      const payload = proxmoxDefinition.toPayload!({
+        _status: "ok",
+        nodes: 0,
+        vms: 0,
+        containers: 0,
+        runningVMs: 0,
+        runningContainers: 0,
+      })
+      expect(payload.stats[0].value).toBe(0)
+      expect(payload.stats[1].value).toBe("0/0")
+      expect(payload.stats[2].value).toBe("0/0")
     })
   })
 })

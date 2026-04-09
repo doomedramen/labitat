@@ -128,16 +128,10 @@ describe("glances-processes definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders as placeholder (null)", () => {
-      const { container } = render(
-        <glancesProcessesDefinition.Widget
-          _status="ok"
-          processes={[]}
-          sortBy="cpu"
-        />
-      )
-      expect(container.firstChild).toBeNull()
+  describe("renderWidget", () => {
+    it("is defined", () => {
+      expect(glancesProcessesDefinition.renderWidget).toBeDefined()
+      expect(typeof glancesProcessesDefinition.renderWidget).toBe("function")
     })
   })
 })

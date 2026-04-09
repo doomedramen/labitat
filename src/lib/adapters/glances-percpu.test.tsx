@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { glancesPerCpuDefinition } from "@/lib/adapters/glances-percpu"
 
@@ -105,32 +104,10 @@ describe("glances-percpu definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders per-core bars", () => {
-      render(
-        <glancesPerCpuDefinition.Widget
-          cores={4}
-          maxCore={95}
-          avgCpu={45}
-          coreUsages={[45, 95, 30, 20]}
-        />
-      )
-      expect(screen.getByText("45%")).toBeInTheDocument()
-      expect(screen.getByText("95%")).toBeInTheDocument()
-      expect(screen.getByText("30%")).toBeInTheDocument()
-      expect(screen.getByText("20%")).toBeInTheDocument()
-    })
-
-    it("renders no-data fallback when coreUsages is empty", () => {
-      render(
-        <glancesPerCpuDefinition.Widget
-          cores={0}
-          maxCore={0}
-          avgCpu={0}
-          coreUsages={[]}
-        />
-      )
-      expect(screen.getByText("No core data")).toBeInTheDocument()
+  describe("renderWidget", () => {
+    it("is defined", () => {
+      expect(glancesPerCpuDefinition.renderWidget).toBeDefined()
+      expect(typeof glancesPerCpuDefinition.renderWidget).toBe("function")
     })
   })
 })

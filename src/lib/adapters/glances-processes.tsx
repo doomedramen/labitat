@@ -109,5 +109,5 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
         sortBy: sortBy as "cpu" | "memory" | "both",
       }
     },
-    Widget: () => null, // Placeholder - real widget is client-side
+    renderWidget: () => null, // Placeholder - real widget is client-side
   }

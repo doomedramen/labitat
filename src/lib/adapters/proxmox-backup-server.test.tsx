@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { proxmoxBackupServerDefinition } from "@/lib/adapters/proxmox-backup-server"
 
@@ -153,37 +152,38 @@ describe("proxmox-backup-server definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <proxmoxBackupServerDefinition.Widget
-          datastores={2}
-          snapshots={15}
-          usedSpace="651.6 GB"
-          totalSpace="1.4 TB"
-        />
-      )
-      expect(screen.getByText("2")).toBeInTheDocument()
-      expect(screen.getByText("15")).toBeInTheDocument()
-      expect(screen.getByText("651.6 GB")).toBeInTheDocument()
-      expect(screen.getByText("1.4 TB")).toBeInTheDocument()
-      expect(screen.getByText("Stores")).toBeInTheDocument()
-      expect(screen.getByText("Snaps")).toBeInTheDocument()
-      expect(screen.getByText("Used")).toBeInTheDocument()
-      expect(screen.getByText("Total")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = proxmoxBackupServerDefinition.toPayload!({
+        _status: "ok",
+        datastores: 2,
+        snapshots: 15,
+        usedSpace: "651.6 GB",
+        totalSpace: "1.4 TB",
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(2)
+      expect(payload.stats[0].label).toBe("Stores")
+      expect(payload.stats[1].value).toBe(15)
+      expect(payload.stats[1].label).toBe("Snaps")
+      expect(payload.stats[2].value).toBe("651.6 GB")
+      expect(payload.stats[2].label).toBe("Used")
+      expect(payload.stats[3].value).toBe("1.4 TB")
+      expect(payload.stats[3].label).toBe("Total")
     })
 
-    it("renders zero values", () => {
-      render(
-        <proxmoxBackupServerDefinition.Widget
-          datastores={0}
-          snapshots={0}
-          usedSpace="0 B"
-          totalSpace="0 B"
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(2)
-      expect(screen.getAllByText("0 B")).toHaveLength(2)
+    it("handles zero values", () => {
+      const payload = proxmoxBackupServerDefinition.toPayload!({
+        _status: "ok",
+        datastores: 0,
+        snapshots: 0,
+        usedSpace: "0 B",
+        totalSpace: "0 B",
+      })
+      expect(payload.stats[0].value).toBe(0)
+      expect(payload.stats[1].value).toBe(0)
+      expect(payload.stats[2].value).toBe("0 B")
+      expect(payload.stats[3].value).toBe("0 B")
     })
   })
 })

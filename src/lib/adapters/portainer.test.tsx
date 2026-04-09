@@ -148,20 +148,31 @@ describe("portainer definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(<portainerDefinition.Widget running={3} stopped={1} total={4} />)
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("1")).toBeInTheDocument()
-      expect(screen.getByText("4")).toBeInTheDocument()
-      expect(screen.getByText("Running")).toBeInTheDocument()
-      expect(screen.getByText("Stopped")).toBeInTheDocument()
-      expect(screen.getByText("Total")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = portainerDefinition.toPayload!({
+        _status: "ok",
+        running: 3,
+        stopped: 1,
+        total: 4,
+      })
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].value).toBe("3")
+      expect(payload.stats[0].label).toBe("Running")
+      expect(payload.stats[1].value).toBe("1")
+      expect(payload.stats[1].label).toBe("Stopped")
+      expect(payload.stats[2].value).toBe("4")
+      expect(payload.stats[2].label).toBe("Total")
     })
 
-    it("renders zero values", () => {
-      render(<portainerDefinition.Widget running={0} stopped={0} total={0} />)
-      expect(screen.getAllByText("0")).toHaveLength(3)
+    it("handles zero values", () => {
+      const payload = portainerDefinition.toPayload!({
+        _status: "ok",
+        running: 0,
+        stopped: 0,
+        total: 0,
+      })
+      expect(payload.stats.every((s) => s.value === "0")).toBe(true)
     })
   })
 })

@@ -44,7 +44,7 @@ describe("ServiceDefinition type", () => {
       icon: "test",
       category: "info",
       configFields: [{ key: "url", label: "URL", type: "url", required: true }],
-      Widget: () => null,
+      renderWidget: () => null,
     }
     expect(def.id).toBe("test-service")
     expect(def.configFields).toHaveLength(1)
@@ -61,7 +61,7 @@ describe("ServiceDefinition type", () => {
         _status: "ok" as const,
         value: parseInt(config.multiplier, 10) * 2,
       }),
-      Widget: () => null,
+      renderWidget: () => null,
     }
 
     const result = await def.fetchData!({ multiplier: "5" })
@@ -77,7 +77,7 @@ describe("ServiceDefinition type", () => {
       category: "info",
       configFields: [],
       clientSide: true,
-      Widget: () => null,
+      renderWidget: () => null,
     }
     expect(def.clientSide).toBe(true)
   })
@@ -90,7 +90,7 @@ describe("ServiceDefinition type", () => {
       category: "monitoring",
       configFields: [],
       defaultPollingMs: 5000,
-      Widget: () => null,
+      renderWidget: () => null,
     }
     expect(def.defaultPollingMs).toBe(5000)
   })

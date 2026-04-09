@@ -25,11 +25,11 @@ import { datetimeDefinition } from "./datetime"
 import { glancesDefinition } from "./glances"
 import { glancesTimeseriesDefinition } from "./glances-timeseries"
 import { GlancesTimeseriesWidget } from "@/components/widgets/glances-timeseries-widget"
-glancesTimeseriesDefinition.Widget = GlancesTimeseriesWidget
+glancesTimeseriesDefinition.renderWidget = GlancesTimeseriesWidget
 import { glancesPerCpuDefinition } from "./glances-percpu"
 import { glancesProcessesDefinition } from "./glances-processes"
 import { GlancesProcessesWidget } from "@/components/widgets/glances-processes-widget"
-glancesProcessesDefinition.Widget = GlancesProcessesWidget
+glancesProcessesDefinition.renderWidget = GlancesProcessesWidget
 import { glancesSensorsDefinition } from "./glances-sensors"
 import { glancesDiskUsageDefinition } from "./glances-diskusage"
 import { openweathermapDefinition } from "./openweathermap"

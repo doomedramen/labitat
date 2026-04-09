@@ -94,7 +94,8 @@ export type StatItem = {
   id: string
   value: string | number
   label: string
-  icon?: React.ReactNode
+  /** Icon component — rendered with className="h-3 w-3" automatically */
+  icon?: React.ComponentType<{ className?: string }>
   /** When set, the label text is hidden and shown only in a tooltip */
   tooltip?: string
   valueClassName?: string
@@ -168,8 +169,10 @@ export function StatCard({
       >
         {value}
       </span>
-      {showIcon && (
-        <div className="mt-0.5 text-secondary-foreground/50">{icon}</div>
+      {showIcon && icon && (
+        <div className="mt-0.5 text-secondary-foreground/50">
+          {React.createElement(icon, { className: "h-3 w-3" })}
+        </div>
       )}
       {showLabel ? (
         <span className="text-secondary-foreground/60">{label}</span>

@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { readarrDefinition } from "@/lib/adapters/readarr"
 
@@ -114,20 +113,31 @@ describe("readarr definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(<readarrDefinition.Widget queued={3} wanted={15} books={50} />)
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("15")).toBeInTheDocument()
-      expect(screen.getByText("50")).toBeInTheDocument()
-      expect(screen.getByText("Wanted")).toBeInTheDocument()
-      expect(screen.getByText("Queued")).toBeInTheDocument()
-      expect(screen.getByText("Books")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = readarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 3,
+        wanted: 15,
+        books: 50,
+      })
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].value).toBe(15)
+      expect(payload.stats[0].label).toBe("Wanted")
+      expect(payload.stats[1].value).toBe(3)
+      expect(payload.stats[1].label).toBe("Queued")
+      expect(payload.stats[2].value).toBe(50)
+      expect(payload.stats[2].label).toBe("Books")
     })
 
-    it("renders zero values", () => {
-      render(<readarrDefinition.Widget queued={0} wanted={0} books={0} />)
-      expect(screen.getAllByText("0")).toHaveLength(3)
+    it("handles zero values", () => {
+      const payload = readarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 0,
+        wanted: 0,
+        books: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

@@ -161,12 +161,10 @@ describe("glances-timeseries definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders as placeholder (null)", () => {
-      const { container } = render(
-        <glancesTimeseriesDefinition.Widget _status="ok" history={[]} />
-      )
-      expect(container.firstChild).toBeNull()
+  describe("renderWidget", () => {
+    it("is defined", () => {
+      expect(glancesTimeseriesDefinition.renderWidget).toBeDefined()
+      expect(typeof glancesTimeseriesDefinition.renderWidget).toBe("function")
     })
   })
 })
