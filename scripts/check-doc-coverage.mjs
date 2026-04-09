@@ -22,7 +22,7 @@ const NON_ADAPTER_FILES = new Set([
 ])
 
 // Widget component files (client-side, imported by adapter definitions, not standalone)
-const NON_ADAPTER_SUFFIXES = ["-widget"]
+const NON_ADAPTER_SUFFIXES = ["-widget", ".test"]
 
 /**
  * Extract adapter IDs from adapter files
