@@ -53,31 +53,23 @@ const ICONS = [
 async function generateIcon(size, outputPath) {
   const relativePath = outputPath.replace(ROOT_DIR + "/", "")
 
-  try {
-    // Ensure output directory exists
-    const outputDir = dirname(outputPath)
-    if (!existsSync(outputDir)) {
-      mkdirSync(outputDir, { recursive: true })
-    }
-
-    await sharp(SOURCE_SVG)
-      .resize(size, size, {
-        fit: "contain",
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      })
-      .png()
-      .toFile(outputPath)
-
-    console.log(`✓ Generated ${relativePath} (${size}x${size})`)
-    return true
-  } catch (error) {
-    console.error(`✗ Failed to generate ${relativePath}: ${error.message}`)
-    return false
+  const outputDir = dirname(outputPath)
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true })
   }
+
+  await sharp(SOURCE_SVG)
+    .resize(size, size, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
+    .png()
+    .toFile(outputPath)
+
+  console.log(`✓ ${relativePath} (${size}x${size})`)
 }
 
 async function main() {
-  // Check if source SVG exists
   if (!existsSync(SOURCE_SVG)) {
     console.error(`Error: Source SVG not found at ${SOURCE_SVG}`)
     process.exit(1)
@@ -86,40 +78,14 @@ async function main() {
   console.log("Generating icons from logo.svg...\n")
 
   // Copy source SVG to docs
-  const docsSvgPath = join(ROOT_DIR, "docs/public/logo.svg")
-  try {
-    copyFileSync(SOURCE_SVG, docsSvgPath)
-    console.log(`✓ Copied logo.svg → docs/public/logo.svg`)
-  } catch (error) {
-    console.error(`✗ Failed to copy logo.svg to docs: ${error.message}`)
-    failCount++
-  }
-
-  let successCount = 0
-  let failCount = 0
+  copyFileSync(SOURCE_SVG, join(ROOT_DIR, "docs/public/logo.svg"))
+  console.log("✓ docs/public/logo.svg")
 
   for (const icon of ICONS) {
-    const outputPath = join(ROOT_DIR, icon.output)
-    const success = await generateIcon(icon.size, outputPath)
-
-    if (success) {
-      successCount++
-    } else {
-      failCount++
-    }
+    await generateIcon(icon.size, join(ROOT_DIR, icon.output))
   }
 
-  console.log(`\n${"=".repeat(50)}`)
-  console.log(`Generation complete!`)
-  console.log(`✓ ${successCount} succeeded`)
-  if (failCount > 0) {
-    console.log(`✗ ${failCount} failed`)
-  }
-  console.log(`${"=".repeat(50)}`)
-
-  if (failCount > 0) {
-    process.exit(1)
-  }
+  console.log("\nDone!")
 }
 
 main()
