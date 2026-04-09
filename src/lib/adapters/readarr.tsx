@@ -16,19 +16,19 @@ function readarrToPayload(data: ReadarrData) {
         id: "wanted",
         value: data.wanted,
         label: "Wanted",
-        icon: <Search className="h-3 w-3" />,
+        icon: Search,
       },
       {
         id: "queued",
         value: data.queued,
         label: "Queued",
-        icon: <Download className="h-3 w-3" />,
+        icon: Download,
       },
       {
         id: "books",
         value: data.books,
         label: "Books",
-        icon: <BookOpen className="h-3 w-3" />,
+        icon: BookOpen,
       },
     ],
   }

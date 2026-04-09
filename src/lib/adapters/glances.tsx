@@ -53,19 +53,19 @@ function GlancesWidget({
             id: "swap",
             value: `${swap}%`,
             label: "Swap",
-            icon: <ArrowDownUp className="h-3 w-3" />,
+            icon: ArrowDownUp,
           },
           {
             id: "load",
             value: load.toFixed(2),
             label: "Load",
-            icon: <Activity className="h-3 w-3" />,
+            icon: Activity,
           },
           {
             id: "uptime",
             value: uptime ?? "—",
             label: "Uptime",
-            icon: <Clock className="h-3 w-3" />,
+            icon: Clock,
           },
         ]}
       />

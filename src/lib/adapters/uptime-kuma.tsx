@@ -16,19 +16,19 @@ function uptimeKumaToPayload(data: UptimeKumaData) {
         id: "up",
         value: String(data.up),
         label: "Up",
-        icon: <Check className="h-3 w-3" />,
+        icon: Check,
       },
       {
         id: "down",
         value: String(data.down),
         label: "Down",
-        icon: <X className="h-3 w-3" />,
+        icon: X,
       },
       {
         id: "uptime",
         value: String(data.uptime),
         label: "Uptime",
-        icon: <Clock className="h-3 w-3" />,
+        icon: Clock,
       },
     ],
   }

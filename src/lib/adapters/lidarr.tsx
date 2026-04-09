@@ -16,19 +16,19 @@ function lidarrToPayload(data: LidarrData) {
         id: "wanted",
         value: (data.wanted ?? 0).toLocaleString(),
         label: "Wanted",
-        icon: <Search className="h-3 w-3" />,
+        icon: Search,
       },
       {
         id: "queued",
         value: (data.queued ?? 0).toLocaleString(),
         label: "Queued",
-        icon: <Download className="h-3 w-3" />,
+        icon: Download,
       },
       {
         id: "artists",
         value: (data.artists ?? 0).toLocaleString(),
         label: "Artists",
-        icon: <Music className="h-3 w-3" />,
+        icon: Music,
       },
     ],
   }

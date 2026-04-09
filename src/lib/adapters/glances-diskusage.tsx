@@ -41,19 +41,19 @@ function GlancesDiskUsageWidget({
             id: "used",
             value: used ?? "—",
             label: "Used",
-            icon: <FolderOpen className="h-3 w-3" />,
+            icon: FolderOpen,
           },
           {
             id: "free",
             value: free ?? "—",
             label: "Free",
-            icon: <HardDrive className="h-3 w-3" />,
+            icon: HardDrive,
           },
           {
             id: "total",
             value: total ?? "—",
             label: "Total",
-            icon: <Archive className="h-3 w-3" />,
+            icon: Archive,
           },
         ]}
       />

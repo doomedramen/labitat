@@ -38,13 +38,13 @@ function GlancesSensorsWidget({
             id: "max",
             value: `${max}°C`,
             label: "Max",
-            icon: <Thermometer className="h-3 w-3" />,
+            icon: Thermometer,
           },
           {
             id: "fan",
             value: fan > 0 ? `${fan} RPM` : "N/A",
             label: "Fan",
-            icon: <Fan className="h-3 w-3" />,
+            icon: Fan,
           },
         ]}
       />

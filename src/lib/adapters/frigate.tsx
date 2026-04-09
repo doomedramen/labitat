@@ -26,19 +26,19 @@ function frigateToPayload(data: FrigateData) {
         id: "cameras",
         value: (data.cameras ?? 0).toLocaleString(),
         label: "Cameras",
-        icon: <Camera className="h-3 w-3" />,
+        icon: Camera,
       },
       {
         id: "uptime",
         value: formatUptime(data.uptime ?? 0),
         label: "Uptime",
-        icon: <Clock className="h-3 w-3" />,
+        icon: Clock,
       },
       {
         id: "version",
         value: data.version,
         label: "Version",
-        icon: <Tag className="h-3 w-3" />,
+        icon: Tag,
       },
     ],
   }

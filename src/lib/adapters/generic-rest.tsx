@@ -11,7 +11,7 @@ type GenericRestData = {
 function genericRestToPayload(data: GenericRestData) {
   return {
     stats: [
-      { id: "value", value: data.value, label: data.label, icon: <Activity className="h-3 w-3" /> },
+      { id: "value", value: data.value, label: data.label, icon: Activity },
     ],
   }
 }

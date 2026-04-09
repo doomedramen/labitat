@@ -43,19 +43,19 @@ function openmeteoToPayload(data: OpenMeteoData) {
         id: "temp",
         value: `${data.temperature}°C`,
         label: "Temp",
-        icon: <Thermometer className="h-3 w-3" />,
+        icon: Thermometer,
       },
       {
         id: "humidity",
         value: `${data.humidity}%`,
         label: "Humidity",
-        icon: <Droplets className="h-3 w-3" />,
+        icon: Droplets,
       },
       {
         id: "wind",
         value: `${data.windSpeed} km/h`,
         label: "Wind",
-        icon: <Wind className="h-3 w-3" />,
+        icon: Wind,
       },
       {
         id: "daynight",

@@ -16,19 +16,19 @@ function prowlarrToPayload(data: ProwlarrData) {
         id: "queries",
         value: data.queries,
         label: "Queries",
-        icon: <Search className="h-3 w-3" />,
+        icon: Search,
       },
       {
         id: "grabs",
         value: data.grabs,
         label: "Grabs",
-        icon: <Download className="h-3 w-3" />,
+        icon: Download,
       },
       {
         id: "indexers",
         value: data.indexers,
         label: "Indexers",
-        icon: <List className="h-3 w-3" />,
+        icon: List,
       },
     ],
   }

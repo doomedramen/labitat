@@ -5,7 +5,7 @@
  * These provide consistent styling across different services.
  */
 
-import {
+import React, {
   DndContext,
   closestCenter,
   PointerSensor,

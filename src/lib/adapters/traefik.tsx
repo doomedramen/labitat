@@ -16,19 +16,19 @@ function traefikToPayload(data: TraefikData) {
         id: "routers",
         value: (data.routers ?? 0).toLocaleString(),
         label: "Routers",
-        icon: <Route className="h-3 w-3" />,
+        icon: Route,
       },
       {
         id: "services",
         value: (data.services ?? 0).toLocaleString(),
         label: "Services",
-        icon: <Server className="h-3 w-3" />,
+        icon: Server,
       },
       {
         id: "middlewares",
         value: (data.middlewares ?? 0).toLocaleString(),
         label: "Middlewares",
-        icon: <Shield className="h-3 w-3" />,
+        icon: Shield,
       },
     ],
   }

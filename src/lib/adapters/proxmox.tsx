@@ -18,19 +18,19 @@ function proxmoxToPayload(data: ProxmoxData) {
         id: "nodes",
         value: data.nodes ?? 0,
         label: "Nodes",
-        icon: <Server className="h-3 w-3" />,
+        icon: Server,
       },
       {
         id: "vms",
         value: `${data.runningVMs ?? 0}/${data.vms ?? 0}`,
         label: "VMs",
-        icon: <Monitor className="h-3 w-3" />,
+        icon: Monitor,
       },
       {
         id: "lxcs",
         value: `${data.runningContainers ?? 0}/${data.containers ?? 0}`,
         label: "LXCs",
-        icon: <Container className="h-3 w-3" />,
+        icon: Container,
       },
     ],
   }

@@ -16,19 +16,19 @@ function portainerToPayload(data: PortainerData) {
         id: "running",
         value: (data.running ?? 0).toLocaleString(),
         label: "Running",
-        icon: <Play className="h-3 w-3" />,
+        icon: Play,
       },
       {
         id: "stopped",
         value: (data.stopped ?? 0).toLocaleString(),
         label: "Stopped",
-        icon: <Square className="h-3 w-3" />,
+        icon: Square,
       },
       {
         id: "total",
         value: (data.total ?? 0).toLocaleString(),
         label: "Total",
-        icon: <Layers className="h-3 w-3" />,
+        icon: Layers,
       },
     ],
   }

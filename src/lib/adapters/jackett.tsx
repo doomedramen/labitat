@@ -15,13 +15,13 @@ function jackettToPayload(data: JackettData) {
         id: "configured",
         value: (data.configured ?? 0).toLocaleString(),
         label: "Configured",
-        icon: <Settings className="h-3 w-3" />,
+        icon: Settings,
       },
       {
         id: "errored",
         value: (data.errored ?? 0).toLocaleString(),
         label: "Errored",
-        icon: <AlertCircle className="h-3 w-3" />,
+        icon: AlertCircle,
       },
     ],
   }
