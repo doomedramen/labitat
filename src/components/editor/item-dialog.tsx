@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
+import { formatErrors } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -34,7 +35,7 @@ import type { StatCardOrder } from "@/hooks/use-stat-card-order"
 const itemSchema = z.object({
   label: z.string().min(1, "Label is required."),
   href: z.string().url("Must be a valid URL.").or(z.literal("")),
-  iconUrl: z.string().url("Must be a valid URL.").or(z.literal("")),
+  iconUrl: z.string(),
   pollingMs: z.number().min(1, "Must be at least 1 second."),
 })
 
@@ -333,7 +334,7 @@ export function ItemDialog({
                       />
                       {isInvalid && (
                         <p className="text-sm text-destructive">
-                          {field.state.meta.errors.join(", ")}
+                          {formatErrors(field.state.meta.errors)}
                         </p>
                       )}
                     </div>
@@ -359,7 +360,7 @@ export function ItemDialog({
                       />
                       {isInvalid && (
                         <p className="text-sm text-destructive">
-                          {field.state.meta.errors.join(", ")}
+                          {formatErrors(field.state.meta.errors)}
                         </p>
                       )}
                     </div>
@@ -385,7 +386,7 @@ export function ItemDialog({
                       />
                       {isInvalid && (
                         <p className="text-sm text-destructive">
-                          {field.state.meta.errors.join(", ")}
+                          {formatErrors(field.state.meta.errors)}
                         </p>
                       )}
                     </div>
@@ -507,7 +508,7 @@ export function ItemDialog({
                       />
                       {isInvalid && (
                         <p className="text-sm text-destructive">
-                          {field.state.meta.errors.join(", ")}
+                          {formatErrors(field.state.meta.errors)}
                         </p>
                       )}
                     </div>

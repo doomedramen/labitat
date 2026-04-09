@@ -66,8 +66,8 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
 
     return {
       _status: "ok",
-      missingMovies: data.wanted_movies ?? 0,
-      missingEpisodes: data.wanted_episodes ?? 0,
+      missingMovies: data.movies ?? 0,
+      missingEpisodes: data.episodes ?? 0,
     }
   },
   Widget: BazarrWidget,

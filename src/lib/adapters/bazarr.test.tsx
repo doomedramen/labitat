@@ -42,8 +42,8 @@ describe("bazarr definition", () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              wanted_movies: 15,
-              wanted_episodes: 42,
+              movies: 339,
+              episodes: 10111,
             }),
         })
       )
@@ -59,8 +59,8 @@ describe("bazarr definition", () => {
         { headers: { "X-Api-Key": "test-key" } }
       )
       expect(result._status).toBe("ok")
-      expect(result.missingMovies).toBe(15)
-      expect(result.missingEpisodes).toBe(42)
+      expect(result.missingMovies).toBe(339)
+      expect(result.missingEpisodes).toBe(10111)
     })
 
     it("throws on error response", async () => {

@@ -98,9 +98,8 @@ export const glancesPerCpuDefinition: ServiceDefinition<GlancesPerCpuData> = {
     const percpu = await res.json()
     const coreList = Array.isArray(percpu) ? percpu : []
 
-    const cpuValues = coreList.map(
-      (c: { cpu_percent?: number; total?: number }) =>
-        Math.round(c.cpu_percent ?? c.total ?? 0)
+    const cpuValues = coreList.map((c: { cpu_percent?: number }) =>
+      Math.round(c.cpu_percent ?? 0)
     )
     const maxCore = Math.max(...cpuValues, 0)
     const avgCpu =

@@ -7,6 +7,7 @@ import { setupAdmin } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { formatErrors } from "@/lib/utils"
 
 const setupSchema = z
   .object({
@@ -20,16 +21,6 @@ const setupSchema = z
     message: "Passwords do not match.",
     path: ["confirmPassword"],
   })
-
-function formatErrors(errors: unknown[]): string {
-  return errors
-    .map((e) =>
-      typeof e === "string"
-        ? e
-        : ((e as { message?: string }).message ?? String(e))
-    )
-    .join(", ")
-}
 
 export function SetupForm() {
   const [state, formAction, isPending] = useActionState(setupAdmin, null)

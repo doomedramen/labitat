@@ -7,6 +7,7 @@ import { login } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { formatErrors } from "@/lib/utils"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -60,7 +61,7 @@ export function LoginForm() {
               />
               {isInvalid && (
                 <p className="text-sm text-destructive">
-                  {field.state.meta.errors.join(", ")}
+                  {formatErrors(field.state.meta.errors)}
                 </p>
               )}
             </div>
@@ -86,7 +87,7 @@ export function LoginForm() {
               />
               {isInvalid && (
                 <p className="text-sm text-destructive">
-                  {field.state.meta.errors.join(", ")}
+                  {formatErrors(field.state.meta.errors)}
                 </p>
               )}
             </div>

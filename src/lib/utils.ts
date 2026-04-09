@@ -5,6 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** Format TanStack Form / Zod error objects into a readable string */
+export function formatErrors(errors: unknown[]): string {
+  return errors
+    .map((e) =>
+      typeof e === "string"
+        ? e
+        : ((e as { message?: string }).message ?? String(e))
+    )
+    .join(", ")
+}
+
 /**
  * Resolve an icon slug to a full selfh.st CDN URL.
  * If the icon is already a full URL (http:// or https://), return as-is.

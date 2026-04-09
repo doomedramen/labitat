@@ -3,6 +3,7 @@
 import React from "react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
+import { formatErrors } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -93,7 +94,7 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
                       />
                       {isInvalid && (
                         <p className="text-sm text-destructive">
-                          {field.state.meta.errors.join(", ")}
+                          {formatErrors(field.state.meta.errors)}
                         </p>
                       )}
                     </div>
