@@ -30,40 +30,6 @@ describe("unmanic definition", () => {
       vi.restoreAllMocks()
     })
 
-    it("fetches data successfully (v1 fallback)", async () => {
-      const mockFetch = vi.fn((url: string) => {
-        // v2 API fails, falls back to v1
-        if (url.includes("/v2/")) {
-          return Promise.reject(new Error("v2 not available"))
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              status: {
-                active_workers: 2,
-                queue_length: 5,
-                completed_today: 10,
-                total_completed: 150,
-              },
-            }),
-        })
-      })
-      vi.stubGlobal("fetch", mockFetch)
-
-      const result = await unmanicDefinition.fetchData!({
-        url: "https://unmanic.example.com/",
-        apiKey: "test-key",
-      })
-
-      expect(result._status).toBe("ok")
-      expect(result.activeWorkers).toBe(2)
-      expect(result.totalWorkers).toBe(2) // v1 doesn't have total, defaults to active
-      expect(result.queuedItems).toBe(5)
-      expect(result.completedToday).toBe(10)
-      expect(result.totalCompleted).toBe(150)
-    })
-
     it("fetches data successfully (v2 API)", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/v2/workers/status")) {
@@ -99,11 +65,11 @@ describe("unmanic definition", () => {
       })
 
       expect(result._status).toBe("ok")
-      expect(result.activeWorkers).toBe(2) // 2 non-idle workers
-      expect(result.totalWorkers).toBe(4) // 4 total workers
+      expect(result.activeWorkers).toBe(2)
+      expect(result.totalWorkers).toBe(4)
       expect(result.queuedItems).toBe(15)
-      expect(result.completedToday).toBe(0) // v2 doesn't provide this
-      expect(result.totalCompleted).toBe(0) // v2 doesn't provide this
+      expect(result.completedToday).toBe(0)
+      expect(result.totalCompleted).toBe(0)
     })
 
     it("throws on error response", async () => {
@@ -114,19 +80,16 @@ describe("unmanic definition", () => {
           url: "https://unmanic.example.com",
           apiKey: "bad-key",
         })
-      ).rejects.toThrow("Unmanic error: 500")
+      ).rejects.toThrow("Unmanic error: workers=500, pending=500")
     })
 
     it("handles missing data with defaults", async () => {
-      const mockFetch = vi.fn((url: string) => {
-        if (url.includes("/v2/")) {
-          return Promise.reject(new Error("v2 not available"))
-        }
-        return Promise.resolve({
+      const mockFetch = vi.fn(() =>
+        Promise.resolve({
           ok: true,
           json: () => Promise.resolve({}),
         })
-      })
+      )
       vi.stubGlobal("fetch", mockFetch)
 
       const result = await unmanicDefinition.fetchData!({
@@ -139,35 +102,6 @@ describe("unmanic definition", () => {
       expect(result.queuedItems).toBe(0)
       expect(result.completedToday).toBe(0)
       expect(result.totalCompleted).toBe(0)
-    })
-
-    it("uses POST method with JSON body for v1 fallback", async () => {
-      const mockFetch = vi.fn((url: string) => {
-        if (url.includes("/v2/")) {
-          return Promise.reject(new Error("v2 not available"))
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ status: {} }),
-        })
-      })
-      vi.stubGlobal("fetch", mockFetch)
-
-      await unmanicDefinition.fetchData!({
-        url: "https://unmanic.example.com",
-        apiKey: "secret-key",
-      })
-
-      // Check that v1 endpoint was called with correct params
-      const v1Call = mockFetch.mock.calls.find((call) =>
-        call[0].includes("/v1/status")
-      )
-      expect(v1Call).toBeDefined()
-      expect(v1Call![0]).toMatchObject({
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ api_key: "secret-key" }),
-      })
     })
   })
 
