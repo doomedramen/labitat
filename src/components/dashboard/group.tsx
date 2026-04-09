@@ -3,11 +3,25 @@
 import { useState } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable"
 import { cn } from "@/lib/utils"
 import type { GroupWithCache, ItemRow } from "@/lib/types"
 import { ItemCard } from "./item/item-card"
 import { deleteGroup } from "@/actions/groups"
-import { deleteItem } from "@/actions/items"
+import { deleteItem, reorderItems } from "@/actions/items"
 import { Pencil, Trash2, Plus, GripVertical } from "lucide-react"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 
@@ -27,6 +41,30 @@ export function GroupCard({
   onEditItem,
 }: GroupCardProps) {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+
+  const itemSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  async function handleItemDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    // Only handle item drags (prevent conflicts with parent group context)
+    if (active.data.current?.type !== "item") return
+
+    const oldIndex = group.items.findIndex((i) => i.id === active.id)
+    const newIndex = group.items.findIndex((i) => i.id === over.id)
+    const newItems = [...group.items]
+    const [moved] = newItems.splice(oldIndex, 1)
+    newItems.splice(newIndex, 0, moved)
+
+    await reorderItems(
+      group.id,
+      newItems.map((i) => i.id)
+    )
+  }
 
   const {
     attributes,
@@ -86,31 +124,42 @@ export function GroupCard({
         </div>
 
         {/* Items grid */}
-        <div
-          className={cn(
-            "grid items-start gap-3",
-            "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          )}
+        <DndContext
+          sensors={itemSensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleItemDragEnd}
         >
-          {group.items.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              editMode={editMode}
-              onEdit={onEditItem}
-              onDeleted={(id) => deleteItem(id)}
-            />
-          ))}
-          {editMode && (
-            <button
-              onClick={onAddItem}
-              className="flex min-h-20 items-center justify-center rounded-xl border-2 border-dashed border-border/50 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+          <SortableContext
+            items={group.items.map((i) => i.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div
+              className={cn(
+                "grid items-start gap-3",
+                "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              )}
             >
-              <Plus className="mr-1.5 h-4 w-4" />
-              Add Item
-            </button>
-          )}
-        </div>
+              {group.items.map((item) => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  editMode={editMode}
+                  onEdit={onEditItem}
+                  onDeleted={(id) => deleteItem(id)}
+                />
+              ))}
+              {editMode && (
+                <button
+                  onClick={onAddItem}
+                  className="flex min-h-20 items-center justify-center rounded-xl border-2 border-dashed border-border/50 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+                >
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  Add Item
+                </button>
+              )}
+            </div>
+          </SortableContext>
+        </DndContext>
       </div>
 
       <ConfirmDialog

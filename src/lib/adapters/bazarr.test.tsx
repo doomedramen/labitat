@@ -37,24 +37,16 @@ describe("bazarr definition", () => {
     })
 
     it("fetches data successfully", async () => {
-      const mockFetch = vi.fn((url: string) => {
-        if (url.includes("/movies")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ total: 15 }),
-          })
-        }
-        if (url.includes("/episodes")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ total: 42 }),
-          })
-        }
-        return Promise.resolve({
+      const mockFetch = vi.fn(() =>
+        Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({}),
+          json: () =>
+            Promise.resolve({
+              wanted_movies: 15,
+              wanted_episodes: 42,
+            }),
         })
-      })
+      )
       vi.stubGlobal("fetch", mockFetch)
 
       const result = await bazarrDefinition.fetchData!({
@@ -62,6 +54,10 @@ describe("bazarr definition", () => {
         apiKey: "test-key",
       })
 
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://bazarr.example.com/api/badges",
+        { headers: { "X-Api-Key": "test-key" } }
+      )
       expect(result._status).toBe("ok")
       expect(result.missingMovies).toBe(15)
       expect(result.missingEpisodes).toBe(42)

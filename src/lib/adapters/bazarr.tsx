@@ -56,20 +56,16 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const [moviesRes, episodesRes] = await Promise.all([
-      fetch(`${baseUrl}/api/movies/wanted?start=0&length=1`, { headers }),
-      fetch(`${baseUrl}/api/episodes/wanted?start=0&length=1`, { headers }),
-    ])
+    const res = await fetch(`${baseUrl}/api/badges`, { headers })
 
-    if (!moviesRes.ok) throw new Error(`Bazarr error: ${moviesRes.status}`)
+    if (!res.ok) throw new Error(`Bazarr error: ${res.status}`)
 
-    const moviesData = await moviesRes.json()
-    const episodesData = episodesRes.ok ? await episodesRes.json() : {}
+    const data = await res.json()
 
     return {
       _status: "ok",
-      missingMovies: moviesData.total ?? 0,
-      missingEpisodes: episodesData.total ?? 0,
+      missingMovies: data.wanted_movies ?? 0,
+      missingEpisodes: data.wanted_episodes ?? 0,
     }
   },
   Widget: BazarrWidget,

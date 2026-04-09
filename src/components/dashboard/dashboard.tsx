@@ -81,6 +81,9 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
+    // Only handle group drags (ignore item drags which are handled by nested contexts)
+    if (active.data.current?.type !== "group") return
+
     const oldIndex = groups.findIndex((g) => g.id === active.id)
     const newIndex = groups.findIndex((g) => g.id === over.id)
     const newGroups = [...groups]
