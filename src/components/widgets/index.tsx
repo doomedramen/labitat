@@ -351,9 +351,9 @@ export function ActiveStreamItem({
       >
         <div className="flex flex-col gap-1">
           <div className="font-medium">{displayTitle}</div>
-          <div className="text-secondary-foreground/70">User: {user}</div>
+          <div>User: {user}</div>
           {duration > 0 && (
-            <div className="text-secondary-foreground/60">
+            <div>
               {formatDuration(progress)} / {formatDuration(duration)}
             </div>
           )}
