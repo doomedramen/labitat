@@ -8,7 +8,7 @@
  */
 
 import sharp from "sharp"
-import { mkdirSync, existsSync } from "fs"
+import { mkdirSync, existsSync, copyFileSync } from "fs"
 import { join, dirname } from "path"
 import { fileURLToPath } from "url"
 
@@ -21,21 +21,20 @@ const SOURCE_SVG = join(ROOT_DIR, "logo.svg")
 
 // Define all required icon sizes
 const ICONS = [
-  // Favicon files (public/)
+  // ── App (public/) ─────────────────────────────────────────────────────────
+  // Favicon files
   { size: 16, output: "public/favicon-16x16.png" },
   { size: 32, output: "public/favicon-32x32.png" },
   { size: 32, output: "public/favicon.png" },
   { size: 32, output: "public/favicon.ico" },
 
-  // Apple touch icons (public/)
-  // iOS uses the largest available icon for the device's pixel density
-  // 180x180 is standard for iPhone, but larger icons improve sharpness on newer devices
+  // Apple touch icons
   { size: 120, output: "public/apple-touch-icon-120x120.png" },
   { size: 152, output: "public/apple-touch-icon-152x152.png" },
   { size: 167, output: "public/apple-touch-icon-167x167.png" }, // iPad Pro
   { size: 180, output: "public/apple-touch-icon.png" },
-  { size: 512, output: "public/apple-touch-icon-512x512.png" }, // High-DPI iOS devices
-  { size: 1024, output: "public/apple-touch-icon-1024x1024.png" }, // App Store / max quality
+  { size: 512, output: "public/apple-touch-icon-512x512.png" },
+  { size: 1024, output: "public/apple-touch-icon-1024x1024.png" },
 
   // PWA icons (public/icons/)
   { size: 96, output: "public/icons/icon-96x96.png" },
@@ -46,6 +45,9 @@ const ICONS = [
   { size: 384, output: "public/icons/icon-384x384.png" },
   { size: 512, output: "public/icons/icon-512x512.png" },
   { size: 512, output: "public/icons/icon-maskable-512x512.png" },
+
+  // ── Docs (docs/public/) ────────────────────────────────────────────────────
+  { size: 32, output: "docs/public/favicon.ico" },
 ]
 
 async function generateIcon(size, outputPath) {
@@ -82,6 +84,16 @@ async function main() {
   }
 
   console.log("Generating icons from logo.svg...\n")
+
+  // Copy source SVG to docs
+  const docsSvgPath = join(ROOT_DIR, "docs/public/logo.svg")
+  try {
+    copyFileSync(SOURCE_SVG, docsSvgPath)
+    console.log(`✓ Copied logo.svg → docs/public/logo.svg`)
+  } catch (error) {
+    console.error(`✗ Failed to copy logo.svg to docs: ${error.message}`)
+    failCount++
+  }
 
   let successCount = 0
   let failCount = 0
