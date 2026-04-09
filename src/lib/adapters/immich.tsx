@@ -1,6 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
-import { Users, Image, Video, HardDrive } from "lucide-react"
+import { Users, Image as ImageIcon, Video, HardDrive } from "lucide-react"
 
 type ImmichData = {
   _status?: "ok" | "warn" | "error"
@@ -36,7 +36,7 @@ function ImmichWidget({ users, photos, videos, storage }: ImmichData) {
       id: "photos",
       value: photos,
       label: "Photos",
-      icon: <Image className="h-3 w-3" alt="" />,
+      icon: <ImageIcon className="h-3 w-3" />,
     },
     {
       id: "videos",

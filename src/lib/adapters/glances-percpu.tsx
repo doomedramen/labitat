@@ -50,7 +50,7 @@ function GlancesPerCpuWidget({ coreUsages }: GlancesPerCpuData) {
   return (
     <div className="flex flex-col gap-1 text-xs">
       {usages.map((pct, i) => (
-        <CoreBar key={i} index={i} pct={pct} />
+        <CoreBar key={i} pct={pct} />
       ))}
     </div>
   )
