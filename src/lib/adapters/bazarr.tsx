@@ -57,8 +57,8 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
     const headers = { "X-Api-Key": config.apiKey }
 
     const [moviesRes, episodesRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/movies/wanted?start=0&length=1`, { headers }),
-      fetch(`${baseUrl}/api/v1/episodes/wanted?start=0&length=1`, { headers }),
+      fetch(`${baseUrl}/api/movies/wanted?start=0&length=1`, { headers }),
+      fetch(`${baseUrl}/api/episodes/wanted?start=0&length=1`, { headers }),
     ])
 
     if (!moviesRes.ok) throw new Error(`Bazarr error: ${moviesRes.status}`)
