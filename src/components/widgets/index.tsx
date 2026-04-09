@@ -270,6 +270,8 @@ export function StatGrid({
 
 export type ActiveStream = {
   title: string
+  /** Series / show name for TV episodes */
+  subtitle?: string
   user: string
   progress: number
   duration: number
@@ -289,6 +291,7 @@ function formatDuration(seconds: number): string {
 
 export function ActiveStreamItem({
   title,
+  subtitle,
   user,
   progress,
   duration,
@@ -296,10 +299,11 @@ export function ActiveStreamItem({
 }: ActiveStream) {
   const progressPercent = duration > 0 ? (progress / duration) * 100 : 0
   const remaining = Math.max(0, duration - progress)
+  const displayTitle = subtitle ? `${subtitle} · ${title}` : title
   const tooltipText =
     duration > 0
-      ? `${title} · ${user} · ${formatDuration(progress)} / ${formatDuration(duration)}`
-      : `${title} · ${user}`
+      ? `${displayTitle} · ${user} · ${formatDuration(progress)} / ${formatDuration(duration)}`
+      : `${displayTitle} · ${user}`
 
   return (
     <Tooltip>
@@ -315,9 +319,17 @@ export function ActiveStreamItem({
           ) : (
             <Play className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
           )}
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="truncate font-medium">{title}</span>
-            <span className="shrink-0 truncate text-secondary-foreground/60">
+          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+            {subtitle && (
+              <span className="shrink-0 text-secondary-foreground/50">
+                {subtitle}
+              </span>
+            )}
+            {subtitle && (
+              <span className="shrink-0 text-secondary-foreground/30">·</span>
+            )}
+            <span className="min-w-0 truncate font-medium">{title}</span>
+            <span className="shrink-0 text-secondary-foreground/60">
               ({user})
             </span>
           </div>
@@ -341,9 +353,12 @@ export function ActiveStreamItem({
 export function ActiveStreamList({ streams }: { streams: ActiveStream[] }) {
   if (streams.length === 0) return null
 
-  const sorted = [...streams].sort((a, b) =>
-    a.title.localeCompare(b.title, undefined, { sensitivity: "base" })
-  )
+  // Sort by subtitle (show name) then title (episode), falling back to title only
+  const sorted = [...streams].sort((a, b) => {
+    const aKey = `${a.subtitle ?? ""}\x00${a.title}`
+    const bKey = `${b.subtitle ?? ""}\x00${b.title}`
+    return aKey.localeCompare(bKey, undefined, { sensitivity: "base" })
+  })
 
   return (
     <div className="flex w-full flex-col gap-0.5">

@@ -3,15 +3,19 @@
 import { useEffect, useState } from "react"
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
+  type DragStartEvent,
+  type DragOverEvent,
   type DragEndEvent,
 } from "@dnd-kit/core"
 import {
   SortableContext,
+  arrayMove,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
@@ -43,7 +47,9 @@ import { GroupCard } from "./group"
 import { EditBar } from "./edit-bar"
 import { GroupDialog } from "@/components/editor/group-dialog"
 import { ItemDialog } from "@/components/editor/item-dialog"
+import { ItemCardDragPreview } from "./item/item-card"
 import { reorderGroups } from "@/actions/groups"
+import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
 
 interface DashboardProps {
@@ -61,6 +67,26 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   const [editingGroup, setEditingGroup] = useState<GroupWithCache | null>(null)
   const [editingItem, setEditingItem] = useState<ItemWithCache | null>(null)
   const [targetGroupId, setTargetGroupId] = useState<string | null>(null)
+
+  // Optimistic state for DnD — keeps UI smooth while server round-trips
+  const [localGroups, setLocalGroups] = useState<GroupWithCache[]>(groups)
+  useEffect(() => {
+    setLocalGroups(groups)
+  }, [groups])
+
+  // Track the active drag item/group for DragOverlay and cross-group logic
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [dragStartGroupId, setDragStartGroupId] = useState<string | null>(null)
+
+  const activeItem = activeId
+    ? (localGroups.flatMap((g) => g.items).find((i) => i.id === activeId) ??
+      null)
+    : null
+  const activeGroup =
+    activeId && !activeItem
+      ? (localGroups.find((g) => g.id === activeId) ?? null)
+      : null
+
   const dashboardTitle = localTitle ?? title
 
   const sensors = useSensors(
@@ -68,20 +94,107 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
-  async function handleGroupDragEnd(event: DragEndEvent) {
+  function findItemGroupId(itemId: string, from = localGroups) {
+    return from.find((g) => g.items.some((i) => i.id === itemId))?.id
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const id = event.active.id as string
+    setActiveId(id)
+    if (event.active.data.current?.type === "item") {
+      setDragStartGroupId(findItemGroupId(id) ?? null)
+    }
+  }
+
+  function handleDragOver(event: DragOverEvent) {
     const { active, over } = event
-    if (!over || active.id === over.id) return
+    if (!over || active.data.current?.type !== "item") return
 
-    // Only handle group drags (ignore item drags which are handled by nested contexts)
-    if (active.data.current?.type !== "group") return
+    const activeId = active.id as string
+    const overId = over.id as string
 
-    const oldIndex = groups.findIndex((g) => g.id === active.id)
-    const newIndex = groups.findIndex((g) => g.id === over.id)
-    const newGroups = [...groups]
-    const [moved] = newGroups.splice(oldIndex, 1)
-    newGroups.splice(newIndex, 0, moved)
+    const activeGroupId = findItemGroupId(activeId)
+    const overGroupId =
+      findItemGroupId(overId) ??
+      (localGroups.some((g) => g.id === overId) ? overId : undefined)
 
-    await reorderGroups(newGroups.map((g) => g.id))
+    if (!activeGroupId || !overGroupId || activeGroupId === overGroupId) return
+
+    // Optimistically move the item into the target group
+    setLocalGroups((prev) => {
+      const srcGroup = prev.find((g) => g.id === activeGroupId)!
+      const item = srcGroup.items.find((i) => i.id === activeId)!
+      return prev.map((g) => {
+        if (g.id === activeGroupId)
+          return { ...g, items: g.items.filter((i) => i.id !== activeId) }
+        if (g.id === overGroupId) return { ...g, items: [...g.items, item] }
+        return g
+      })
+    })
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    setActiveId(null)
+
+    if (!over) {
+      setLocalGroups(groups) // revert on cancel
+      setDragStartGroupId(null)
+      return
+    }
+
+    const activeId = active.id as string
+    const overId = over.id as string
+    const type = active.data.current?.type
+
+    if (type === "group") {
+      const oldIndex = localGroups.findIndex((g) => g.id === activeId)
+      const newIndex = localGroups.findIndex((g) => g.id === overId)
+      if (oldIndex !== newIndex) {
+        const reordered = arrayMove(localGroups, oldIndex, newIndex)
+        setLocalGroups(reordered)
+        reorderGroups(reordered.map((g) => g.id))
+      }
+    } else if (type === "item") {
+      // By the time drag ends, handleDragOver has already moved the item into
+      // the correct group. We just need to finalise the position within that group.
+      const currentGroupId = findItemGroupId(activeId)
+      if (!currentGroupId) {
+        setDragStartGroupId(null)
+        return
+      }
+
+      const currentGroup = localGroups.find((g) => g.id === currentGroupId)!
+      const activeIdx = currentGroup.items.findIndex((i) => i.id === activeId)
+      const overIdx = currentGroup.items.findIndex((i) => i.id === overId)
+
+      let finalItems = currentGroup.items
+      if (overIdx !== -1 && activeIdx !== overIdx) {
+        finalItems = arrayMove(currentGroup.items, activeIdx, overIdx)
+        setLocalGroups((prev) =>
+          prev.map((g) =>
+            g.id === currentGroupId ? { ...g, items: finalItems } : g
+          )
+        )
+      }
+
+      reorderItems(
+        currentGroupId,
+        finalItems.map((i) => i.id)
+      )
+
+      // If cross-group, also persist the (now item-less) source group
+      if (dragStartGroupId && dragStartGroupId !== currentGroupId) {
+        const srcGroup = localGroups.find((g) => g.id === dragStartGroupId)
+        if (srcGroup)
+          reorderItems(
+            dragStartGroupId,
+            srcGroup.items.map((i) => i.id)
+          )
+      }
+    }
+
+    setDragStartGroupId(null)
   }
 
   function handleSaveTitle() {
@@ -116,7 +229,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         )}
 
         <div className="flex items-center gap-2">
-          {/* Theme & Palette dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon">
@@ -137,7 +249,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Edit / Sign in */}
           {isLoggedIn ? (
             !editMode ? (
               <Button
@@ -161,18 +272,20 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         </div>
       </header>
 
-      {/* Dashboard body */}
+      {/* Single DndContext handles both group and item reordering */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragEnd={handleGroupDragEnd}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={groups.map((g) => g.id)}
+          items={localGroups.map((g) => g.id)}
           strategy={verticalListSortingStrategy}
         >
           <div className="flex flex-col gap-8">
-            {groups.map((group) => (
+            {localGroups.map((group) => (
               <GroupCard
                 key={group.id}
                 group={group}
@@ -195,9 +308,18 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             ))}
           </div>
         </SortableContext>
+
+        <DragOverlay dropAnimation={null}>
+          {activeItem ? (
+            <ItemCardDragPreview item={activeItem} />
+          ) : activeGroup ? (
+            <div className="rounded-xl bg-card px-3 py-2 text-sm font-medium shadow-lg ring-2 ring-ring">
+              {activeGroup.name}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
 
-      {/* Add group button in edit mode */}
       {editMode && (
         <button
           onClick={() => {
@@ -211,7 +333,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         </button>
       )}
 
-      {/* Edit bar (save/done) */}
       {editMode && isLoggedIn && (
         <EditBar
           onDone={() => {
@@ -221,7 +342,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         />
       )}
 
-      {/* Dialogs */}
       <GroupDialog
         open={groupDialogOpen}
         onOpenChange={setGroupDialogOpen}

@@ -61,7 +61,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
     <div
       className={cn(
         "relative",
-        item.cleanMode && !editMode ? "p-2" : "px-3 py-2.5"
+        editMode ? "px-3 pt-6 pb-2.5" : item.cleanMode ? "p-2" : "px-3 py-2.5"
       )}
       data-testid="item-card"
       data-item-id={item.id}

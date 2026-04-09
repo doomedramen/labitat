@@ -5,7 +5,7 @@ import { Play, Music, Film, Tv } from "lucide-react"
 
 type PlexSession = {
   title: string
-  full_title: string
+  subtitle?: string
   user: string
   progress: number
   duration: number
@@ -66,7 +66,8 @@ function PlexWidget({
         <div className="mx-1 flex flex-col pb-1">
           <ActiveStreamList
             streams={sessions.map((session) => ({
-              title: session.full_title,
+              title: session.title,
+              subtitle: session.subtitle,
               user: session.user,
               progress: session.progress,
               duration: session.duration,
@@ -194,18 +195,19 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
         const viewOffset = getAttr("viewOffset")
         const duration = getAttr("duration")
 
-        let fullTitle = title
+        // For TV: subtitle = show name, title = episode title
+        // For movies: no subtitle, resolve title from originalTitle if needed
+        let episodeTitle = title
+        let subtitle: string | undefined
         if (grandparentTitle) {
-          const episodeTitle =
+          subtitle = grandparentTitle
+          episodeTitle =
             title === grandparentTitle ? originalTitle || title : title
-          fullTitle = `${grandparentTitle} - ${episodeTitle}`
         } else if (type === "movie") {
           if (librarySectionTitle && title === librarySectionTitle) {
-            fullTitle = originalTitle || title
+            episodeTitle = originalTitle || title
           } else if (title.includes("(") && originalTitle) {
-            fullTitle = originalTitle
-          } else {
-            fullTitle = title
+            episodeTitle = originalTitle
           }
         }
 
@@ -224,8 +226,8 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
           durationSec > 0 ? Math.min(progress, durationSec) : progress
 
         sessions.push({
-          title,
-          full_title: fullTitle,
+          title: episodeTitle,
+          subtitle,
           user,
           progress: safeProgress,
           duration: durationSec,

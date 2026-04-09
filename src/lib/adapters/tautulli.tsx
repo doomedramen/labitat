@@ -118,8 +118,8 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
     const activeStreams: ActiveStream[] = sessions.map(
       (s: {
         title: string
-        grandparentTitle?: string
-        parentTitle?: string
+        grandparent_title?: string
+        parent_title?: string
         user: string
         progress_percent: number
         duration: number
@@ -134,25 +134,22 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
         else if (s.video_decision === "direct play") directPlayStreams++
         else if (s.video_decision === "copy") directStreamStreams++
 
-        // Build full title: "Show Name - Episode Title" for TV, just title for movies
-        let fullTitle = s.title ?? "Unknown"
-        if (s.grandparentTitle && s.title) {
-          fullTitle = `${s.grandparentTitle} - ${s.title}`
-        } else if (s.parentTitle && s.title && s.parentTitle !== s.title) {
-          fullTitle = `${s.parentTitle} - ${s.title}`
-        }
+        // subtitle = series/show name for TV episodes; omit for movies
+        const subtitle =
+          s.grandparent_title ||
+          (s.parent_title !== s.title ? s.parent_title : undefined) ||
+          undefined
 
-        // Use view_offset for elapsed time, fall back to calculating from progress_percent
         // Tautulli API returns view_offset and duration in milliseconds
         const viewOffsetMs =
           s.view_offset ?? ((s.progress_percent ?? 0) * (s.duration ?? 0)) / 100
 
-        // Convert to seconds for display
         const progressSec = viewOffsetMs / 1000
         const durationSec = (s.duration ?? 0) / 1000
 
         return {
-          title: fullTitle,
+          title: s.title ?? "Unknown",
+          subtitle,
           user: s.user ?? "Unknown",
           progress: progressSec,
           duration: durationSec,
