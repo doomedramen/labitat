@@ -5,7 +5,7 @@
  * These provide consistent styling across different services.
  */
 
-import React, {
+import {
   DndContext,
   closestCenter,
   PointerSensor,
@@ -171,7 +171,10 @@ export function StatCard({
       </span>
       {showIcon && icon && (
         <div className="mt-0.5 text-secondary-foreground/50">
-          {React.createElement(icon, { className: "h-3 w-3" })}
+          {(() => {
+            const Icon = icon
+            return <Icon className="h-3 w-3" />
+          })()}
         </div>
       )}
       {showLabel ? (

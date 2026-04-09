@@ -527,8 +527,8 @@ export function ItemDialog({
                 <Label htmlFor="cleanMode">Clean mode (minimal display)</Label>
               </div>
 
-              {/* Stat display mode */}
-              {selectedService && (
+              {/* Stat display mode - only for widgets using toPayload, not custom renderWidget */}
+              {selectedService && !selectedService.renderWidget && (
                 <div className="flex items-center justify-between gap-4">
                   <Label htmlFor="statDisplayMode" className="leading-snug">
                     Stat card icons
@@ -546,8 +546,9 @@ export function ItemDialog({
                 </div>
               )}
 
-              {/* Stat card layout preview */}
+              {/* Stat card layout preview - only for widgets using toPayload, not custom renderWidget */}
               {selectedService &&
+                !selectedService.renderWidget &&
                 item &&
                 serviceType === item.serviceType &&
                 item.cachedWidgetData && (
@@ -565,13 +566,11 @@ export function ItemDialog({
                         onOrderChange: setLocalStatCardOrder,
                       }}
                     >
-                      {selectedService.renderWidget ? (
-                        <selectedService.renderWidget
-                          {...(item.cachedWidgetData as Record<string, unknown>)}
-                        />
-                      ) : selectedService.toPayload && item.cachedWidgetData ? (
+                      {selectedService.toPayload && item.cachedWidgetData ? (
                         <WidgetContainer
-                          payload={selectedService.toPayload(item.cachedWidgetData)}
+                          payload={selectedService.toPayload(
+                            item.cachedWidgetData
+                          )}
                         />
                       ) : null}
                     </WidgetDisplayProvider>

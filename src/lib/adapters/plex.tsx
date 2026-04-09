@@ -22,6 +22,16 @@ type PlexData = {
   sessions?: PlexSession[]
 }
 
+function decodeXMLEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#?39;/g, "'")
+    .replace(/&apos;/g, "'")
+}
+
 function plexToPayload(data: PlexData) {
   return {
     stats: [
@@ -171,10 +181,16 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
           return m ? m[1] : null
         }
 
-        const title = getAttr("title") ?? ""
+        const title = decodeXMLEntities(getAttr("title") ?? "")
         const grandparentTitle = getAttr("grandparentTitle")
+          ? decodeXMLEntities(getAttr("grandparentTitle")!)
+          : null
         const originalTitle = getAttr("originalTitle")
+          ? decodeXMLEntities(getAttr("originalTitle")!)
+          : null
         const librarySectionTitle = getAttr("librarySectionTitle")
+          ? decodeXMLEntities(getAttr("librarySectionTitle")!)
+          : null
         const type = getAttr("type")
         const viewOffset = getAttr("viewOffset")
         const duration = getAttr("duration")
@@ -196,7 +212,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
         }
 
         const userMatch = videoEl.match(/<User[^>]*title="([^"]*)"/)
-        const user = userMatch ? userMatch[1] : "Unknown"
+        const user = userMatch ? decodeXMLEntities(userMatch[1]) : "Unknown"
 
         const stateMatch = videoEl.match(/<Player[^>]*state="([^"]*)"/)
         const state = stateMatch?.[1] === "paused" ? "paused" : "playing"

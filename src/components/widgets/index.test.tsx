@@ -22,12 +22,13 @@ describe("StatCard", () => {
   })
 
   it("renders icon when provided", () => {
+    const TestIcon = () => <span data-testid="test-icon">🔥</span>
     render(
       <StatCard
         id="test-2"
         value="Test"
         label="With Icon"
-        icon={<span data-testid="test-icon">🔥</span>}
+        icon={TestIcon}
         displayMode="icon"
       />
     )
@@ -37,12 +38,13 @@ describe("StatCard", () => {
   })
 
   it("places icon below value in DOM order", () => {
+    const TestIcon = () => <span data-testid="test-icon">🔥</span>
     const { container } = render(
       <StatCard
         id="test-3"
         value="42"
         label="Test"
-        icon={<span data-testid="test-icon">🔥</span>}
+        icon={TestIcon}
         displayMode="icon"
       />
     )

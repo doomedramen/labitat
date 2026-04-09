@@ -33,10 +33,10 @@ describe("glances-percpu definition", () => {
           ok: true,
           json: () =>
             Promise.resolve([
-              { cpu_percent: 45 },
-              { cpu_percent: 60 },
-              { cpu_percent: 30 },
-              { cpu_percent: 80 },
+              { cpu_number: 0, total: 45, user: 20, system: 25, idle: 55 },
+              { cpu_number: 1, total: 60, user: 30, system: 30, idle: 40 },
+              { cpu_number: 2, total: 30, user: 15, system: 15, idle: 70 },
+              { cpu_number: 3, total: 80, user: 40, system: 40, idle: 20 },
             ]),
         })
       )

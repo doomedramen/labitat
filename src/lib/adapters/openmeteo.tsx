@@ -61,11 +61,7 @@ function openmeteoToPayload(data: OpenMeteoData) {
         id: "daynight",
         value: data.isDay ? "☀️" : "🌙",
         label: weatherDesc,
-        icon: data.isDay ? (
-          <Sun className="h-3 w-3" />
-        ) : (
-          <Moon className="h-3 w-3" />
-        ),
+        icon: data.isDay ? Sun : Moon,
       },
     ],
   }

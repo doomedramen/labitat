@@ -99,6 +99,39 @@ describe("plex definition", () => {
       ).rejects.toThrow("Plex not found at this URL")
     })
 
+    it("decodes HTML entities in titles", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/status/sessions")) {
+          return Promise.resolve({
+            ok: true,
+            text: () =>
+              Promise.resolve(
+                '<MediaContainer size="1"><Video title="Law &amp; Order: SVU" grandparentTitle="Season 1" originalTitle="Law &amp; Order" viewOffset="1000" duration="2000"><User title="user&amp;test" /><Player state="playing" /></Video></MediaContainer>'
+              ),
+          })
+        }
+        if (url.includes("/library/sections") && !url.includes("/all")) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve("<MediaContainer />"),
+          })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      const result = await plexDefinition.fetchData!({
+        url: "https://plex.example.com",
+        token: "test-token",
+        showActiveStreams: "true",
+      })
+
+      expect(result.sessions).toHaveLength(1)
+      expect(result.sessions![0].title).toBe("Law & Order: SVU")
+      expect(result.sessions![0].subtitle).toBe("Season 1")
+      expect(result.sessions![0].user).toBe("user&test")
+    })
+
     it("handles empty library", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/status/sessions")) {
@@ -158,7 +191,9 @@ describe("plex definition", () => {
         movies: 0,
         tvShows: 0,
         showActiveStreams: true,
-        sessions: [{ title: "Test", user: "User", progress: 60, duration: 120 }],
+        sessions: [
+          { title: "Test", user: "User", progress: 60, duration: 120 },
+        ],
       })
       expect(payload.streams).toHaveLength(1)
     })
@@ -171,7 +206,9 @@ describe("plex definition", () => {
         movies: 0,
         tvShows: 0,
         showActiveStreams: false,
-        sessions: [{ title: "Test", user: "User", progress: 60, duration: 120 }],
+        sessions: [
+          { title: "Test", user: "User", progress: 60, duration: 120 },
+        ],
       })
       expect(payload.streams).toBeUndefined()
     })

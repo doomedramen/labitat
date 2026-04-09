@@ -16,11 +16,7 @@ function genericPingToPayload(data: GenericPingData) {
         id: "status",
         value: isOnline ? "✓" : "✗",
         label: isOnline ? "Online" : "Offline",
-        icon: isOnline ? (
-          <CheckCircle className="h-3 w-3" />
-        ) : (
-          <XCircle className="h-3 w-3" />
-        ),
+        icon: isOnline ? CheckCircle : XCircle,
         valueClassName: isOnline ? undefined : "text-destructive",
       },
       {
