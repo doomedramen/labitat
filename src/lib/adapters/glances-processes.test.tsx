@@ -1,4 +1,3 @@
-import { render } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { glancesProcessesDefinition } from "@/lib/adapters/glances-processes"
 

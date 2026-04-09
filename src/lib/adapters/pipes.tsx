@@ -34,7 +34,7 @@ const DIRS = [
 
 type Pipe = { x: number; y: number; dir: number; color: string; alive: boolean }
 
-function PipesWidget(_: PipesData) {
+function PipesWidget() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -47,7 +47,6 @@ function PipesWidget(_: PipesData) {
     let rows = 0
     let grid: boolean[][] = []
     let pipes: Pipe[] = []
-    let timer: ReturnType<typeof setInterval>
 
     function center(x: number, y: number) {
       return { cx: x * CELL + CELL / 2, cy: y * CELL + CELL / 2 }
@@ -90,7 +89,10 @@ function PipesWidget(_: PipesData) {
       if (total === 0) return
 
       // Reset when mostly full
-      const occupied = grid.reduce((n, col) => n + col.filter(Boolean).length, 0)
+      const occupied = grid.reduce(
+        (n, col) => n + col.filter(Boolean).length,
+        0
+      )
       if (occupied / total > 0.85) {
         init()
         return
@@ -104,7 +106,12 @@ function PipesWidget(_: PipesData) {
         // Prefer straight ahead (75%), otherwise pick a random direction
         const straight = Math.random() < 0.75
         const order = straight
-          ? [pipe.dir, ...DIRS.map((_, i) => i).filter((i) => i !== pipe.dir).sort(() => Math.random() - 0.5)]
+          ? [
+              pipe.dir,
+              ...DIRS.map((_, i) => i)
+                .filter((i) => i !== pipe.dir)
+                .sort(() => Math.random() - 0.5),
+            ]
           : DIRS.map((_, i) => i).sort(() => Math.random() - 0.5)
 
         let moved = false
@@ -152,7 +159,7 @@ function PipesWidget(_: PipesData) {
     }
 
     init()
-    timer = setInterval(tick, TICK_MS)
+    const timer = setInterval(tick, TICK_MS)
 
     const ro = new ResizeObserver(init)
     ro.observe(canvas)

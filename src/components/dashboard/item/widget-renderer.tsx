@@ -45,13 +45,13 @@ export function WidgetRenderer({
   // Custom widget takes precedence, otherwise use toPayload
   const hasCustomWidget =
     serviceDef?.renderWidget && (isClientSide || effectiveData)
-  const hasPayload =
-    serviceDef?.toPayload && effectiveData && !hasCustomWidget
+  const hasPayload = serviceDef?.toPayload && effectiveData && !hasCustomWidget
 
   const showWidgetSkeleton =
     !editMode && effectiveLoading && !isClientSide && !effectiveData
 
-  const isVisible = (hasCustomWidget || hasPayload) && (effectiveData || !effectiveLoading)
+  const isVisible =
+    (hasCustomWidget || hasPayload) && (effectiveData || !effectiveLoading)
 
   return (
     <div
@@ -79,7 +79,9 @@ export function WidgetRenderer({
           }}
         >
           {hasCustomWidget && serviceDef.renderWidget ? (
-            <serviceDef.renderWidget {...(effectiveData as Record<string, unknown>)} />
+            <serviceDef.renderWidget
+              {...(effectiveData as Record<string, unknown>)}
+            />
           ) : hasPayload && serviceDef.toPayload ? (
             <WidgetContainer payload={serviceDef.toPayload(effectiveData)} />
           ) : null}

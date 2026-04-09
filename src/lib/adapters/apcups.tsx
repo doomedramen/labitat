@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetContainer } from "@/components/widgets"
 import { Zap, Battery, Clock, Thermometer } from "lucide-react"
 
 type APCUPSData = {

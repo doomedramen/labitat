@@ -21,9 +21,7 @@ describe("Service Registry", () => {
       expect(service.configFields).toBeDefined()
       expect(Array.isArray(service.configFields)).toBe(true)
       // Each service must have either toPayload or renderWidget
-      expect(
-        service.toPayload || service.renderWidget
-      ).toBeDefined()
+      expect(service.toPayload || service.renderWidget).toBeDefined()
     })
   })
 })

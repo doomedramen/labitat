@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetContainer } from "@/components/widgets"
 import { Globe, Ban, Percent, Shield, Search, Clock } from "lucide-react"
 
 type AdGuardData = {

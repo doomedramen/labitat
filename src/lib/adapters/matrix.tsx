@@ -12,7 +12,7 @@ type MatrixRainData = {
 const CHARS =
   "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF"
 
-function MatrixRainWidget(_: MatrixRainData) {
+function MatrixRainWidget() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {

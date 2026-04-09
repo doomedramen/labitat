@@ -41,10 +41,19 @@ function ActiveZone({
 }) {
   const { setNodeRef } = useDroppable({ id: "active-zone" })
   return (
-    <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
+    <SortableContext
+      items={items.map((i) => i.id)}
+      strategy={rectSortingStrategy}
+    >
       <div ref={setNodeRef} className="grid gap-1.5 text-xs" style={gridStyle}>
         {items.map((item) => (
-          <StatCard key={item.id} {...item} displayMode={statDisplayMode} sortable editMode />
+          <StatCard
+            key={item.id}
+            {...item}
+            displayMode={statDisplayMode}
+            sortable
+            editMode
+          />
         ))}
       </div>
     </SortableContext>
@@ -79,11 +88,22 @@ function UnusedZone({
         )}
       </div>
       {items.length > 0 ? (
-        <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
+        <SortableContext
+          items={items.map((i) => i.id)}
+          strategy={rectSortingStrategy}
+        >
           <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
             {items.map((item) => (
-              <div key={item.id} className="relative rounded-md bg-muted/50 opacity-60">
-                <StatCard {...item} displayMode={statDisplayMode} sortable editMode />
+              <div
+                key={item.id}
+                className="relative rounded-md bg-muted/50 opacity-60"
+              >
+                <StatCard
+                  {...item}
+                  displayMode={statDisplayMode}
+                  sortable
+                  editMode
+                />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <RotateCcw className="h-3 w-3 text-muted-foreground/50" />
                 </div>

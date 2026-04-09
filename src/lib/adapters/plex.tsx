@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import type { ActiveStream } from "@/components/widgets"
 import { Play, Music, Film, Tv } from "lucide-react"
 
 type PlexSession = {
