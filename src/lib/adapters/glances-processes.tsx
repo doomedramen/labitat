@@ -87,7 +87,10 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
 
       // Sort processes by CPU or memory
       const sorted = [...procList].sort(
-        (a: { cpu_percent?: number }, b: { cpu_percent?: number }) =>
+        (
+          a: { cpu_percent?: number; memory_percent?: number },
+          b: { cpu_percent?: number; memory_percent?: number }
+        ) =>
           sortBy === "memory"
             ? (b.memory_percent ?? 0) - (a.memory_percent ?? 0)
             : (b.cpu_percent ?? 0) - (a.cpu_percent ?? 0)

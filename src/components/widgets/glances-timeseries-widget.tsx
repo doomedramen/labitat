@@ -1,6 +1,6 @@
 "use client"
 
-import type { GlancesTimeseriesData } from "./glances-timeseries"
+import type { GlancesTimeseriesData } from "@/lib/adapters/glances-timeseries"
 import {
   AreaChart,
   Area,

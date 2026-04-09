@@ -1,6 +1,6 @@
 "use client"
 
-import type { GlancesProcessesData } from "./glances-processes"
+import type { GlancesProcessesData } from "@/lib/adapters/glances-processes"
 import { cn } from "@/lib/utils"
 
 export function GlancesProcessesWidget({
