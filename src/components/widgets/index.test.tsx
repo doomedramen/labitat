@@ -140,7 +140,7 @@ describe("ActiveStreamItem", () => {
   it("formats duration correctly", () => {
     renderWithTooltipProvider(<ActiveStreamItem {...baseProps} />)
     // 120 - 60 = 60 seconds remaining = 1:00
-    expect(screen.getByText("-1:00")).toBeInTheDocument()
+    expect(screen.getByText("1:00")).toBeInTheDocument()
   })
 
   it("formats long duration with hours", () => {
@@ -153,7 +153,7 @@ describe("ActiveStreamItem", () => {
       />
     )
     // 7200 - 3661 = 3539 seconds remaining = 58:59
-    expect(screen.getByText("-58:59")).toBeInTheDocument()
+    expect(screen.getByText("58:59")).toBeInTheDocument()
   })
 
   it("shows tooltip on hover", () => {
@@ -175,7 +175,7 @@ describe("ActiveStreamItem", () => {
         duration={0}
       />
     )
-    expect(screen.getByText("-0:00")).toBeInTheDocument()
+    expect(screen.getByText("0:00")).toBeInTheDocument()
   })
 })
 
