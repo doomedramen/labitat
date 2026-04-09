@@ -34,6 +34,21 @@ describe("StatCard", () => {
     expect(screen.getByText("With Icon")).toBeInTheDocument()
   })
 
+  it("places icon below value in DOM order", () => {
+    const { container } = render(
+      <StatCard
+        value="42"
+        label="Test"
+        icon={<span data-testid="test-icon">🔥</span>}
+      />
+    )
+    const valueElement = screen.getByText("42")
+    const iconElement = screen.getByTestId("test-icon")
+    const valuePosition = container.innerHTML.indexOf(valueElement.outerHTML)
+    const iconPosition = container.innerHTML.indexOf(iconElement.outerHTML)
+    expect(valuePosition).toBeLessThan(iconPosition)
+  })
+
   it("applies custom valueClassName", () => {
     const { container } = render(
       <StatCard value="100" label="Custom" valueClassName="text-destructive" />
@@ -115,8 +130,8 @@ describe("ActiveStreamItem", () => {
 
   it("formats duration correctly", () => {
     renderWithTooltipProvider(<ActiveStreamItem {...baseProps} />)
-    // 60 seconds = 1:00
-    expect(screen.getByText("1:00")).toBeInTheDocument()
+    // 120 - 60 = 60 seconds remaining = 1:00
+    expect(screen.getByText("-1:00")).toBeInTheDocument()
   })
 
   it("formats long duration with hours", () => {
@@ -128,8 +143,8 @@ describe("ActiveStreamItem", () => {
         duration={7200}
       />
     )
-    // 3661 seconds = 1:01:01
-    expect(screen.getByText("1:01:01")).toBeInTheDocument()
+    // 7200 - 3661 = 3539 seconds remaining = 58:59
+    expect(screen.getByText("-58:59")).toBeInTheDocument()
   })
 
   it("shows tooltip on hover", () => {
@@ -151,7 +166,7 @@ describe("ActiveStreamItem", () => {
         duration={0}
       />
     )
-    expect(screen.getByText("0:00")).toBeInTheDocument()
+    expect(screen.getByText("-0:00")).toBeInTheDocument()
   })
 })
 

@@ -55,7 +55,8 @@ describe("tautulli definition", () => {
                       bandwidth: 5000000,
                     },
                     {
-                      title: "Show S01E01",
+                      title: "Episode Title",
+                      grandparentTitle: "Show Name",
                       user: "user2",
                       progress_percent: 25,
                       duration: 3600,
@@ -83,6 +84,7 @@ describe("tautulli definition", () => {
       expect(result.sessions).toHaveLength(2)
       expect(result.sessions?.[0].title).toBe("Movie 1")
       expect(result.sessions?.[0].state).toBe("playing")
+      expect(result.sessions?.[1].title).toBe("Show Name - Episode Title")
       expect(result.sessions?.[1].state).toBe("paused")
     })
 
@@ -113,6 +115,75 @@ describe("tautulli definition", () => {
       expect(result.streamCount).toBe(0)
       expect(result.totalBandwidth).toBe("0 B/s")
       expect(result.sessions).toEqual([])
+    })
+
+    it("uses view_offset for progress when available", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              response: {
+                data: {
+                  sessions: [
+                    {
+                      title: "Movie",
+                      user: "user1",
+                      progress_percent: 50,
+                      duration: 7200,
+                      view_offset: 1800,
+                      state: "playing",
+                      video_decision: "transcode",
+                      bandwidth: 5000000,
+                    },
+                  ],
+                },
+              },
+            }),
+        })
+      )
+
+      const result = await tautulliDefinition.fetchData!({
+        url: "https://tautulli.example.com",
+        apiKey: "test-key",
+      })
+
+      expect(result.sessions).toHaveLength(1)
+      expect(result.sessions?.[0].progress).toBe(1800)
+    })
+
+    it("falls back to progress_percent when view_offset is not available", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              response: {
+                data: {
+                  sessions: [
+                    {
+                      title: "Movie",
+                      user: "user1",
+                      progress_percent: 25,
+                      duration: 3600,
+                      state: "playing",
+                      video_decision: "direct play",
+                      bandwidth: 2000000,
+                    },
+                  ],
+                },
+              },
+            }),
+        })
+      )
+
+      const result = await tautulliDefinition.fetchData!({
+        url: "https://tautulli.example.com",
+        apiKey: "test-key",
+      })
+
+      expect(result.sessions).toHaveLength(1)
+      expect(result.sessions?.[0].progress).toBe(900)
     })
 
     it("includes API key in URL", async () => {

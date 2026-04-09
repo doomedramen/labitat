@@ -91,9 +91,6 @@ export function StatCard({
 }: StatItem) {
   const inner = (
     <div className="flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground">
-      {icon && (
-        <div className="mb-0.5 text-secondary-foreground/50">{icon}</div>
-      )}
       <span
         className={cn(
           "font-medium tabular-nums",
@@ -102,6 +99,9 @@ export function StatCard({
       >
         {value}
       </span>
+      {icon && (
+        <div className="mt-0.5 text-secondary-foreground/50">{icon}</div>
+      )}
       {tooltip ? (
         <span className="sr-only">{tooltip}</span>
       ) : (
@@ -177,6 +177,7 @@ export function ActiveStreamItem({
   state,
 }: ActiveStream) {
   const progressPercent = duration > 0 ? (progress / duration) * 100 : 0
+  const remaining = Math.max(0, duration - progress)
   const tooltipText =
     duration > 0
       ? `${title} · ${user} · ${formatDuration(progress)} / ${formatDuration(duration)}`
@@ -187,7 +188,7 @@ export function ActiveStreamItem({
       <TooltipTrigger asChild>
         <div
           className={cn(
-            "relative flex items-center gap-2 overflow-hidden rounded-md px-2 py-1 text-xs",
+            "relative flex w-full items-center gap-2 overflow-hidden rounded-md px-2 py-1 text-xs",
             "hover:bg-secondary/50"
           )}
         >
@@ -196,13 +197,14 @@ export function ActiveStreamItem({
           ) : (
             <Play className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
           )}
-          <span className="min-w-0 flex-[3] truncate font-medium">{title}</span>
-          <span className="min-w-0 flex-1 truncate text-secondary-foreground/60">
-            ({user})
-          </span>
-          <div className="flex items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
-            <Clock className="h-3 w-3 shrink-0" />
-            {formatDuration(progress)}
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="truncate font-medium">{title}</span>
+            <span className="shrink-0 truncate text-secondary-foreground/60">
+              ({user})
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
+            <Clock className="h-3 w-3" />-{formatDuration(remaining)}
           </div>
           {/* Playback progress bar */}
           <div
@@ -226,7 +228,7 @@ export function ActiveStreamList({ streams }: { streams: ActiveStream[] }) {
   )
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex w-full flex-col gap-0.5">
       {sorted.map((stream, idx) => (
         <ActiveStreamItem key={idx} {...stream} />
       ))}
