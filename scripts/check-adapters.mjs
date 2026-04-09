@@ -16,7 +16,7 @@ const adaptersDir = path.join(process.cwd(), "src", "lib", "adapters")
 const indexPath = path.join(adaptersDir, "index.ts")
 
 // Files in lib/adapters/ that are not service adapters
-const NON_ADAPTER_FILES = new Set(["index", "types", "widgets", "glances-common", "viz"])
+const NON_ADAPTER_FILES = new Set(["index", "types", "widget-types", "widgets", "glances-common", "viz"])
 // Widget component files (client-side, imported by adapter definitions, not standalone)
 const NON_ADAPTER_SUFFIXES = new Set(["-widget"])
 
