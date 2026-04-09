@@ -19,7 +19,7 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import type { DragEndEvent } from "@dnd-kit/core"
-import { GripVertical } from "lucide-react"
+import { useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { Clock, Pause, Play } from "lucide-react"
 import {
@@ -125,7 +125,7 @@ export function StatCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id })
+  } = useSortable({ id, disabled: !sortable })
 
   const style: React.CSSProperties = sortable
     ? {
@@ -138,13 +138,26 @@ export function StatCard({
   const showIcon = displayMode === "icon" && icon
   const showLabel = displayMode === "label"
 
+  // When sortable+editMode, make the whole card the drag activator
+  const dragProps = sortable && editMode ? { ...attributes, ...listeners } : {}
+  // Must be memoized — inline arrow functions cause ref reset (null then element)
+  // on every render, which unregisters/re-registers the node during drag.
+  const combinedRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      setNodeRef(el)
+      if (sortable && editMode) setActivatorNodeRef(el)
+    },
+    [setNodeRef, setActivatorNodeRef, sortable, editMode]
+  )
+
   const inner = (
     <div
-      ref={setNodeRef}
+      ref={combinedRef}
       style={style}
+      {...dragProps}
       className={cn(
-        "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground",
-        sortable && "relative"
+        "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground select-none",
+        sortable && editMode && "cursor-grab active:cursor-grabbing"
       )}
     >
       <span
@@ -158,24 +171,11 @@ export function StatCard({
       {showIcon && (
         <div className="mt-0.5 text-secondary-foreground/50">{icon}</div>
       )}
-      {tooltip ? (
+      {showLabel ? (
+        <span className="text-secondary-foreground/60">{label}</span>
+      ) : !showIcon && tooltip ? (
         <span className="sr-only">{tooltip}</span>
-      ) : (
-        showLabel && (
-          <span className="text-secondary-foreground/60">{label}</span>
-        )
-      )}
-      {sortable && editMode && (
-        <button
-          ref={setActivatorNodeRef}
-          {...attributes}
-          {...listeners}
-          className="absolute -top-1 -right-1 cursor-grab rounded-sm p-0.5 text-muted-foreground hover:text-foreground"
-          aria-label={`Drag to reorder ${label}`}
-        >
-          <GripVertical className="h-3 w-3" />
-        </button>
-      )}
+      ) : null}
     </div>
   )
 
