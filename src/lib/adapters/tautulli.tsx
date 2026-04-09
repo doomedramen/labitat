@@ -1,9 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import {
-  StatGrid,
-  ActiveStreamList,
-  type ActiveStream,
-} from "@/components/widgets"
+import { ActiveStreamList, type ActiveStream } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Activity, Cpu, Monitor, Play, Radio } from "lucide-react"
 
 type TautulliData = {
@@ -14,11 +11,6 @@ type TautulliData = {
   transcodeStreams: number
   directPlayStreams: number
   directStreamStreams: number
-  showStreams?: boolean
-  showBandwidth?: boolean
-  showTranscoding?: boolean
-  showDirectPlay?: boolean
-  showDirectStream?: boolean
   sessions?: ActiveStream[]
 }
 
@@ -36,54 +28,49 @@ function TautulliWidget({
   transcodeStreams,
   directPlayStreams,
   directStreamStreams,
-  showStreams = true,
-  showBandwidth = true,
-  showTranscoding = true,
-  showDirectPlay = true,
-  showDirectStream = false,
   sessions,
 }: TautulliData) {
-  const items = []
-
-  if (showStreams)
-    items.push({
+  const items = [
+    {
+      id: "streams",
       value: streamCount,
       label: "Streams",
       icon: <Play className="h-3 w-3" />,
       tooltip: "Streams",
-    })
-  if (showBandwidth)
-    items.push({
+    },
+    {
+      id: "bandwidth",
       value: totalBandwidth,
       label: "Bandwidth",
       icon: <Activity className="h-3 w-3" />,
       tooltip: "Bandwidth",
-    })
-  if (showTranscoding)
-    items.push({
+    },
+    {
+      id: "transcoding",
       value: transcodeStreams,
       label: "Transcoding",
       icon: <Cpu className="h-3 w-3" />,
       tooltip: "Transcoding",
-    })
-  if (showDirectPlay)
-    items.push({
+    },
+    {
+      id: "direct-play",
       value: directPlayStreams,
       label: "Direct Play",
       icon: <Monitor className="h-3 w-3" />,
       tooltip: "Direct Play",
-    })
-  if (showDirectStream)
-    items.push({
+    },
+    {
+      id: "direct-stream",
       value: directStreamStreams,
       label: "Direct Stream",
       icon: <Radio className="h-3 w-3" />,
       tooltip: "Direct Stream",
-    })
+    },
+  ]
 
   return (
     <div className="space-y-2">
-      <StatGrid items={items} />
+      <WidgetStatGrid items={items} />
       {sessions && sessions.length > 0 && (
         <ActiveStreamList streams={sessions} />
       )}
@@ -111,41 +98,6 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
       type: "password",
       required: true,
       placeholder: "Your Tautulli API key",
-    },
-    {
-      key: "showStreams",
-      label: "Show Streams",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display total active stream count",
-    },
-    {
-      key: "showBandwidth",
-      label: "Show Bandwidth",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display total stream bandwidth",
-    },
-    {
-      key: "showTranscoding",
-      label: "Show Transcoding",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display number of transcoded streams",
-    },
-    {
-      key: "showDirectPlay",
-      label: "Show Direct Play",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display number of direct play streams",
-    },
-    {
-      key: "showDirectStream",
-      label: "Show Direct Stream",
-      type: "boolean",
-      defaultChecked: false,
-      helperText: "Display number of direct stream (copy) streams",
     },
   ],
   async fetchData(config) {
@@ -191,14 +143,19 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
         }
 
         // Use view_offset for elapsed time, fall back to calculating from progress_percent
-        const viewOffset =
+        // Tautulli API returns view_offset and duration in milliseconds
+        const viewOffsetMs =
           s.view_offset ?? ((s.progress_percent ?? 0) * (s.duration ?? 0)) / 100
+
+        // Convert to seconds for display
+        const progressSec = viewOffsetMs / 1000
+        const durationSec = (s.duration ?? 0) / 1000
 
         return {
           title: fullTitle,
           user: s.user ?? "Unknown",
-          progress: viewOffset,
-          duration: s.duration ?? 0,
+          progress: progressSec,
+          duration: durationSec,
           state: s.state === "paused" ? "paused" : "playing",
         }
       }
@@ -211,11 +168,6 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
       transcodeStreams,
       directPlayStreams,
       directStreamStreams,
-      showStreams: config.showStreams !== "false",
-      showBandwidth: config.showBandwidth !== "false",
-      showTranscoding: config.showTranscoding !== "false",
-      showDirectPlay: config.showDirectPlay !== "false",
-      showDirectStream: config.showDirectStream === "true",
       sessions: activeStreams,
     }
   },

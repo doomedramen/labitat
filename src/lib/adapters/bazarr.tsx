@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Film, Tv } from "lucide-react"
 
 type BazarrData = {
@@ -11,15 +11,17 @@ type BazarrData = {
 
 function BazarrWidget({ missingMovies, missingEpisodes }: BazarrData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
         {
+          id: "missing-movies",
           value: missingMovies,
           label: "Missing Movies",
           icon: <Film className="h-3 w-3" />,
           tooltip: "Missing Movies",
         },
         {
+          id: "missing-episodes",
           value: missingEpisodes,
           label: "Missing Episodes",
           icon: <Tv className="h-3 w-3" />,

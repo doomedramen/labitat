@@ -16,7 +16,7 @@ function renderWithTooltipProvider(ui: React.ReactElement) {
 
 describe("StatCard", () => {
   it("renders value and label correctly", () => {
-    render(<StatCard value={42} label="Test Label" />)
+    render(<StatCard id="test-1" value={42} label="Test Label" />)
     expect(screen.getByText("42")).toBeInTheDocument()
     expect(screen.getByText("Test Label")).toBeInTheDocument()
   })
@@ -24,22 +24,26 @@ describe("StatCard", () => {
   it("renders icon when provided", () => {
     render(
       <StatCard
+        id="test-2"
         value="Test"
         label="With Icon"
         icon={<span data-testid="test-icon">🔥</span>}
+        displayMode="icon"
       />
     )
     expect(screen.getByTestId("test-icon")).toBeInTheDocument()
     expect(screen.getByText("Test")).toBeInTheDocument()
-    expect(screen.getByText("With Icon")).toBeInTheDocument()
+    expect(screen.queryByText("With Icon")).not.toBeInTheDocument()
   })
 
   it("places icon below value in DOM order", () => {
     const { container } = render(
       <StatCard
+        id="test-3"
         value="42"
         label="Test"
         icon={<span data-testid="test-icon">🔥</span>}
+        displayMode="icon"
       />
     )
     const valueElement = screen.getByText("42")
@@ -51,7 +55,12 @@ describe("StatCard", () => {
 
   it("applies custom valueClassName", () => {
     const { container } = render(
-      <StatCard value="100" label="Custom" valueClassName="text-destructive" />
+      <StatCard
+        id="test-4"
+        value="100"
+        label="Custom"
+        valueClassName="text-destructive"
+      />
     )
     const valueElement = container.querySelector(".text-destructive")
     expect(valueElement).toBeInTheDocument()
@@ -59,7 +68,7 @@ describe("StatCard", () => {
   })
 
   it("handles string values", () => {
-    render(<StatCard value="Hello" label="String Value" />)
+    render(<StatCard id="test-5" value="Hello" label="String Value" />)
     expect(screen.getByText("Hello")).toBeInTheDocument()
   })
 })
@@ -72,9 +81,9 @@ describe("StatGrid", () => {
 
   it("renders multiple stat items", () => {
     const items = [
-      { value: 10, label: "First" },
-      { value: 20, label: "Second" },
-      { value: 30, label: "Third" },
+      { id: "first", value: 10, label: "First" },
+      { id: "second", value: 20, label: "Second" },
+      { id: "third", value: 30, label: "Third" },
     ]
     render(<StatGrid items={items} />)
     expect(screen.getByText("10")).toBeInTheDocument()
@@ -87,8 +96,8 @@ describe("StatGrid", () => {
 
   it("applies custom column count", () => {
     const items = [
-      { value: 1, label: "A" },
-      { value: 2, label: "B" },
+      { id: "a", value: 1, label: "A" },
+      { id: "b", value: 2, label: "B" },
     ]
     const { container } = render(<StatGrid items={items} cols={3} />)
     const grid = container.firstChild as HTMLElement
@@ -96,7 +105,7 @@ describe("StatGrid", () => {
   })
 
   it("uses auto-fit when cols not specified", () => {
-    const items = [{ value: 1, label: "A" }]
+    const items = [{ id: "a", value: 1, label: "A" }]
     const { container } = render(<StatGrid items={items} />)
     const grid = container.firstChild as HTMLElement
     expect(grid).toHaveStyle({

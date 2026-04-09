@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Download, Search, Music } from "lucide-react"
 
 type LidarrData = {
   _status?: "ok" | "warn" | "error"
@@ -11,12 +12,27 @@ type LidarrData = {
 
 function LidarrWidget({ queued, wanted, artists }: LidarrData) {
   const items = [
-    { value: (wanted ?? 0).toLocaleString(), label: "Wanted" },
-    { value: (queued ?? 0).toLocaleString(), label: "Queued" },
-    { value: (artists ?? 0).toLocaleString(), label: "Artists" },
+    {
+      id: "wanted",
+      value: (wanted ?? 0).toLocaleString(),
+      label: "Wanted",
+      icon: <Search className="h-3 w-3" />,
+    },
+    {
+      id: "queued",
+      value: (queued ?? 0).toLocaleString(),
+      label: "Queued",
+      icon: <Download className="h-3 w-3" />,
+    },
+    {
+      id: "artists",
+      value: (artists ?? 0).toLocaleString(),
+      label: "Artists",
+      icon: <Music className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const lidarrDefinition: ServiceDefinition<LidarrData> = {

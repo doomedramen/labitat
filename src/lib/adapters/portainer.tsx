@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Play, Square, Layers } from "lucide-react"
 
 type PortainerData = {
   _status?: "ok" | "warn" | "error"
@@ -11,12 +12,27 @@ type PortainerData = {
 
 function PortainerWidget({ running, stopped, total }: PortainerData) {
   const items = [
-    { value: (running ?? 0).toLocaleString(), label: "Running" },
-    { value: (stopped ?? 0).toLocaleString(), label: "Stopped" },
-    { value: (total ?? 0).toLocaleString(), label: "Total" },
+    {
+      id: "running",
+      value: (running ?? 0).toLocaleString(),
+      label: "Running",
+      icon: <Play className="h-3 w-3" />,
+    },
+    {
+      id: "stopped",
+      value: (stopped ?? 0).toLocaleString(),
+      label: "Stopped",
+      icon: <Square className="h-3 w-3" />,
+    },
+    {
+      id: "total",
+      value: (total ?? 0).toLocaleString(),
+      label: "Total",
+      icon: <Layers className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const portainerDefinition: ServiceDefinition<PortainerData> = {

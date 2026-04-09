@@ -5,6 +5,21 @@
  * These provide consistent styling across different services.
  */
 
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import {
+  useSortable,
+  horizontalListSortingStrategy,
+  SortableContext,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import type { DragEndEvent } from "@dnd-kit/core"
+import { GripVertical } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Clock, Pause, Play } from "lucide-react"
 import {
@@ -12,6 +27,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import type { StatDisplayMode } from "@/lib/types"
 
 // ── Resource bar ──────────────────────────────────────────────────────────────
 
@@ -74,6 +90,8 @@ export function ResourceBar({
 // ── Stat grid ─────────────────────────────────────────────────────────────────
 
 export type StatItem = {
+  /** Stable identifier for DnD and React keys */
+  id: string
   value: string | number
   label: string
   icon?: React.ReactNode
@@ -82,15 +100,53 @@ export type StatItem = {
   valueClassName?: string
 }
 
+interface StatCardProps extends StatItem {
+  displayMode?: StatDisplayMode
+  sortable?: boolean
+  editMode?: boolean
+}
+
 export function StatCard({
+  id,
   value,
   label,
   icon,
   tooltip,
   valueClassName,
-}: StatItem) {
+  displayMode = "label",
+  sortable = false,
+  editMode = false,
+}: StatCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id })
+
+  const style: React.CSSProperties = sortable
+    ? {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.35 : undefined,
+      }
+    : {}
+
+  const showIcon = displayMode === "icon" && icon
+  const showLabel = displayMode === "label"
+
   const inner = (
-    <div className="flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground",
+        sortable && "relative"
+      )}
+    >
       <span
         className={cn(
           "font-medium tabular-nums",
@@ -99,13 +155,26 @@ export function StatCard({
       >
         {value}
       </span>
-      {icon && (
+      {showIcon && (
         <div className="mt-0.5 text-secondary-foreground/50">{icon}</div>
       )}
       {tooltip ? (
         <span className="sr-only">{tooltip}</span>
       ) : (
-        <span className="text-secondary-foreground/60">{label}</span>
+        showLabel && (
+          <span className="text-secondary-foreground/60">{label}</span>
+        )
+      )}
+      {sortable && editMode && (
+        <button
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
+          className="absolute -top-1 -right-1 cursor-grab rounded-sm p-0.5 text-muted-foreground hover:text-foreground"
+          aria-label={`Drag to reorder ${label}`}
+        >
+          <GripVertical className="h-3 w-3" />
+        </button>
       )}
     </div>
   )
@@ -126,13 +195,37 @@ export function StatCard({
 export function StatGrid({
   items,
   cols,
+  displayMode = "label",
+  sortable = false,
+  editMode = false,
+  onReorder,
 }: {
   items: StatItem[]
   cols?: number
+  displayMode?: StatDisplayMode
+  sortable?: boolean
+  editMode?: boolean
+  onReorder?: (activeId: string, overId: string) => void
 }) {
+  const dndEnabled = sortable && editMode && items.length > 1
+
+  // Hooks must be called unconditionally
+  const sensor = useSensor(PointerSensor, {
+    activationConstraint: { distance: 8 },
+  })
+  const sensors = useSensors(sensor)
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || !onReorder) return
+    if (active.id !== over.id) {
+      onReorder(active.id as string, over.id as string)
+    }
+  }
+
   if (items.length === 0) return null
 
-  return (
+  const inner = (
     <div
       className="grid gap-1.5 text-xs"
       style={{
@@ -142,10 +235,35 @@ export function StatGrid({
       }}
     >
       {items.map((item) => (
-        <StatCard key={item.label} {...item} />
+        <StatCard
+          key={item.id}
+          {...item}
+          displayMode={displayMode}
+          sortable={dndEnabled}
+          editMode={editMode}
+        />
       ))}
     </div>
   )
+
+  if (dndEnabled) {
+    return (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={items.map((i) => i.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          {inner}
+        </SortableContext>
+      </DndContext>
+    )
+  }
+
+  return inner
 }
 
 // ── Active streams ────────────────────────────────────────────────────────────
@@ -188,7 +306,7 @@ export function ActiveStreamItem({
       <TooltipTrigger asChild>
         <div
           className={cn(
-            "relative flex w-full items-center gap-2 overflow-hidden rounded-md px-2 py-1 text-xs",
+            "relative flex w-full items-center gap-2 overflow-hidden rounded-md bg-secondary/30 px-2 py-1 text-xs",
             "hover:bg-secondary/50"
           )}
         >

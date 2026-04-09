@@ -13,15 +13,13 @@ describe("sabnzbd definition", () => {
 
   it("has configFields defined", () => {
     expect(sabnzbdDefinition.configFields).toBeDefined()
-    expect(sabnzbdDefinition.configFields).toHaveLength(3)
+    expect(sabnzbdDefinition.configFields).toHaveLength(2)
     expect(sabnzbdDefinition.configFields[0].key).toBe("url")
     expect(sabnzbdDefinition.configFields[0].type).toBe("url")
     expect(sabnzbdDefinition.configFields[0].required).toBe(true)
     expect(sabnzbdDefinition.configFields[1].key).toBe("apiKey")
     expect(sabnzbdDefinition.configFields[1].type).toBe("password")
     expect(sabnzbdDefinition.configFields[1].required).toBe(true)
-    expect(sabnzbdDefinition.configFields[2].key).toBe("showDownloads")
-    expect(sabnzbdDefinition.configFields[2].type).toBe("boolean")
   })
 
   describe("fetchData", () => {

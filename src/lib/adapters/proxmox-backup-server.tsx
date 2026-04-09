@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Database, Camera, HardDrive, Archive } from "lucide-react"
 
 type ProxmoxBackupServerData = {
   _status?: "ok" | "warn" | "error"
@@ -25,12 +26,32 @@ function ProxmoxBackupServerWidget({
   totalSpace,
 }: ProxmoxBackupServerData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: datastores ?? 0, label: "Stores" },
-        { value: snapshots ?? 0, label: "Snaps" },
-        { value: usedSpace ?? "—", label: "Used" },
-        { value: totalSpace ?? "—", label: "Total" },
+        {
+          id: "stores",
+          value: datastores ?? 0,
+          label: "Stores",
+          icon: <Database className="h-3 w-3" />,
+        },
+        {
+          id: "snaps",
+          value: snapshots ?? 0,
+          label: "Snaps",
+          icon: <Camera className="h-3 w-3" />,
+        },
+        {
+          id: "used",
+          value: usedSpace ?? "—",
+          label: "Used",
+          icon: <HardDrive className="h-3 w-3" />,
+        },
+        {
+          id: "total",
+          value: totalSpace ?? "—",
+          label: "Total",
+          icon: <Archive className="h-3 w-3" />,
+        },
       ]}
     />
   )

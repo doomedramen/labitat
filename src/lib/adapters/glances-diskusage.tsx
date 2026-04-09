@@ -1,5 +1,7 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid, ResourceBar } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { ResourceBar } from "@/components/widgets"
+import { HardDrive, FolderOpen, Archive } from "lucide-react"
 
 type GlancesDiskUsageData = {
   _status?: "ok" | "warn" | "error"
@@ -33,11 +35,26 @@ function GlancesDiskUsageWidget({
         warningAt={75}
         criticalAt={90}
       />
-      <StatGrid
+      <WidgetStatGrid
         items={[
-          { value: used ?? "—", label: "Used" },
-          { value: free ?? "—", label: "Free" },
-          { value: total ?? "—", label: "Total" },
+          {
+            id: "used",
+            value: used ?? "—",
+            label: "Used",
+            icon: <FolderOpen className="h-3 w-3" />,
+          },
+          {
+            id: "free",
+            value: free ?? "—",
+            label: "Free",
+            icon: <HardDrive className="h-3 w-3" />,
+          },
+          {
+            id: "total",
+            value: total ?? "—",
+            label: "Total",
+            icon: <Archive className="h-3 w-3" />,
+          },
         ]}
       />
     </div>

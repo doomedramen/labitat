@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Search, Download, List } from "lucide-react"
 
 type ProwlarrData = {
   _status?: "ok" | "warn" | "error"
@@ -11,11 +12,26 @@ type ProwlarrData = {
 
 function ProwlarrWidget({ queries, grabs, indexers }: ProwlarrData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: queries, label: "Queries" },
-        { value: grabs, label: "Grabs" },
-        { value: indexers, label: "Indexers" },
+        {
+          id: "queries",
+          value: queries,
+          label: "Queries",
+          icon: <Search className="h-3 w-3" />,
+        },
+        {
+          id: "grabs",
+          value: grabs,
+          label: "Grabs",
+          icon: <Download className="h-3 w-3" />,
+        },
+        {
+          id: "indexers",
+          value: indexers,
+          label: "Indexers",
+          icon: <List className="h-3 w-3" />,
+        },
       ]}
     />
   )

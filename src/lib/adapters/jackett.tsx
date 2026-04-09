@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Settings, AlertCircle } from "lucide-react"
 
 type JackettData = {
   _status?: "ok" | "warn" | "error"
@@ -10,11 +11,21 @@ type JackettData = {
 
 function JackettWidget({ configured, errored }: JackettData) {
   const items = [
-    { value: (configured ?? 0).toLocaleString(), label: "Configured" },
-    { value: (errored ?? 0).toLocaleString(), label: "Errored" },
+    {
+      id: "configured",
+      value: (configured ?? 0).toLocaleString(),
+      label: "Configured",
+      icon: <Settings className="h-3 w-3" />,
+    },
+    {
+      id: "errored",
+      value: (errored ?? 0).toLocaleString(),
+      label: "Errored",
+      icon: <AlertCircle className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const jackettDefinition: ServiceDefinition<JackettData> = {

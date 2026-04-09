@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Server, Monitor, Container } from "lucide-react"
 
 type ProxmoxData = {
   _status?: "ok" | "warn" | "error"
@@ -19,13 +20,25 @@ function ProxmoxWidget({
   runningContainers,
 }: ProxmoxData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: nodes ?? 0, label: "Nodes" },
-        { value: `${runningVMs ?? 0}/${vms ?? 0}`, label: "VMs" },
         {
+          id: "nodes",
+          value: nodes ?? 0,
+          label: "Nodes",
+          icon: <Server className="h-3 w-3" />,
+        },
+        {
+          id: "vms",
+          value: `${runningVMs ?? 0}/${vms ?? 0}`,
+          label: "VMs",
+          icon: <Monitor className="h-3 w-3" />,
+        },
+        {
+          id: "lxcs",
           value: `${runningContainers ?? 0}/${containers ?? 0}`,
           label: "LXCs",
+          icon: <Container className="h-3 w-3" />,
         },
       ]}
     />

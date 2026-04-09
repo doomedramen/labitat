@@ -13,12 +13,10 @@ describe("apcups definition", () => {
 
   it("has configFields defined", () => {
     expect(apcupsDefinition.configFields).toBeDefined()
-    expect(apcupsDefinition.configFields).toHaveLength(2)
+    expect(apcupsDefinition.configFields).toHaveLength(1)
     expect(apcupsDefinition.configFields[0].key).toBe("url")
     expect(apcupsDefinition.configFields[0].type).toBe("url")
     expect(apcupsDefinition.configFields[0].required).toBe(true)
-    expect(apcupsDefinition.configFields[1].key).toBe("showStatus")
-    expect(apcupsDefinition.configFields[1].type).toBe("boolean")
   })
 
   describe("fetchData", () => {

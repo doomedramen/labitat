@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Film, Download, AlertTriangle, Search } from "lucide-react"
 
 type RadarrData = {
   _status?: "ok" | "warn" | "error"
@@ -12,12 +13,32 @@ type RadarrData = {
 
 function RadarrWidget({ queued, missing, wanted, movies }: RadarrData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: queued, label: "Queued" },
-        { value: missing, label: "Missing" },
-        { value: wanted, label: "Wanted" },
-        { value: movies, label: "Movies" },
+        {
+          id: "queued",
+          value: queued,
+          label: "Queued",
+          icon: <Download className="h-3 w-3" />,
+        },
+        {
+          id: "missing",
+          value: missing,
+          label: "Missing",
+          icon: <AlertTriangle className="h-3 w-3" />,
+        },
+        {
+          id: "wanted",
+          value: wanted,
+          label: "Wanted",
+          icon: <Search className="h-3 w-3" />,
+        },
+        {
+          id: "movies",
+          value: movies,
+          label: "Movies",
+          icon: <Film className="h-3 w-3" />,
+        },
       ]}
     />
   )

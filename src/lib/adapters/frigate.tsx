@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Camera, Clock, Tag } from "lucide-react"
 
 type FrigateData = {
   _status?: "ok" | "warn" | "error"
@@ -21,12 +22,27 @@ function formatUptime(seconds: number): string {
 
 function FrigateWidget({ cameras, uptime, version }: FrigateData) {
   const items = [
-    { value: (cameras ?? 0).toLocaleString(), label: "Cameras" },
-    { value: formatUptime(uptime ?? 0), label: "Uptime" },
-    { value: version, label: "Version" },
+    {
+      id: "cameras",
+      value: (cameras ?? 0).toLocaleString(),
+      label: "Cameras",
+      icon: <Camera className="h-3 w-3" />,
+    },
+    {
+      id: "uptime",
+      value: formatUptime(uptime ?? 0),
+      label: "Uptime",
+      icon: <Clock className="h-3 w-3" />,
+    },
+    {
+      id: "version",
+      value: version,
+      label: "Version",
+      icon: <Tag className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const frigateDefinition: ServiceDefinition<FrigateData> = {

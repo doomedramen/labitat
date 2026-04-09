@@ -1,5 +1,7 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid, DownloadList, type DownloadItem } from "@/components/widgets"
+import { DownloadList, type DownloadItem } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { ArrowDown, Clock, List } from "lucide-react"
 
 type SABnzbdData = {
   _status?: "ok" | "warn" | "error"
@@ -20,11 +22,26 @@ function SABnzbdWidget({
 }: SABnzbdData) {
   return (
     <div className="space-y-2">
-      <StatGrid
+      <WidgetStatGrid
         items={[
-          { value: downloading ? speed : "Idle", label: "Speed" },
-          { value: downloading ? remaining : "—", label: "Left" },
-          { value: queueSize, label: "Queue" },
+          {
+            id: "speed",
+            value: downloading ? speed : "Idle",
+            label: "Speed",
+            icon: <ArrowDown className="h-3 w-3" />,
+          },
+          {
+            id: "left",
+            value: downloading ? remaining : "—",
+            label: "Left",
+            icon: <Clock className="h-3 w-3" />,
+          },
+          {
+            id: "queue",
+            value: queueSize,
+            label: "Queue",
+            icon: <List className="h-3 w-3" />,
+          },
         ]}
       />
       {downloads && downloads.length > 0 && (
@@ -55,17 +72,9 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
       required: true,
       placeholder: "Your SABnzbd API key",
     },
-    {
-      key: "showDownloads",
-      label: "Show active downloads",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display currently downloading items with progress",
-    },
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
-    const showDownloads = config.showDownloads === "true"
     const url = `${baseUrl}/api?output=json&apikey=${config.apiKey}&mode=queue`
 
     const res = await fetch(url)
@@ -81,15 +90,13 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
       mbleft: string
     }> = queue.slots ?? []
 
-    const downloads: DownloadItem[] = showDownloads
-      ? slots.slice(0, 3).map((slot) => ({
-          title: slot.filename,
-          progress: parseFloat(slot.percentage ?? "0"),
-          timeLeft: slot.timeleft,
-          activity: "downloading",
-          size: slot.mb ? `${parseFloat(slot.mb).toFixed(0)} MB` : undefined,
-        }))
-      : []
+    const downloads: DownloadItem[] = slots.slice(0, 3).map((slot) => ({
+      title: slot.filename,
+      progress: parseFloat(slot.percentage ?? "0"),
+      timeLeft: slot.timeleft,
+      activity: "downloading",
+      size: slot.mb ? `${parseFloat(slot.mb).toFixed(0)} MB` : undefined,
+    }))
 
     return {
       _status: "ok",

@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { LayoutDashboard, Database, Bell, AlertTriangle } from "lucide-react"
 
 type GrafanaData = {
   _status?: "ok" | "warn" | "error"
@@ -17,16 +18,33 @@ function GrafanaWidget({
   alertsTriggered,
 }: GrafanaData) {
   const items = [
-    { value: (dashboards ?? 0).toLocaleString(), label: "Dashboards" },
-    { value: (datasources ?? 0).toLocaleString(), label: "Datasources" },
-    { value: (totalAlerts ?? 0).toLocaleString(), label: "Total Alerts" },
     {
+      id: "dashboards",
+      value: (dashboards ?? 0).toLocaleString(),
+      label: "Dashboards",
+      icon: <LayoutDashboard className="h-3 w-3" />,
+    },
+    {
+      id: "datasources",
+      value: (datasources ?? 0).toLocaleString(),
+      label: "Datasources",
+      icon: <Database className="h-3 w-3" />,
+    },
+    {
+      id: "total-alerts",
+      value: (totalAlerts ?? 0).toLocaleString(),
+      label: "Total Alerts",
+      icon: <Bell className="h-3 w-3" />,
+    },
+    {
+      id: "alerts-triggered",
       value: (alertsTriggered ?? 0).toLocaleString(),
       label: "Alerts Triggered",
+      icon: <AlertTriangle className="h-3 w-3" />,
     },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const grafanaDefinition: ServiceDefinition<GrafanaData> = {

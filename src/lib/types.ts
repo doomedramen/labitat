@@ -10,3 +10,9 @@ export type ItemWithCache = ItemRow & {
   cachedPingStatus: ServiceStatus | null
 }
 export type GroupWithCache = GroupRow & { items: ItemWithCache[] }
+
+/** Controls whether the item card header shows an icon or a label */
+export type ItemCardDisplayMode = "icon" | "label"
+
+/** Controls whether stat cards in widgets show icons or labels */
+export type StatDisplayMode = "icon" | "label"

@@ -18,7 +18,7 @@ describe("transmission definition", () => {
 
   it("has configFields defined", () => {
     expect(transmissionDefinition.configFields).toBeDefined()
-    expect(transmissionDefinition.configFields).toHaveLength(5)
+    expect(transmissionDefinition.configFields).toHaveLength(4)
     expect(transmissionDefinition.configFields[0].key).toBe("url")
     expect(transmissionDefinition.configFields[0].type).toBe("url")
     expect(transmissionDefinition.configFields[0].required).toBe(true)
@@ -30,8 +30,6 @@ describe("transmission definition", () => {
     expect(transmissionDefinition.configFields[2].required).toBe(true)
     expect(transmissionDefinition.configFields[3].key).toBe("rpcUrl")
     expect(transmissionDefinition.configFields[3].type).toBe("text")
-    expect(transmissionDefinition.configFields[4].key).toBe("showDownloads")
-    expect(transmissionDefinition.configFields[4].type).toBe("boolean")
   })
 
   describe("fetchData", () => {
@@ -124,7 +122,7 @@ describe("transmission definition", () => {
       expect(result.upload).toBe(0)
     })
 
-    it("builds download list when showDownloads enabled", async () => {
+    it("builds download list for active torrents", async () => {
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
@@ -161,7 +159,6 @@ describe("transmission definition", () => {
         url: "https://transmission.example.com",
         username: "admin",
         password: "secret",
-        showDownloads: "true",
       })
 
       expect(result.downloads).toHaveLength(1)

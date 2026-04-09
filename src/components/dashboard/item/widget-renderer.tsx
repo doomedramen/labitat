@@ -4,6 +4,9 @@ import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { ServiceData } from "@/lib/adapters/types"
 import type { ServiceDefinition } from "@/lib/adapters/types"
+import type { ItemRow } from "@/lib/types"
+import { WidgetDisplayProvider } from "./widget-display-context"
+import type { StatCardOrder } from "@/hooks/use-stat-card-order"
 
 interface WidgetRendererProps {
   serviceDef: ServiceDefinition | null
@@ -12,6 +15,7 @@ interface WidgetRendererProps {
   isClientSide: boolean
   editMode: boolean
   cleanMode?: boolean
+  item: ItemRow
 }
 
 export function WidgetRenderer({
@@ -21,6 +25,7 @@ export function WidgetRenderer({
   isClientSide,
   editMode,
   cleanMode,
+  item,
 }: WidgetRendererProps) {
   const Widget = serviceDef?.Widget
 
@@ -66,7 +71,17 @@ export function WidgetRenderer({
         </div>
       )}
       {isVisible && Widget && effectiveData && (
-        <Widget {...(widgetProps as Record<string, unknown>)} />
+        <WidgetDisplayProvider
+          value={{
+            statDisplayMode:
+              (item.statDisplayMode as "icon" | "label") ?? "label",
+            statCardOrder: (item.statCardOrder as StatCardOrder | null) ?? null,
+            editMode,
+            itemId: item.id,
+          }}
+        >
+          <Widget {...(widgetProps as Record<string, unknown>)} />
+        </WidgetDisplayProvider>
       )}
     </div>
   )

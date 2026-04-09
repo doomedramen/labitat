@@ -1,5 +1,7 @@
 import type { ServiceDefinition } from "./types"
-import { ActiveStreamList, StatGrid } from "@/components/widgets"
+import { ActiveStreamList } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Play, Music, Film, Tv } from "lucide-react"
 
 type PlexSession = {
   title: string
@@ -30,15 +32,35 @@ function PlexWidget({
   sessions,
 }: PlexData) {
   const statsItems = [
-    { value: streams, label: "Active" },
-    { value: albums, label: "Albums" },
-    { value: movies, label: "Movies" },
-    { value: tvShows, label: "Shows" },
+    {
+      id: "active",
+      value: streams,
+      label: "Active",
+      icon: <Play className="h-3 w-3" />,
+    },
+    {
+      id: "albums",
+      value: albums,
+      label: "Albums",
+      icon: <Music className="h-3 w-3" />,
+    },
+    {
+      id: "movies",
+      value: movies,
+      label: "Movies",
+      icon: <Film className="h-3 w-3" />,
+    },
+    {
+      id: "shows",
+      value: tvShows,
+      label: "Shows",
+      icon: <Tv className="h-3 w-3" />,
+    },
   ]
 
   return (
     <div className="space-y-2">
-      <StatGrid items={statsItems} />
+      <WidgetStatGrid items={statsItems} />
 
       {showActiveStreams && sessions && sessions.length > 0 && (
         <div className="mx-1 flex flex-col pb-1">
@@ -152,7 +174,11 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
 
     const sessions: PlexSession[] = []
     if (showActiveStreams) {
-      const videoElements = sessionsText.match(/<Video[^>]*>/g) || []
+      // Split by Video elements to capture full context including nested elements
+      const videoSections = sessionsText.split(/<Video\s/)
+      const videoElements = videoSections
+        .slice(1)
+        .map((section) => "<Video " + section)
 
       for (const videoEl of videoElements) {
         const getAttr = (name: string): string | null => {
@@ -183,27 +209,25 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
           }
         }
 
-        const videoIndex = sessionsText.indexOf(videoEl)
-        const nextVideoIndex = sessionsText.indexOf("<Video", videoIndex + 1)
-        const sectionToSearch =
-          nextVideoIndex > 0
-            ? sessionsText.slice(videoIndex, nextVideoIndex)
-            : sessionsText.slice(videoIndex)
-
-        const userMatch = sectionToSearch.match(/<User[^>]*title="([^"]*)"/)
+        const userMatch = videoEl.match(/<User[^>]*title="([^"]*)"/)
         const user = userMatch ? userMatch[1] : "Unknown"
 
-        const stateMatch = sectionToSearch.match(/<Player[^>]*state="([^"]*)"/)
+        const stateMatch = videoEl.match(/<Player[^>]*state="([^"]*)"/)
         const state = stateMatch?.[1] === "paused" ? "paused" : "playing"
 
+        // Plex API returns viewOffset and duration in milliseconds
         const progress = viewOffset ? parseInt(viewOffset, 10) / 1000 : 0
         const durationSec = duration ? parseInt(duration, 10) / 1000 : 0
+
+        // Safety check: ensure progress doesn't exceed duration
+        const safeProgress =
+          durationSec > 0 ? Math.min(progress, durationSec) : progress
 
         sessions.push({
           title,
           full_title: fullTitle,
           user,
-          progress,
+          progress: safeProgress,
           duration: durationSec,
           state,
         })

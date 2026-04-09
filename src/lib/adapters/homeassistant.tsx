@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Box, Gauge, Lightbulb, ToggleRight } from "lucide-react"
 
 type HomeAssistantData = {
   _status?: "ok" | "warn" | "error"
@@ -17,13 +18,33 @@ function HomeAssistantWidget({
   switches,
 }: HomeAssistantData) {
   const items = [
-    { value: (entities ?? 0).toLocaleString(), label: "Entities" },
-    { value: (sensors ?? 0).toLocaleString(), label: "Sensors" },
-    { value: (lights ?? 0).toLocaleString(), label: "Lights" },
-    { value: (switches ?? 0).toLocaleString(), label: "Switches" },
+    {
+      id: "entities",
+      value: (entities ?? 0).toLocaleString(),
+      label: "Entities",
+      icon: <Box className="h-3 w-3" />,
+    },
+    {
+      id: "sensors",
+      value: (sensors ?? 0).toLocaleString(),
+      label: "Sensors",
+      icon: <Gauge className="h-3 w-3" />,
+    },
+    {
+      id: "lights",
+      value: (lights ?? 0).toLocaleString(),
+      label: "Lights",
+      icon: <Lightbulb className="h-3 w-3" />,
+    },
+    {
+      id: "switches",
+      value: (switches ?? 0).toLocaleString(),
+      label: "Switches",
+      icon: <ToggleRight className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const homeassistantDefinition: ServiceDefinition<HomeAssistantData> = {

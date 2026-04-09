@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Activity } from "lucide-react"
 
 type GenericRestData = {
   _status?: "ok" | "warn" | "error"
@@ -9,7 +10,13 @@ type GenericRestData = {
 }
 
 function GenericRestWidget({ value, label }: GenericRestData) {
-  return <StatGrid items={[{ value, label }]} />
+  return (
+    <WidgetStatGrid
+      items={[
+        { id: "value", value, label, icon: <Activity className="h-3 w-3" /> },
+      ]}
+    />
+  )
 }
 
 export const genericRestDefinition: ServiceDefinition<GenericRestData> = {

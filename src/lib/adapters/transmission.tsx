@@ -1,5 +1,7 @@
 import type { ServiceDefinition } from "./types"
-import { DownloadList, StatGrid, type DownloadItem } from "@/components/widgets"
+import { DownloadList, type DownloadItem } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { ArrowDown, ArrowUp, Download, Upload } from "lucide-react"
 
 type TransmissionData = {
   _status?: "ok" | "warn" | "error"
@@ -8,7 +10,6 @@ type TransmissionData = {
   download: number
   seed: number
   upload: number
-  showDownloads?: boolean
   downloads?: DownloadItem[]
 }
 
@@ -40,21 +41,40 @@ function TransmissionWidget({
   download,
   seed,
   upload,
-  showDownloads,
   downloads,
 }: TransmissionData) {
   const items = [
-    { value: leech, label: "Leech" },
-    { value: `${formatBytes(download)}/s`, label: "Down" },
-    { value: seed, label: "Seed" },
-    { value: `${formatBytes(upload)}/s`, label: "Upload" },
+    {
+      id: "leech",
+      value: leech,
+      label: "Leech",
+      icon: <Download className="h-3 w-3" />,
+    },
+    {
+      id: "down",
+      value: `${formatBytes(download)}/s`,
+      label: "Down",
+      icon: <ArrowDown className="h-3 w-3" />,
+    },
+    {
+      id: "seed",
+      value: seed,
+      label: "Seed",
+      icon: <Upload className="h-3 w-3" />,
+    },
+    {
+      id: "upload",
+      value: `${formatBytes(upload)}/s`,
+      label: "Upload",
+      icon: <ArrowUp className="h-3 w-3" />,
+    },
   ]
 
   return (
     <div>
-      <StatGrid items={items} />
+      <WidgetStatGrid items={items} />
 
-      {showDownloads && downloads && downloads.length > 0 && (
+      {downloads && downloads.length > 0 && (
         <DownloadList downloads={downloads} />
       )}
     </div>
@@ -99,20 +119,12 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       placeholder: "/transmission/",
       helperText: "Default: /transmission/",
     },
-    {
-      key: "showDownloads",
-      label: "Show active downloads",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display currently downloading torrents with progress",
-    },
   ],
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
     const rpcUrl = config.rpcUrl ?? "/transmission/"
     const rpcEndpoint = `${baseUrl}${rpcUrl}rpc`
-    const showDownloads = config.showDownloads === "true"
 
     const auth = Buffer.from(`${config.username}:${config.password}`).toString(
       "base64"
@@ -130,17 +142,15 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
         body: JSON.stringify({
           method: "torrent-get",
           arguments: {
-            fields: showDownloads
-              ? [
-                  "name",
-                  "percentDone",
-                  "rateDownload",
-                  "rateUpload",
-                  "sizeWhenDone",
-                  "left",
-                  "eta",
-                ]
-              : ["percentDone", "rateDownload", "rateUpload"],
+            fields: [
+              "name",
+              "percentDone",
+              "rateDownload",
+              "rateUpload",
+              "sizeWhenDone",
+              "left",
+              "eta",
+            ],
           },
         }),
       })
@@ -162,17 +172,15 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       body: JSON.stringify({
         method: "torrent-get",
         arguments: {
-          fields: showDownloads
-            ? [
-                "name",
-                "percentDone",
-                "rateDownload",
-                "rateUpload",
-                "sizeWhenDone",
-                "left",
-                "eta",
-              ]
-            : ["percentDone", "rateDownload", "rateUpload"],
+          fields: [
+            "name",
+            "percentDone",
+            "rateDownload",
+            "rateUpload",
+            "sizeWhenDone",
+            "left",
+            "eta",
+          ],
         },
       }),
     })
@@ -202,25 +210,22 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     const leech = torrents.length - completed
 
     // Build download list for active torrents (not completed, not stalled)
-    let downloads: DownloadItem[] = []
-    if (showDownloads) {
-      downloads = torrents
-        .filter(
-          (t: { percentDone: number; left: number }) =>
-            t.percentDone < 1 && t.left > 0
-        )
-        .sort(
-          (a: { percentDone: number }, b: { percentDone: number }) =>
-            a.percentDone - b.percentDone
-        )
-        .map((t: Record<string, unknown>) => ({
-          title: (t.name as string) ?? "Unknown",
-          progress: ((t.percentDone as number) ?? 0) * 100,
-          timeLeft: formatTime((t.eta as number) ?? -1),
-          activity: "downloading",
-          size: formatBytes((t.sizeWhenDone as number) ?? 0),
-        }))
-    }
+    const downloads: DownloadItem[] = torrents
+      .filter(
+        (t: { percentDone: number; left: number }) =>
+          t.percentDone < 1 && t.left > 0
+      )
+      .sort(
+        (a: { percentDone: number }, b: { percentDone: number }) =>
+          a.percentDone - b.percentDone
+      )
+      .map((t: Record<string, unknown>) => ({
+        title: (t.name as string) ?? "Unknown",
+        progress: ((t.percentDone as number) ?? 0) * 100,
+        timeLeft: formatTime((t.eta as number) ?? -1),
+        activity: "downloading",
+        size: formatBytes((t.sizeWhenDone as number) ?? 0),
+      }))
 
     return {
       _status: "ok" as const,
@@ -228,7 +233,6 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       download: rateDl,
       seed: completed,
       upload: rateUl,
-      showDownloads,
       downloads,
     }
   },

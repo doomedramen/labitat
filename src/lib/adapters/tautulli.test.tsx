@@ -18,7 +18,7 @@ describe("tautulli definition", () => {
 
   it("has configFields defined", () => {
     expect(tautulliDefinition.configFields).toBeDefined()
-    expect(tautulliDefinition.configFields).toHaveLength(7)
+    expect(tautulliDefinition.configFields).toHaveLength(2)
     expect(tautulliDefinition.configFields[0].key).toBe("url")
     expect(tautulliDefinition.configFields[0].type).toBe("url")
     expect(tautulliDefinition.configFields[0].required).toBe(true)
@@ -130,8 +130,8 @@ describe("tautulli definition", () => {
                       title: "Movie",
                       user: "user1",
                       progress_percent: 50,
-                      duration: 7200,
-                      view_offset: 1800,
+                      duration: 7200000,
+                      view_offset: 1800000,
                       state: "playing",
                       video_decision: "transcode",
                       bandwidth: 5000000,
@@ -165,7 +165,7 @@ describe("tautulli definition", () => {
                       title: "Movie",
                       user: "user1",
                       progress_percent: 25,
-                      duration: 3600,
+                      duration: 3600000,
                       state: "playing",
                       video_decision: "direct play",
                       bandwidth: 2000000,
@@ -244,7 +244,7 @@ describe("tautulli definition", () => {
         />
       )
       expect(screen.getByText("0 B/s")).toBeInTheDocument()
-      expect(screen.getAllByText("0")).toHaveLength(3)
+      expect(screen.getAllByText("0")).toHaveLength(4)
     })
   })
 })

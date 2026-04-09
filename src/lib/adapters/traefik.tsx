@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Route, Server, Shield } from "lucide-react"
 
 type TraefikData = {
   _status?: "ok" | "warn" | "error"
@@ -11,12 +12,27 @@ type TraefikData = {
 
 function TraefikWidget({ routers, services, middlewares }: TraefikData) {
   const items = [
-    { value: (routers ?? 0).toLocaleString(), label: "Routers" },
-    { value: (services ?? 0).toLocaleString(), label: "Services" },
-    { value: (middlewares ?? 0).toLocaleString(), label: "Middlewares" },
+    {
+      id: "routers",
+      value: (routers ?? 0).toLocaleString(),
+      label: "Routers",
+      icon: <Route className="h-3 w-3" />,
+    },
+    {
+      id: "services",
+      value: (services ?? 0).toLocaleString(),
+      label: "Services",
+      icon: <Server className="h-3 w-3" />,
+    },
+    {
+      id: "middlewares",
+      value: (middlewares ?? 0).toLocaleString(),
+      label: "Middlewares",
+      icon: <Shield className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const traefikDefinition: ServiceDefinition<TraefikData> = {

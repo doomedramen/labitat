@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Globe, Ban, Percent, Shield, Search, Clock } from "lucide-react"
 
 type AdGuardData = {
   _status?: "ok" | "warn" | "error"
@@ -9,13 +10,7 @@ type AdGuardData = {
   blockedPercent: number
   parentalBlocked: number
   safeSearchBlocked: number
-  latency?: number
-  showQueries?: boolean
-  showBlocked?: boolean
-  showBlockedPercent?: boolean
-  showParentalBlocked?: boolean
-  showSafeSearchBlocked?: boolean
-  showLatency?: boolean
+  latency: number
 }
 
 function AdGuardWidget({
@@ -25,38 +20,47 @@ function AdGuardWidget({
   parentalBlocked,
   safeSearchBlocked,
   latency,
-  showQueries = true,
-  showBlocked = true,
-  showBlockedPercent = true,
-  showParentalBlocked = false,
-  showSafeSearchBlocked = false,
-  showLatency = false,
 }: AdGuardData) {
-  const items = []
-
-  if (showQueries) {
-    items.push({ value: queries, label: "Queries" })
-  }
-  if (showBlocked) {
-    items.push({ value: blocked, label: "Blocked" })
-  }
-  if (showBlockedPercent) {
-    items.push({
-      value: `${blockedPercent?.toFixed(1) ?? 0}%`,
+  const items = [
+    {
+      id: "queries",
+      value: queries,
+      label: "Queries",
+      icon: <Globe className="h-3 w-3" />,
+    },
+    {
+      id: "blocked",
+      value: blocked,
+      label: "Blocked",
+      icon: <Ban className="h-3 w-3" />,
+    },
+    {
+      id: "rate",
+      value: `${blockedPercent.toFixed(1)}%`,
       label: "Rate",
-    })
-  }
-  if (showParentalBlocked) {
-    items.push({ value: parentalBlocked, label: "Parental" })
-  }
-  if (showSafeSearchBlocked) {
-    items.push({ value: safeSearchBlocked, label: "Safe" })
-  }
-  if (showLatency && latency !== undefined) {
-    items.push({ value: `${latency}ms`, label: "Latency" })
-  }
+      icon: <Percent className="h-3 w-3" />,
+    },
+    {
+      id: "parental",
+      value: parentalBlocked,
+      label: "Parental",
+      icon: <Shield className="h-3 w-3" />,
+    },
+    {
+      id: "safe",
+      value: safeSearchBlocked,
+      label: "Safe",
+      icon: <Search className="h-3 w-3" />,
+    },
+    {
+      id: "latency",
+      value: `${latency}ms`,
+      label: "Latency",
+      icon: <Clock className="h-3 w-3" />,
+    },
+  ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const adguardDefinition: ServiceDefinition<AdGuardData> = {
@@ -87,48 +91,6 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
       required: true,
       placeholder: "Your AdGuard password",
     },
-    {
-      key: "showQueries",
-      label: "Show Queries",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display total DNS queries",
-    },
-    {
-      key: "showBlocked",
-      label: "Show Blocked",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display blocked DNS queries",
-    },
-    {
-      key: "showBlockedPercent",
-      label: "Show Block Rate",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display percentage of blocked queries",
-    },
-    {
-      key: "showParentalBlocked",
-      label: "Show Parental Controls",
-      type: "boolean",
-      defaultChecked: false,
-      helperText: "Display queries blocked by parental controls",
-    },
-    {
-      key: "showSafeSearchBlocked",
-      label: "Show Safe Search",
-      type: "boolean",
-      defaultChecked: false,
-      helperText: "Display queries forced to safe search",
-    },
-    {
-      key: "showLatency",
-      label: "Show Latency",
-      type: "boolean",
-      defaultChecked: false,
-      helperText: "Display API response latency",
-    },
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
@@ -158,12 +120,6 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
       parentalBlocked: stats.num_blocked_parental ?? 0,
       safeSearchBlocked: stats.num_blocked_safe_search ?? 0,
       latency,
-      showQueries: config.showQueries !== "false",
-      showBlocked: config.showBlocked !== "false",
-      showBlockedPercent: config.showBlockedPercent !== "false",
-      showParentalBlocked: config.showParentalBlocked === "true",
-      showSafeSearchBlocked: config.showSafeSearchBlocked === "true",
-      showLatency: config.showLatency === "true",
     }
   },
   Widget: AdGuardWidget,

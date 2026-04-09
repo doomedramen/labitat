@@ -1,5 +1,7 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid, ResourceBar } from "@/components/widgets"
+import { ResourceBar } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { ArrowDownUp, Activity, Clock } from "lucide-react"
 
 type GlancesData = {
   _status?: "ok" | "warn" | "error"
@@ -45,11 +47,26 @@ function GlancesWidget({
     <div className="flex flex-col gap-2 text-xs">
       <ResourceBar label="CPU" value={cpu} />
       <ResourceBar label="RAM" value={mem} hint={memUsed} />
-      <StatGrid
+      <WidgetStatGrid
         items={[
-          { value: `${swap}%`, label: "Swap" },
-          { value: load.toFixed(2), label: "Load" },
-          { value: uptime ?? "—", label: "Uptime" },
+          {
+            id: "swap",
+            value: `${swap}%`,
+            label: "Swap",
+            icon: <ArrowDownUp className="h-3 w-3" />,
+          },
+          {
+            id: "load",
+            value: load.toFixed(2),
+            label: "Load",
+            icon: <Activity className="h-3 w-3" />,
+          },
+          {
+            id: "uptime",
+            value: uptime ?? "—",
+            label: "Uptime",
+            icon: <Clock className="h-3 w-3" />,
+          },
         ]}
       />
     </div>

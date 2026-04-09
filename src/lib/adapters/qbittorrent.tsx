@@ -1,5 +1,7 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid, DownloadList, type DownloadItem } from "@/components/widgets"
+import { DownloadList, type DownloadItem } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { ArrowDown, ArrowUp, Download, List } from "lucide-react"
 
 type QBittorrentData = {
   _status?: "ok" | "warn" | "error"
@@ -40,12 +42,32 @@ function QBittorrentWidget({
 }: QBittorrentData) {
   return (
     <div className="space-y-2">
-      <StatGrid
+      <WidgetStatGrid
         items={[
-          { value: downSpeed, label: "Down" },
-          { value: upSpeed, label: "Up" },
-          { value: activeDownloads, label: "Active" },
-          { value: queued, label: "Queued" },
+          {
+            id: "down",
+            value: downSpeed,
+            label: "Down",
+            icon: <ArrowDown className="h-3 w-3" />,
+          },
+          {
+            id: "up",
+            value: upSpeed,
+            label: "Up",
+            icon: <ArrowUp className="h-3 w-3" />,
+          },
+          {
+            id: "active",
+            value: activeDownloads,
+            label: "Active",
+            icon: <Download className="h-3 w-3" />,
+          },
+          {
+            id: "queued",
+            value: queued,
+            label: "Queued",
+            icon: <List className="h-3 w-3" />,
+          },
         ]}
       />
       {downloads && downloads.length > 0 && (
@@ -83,16 +105,8 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       required: true,
       placeholder: "Your qBittorrent password",
     },
-    {
-      key: "showDownloads",
-      label: "Show active downloads",
-      type: "boolean",
-      defaultChecked: true,
-      helperText: "Display currently downloading torrents with progress",
-    },
   ],
   async fetchData(config) {
-    const showDownloads = config.showDownloads === "true"
     const baseUrl = config.url.replace(/\/$/, "")
 
     // Login
@@ -127,29 +141,27 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
     const queued = queuedRes.ok ? (await queuedRes.json()).length : 0
 
     // Build active download list (top 3 by speed)
-    const downloads: DownloadItem[] = showDownloads
-      ? torrents
-          .sort(
-            (a: { dlspeed: number }, b: { dlspeed: number }) =>
-              b.dlspeed - a.dlspeed
-          )
-          .slice(0, 3)
-          .map(
-            (t: {
-              name: string
-              progress: number
-              eta: number
-              dlspeed: number
-              size: number
-            }) => ({
-              title: t.name,
-              progress: Math.round(t.progress * 100),
-              timeLeft: formatTime(t.eta),
-              activity: "downloading",
-              size: formatBytes(t.size),
-            })
-          )
-      : []
+    const downloads: DownloadItem[] = torrents
+      .sort(
+        (a: { dlspeed: number }, b: { dlspeed: number }) =>
+          b.dlspeed - a.dlspeed
+      )
+      .slice(0, 3)
+      .map(
+        (t: {
+          name: string
+          progress: number
+          eta: number
+          dlspeed: number
+          size: number
+        }) => ({
+          title: t.name,
+          progress: Math.round(t.progress * 100),
+          timeLeft: formatTime(t.eta),
+          activity: "downloading",
+          size: formatBytes(t.size),
+        })
+      )
 
     return {
       _status: "ok",

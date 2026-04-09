@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Play, Film, Tv, Layers } from "lucide-react"
 
 type JellyfinData = {
   _status?: "ok" | "warn" | "error"
@@ -17,13 +18,33 @@ function JellyfinWidget({
   episodes,
 }: JellyfinData) {
   const items = [
-    { value: activeStreams, label: "Active Streams" },
-    { value: movies, label: "Movies" },
-    { value: shows, label: "Shows" },
-    { value: episodes, label: "Episodes" },
+    {
+      id: "active",
+      value: activeStreams,
+      label: "Active Streams",
+      icon: <Play className="h-3 w-3" />,
+    },
+    {
+      id: "movies",
+      value: movies,
+      label: "Movies",
+      icon: <Film className="h-3 w-3" />,
+    },
+    {
+      id: "shows",
+      value: shows,
+      label: "Shows",
+      icon: <Tv className="h-3 w-3" />,
+    },
+    {
+      id: "episodes",
+      value: episodes,
+      label: "Episodes",
+      icon: <Layers className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {

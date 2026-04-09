@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Users, Image, Video, HardDrive } from "lucide-react"
 
 type ImmichData = {
   _status?: "ok" | "warn" | "error"
@@ -25,13 +26,33 @@ function formatStorage(bytes: number): string {
 
 function ImmichWidget({ users, photos, videos, storage }: ImmichData) {
   const items = [
-    { value: users, label: "Users" },
-    { value: photos, label: "Photos" },
-    { value: videos, label: "Videos" },
-    { value: formatStorage(storage), label: "Storage" },
+    {
+      id: "users",
+      value: users,
+      label: "Users",
+      icon: <Users className="h-3 w-3" />,
+    },
+    {
+      id: "photos",
+      value: photos,
+      label: "Photos",
+      icon: <Image className="h-3 w-3" />,
+    },
+    {
+      id: "videos",
+      value: videos,
+      label: "Videos",
+      icon: <Video className="h-3 w-3" />,
+    },
+    {
+      id: "storage",
+      value: formatStorage(storage),
+      label: "Storage",
+      icon: <HardDrive className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const immichDefinition: ServiceDefinition<ImmichData> = {

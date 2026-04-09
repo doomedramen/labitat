@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Zap, Battery, Clock, Thermometer } from "lucide-react"
 
 type APCUPSData = {
   _status?: "ok" | "warn" | "error"
@@ -9,7 +10,6 @@ type APCUPSData = {
   timeLeft: number
   temperature: number
   status: string
-  showStatus?: boolean
 }
 
 function APCUPSWidget({
@@ -18,7 +18,6 @@ function APCUPSWidget({
   timeLeft,
   temperature,
   status,
-  showStatus = false,
 }: APCUPSData) {
   const load = loadPercent ?? 0
   const battery = batteryCharge ?? 0
@@ -27,17 +26,33 @@ function APCUPSWidget({
   const timeLeftMin = time > 60 ? `${(time / 60).toFixed(0)}m` : `${time}s`
 
   const items = [
-    { value: `${load}%`, label: "Load" },
-    { value: `${battery}%`, label: "Battery" },
-    { value: timeLeftMin, label: "Time" },
-    { value: `${temp}°C`, label: "Temp" },
+    {
+      id: "load",
+      value: `${load}%`,
+      label: "Load",
+      icon: <Zap className="h-3 w-3" />,
+    },
+    {
+      id: "battery",
+      value: `${battery}%`,
+      label: "Battery",
+      icon: <Battery className="h-3 w-3" />,
+    },
+    {
+      id: "time",
+      value: timeLeftMin,
+      label: "Time",
+      icon: <Clock className="h-3 w-3" />,
+    },
+    {
+      id: "temp",
+      value: `${temp}°C`,
+      label: "Temp",
+      icon: <Thermometer className="h-3 w-3" />,
+    },
   ]
 
-  if (showStatus) {
-    items.push({ value: status ?? "—", label: "Status" })
-  }
-
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
@@ -55,13 +70,6 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
       placeholder: "http://192.168.1.100",
       helperText:
         "HTTP URL of your apcupsd web CGI server. This is an http(s) address — not the apcupsd TCP daemon port (3551).",
-    },
-    {
-      key: "showStatus",
-      label: "Show Status",
-      type: "boolean",
-      defaultChecked: false,
-      helperText: "Display UPS status string (e.g. ONLINE, ONBATT)",
     },
   ],
   async fetchData(config) {
@@ -94,7 +102,6 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
       timeLeft,
       temperature,
       status,
-      showStatus: config.showStatus === "true",
     }
   },
   Widget: APCUPSWidget,

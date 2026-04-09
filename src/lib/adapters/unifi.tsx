@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Users, UserPlus, Router, Globe } from "lucide-react"
 
 type UnifiData = {
   _status?: "ok" | "warn" | "error"
@@ -12,12 +13,32 @@ type UnifiData = {
 
 function UnifiWidget({ users, guests, devices, sites }: UnifiData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: users, label: "Users" },
-        { value: guests, label: "Guests" },
-        { value: devices, label: "Devices" },
-        { value: sites, label: "Sites" },
+        {
+          id: "users",
+          value: users,
+          label: "Users",
+          icon: <Users className="h-3 w-3" />,
+        },
+        {
+          id: "guests",
+          value: guests,
+          label: "Guests",
+          icon: <UserPlus className="h-3 w-3" />,
+        },
+        {
+          id: "devices",
+          value: devices,
+          label: "Devices",
+          icon: <Router className="h-3 w-3" />,
+        },
+        {
+          id: "sites",
+          value: sites,
+          label: "Sites",
+          icon: <Globe className="h-3 w-3" />,
+        },
       ]}
     />
   )

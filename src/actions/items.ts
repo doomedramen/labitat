@@ -75,6 +75,8 @@ export async function createItem(groupId: string, formData: FormData) {
   const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) * 1000 : null
 
   const cleanMode = formData.get("cleanMode") === "true"
+  const displayMode = (formData.get("displayMode") as string) || "label"
+  const statDisplayMode = (formData.get("statDisplayMode") as string) || "label"
 
   await db.insert(items).values({
     id: nanoid(),
@@ -88,6 +90,8 @@ export async function createItem(groupId: string, formData: FormData) {
     configEnc,
     pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
     cleanMode,
+    displayMode,
+    statDisplayMode,
     order: nextOrder,
   })
   revalidatePath("/")
@@ -110,6 +114,8 @@ export async function updateItem(id: string, formData: FormData) {
   const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) * 1000 : null
 
   const cleanMode = formData.get("cleanMode") === "true"
+  const displayMode = (formData.get("displayMode") as string) || "label"
+  const statDisplayMode = (formData.get("statDisplayMode") as string) || "label"
 
   await db
     .update(items)
@@ -122,6 +128,8 @@ export async function updateItem(id: string, formData: FormData) {
       configEnc,
       pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
       cleanMode,
+      displayMode,
+      statDisplayMode,
     })
     .where(eq(items.id, id))
   revalidatePath("/")

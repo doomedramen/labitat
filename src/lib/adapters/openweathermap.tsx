@@ -1,5 +1,12 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import {
+  Thermometer,
+  Droplets,
+  Wind,
+  Cloud,
+  ThermometerSun,
+} from "lucide-react"
 
 type OpenWeatherMapData = {
   _status?: "ok" | "warn" | "error"
@@ -23,13 +30,38 @@ function OpenWeatherMapWidget({
   speedUnit,
 }: OpenWeatherMapData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: `${temperature}${unitSymbol}`, label: "Temp" },
-        { value: `${feelsLike}${unitSymbol}`, label: "Feels Like" },
-        { value: `${humidity}%`, label: "Humidity" },
-        { value: `${windSpeed} ${speedUnit}`, label: "Wind" },
-        { value: description, label: "Condition" },
+        {
+          id: "temp",
+          value: `${temperature}${unitSymbol}`,
+          label: "Temp",
+          icon: <Thermometer className="h-3 w-3" />,
+        },
+        {
+          id: "feels-like",
+          value: `${feelsLike}${unitSymbol}`,
+          label: "Feels Like",
+          icon: <ThermometerSun className="h-3 w-3" />,
+        },
+        {
+          id: "humidity",
+          value: `${humidity}%`,
+          label: "Humidity",
+          icon: <Droplets className="h-3 w-3" />,
+        },
+        {
+          id: "wind",
+          value: `${windSpeed} ${speedUnit}`,
+          label: "Wind",
+          icon: <Wind className="h-3 w-3" />,
+        },
+        {
+          id: "condition",
+          value: description,
+          label: "Condition",
+          icon: <Cloud className="h-3 w-3" />,
+        },
       ]}
     />
   )

@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Users, Hash, MessageSquare, Tag } from "lucide-react"
 
 type MatrixData = {
   _status?: "ok" | "warn" | "error"
@@ -12,12 +13,32 @@ type MatrixData = {
 
 function MatrixWidget({ users, rooms, messages, version }: MatrixData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: users, label: "Users" },
-        { value: rooms, label: "Rooms" },
-        { value: messages, label: "Messages" },
-        { value: version, label: "Version" },
+        {
+          id: "users",
+          value: users,
+          label: "Users",
+          icon: <Users className="h-3 w-3" />,
+        },
+        {
+          id: "rooms",
+          value: rooms,
+          label: "Rooms",
+          icon: <Hash className="h-3 w-3" />,
+        },
+        {
+          id: "messages",
+          value: messages,
+          label: "Messages",
+          icon: <MessageSquare className="h-3 w-3" />,
+        },
+        {
+          id: "version",
+          value: version,
+          label: "Version",
+          icon: <Tag className="h-3 w-3" />,
+        },
       ]}
     />
   )

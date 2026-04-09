@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Tv, Download, AlertTriangle, Search } from "lucide-react"
 
 type SonarrData = {
   _status?: "ok" | "warn" | "error"
@@ -12,12 +13,32 @@ type SonarrData = {
 
 function SonarrWidget({ queued, missing, wanted, series }: SonarrData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: queued, label: "Queued" },
-        { value: missing, label: "Missing" },
-        { value: wanted, label: "Wanted" },
-        { value: series, label: "Series" },
+        {
+          id: "queued",
+          value: queued,
+          label: "Queued",
+          icon: <Download className="h-3 w-3" />,
+        },
+        {
+          id: "missing",
+          value: missing,
+          label: "Missing",
+          icon: <AlertTriangle className="h-3 w-3" />,
+        },
+        {
+          id: "wanted",
+          value: wanted,
+          label: "Wanted",
+          icon: <Search className="h-3 w-3" />,
+        },
+        {
+          id: "series",
+          value: series,
+          label: "Series",
+          icon: <Tv className="h-3 w-3" />,
+        },
       ]}
     />
   )

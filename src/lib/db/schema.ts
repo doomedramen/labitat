@@ -38,6 +38,12 @@ export const items = sqliteTable("items", {
   order: integer("order").notNull(),
   pollingMs: integer("polling_ms").default(10000),
   cleanMode: integer("clean_mode", { mode: "boolean" }).default(false),
+  /** Controls whether the card header shows the icon or the label */
+  displayMode: text("display_mode").default("label"),
+  /** Controls whether stat cards in widgets show icons or labels */
+  statDisplayMode: text("stat_display_mode").default("label"),
+  /** Custom order of stat cards within widget grids (JSON array of IDs) */
+  statCardOrder: text("stat_card_order", { mode: "json" }),
   createdAt: text("created_at").default(sql`(current_timestamp)`),
 })
 

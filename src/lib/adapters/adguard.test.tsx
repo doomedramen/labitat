@@ -13,7 +13,7 @@ describe("adguard definition", () => {
 
   it("has configFields defined", () => {
     expect(adguardDefinition.configFields).toBeDefined()
-    expect(adguardDefinition.configFields).toHaveLength(9)
+    expect(adguardDefinition.configFields).toHaveLength(3)
     expect(adguardDefinition.configFields[0].key).toBe("url")
     expect(adguardDefinition.configFields[0].type).toBe("url")
     expect(adguardDefinition.configFields[0].required).toBe(true)
@@ -23,19 +23,6 @@ describe("adguard definition", () => {
     expect(adguardDefinition.configFields[2].key).toBe("password")
     expect(adguardDefinition.configFields[2].type).toBe("password")
     expect(adguardDefinition.configFields[2].required).toBe(true)
-  })
-
-  it("has boolean config fields with defaults", () => {
-    const booleanFields = adguardDefinition.configFields.filter(
-      (f) => f.type === "boolean"
-    )
-    expect(booleanFields).toHaveLength(6)
-    expect(
-      booleanFields.find((f) => f.key === "showQueries")?.defaultChecked
-    ).toBe(true)
-    expect(
-      booleanFields.find((f) => f.key === "showParentalBlocked")?.defaultChecked
-    ).toBe(false)
   })
 
   describe("fetchData", () => {
@@ -65,12 +52,6 @@ describe("adguard definition", () => {
         url: "https://adguard.example.com/",
         username: "admin",
         password: "secret",
-        showQueries: "true",
-        showBlocked: "true",
-        showBlockedPercent: "true",
-        showParentalBlocked: "true",
-        showSafeSearchBlocked: "true",
-        showLatency: "true",
       })
 
       expect(result._status).toBe("ok")
@@ -79,8 +60,6 @@ describe("adguard definition", () => {
       expect(result.blockedPercent).toBe(25)
       expect(result.parentalBlocked).toBe(100)
       expect(result.safeSearchBlocked).toBe(50)
-      expect(result.showQueries).toBe(true)
-      expect(result.showParentalBlocked).toBe(true)
     })
 
     it("calculates blocked percent correctly", async () => {
@@ -164,43 +143,7 @@ describe("adguard definition", () => {
   })
 
   describe("Widget", () => {
-    it("renders with default visible fields", () => {
-      render(
-        <adguardDefinition.Widget
-          queries={10000}
-          blocked={2500}
-          blockedPercent={25}
-          parentalBlocked={100}
-          safeSearchBlocked={50}
-        />
-      )
-      expect(screen.getByText("10000")).toBeInTheDocument()
-      expect(screen.getByText("2500")).toBeInTheDocument()
-      expect(screen.getByText("25.0%")).toBeInTheDocument()
-      expect(screen.getByText("Queries")).toBeInTheDocument()
-      expect(screen.getByText("Blocked")).toBeInTheDocument()
-      expect(screen.getByText("Rate")).toBeInTheDocument()
-    })
-
-    it("hides fields when show flags are false", () => {
-      render(
-        <adguardDefinition.Widget
-          queries={10000}
-          blocked={2500}
-          blockedPercent={25}
-          parentalBlocked={100}
-          safeSearchBlocked={50}
-          showQueries={false}
-          showBlocked={false}
-          showBlockedPercent={false}
-        />
-      )
-      expect(screen.queryByText("Queries")).not.toBeInTheDocument()
-      expect(screen.queryByText("Blocked")).not.toBeInTheDocument()
-      expect(screen.queryByText("Rate")).not.toBeInTheDocument()
-    })
-
-    it("shows optional fields when enabled", () => {
+    it("renders all stat items", () => {
       render(
         <adguardDefinition.Widget
           queries={10000}
@@ -209,16 +152,17 @@ describe("adguard definition", () => {
           parentalBlocked={100}
           safeSearchBlocked={50}
           latency={45}
-          showParentalBlocked={true}
-          showSafeSearchBlocked={true}
-          showLatency={true}
         />
       )
-      expect(screen.getByText("100")).toBeInTheDocument()
-      expect(screen.getByText("50")).toBeInTheDocument()
-      expect(screen.getByText("45ms")).toBeInTheDocument()
+      expect(screen.getByText("10000")).toBeInTheDocument()
+      expect(screen.getByText("2500")).toBeInTheDocument()
+      expect(screen.getByText("25.0%")).toBeInTheDocument()
+      expect(screen.getByText("Queries")).toBeInTheDocument()
+      expect(screen.getByText("Blocked")).toBeInTheDocument()
+      expect(screen.getByText("Rate")).toBeInTheDocument()
       expect(screen.getByText("Parental")).toBeInTheDocument()
       expect(screen.getByText("Safe")).toBeInTheDocument()
+      expect(screen.getByText("45ms")).toBeInTheDocument()
       expect(screen.getByText("Latency")).toBeInTheDocument()
     })
   })

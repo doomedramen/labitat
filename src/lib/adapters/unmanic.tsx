@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Loader, List, CheckCircle, Trophy } from "lucide-react"
 
 type UnmanicData = {
   _status?: "ok" | "warn" | "error"
@@ -17,12 +18,32 @@ function UnmanicWidget({
   totalCompleted,
 }: UnmanicData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: activeWorkers, label: "Active" },
-        { value: queuedItems, label: "Queued" },
-        { value: completedToday, label: "Today" },
-        { value: totalCompleted, label: "Total" },
+        {
+          id: "active",
+          value: activeWorkers,
+          label: "Active",
+          icon: <Loader className="h-3 w-3" />,
+        },
+        {
+          id: "queued",
+          value: queuedItems,
+          label: "Queued",
+          icon: <List className="h-3 w-3" />,
+        },
+        {
+          id: "today",
+          value: completedToday,
+          label: "Today",
+          icon: <CheckCircle className="h-3 w-3" />,
+        },
+        {
+          id: "total",
+          value: totalCompleted,
+          label: "Total",
+          icon: <Trophy className="h-3 w-3" />,
+        },
       ]}
     />
   )

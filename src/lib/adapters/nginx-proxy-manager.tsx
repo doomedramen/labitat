@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Globe, ArrowRight, Wifi, Ban } from "lucide-react"
 
 type NginxProxyManagerData = {
@@ -18,27 +18,31 @@ function NginxProxyManagerWidget({
   deadHosts,
 }: NginxProxyManagerData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
         {
+          id: "hosts",
           value: hosts,
           label: "Proxy Hosts",
           icon: <Globe className="h-3 w-3" />,
           tooltip: "Proxy Hosts",
         },
         {
+          id: "redirections",
           value: redirHosts,
           label: "Redirections",
           icon: <ArrowRight className="h-3 w-3" />,
           tooltip: "Redirections",
         },
         {
+          id: "streams",
           value: streams,
           label: "Streams",
           icon: <Wifi className="h-3 w-3" />,
           tooltip: "Streams",
         },
         {
+          id: "disabled",
           value: deadHosts,
           label: "Disabled",
           icon: <Ban className="h-3 w-3" />,

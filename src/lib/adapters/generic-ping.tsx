@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { CheckCircle, XCircle } from "lucide-react"
 
 type GenericPingData = {
   _status?: "ok" | "warn" | "error"
@@ -12,18 +13,25 @@ function GenericPingWidget({ status, responseTime }: GenericPingData) {
   const isOnline = status === "up"
   const items = [
     {
+      id: "status",
       value: isOnline ? "✓" : "✗",
       label: isOnline ? "Online" : "Offline",
+      icon: isOnline ? (
+        <CheckCircle className="h-3 w-3" />
+      ) : (
+        <XCircle className="h-3 w-3" />
+      ),
       valueClassName: isOnline ? undefined : "text-destructive",
     },
     {
+      id: "response",
       value: `${responseTime}ms`,
       label: "Response",
       valueClassName: isOnline ? undefined : "text-destructive",
     },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const genericPingDefinition: ServiceDefinition<GenericPingData> = {

@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Play, Film, Tv, Layers } from "lucide-react"
 
 type EmbyData = {
   _status?: "ok" | "warn" | "error"
@@ -12,13 +13,33 @@ type EmbyData = {
 
 function EmbyWidget({ activeStreams, movies, shows, episodes }: EmbyData) {
   const items = [
-    { value: (activeStreams ?? 0).toLocaleString(), label: "Active Streams" },
-    { value: (movies ?? 0).toLocaleString(), label: "Movies" },
-    { value: (shows ?? 0).toLocaleString(), label: "Shows" },
-    { value: (episodes ?? 0).toLocaleString(), label: "Episodes" },
+    {
+      id: "active",
+      value: (activeStreams ?? 0).toLocaleString(),
+      label: "Active Streams",
+      icon: <Play className="h-3 w-3" />,
+    },
+    {
+      id: "movies",
+      value: (movies ?? 0).toLocaleString(),
+      label: "Movies",
+      icon: <Film className="h-3 w-3" />,
+    },
+    {
+      id: "shows",
+      value: (shows ?? 0).toLocaleString(),
+      label: "Shows",
+      icon: <Tv className="h-3 w-3" />,
+    },
+    {
+      id: "episodes",
+      value: (episodes ?? 0).toLocaleString(),
+      label: "Episodes",
+      icon: <Layers className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const embyDefinition: ServiceDefinition<EmbyData> = {

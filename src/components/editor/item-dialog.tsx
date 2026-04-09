@@ -164,12 +164,20 @@ export function ItemDialog({
   const services = getAllServices()
   const [serviceType, setServiceType] = useState(item?.serviceType ?? "")
   const [configFields, setConfigFields] = useState<Record<string, string>>({})
+  const [displayMode, setDisplayMode] = useState<"icon" | "label">(
+    (item?.displayMode as "icon" | "label") ?? "label"
+  )
+  const [statDisplayMode, setStatDisplayMode] = useState<"icon" | "label">(
+    (item?.statDisplayMode as "icon" | "label") ?? "label"
+  )
   const selectedService = services.find((s) => s.id === serviceType)
 
   // Sync serviceType when item changes, then load config
   useEffect(() => {
     setServiceType(item?.serviceType ?? "")
-  }, [item?.id, item?.serviceType])
+    setDisplayMode((item?.displayMode as "icon" | "label") ?? "label")
+    setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label")
+  }, [item?.id, item?.serviceType, item?.displayMode, item?.statDisplayMode])
 
   // Load config when editing an existing item
   useEffect(() => {
@@ -382,6 +390,76 @@ export function ItemDialog({
                 />
                 <Label htmlFor="cleanMode">Clean mode (minimal display)</Label>
               </div>
+
+              {/* Card display mode */}
+              <div className="space-y-2">
+                <Label>Card Display</Label>
+                <input type="hidden" name="displayMode" value={displayMode} />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDisplayMode("label")}
+                    className={cn(
+                      "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
+                      displayMode === "label"
+                        ? "border-primary bg-primary/10 font-medium text-primary"
+                        : "border-input bg-transparent text-muted-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    Label
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDisplayMode("icon")}
+                    className={cn(
+                      "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
+                      displayMode === "icon"
+                        ? "border-primary bg-primary/10 font-medium text-primary"
+                        : "border-input bg-transparent text-muted-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    Icon
+                  </button>
+                </div>
+              </div>
+
+              {/* Stat display mode (only when service type has a widget) */}
+              {selectedService && (
+                <div className="space-y-2">
+                  <Label>Stat Card Display</Label>
+                  <input
+                    type="hidden"
+                    name="statDisplayMode"
+                    value={statDisplayMode}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setStatDisplayMode("label")}
+                      className={cn(
+                        "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
+                        statDisplayMode === "label"
+                          ? "border-primary bg-primary/10 font-medium text-primary"
+                          : "border-input bg-transparent text-muted-foreground hover:bg-accent/50"
+                      )}
+                    >
+                      Label
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStatDisplayMode("icon")}
+                      className={cn(
+                        "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
+                        statDisplayMode === "icon"
+                          ? "border-primary bg-primary/10 font-medium text-primary"
+                          : "border-input bg-transparent text-muted-foreground hover:bg-accent/50"
+                      )}
+                    >
+                      Icon
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button type="submit">{item ? "Update" : "Create"}</Button>

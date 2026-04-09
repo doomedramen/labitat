@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Globe, Ban, Percent, Shield } from "lucide-react"
 
 type PiholeData = {
   _status?: "ok" | "warn" | "error"
@@ -17,13 +18,33 @@ function PiholeWidget({
   domainsBlocked,
 }: PiholeData) {
   const items = [
-    { value: (queries ?? 0).toLocaleString(), label: "Queries" },
-    { value: (blocked ?? 0).toLocaleString(), label: "Blocked" },
-    { value: percentBlocked, label: "Blocked %" },
-    { value: (domainsBlocked ?? 0).toLocaleString(), label: "Domains" },
+    {
+      id: "queries",
+      value: (queries ?? 0).toLocaleString(),
+      label: "Queries",
+      icon: <Globe className="h-3 w-3" />,
+    },
+    {
+      id: "blocked",
+      value: (blocked ?? 0).toLocaleString(),
+      label: "Blocked",
+      icon: <Ban className="h-3 w-3" />,
+    },
+    {
+      id: "percent-blocked",
+      value: percentBlocked,
+      label: "Blocked %",
+      icon: <Percent className="h-3 w-3" />,
+    },
+    {
+      id: "domains",
+      value: (domainsBlocked ?? 0).toLocaleString(),
+      label: "Domains",
+      icon: <Shield className="h-3 w-3" />,
+    },
   ]
 
-  return <StatGrid items={items} />
+  return <WidgetStatGrid items={items} />
 }
 
 export const piholeDefinition: ServiceDefinition<PiholeData> = {

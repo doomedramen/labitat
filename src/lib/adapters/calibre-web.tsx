@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { Book, PenTool, List, FileText } from "lucide-react"
 
 type CalibreWebData = {
   _status?: "ok" | "warn" | "error"
@@ -12,12 +13,32 @@ type CalibreWebData = {
 
 function CalibreWebWidget({ books, authors, series, formats }: CalibreWebData) {
   return (
-    <StatGrid
+    <WidgetStatGrid
       items={[
-        { value: books, label: "Books" },
-        { value: authors, label: "Authors" },
-        { value: series, label: "Series" },
-        { value: formats, label: "Formats" },
+        {
+          id: "books",
+          value: books,
+          label: "Books",
+          icon: <Book className="h-3 w-3" />,
+        },
+        {
+          id: "authors",
+          value: authors,
+          label: "Authors",
+          icon: <PenTool className="h-3 w-3" />,
+        },
+        {
+          id: "series",
+          value: series,
+          label: "Series",
+          icon: <List className="h-3 w-3" />,
+        },
+        {
+          id: "formats",
+          value: formats,
+          label: "Formats",
+          icon: <FileText className="h-3 w-3" />,
+        },
       ]}
     />
   )

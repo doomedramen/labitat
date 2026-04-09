@@ -1,5 +1,7 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid, ResourceBar } from "@/components/widgets"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { ResourceBar } from "@/components/widgets"
+import { Thermometer, Fan } from "lucide-react"
 
 type GlancesSensorsData = {
   _status?: "ok" | "warn" | "error"
@@ -30,10 +32,20 @@ function GlancesSensorsWidget({
         warningAt={60}
         criticalAt={80}
       />
-      <StatGrid
+      <WidgetStatGrid
         items={[
-          { value: `${max}°C`, label: "Max" },
-          { value: fan > 0 ? `${fan} RPM` : "N/A", label: "Fan" },
+          {
+            id: "max",
+            value: `${max}°C`,
+            label: "Max",
+            icon: <Thermometer className="h-3 w-3" />,
+          },
+          {
+            id: "fan",
+            value: fan > 0 ? `${fan} RPM` : "N/A",
+            label: "Fan",
+            icon: <Fan className="h-3 w-3" />,
+          },
         ]}
       />
     </div>

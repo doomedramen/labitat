@@ -83,26 +83,28 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
             </button>
           )}
 
-          <ItemIcon
-            iconUrl={item.iconUrl}
-            label={item.label}
-            serviceIcon={serviceDef?.icon ?? null}
-          />
-
-          <div className="min-w-0 flex-1 pr-4">
-            <p className="truncate text-sm leading-snug font-medium">
-              {editMode
-                ? item.label || serviceDef?.name || item.href
-                : item.label}
-            </p>
-            {editMode && (
-              <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
-                {serviceDef && <span>{serviceDef.name}</span>}
-                {item.href && <span className="truncate">{item.href}</span>}
-                <span>{pollingMs / 1000}s poll</span>
-              </div>
-            )}
-          </div>
+          {item.displayMode === "icon" ? (
+            <ItemIcon
+              iconUrl={item.iconUrl}
+              label={item.label}
+              serviceIcon={serviceDef?.icon ?? null}
+            />
+          ) : (
+            <div className="min-w-0 flex-1 pr-4">
+              <p className="truncate text-sm leading-snug font-medium">
+                {editMode
+                  ? item.label || serviceDef?.name || item.href
+                  : item.label}
+              </p>
+              {editMode && (
+                <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
+                  {serviceDef && <span>{serviceDef.name}</span>}
+                  {item.href && <span className="truncate">{item.href}</span>}
+                  <span>{pollingMs / 1000}s poll</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -113,6 +115,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
         isClientSide={isClientSide}
         editMode={editMode}
         cleanMode={item.cleanMode ?? undefined}
+        item={item}
       />
     </div>
   )
