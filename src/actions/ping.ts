@@ -11,12 +11,12 @@ export async function pingUrl(url: string): Promise<ServiceStatus> {
     const res = await fetch(url, {
       method: "GET",
       signal: controller.signal,
-      redirect: "follow",
+      redirect: "manual",
     })
 
     clearTimeout(timeout)
 
-    if (res.ok) {
+    if (res.status > 0) {
       return { state: "reachable" }
     }
 
