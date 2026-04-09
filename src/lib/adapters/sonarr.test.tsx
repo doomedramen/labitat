@@ -117,7 +117,7 @@ describe("sonarr definition", () => {
         apiKey: "test-key",
       })
 
-      const calls = mockFetch.mock.calls as [string, ...unknown[]][]
+      const calls = mockFetch.mock.calls as unknown as [string, ...unknown[]][]
       for (const call of calls) {
         expect(call[0]).not.toMatch(/\/\/api/)
       }
