@@ -10,6 +10,7 @@ type SonarrData = {
   wanted: number
   series: number
   showActiveDownloads?: boolean
+  enableQueue?: boolean
   downloads?: DownloadItem[]
 }
 
@@ -58,7 +59,7 @@ function sonarrToPayload(data: SonarrData) {
       },
     ],
     downloads:
-      data.showActiveDownloads && data.downloads?.length
+      data.enableQueue && data.showActiveDownloads && data.downloads?.length
         ? data.downloads
         : undefined,
   }
@@ -93,11 +94,19 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
       type: "boolean",
       helperText: "Display currently downloading items",
     },
+    {
+      key: "enableQueue",
+      label: "Show download queue",
+      type: "boolean",
+      required: false,
+      helperText: "Enable or disable the download queue display",
+    },
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
     const showActiveDownloads = config.showActiveDownloads === "true"
+    const enableQueue = config.enableQueue !== "false" // Default to true
 
     const [queueRes, seriesRes, missingRes, cutoffRes] = await Promise.all([
       fetch(`${baseUrl}/api/v3/queue?pageSize=50&includeSeries=true`, {
@@ -118,7 +127,7 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
     const cutoff = cutoffRes.ok ? await cutoffRes.json() : { totalRecords: 0 }
 
     const downloads: DownloadItem[] = []
-    if (showActiveDownloads && queue.records) {
+    if (enableQueue && showActiveDownloads && queue.records) {
       for (const record of queue.records) {
         const size = record.size ?? 0
         const sizeleft = record.sizeleft ?? size
@@ -137,9 +146,14 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
         }
 
         // Determine activity state from trackedDownloadState
+        // Matches Homepage's formatDownloadState function
         const state = record.trackedDownloadState?.toLowerCase() ?? ""
         let activity: string | undefined
-        if (state.includes("import")) {
+        if (state === "importpending") {
+          activity = "Import pending"
+        } else if (state === "failedpending") {
+          activity = "Failed pending"
+        } else if (state.includes("import")) {
           activity = "Importing"
         } else if (state.includes("download")) {
           activity = "Downloading"
@@ -152,10 +166,11 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
         }
 
         // Build title with series info if available
+        // Matches Homepage's getTitle function
         const seriesName = record.series?.title
-        const episodeTitle = record.title
+        const episodeTitle = record.episode?.title ?? record.title
         const displayTitle = seriesName
-          ? `${seriesName} - ${episodeTitle}`
+          ? `${seriesName}: ${episodeTitle}`
           : episodeTitle
 
         downloads.push({
@@ -175,6 +190,7 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
       wanted: cutoff.totalRecords ?? 0,
       series: Array.isArray(series) ? series.length : 0,
       showActiveDownloads,
+      enableQueue,
       downloads,
     }
   },

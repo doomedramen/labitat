@@ -10,6 +10,7 @@ type RadarrData = {
   wanted: number
   movies: number
   showActiveDownloads?: boolean
+  enableQueue?: boolean
   downloads?: DownloadItem[]
 }
 
@@ -58,7 +59,7 @@ function radarrToPayload(data: RadarrData) {
       },
     ],
     downloads:
-      data.showActiveDownloads && data.downloads?.length
+      data.enableQueue && data.showActiveDownloads && data.downloads?.length
         ? data.downloads
         : undefined,
   }
@@ -93,11 +94,19 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
       type: "boolean",
       helperText: "Display currently downloading items",
     },
+    {
+      key: "enableQueue",
+      label: "Show download queue",
+      type: "boolean",
+      required: false,
+      helperText: "Enable or disable the download queue display",
+    },
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
     const showActiveDownloads = config.showActiveDownloads === "true"
+    const enableQueue = config.enableQueue !== "false" // Default to true
 
     const [queueRes, movieRes, missingRes, cutoffRes] = await Promise.all([
       fetch(`${baseUrl}/api/v3/queue?pageSize=50&includeMovie=true`, {
@@ -118,7 +127,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     const cutoff = cutoffRes.ok ? await cutoffRes.json() : { totalRecords: 0 }
 
     const downloads: DownloadItem[] = []
-    if (showActiveDownloads && queue.records) {
+    if (enableQueue && showActiveDownloads && queue.records) {
       for (const record of queue.records) {
         const size = record.size ?? 0
         const sizeleft = record.sizeleft ?? size
@@ -137,9 +146,14 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
         }
 
         // Determine activity state from trackedDownloadState
+        // Matches Homepage's formatDownloadState function
         const state = record.trackedDownloadState?.toLowerCase() ?? ""
         let activity: string | undefined
-        if (state.includes("import")) {
+        if (state === "importpending") {
+          activity = "Import pending"
+        } else if (state === "failedpending") {
+          activity = "Failed pending"
+        } else if (state.includes("import")) {
           activity = "Importing"
         } else if (state.includes("download")) {
           activity = "Downloading"
@@ -151,8 +165,10 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
           activity = "Queued"
         }
 
+        // Build title with movie name if available
+        const movieName = record.movie?.title ?? record.title
         downloads.push({
-          title: record.title ?? "Unknown",
+          title: movieName ?? "Unknown",
           progress,
           timeLeft,
           activity,
@@ -168,6 +184,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
       wanted: cutoff.totalRecords ?? 0,
       movies: Array.isArray(movies) ? movies.length : 0,
       showActiveDownloads,
+      enableQueue,
       downloads,
     }
   },

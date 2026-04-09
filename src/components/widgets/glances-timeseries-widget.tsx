@@ -10,6 +10,28 @@ import {
   ResponsiveContainer,
 } from "recharts"
 
+type MetricConfig = {
+  key: string
+  label: string
+  color: string
+  gradientId: string
+}
+
+const DEFAULT_METRICS: MetricConfig[] = [
+  {
+    key: "cpu",
+    label: "CPU",
+    color: "var(--chart-1)",
+    gradientId: "fillCpu",
+  },
+  {
+    key: "mem",
+    label: "MEM",
+    color: "var(--chart-2)",
+    gradientId: "fillMem",
+  },
+]
+
 function ChartTooltip({
   active,
   payload,
@@ -36,6 +58,7 @@ function ChartTooltip({
 
 export function GlancesTimeseriesWidget({
   history,
+  metrics,
   _status,
   _statusText,
 }: GlancesTimeseriesData) {
@@ -55,10 +78,16 @@ export function GlancesTimeseriesWidget({
     )
   }
 
+  const activeMetrics = metrics ?? DEFAULT_METRICS
   const last = history[history.length - 1]
 
   // Scale to the highest value in the window, rounded up to the nearest 10
-  const rawMax = Math.max(...history.map((d) => Math.max(d.cpu, d.mem)), 1)
+  const rawMax = Math.max(
+    ...history.flatMap((d) =>
+      activeMetrics.map((m) => (d[m.key] as number) ?? 0)
+    ),
+    1
+  )
   const domainMax = Math.ceil(rawMax / 10) * 10
   const midLabel = Math.round(domainMax / 2)
 
@@ -77,22 +106,23 @@ export function GlancesTimeseriesWidget({
             margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
           >
             <defs>
-              <linearGradient id="fillCpu" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--chart-1)"
-                  stopOpacity={0.5}
-                />
-                <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="fillMem" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--chart-2)"
-                  stopOpacity={0.5}
-                />
-                <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0} />
-              </linearGradient>
+              {activeMetrics.map((metric) => (
+                <linearGradient
+                  key={metric.gradientId}
+                  id={metric.gradientId}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor={metric.color}
+                    stopOpacity={0.5}
+                  />
+                  <stop offset="95%" stopColor={metric.color} stopOpacity={0} />
+                </linearGradient>
+              ))}
             </defs>
             <XAxis dataKey="timestamp" hide />
             <YAxis domain={[0, domainMax]} hide />
@@ -100,56 +130,39 @@ export function GlancesTimeseriesWidget({
               content={<ChartTooltip />}
               cursor={{ stroke: "var(--border)", strokeWidth: 1 }}
             />
-            <Area
-              type="monotone"
-              dataKey="mem"
-              fill="url(#fillMem)"
-              stroke="var(--chart-2)"
-              strokeWidth={1.5}
-              dot={false}
-              activeDot={{ r: 3, strokeWidth: 0 }}
-              isAnimationActive={false}
-            />
-            <Area
-              type="monotone"
-              dataKey="cpu"
-              fill="url(#fillCpu)"
-              stroke="var(--chart-1)"
-              strokeWidth={1.5}
-              dot={false}
-              activeDot={{ r: 3, strokeWidth: 0 }}
-              isAnimationActive={false}
-            />
+            {activeMetrics.map((metric) => (
+              <Area
+                key={metric.key}
+                type="monotone"
+                dataKey={metric.key}
+                fill={`url(#${metric.gradientId})`}
+                stroke={metric.color}
+                strokeWidth={1.5}
+                dot={false}
+                activeDot={{ r: 3, strokeWidth: 0 }}
+                isAnimationActive={false}
+              />
+            ))}
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
       {/* Legend with live values */}
       <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <span
-            className="inline-block h-2 w-2 rounded-full"
-            style={{ backgroundColor: "var(--chart-1)" }}
-          />
-          CPU
-          {last && (
-            <span className="font-medium text-foreground tabular-nums">
-              {last.cpu}%
-            </span>
-          )}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span
-            className="inline-block h-2 w-2 rounded-full"
-            style={{ backgroundColor: "var(--chart-2)" }}
-          />
-          MEM
-          {last && (
-            <span className="font-medium text-foreground tabular-nums">
-              {last.mem}%
-            </span>
-          )}
-        </span>
+        {activeMetrics.map((metric) => (
+          <span key={metric.key} className="flex items-center gap-1.5">
+            <span
+              className="inline-block h-2 w-2 rounded-full"
+              style={{ backgroundColor: metric.color }}
+            />
+            {metric.label}
+            {last && (last[metric.key] as number) != null && (
+              <span className="font-medium text-foreground tabular-nums">
+                {last[metric.key]}%
+              </span>
+            )}
+          </span>
+        ))}
       </div>
     </div>
   )

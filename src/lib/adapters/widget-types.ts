@@ -15,6 +15,10 @@ export type WidgetPayload = {
   streams?: ActiveStream[]
   /** Custom component rendered below stats (for adapters that need custom UI like ResourceBars, charts, etc.) */
   customComponent?: ReactNode
+  /** Error state - when set, shows error UI instead of content */
+  error?: string | null
+  /** Loading state - when true, shows skeleton loader */
+  loading?: boolean
 }
 
 // Re-export for convenience

@@ -12,7 +12,7 @@ describe("sonarr definition", () => {
 
   it("has configFields defined", () => {
     expect(sonarrDefinition.configFields).toBeDefined()
-    expect(sonarrDefinition.configFields).toHaveLength(3)
+    expect(sonarrDefinition.configFields).toHaveLength(4)
     expect(sonarrDefinition.configFields[0].key).toBe("url")
     expect(sonarrDefinition.configFields[0].type).toBe("url")
     expect(sonarrDefinition.configFields[0].required).toBe(true)
@@ -21,6 +21,8 @@ describe("sonarr definition", () => {
     expect(sonarrDefinition.configFields[1].required).toBe(true)
     expect(sonarrDefinition.configFields[2].key).toBe("showActiveDownloads")
     expect(sonarrDefinition.configFields[2].type).toBe("boolean")
+    expect(sonarrDefinition.configFields[3].key).toBe("enableQueue")
+    expect(sonarrDefinition.configFields[3].type).toBe("boolean")
   })
 
   describe("fetchData", () => {
@@ -168,7 +170,7 @@ describe("sonarr definition", () => {
 
       expect(result.downloads).toHaveLength(1)
       expect(result.downloads![0].title).toBe(
-        "Test Series - S01E01 Test Episode"
+        "Test Series: S01E01 Test Episode"
       )
       expect(result.downloads![0].progress).toBe(50)
       expect(result.downloads![0].activity).toBe("Downloading")
@@ -276,6 +278,7 @@ describe("sonarr definition", () => {
         wanted: 0,
         series: 1,
         showActiveDownloads: true,
+        enableQueue: true,
         downloads: [{ title: "Test", progress: 50 }],
       })
       expect(payload.downloads).toHaveLength(1)
@@ -290,6 +293,21 @@ describe("sonarr definition", () => {
         wanted: 0,
         series: 1,
         showActiveDownloads: false,
+        enableQueue: true,
+        downloads: [{ title: "Test", progress: 50 }],
+      })
+      expect(payload.downloads).toBeUndefined()
+    })
+
+    it("excludes downloads when queue disabled", () => {
+      const payload = sonarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 1,
+        missing: 0,
+        wanted: 0,
+        series: 1,
+        showActiveDownloads: true,
+        enableQueue: false,
         downloads: [{ title: "Test", progress: 50 }],
       })
       expect(payload.downloads).toBeUndefined()

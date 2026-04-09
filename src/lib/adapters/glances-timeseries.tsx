@@ -4,14 +4,25 @@ export type { GlancesTimeseriesData }
 
 type DataPoint = {
   timestamp: number
-  cpu: number
-  mem: number
+  cpu?: number
+  mem?: number
+  /** Additional metrics can be added dynamically */
+  [key: string]: number | undefined
+}
+
+type MetricConfig = {
+  key: string
+  label: string
+  color: string
+  gradientId: string
 }
 
 type GlancesTimeseriesData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
   history: DataPoint[]
+  /** Configurable metrics to display (defaults to cpu and mem) */
+  metrics?: MetricConfig[]
 }
 
 export const glancesTimeseriesDefinition: ServiceDefinition<GlancesTimeseriesData> =

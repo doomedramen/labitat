@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities"
 import type { DragEndEvent } from "@dnd-kit/core"
 import { useCallback } from "react"
 import { cn } from "@/lib/utils"
-import { Clock, Pause, Play } from "lucide-react"
+import { Clock, Pause, Play, Monitor, Cpu, VolumeX } from "lucide-react"
 import {
   Tooltip,
   TooltipContent,
@@ -83,6 +83,73 @@ export function ResourceBar({
           style={{ width: `${pct}%` }}
         />
       </div>
+    </div>
+  )
+}
+
+/**
+ * Dual resource bar showing used vs free (like Homepage's ChartDual for memory)
+ * Shows both the used percentage (colored bar) and free amount (text hint)
+ */
+export type ResourceBarDualProps = {
+  label: string
+  used: number // 0-100 percentage
+  total?: string // Human-readable total (e.g., "16.0 GB")
+  free?: string // Human-readable free amount (e.g., "4.2 GB")
+  warningAt?: number
+  criticalAt?: number
+}
+
+export function ResourceBarDual({
+  label,
+  used,
+  total,
+  free,
+  warningAt = 70,
+  criticalAt = 90,
+}: ResourceBarDualProps) {
+  const pct = Math.min(100, Math.max(0, used ?? 0))
+  const isCritical = pct >= criticalAt
+  const isWarning = pct >= warningAt
+
+  const barColor = isCritical
+    ? "bg-destructive"
+    : isWarning
+      ? "bg-amber-500"
+      : "bg-primary"
+  const valueColor = isCritical
+    ? "text-destructive"
+    : isWarning
+      ? "text-amber-500"
+      : "text-secondary-foreground"
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-baseline justify-between">
+        <span className="text-secondary-foreground/60">{label}</span>
+        <span className={cn("font-medium tabular-nums", valueColor)}>
+          {pct}% used
+          {free && (
+            <span className="ml-1.5 font-normal text-secondary-foreground/50">
+              ({free} free)
+            </span>
+          )}
+        </span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+        <div
+          className={cn(
+            "h-full rounded-full transition-all duration-500",
+            barColor
+          )}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      {total && (
+        <div className="text-right text-[10px] text-secondary-foreground/40">
+          Total: {total}
+        </div>
+      )}
     </div>
   )
 }
@@ -282,6 +349,22 @@ export type ActiveStream = {
   progress: number
   duration: number
   state?: "playing" | "paused"
+  /** Stream ID for media control callbacks */
+  streamId?: string
+  /** Transcoding information (like Homepage's Jellyfin/Plex widgets) */
+  transcoding?: {
+    /** True if playing without transcoding (direct play/stream) */
+    isDirect?: boolean
+    /** True if hardware decoding is enabled */
+    hardwareDecoding?: boolean
+    /** True if hardware encoding is enabled */
+    hardwareEncoding?: boolean
+  }
+}
+
+interface ActiveStreamItemProps extends ActiveStream {
+  /** Callback for play/pause toggle (like Homepage's media control) */
+  onTogglePlayback?: (streamId: string) => void
 }
 
 function formatDuration(seconds: number): string {
@@ -302,10 +385,19 @@ export function ActiveStreamItem({
   progress,
   duration,
   state,
-}: ActiveStream) {
+  streamId,
+  transcoding,
+  onTogglePlayback,
+}: ActiveStreamItemProps) {
   const progressPercent = duration > 0 ? (progress / duration) * 100 : 0
   const remaining = Math.max(0, duration - progress)
   const displayTitle = subtitle ? `${subtitle} · ${title}` : title
+
+  const handlePlayPause = () => {
+    if (streamId && onTogglePlayback) {
+      onTogglePlayback(streamId)
+    }
+  }
 
   return (
     <Tooltip>
@@ -316,7 +408,21 @@ export function ActiveStreamItem({
             "hover:bg-secondary/50"
           )}
         >
-          {state === "paused" ? (
+          {/* Play/Pause button with media control support */}
+          {onTogglePlayback && streamId ? (
+            <button
+              type="button"
+              onClick={handlePlayPause}
+              className="shrink-0 cursor-pointer text-secondary-foreground/50 hover:text-secondary-foreground/70"
+              aria-label={state === "paused" ? "Play" : "Pause"}
+            >
+              {state === "paused" ? (
+                <Play className="h-3 w-3" />
+              ) : (
+                <Pause className="h-3 w-3" />
+              )}
+            </button>
+          ) : state === "paused" ? (
             <Pause className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
           ) : (
             <Play className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
@@ -332,9 +438,34 @@ export function ActiveStreamItem({
             )}
             <span className="min-w-0 truncate font-medium">{title}</span>
           </div>
-          <div className="flex shrink-0 items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
-            <Clock className="h-3 w-3" />
-            {formatDuration(remaining)}
+          {/* Transcoding info icons (like Homepage's Jellyfin widget) */}
+          <div className="flex shrink-0 items-center gap-1">
+            {transcoding && (
+              <>
+                {transcoding.isDirect ? (
+                  <span title="Direct play">
+                    <Monitor className="h-3 w-3 text-secondary-foreground/50" />
+                  </span>
+                ) : (
+                  <>
+                    {!transcoding.hardwareDecoding ||
+                    !transcoding.hardwareEncoding ? (
+                      <span title="Software transcoding">
+                        <Cpu className="h-3 w-3 text-secondary-foreground/50" />
+                      </span>
+                    ) : (
+                      <span title="Hardware transcoding">
+                        <Cpu className="h-3 w-3 text-secondary-foreground/50" />
+                      </span>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+            <div className="flex items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
+              <Clock className="h-3 w-3" />
+              {formatDuration(remaining)}
+            </div>
           </div>
           {/* Playback progress bar */}
           <div
@@ -351,10 +482,19 @@ export function ActiveStreamItem({
       >
         <div className="flex flex-col gap-1">
           <div className="font-medium">{displayTitle}</div>
-          <div>User: {user}</div>
+          <div className="text-secondary-foreground/70">User: {user}</div>
           {duration > 0 && (
-            <div>
+            <div className="text-secondary-foreground/60">
               {formatDuration(progress)} / {formatDuration(duration)}
+            </div>
+          )}
+          {transcoding && (
+            <div className="text-secondary-foreground/60">
+              {transcoding.isDirect
+                ? "Direct play"
+                : transcoding.hardwareDecoding && transcoding.hardwareEncoding
+                  ? "Hardware transcoding"
+                  : "Software transcoding"}
             </div>
           )}
         </div>
@@ -363,7 +503,16 @@ export function ActiveStreamItem({
   )
 }
 
-export function ActiveStreamList({ streams }: { streams: ActiveStream[] }) {
+export function ActiveStreamList({
+  streams,
+  onTogglePlayback,
+  expandSingleStream = true,
+}: {
+  streams: ActiveStream[]
+  onTogglePlayback?: (streamId: string) => void
+  /** When true and only one stream exists, show it in expanded two-row layout (like Homepage) */
+  expandSingleStream?: boolean
+}) {
   if (streams.length === 0) return null
 
   // Sort by subtitle (show name) then title (episode), falling back to title only
@@ -373,10 +522,17 @@ export function ActiveStreamList({ streams }: { streams: ActiveStream[] }) {
     return aKey.localeCompare(bKey, undefined, { sensitivity: "base" })
   })
 
+  // Homepage feature: expand single stream to show more details
+  const shouldExpand = expandSingleStream && sorted.length === 1
+
   return (
     <div className="flex w-full flex-col gap-0.5">
       {sorted.map((stream, idx) => (
-        <ActiveStreamItem key={idx} {...stream} />
+        <ActiveStreamItem
+          key={idx}
+          {...stream}
+          onTogglePlayback={onTogglePlayback}
+        />
       ))}
     </div>
   )
@@ -432,9 +588,27 @@ export function DownloadItem({
 export function DownloadList({ downloads }: { downloads: DownloadItem[] }) {
   if (downloads.length === 0) return null
 
+  // Sort downloads: active downloads first, then by progress (highest first)
+  // This matches Homepage's behavior where downloading items are prioritized
+  const sorted = [...downloads].sort((a, b) => {
+    const isActiveA =
+      a.activity?.toLowerCase().includes("download") ||
+      a.activity?.toLowerCase().includes("import")
+    const isActiveB =
+      b.activity?.toLowerCase().includes("download") ||
+      b.activity?.toLowerCase().includes("import")
+
+    // Active downloads come first
+    if (isActiveA && !isActiveB) return -1
+    if (!isActiveA && isActiveB) return 1
+
+    // Then sort by progress (descending)
+    return b.progress - a.progress
+  })
+
   return (
     <div className="flex flex-col gap-0.5">
-      {downloads.map((download, idx) => (
+      {sorted.map((download, idx) => (
         <DownloadItem key={idx} {...download} />
       ))}
     </div>

@@ -7,6 +7,8 @@ type ProcessInfo = {
   cpu: number
   memory: number
   pid: number
+  /** Process status: R (running), S (sleeping), D (disk sleep), Z (zombie), T (traced), X (dead) */
+  status?: string
 }
 
 type GlancesProcessesData = {
@@ -101,6 +103,7 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
         cpu: p.cpu_percent ?? 0,
         memory: p.memory_percent ?? 0,
         pid: p.pid ?? 0,
+        status: p.status ?? "S", // Default to sleeping if not provided
       }))
 
       return {

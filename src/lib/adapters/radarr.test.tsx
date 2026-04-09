@@ -12,7 +12,7 @@ describe("radarr definition", () => {
 
   it("has configFields defined", () => {
     expect(radarrDefinition.configFields).toBeDefined()
-    expect(radarrDefinition.configFields).toHaveLength(3)
+    expect(radarrDefinition.configFields).toHaveLength(4)
     expect(radarrDefinition.configFields[0].key).toBe("url")
     expect(radarrDefinition.configFields[0].type).toBe("url")
     expect(radarrDefinition.configFields[0].required).toBe(true)
@@ -21,6 +21,8 @@ describe("radarr definition", () => {
     expect(radarrDefinition.configFields[1].required).toBe(true)
     expect(radarrDefinition.configFields[2].key).toBe("showActiveDownloads")
     expect(radarrDefinition.configFields[2].type).toBe("boolean")
+    expect(radarrDefinition.configFields[3].key).toBe("enableQueue")
+    expect(radarrDefinition.configFields[3].type).toBe("boolean")
   })
 
   describe("fetchData", () => {
@@ -272,6 +274,7 @@ describe("radarr definition", () => {
         wanted: 0,
         movies: 1,
         showActiveDownloads: true,
+        enableQueue: true,
         downloads: [{ title: "Test Movie", progress: 50 }],
       })
       expect(payload.downloads).toHaveLength(1)
@@ -285,6 +288,21 @@ describe("radarr definition", () => {
         wanted: 0,
         movies: 1,
         showActiveDownloads: false,
+        enableQueue: true,
+        downloads: [{ title: "Test", progress: 50 }],
+      })
+      expect(payload.downloads).toBeUndefined()
+    })
+
+    it("excludes downloads when queue disabled", () => {
+      const payload = radarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 1,
+        missing: 0,
+        wanted: 0,
+        movies: 1,
+        showActiveDownloads: true,
+        enableQueue: false,
         downloads: [{ title: "Test", progress: 50 }],
       })
       expect(payload.downloads).toBeUndefined()
