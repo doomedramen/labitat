@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -41,7 +45,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: |
-            .pnpm-store
+            ~/.pnpm-store
             node_modules
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
@@ -55,9 +59,13 @@ jobs:
 
   # ── Tests ───────────────────────────────────────────────────────────────
   tests:
-    name: Tests
+    name: ${{ matrix.test }}
     runs-on: ubuntu-latest
     needs: test
+    strategy:
+      matrix:
+        test: [unit, e2e]
+      fail-fast: false
 
     steps:
       - name: Checkout repository
@@ -78,7 +86,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: |
-            .pnpm-store
+            ~/.pnpm-store
             node_modules
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
@@ -87,11 +95,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Restore Playwright browsers cache
+        if: matrix.test == 'e2e'
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install Playwright browsers
+        if: matrix.test == 'e2e'
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run unit tests
+        if: matrix.test == 'unit'
+        run: pnpm test:unit
+        env:
+          SECRET_KEY: ci-secret-key-for-e2e-tests-must-be-32chars!
+          TEST_SECRET: e2e-test-reset-token
+
+      - name: Run e2e tests
+        if: matrix.test == 'e2e'
+        run: pnpm test:e2e
         env:
           SECRET_KEY: ci-secret-key-for-e2e-tests-must-be-32chars!
           TEST_SECRET: e2e-test-reset-token
@@ -140,8 +166,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=max,ignore-error=true
           platforms: ${{ startsWith(github.ref, 'refs/tags/v') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          provenance: false
 
   # ── Release (on tag) ─────────────────────────────────────────────────────────
   release:
