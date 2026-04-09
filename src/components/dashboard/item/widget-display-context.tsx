@@ -13,6 +13,8 @@ export interface WidgetDisplaySettings {
   editMode: boolean
   /** Item ID for persistence */
   itemId: string
+  /** Called whenever the stat card order changes (e.g. drag in dialog) */
+  onOrderChange?: (order: StatCardOrder | null) => void
 }
 
 const WidgetDisplayContext = createContext<WidgetDisplaySettings | null>(null)

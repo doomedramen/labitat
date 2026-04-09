@@ -18,7 +18,7 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable"
 import { cn } from "@/lib/utils"
-import type { GroupWithCache, ItemRow } from "@/lib/types"
+import type { GroupWithCache, ItemWithCache } from "@/lib/types"
 import { ItemCard } from "./item/item-card"
 import { deleteGroup } from "@/actions/groups"
 import { deleteItem, reorderItems } from "@/actions/items"
@@ -30,7 +30,7 @@ interface GroupCardProps {
   editMode: boolean
   onEditGroup: () => void
   onAddItem: () => void
-  onEditItem: (item: ItemRow) => void
+  onEditItem: (item: ItemWithCache) => void
 }
 
 export function GroupCard({

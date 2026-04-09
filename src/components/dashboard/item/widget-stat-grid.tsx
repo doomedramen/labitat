@@ -67,10 +67,22 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
 
     if (activeInActive && overInUnused) {
       // Active → Unused
+      const newActive = activeItems.filter((i) => i.id !== activeId)
+      const newUnused = [...unusedItems, activeInActive]
       moveBetweenLists(activeId, "active", activeItems, unusedItems)
+      displaySettings?.onOrderChange?.({
+        active: newActive.map((i) => i.id),
+        unused: newUnused.map((i) => i.id),
+      })
     } else if (activeInUnused && overInActive) {
       // Unused → Active
+      const newUnused = unusedItems.filter((i) => i.id !== activeId)
+      const newActive = [...activeItems, activeInUnused]
       moveBetweenLists(activeId, "unused", activeItems, unusedItems)
+      displaySettings?.onOrderChange?.({
+        active: newActive.map((i) => i.id),
+        unused: newUnused.map((i) => i.id),
+      })
     } else if (activeInActive && overInActive) {
       // Reorder within active
       const activeIds = activeItems.map((i) => i.id)
@@ -81,6 +93,10 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
         const [moved] = newActive.splice(activeIndex, 1)
         newActive.splice(overIndex, 0, moved)
         handleReorder(newActive, unusedItems)
+        displaySettings?.onOrderChange?.({
+          active: newActive.map((i) => i.id),
+          unused: unusedItems.map((i) => i.id),
+        })
       }
     } else if (activeInUnused && overInUnused) {
       // Reorder within unused
@@ -92,6 +108,10 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
         const [moved] = newUnused.splice(activeIndex, 1)
         newUnused.splice(overIndex, 0, moved)
         handleReorder(activeItems, newUnused)
+        displaySettings?.onOrderChange?.({
+          active: activeItems.map((i) => i.id),
+          unused: newUnused.map((i) => i.id),
+        })
       }
     }
   }

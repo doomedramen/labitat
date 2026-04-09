@@ -25,7 +25,9 @@ import { cn } from "@/lib/utils"
 import { createItem, updateItem, getItemConfig } from "@/actions/items"
 import { getAllServices } from "@/lib/adapters"
 import type { ServiceDefinition } from "@/lib/adapters"
-import type { ItemRow } from "@/lib/types"
+import type { ItemWithCache } from "@/lib/types"
+import { WidgetDisplayProvider } from "@/components/dashboard/item/widget-display-context"
+import type { StatCardOrder } from "@/hooks/use-stat-card-order"
 
 // ── Service type combobox ─────────────────────────────────────────────────────
 
@@ -148,10 +150,24 @@ function ServiceCombobox({
   )
 }
 
+function toStatCardOrder(value: unknown): StatCardOrder | null {
+  if (
+    value &&
+    typeof value === "object" &&
+    "active" in value &&
+    "unused" in value &&
+    Array.isArray((value as StatCardOrder).active) &&
+    Array.isArray((value as StatCardOrder).unused)
+  ) {
+    return value as StatCardOrder
+  }
+  return null
+}
+
 interface ItemDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  item: ItemRow | null
+  item: ItemWithCache | null
   groupId: string
 }
 
@@ -164,22 +180,27 @@ export function ItemDialog({
   const services = getAllServices()
   const [serviceType, setServiceType] = useState(item?.serviceType ?? "")
   const [configFields, setConfigFields] = useState<Record<string, string>>({})
-  const [displayMode, setDisplayMode] = useState<"icon" | "label">(
-    (item?.displayMode as "icon" | "label") ?? "label"
-  )
   const [statDisplayMode, setStatDisplayMode] = useState<"icon" | "label">(
     (item?.statDisplayMode as "icon" | "label") ?? "label"
   )
   const [cleanMode, setCleanMode] = useState<boolean>(item?.cleanMode ?? false)
+  const [localStatCardOrder, setLocalStatCardOrder] =
+    useState<StatCardOrder | null>(toStatCardOrder(item?.statCardOrder))
   const selectedService = services.find((s) => s.id === serviceType)
 
-  // Sync serviceType when item changes, then load config
+  // Sync state when item changes
   useEffect(() => {
     setServiceType(item?.serviceType ?? "")
-    setDisplayMode((item?.displayMode as "icon" | "label") ?? "label")
     setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label")
     setCleanMode(item?.cleanMode ?? false)
-  }, [item?.id, item?.serviceType, item?.displayMode, item?.statDisplayMode])
+    setLocalStatCardOrder(toStatCardOrder(item?.statCardOrder))
+  }, [
+    item?.id,
+    item?.serviceType,
+    item?.statDisplayMode,
+    item?.statCardOrder,
+    item?.cleanMode,
+  ])
 
   // Load config when editing an existing item
   useEffect(() => {
@@ -398,75 +419,59 @@ export function ItemDialog({
                 <Label htmlFor="cleanMode">Clean mode (minimal display)</Label>
               </div>
 
-              {/* Card display mode */}
-              <div className="space-y-2">
-                <Label>Card Display</Label>
-                <input type="hidden" name="displayMode" value={displayMode} />
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setDisplayMode("label")}
-                    className={cn(
-                      "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
-                      displayMode === "label"
-                        ? "border-primary bg-primary/10 font-medium text-primary"
-                        : "border-input bg-transparent text-muted-foreground hover:bg-accent/50"
-                    )}
-                  >
-                    Label
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDisplayMode("icon")}
-                    className={cn(
-                      "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
-                      displayMode === "icon"
-                        ? "border-primary bg-primary/10 font-medium text-primary"
-                        : "border-input bg-transparent text-muted-foreground hover:bg-accent/50"
-                    )}
-                  >
-                    Icon
-                  </button>
-                </div>
-              </div>
+              <input type="hidden" name="displayMode" value="label" />
 
-              {/* Stat display mode (only when service type has a widget) */}
+              {/* Stat display mode */}
               {selectedService && (
-                <div className="space-y-2">
-                  <Label>Stat Card Display</Label>
+                <>
                   <input
                     type="hidden"
                     name="statDisplayMode"
                     value={statDisplayMode}
                   />
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setStatDisplayMode("label")}
-                      className={cn(
-                        "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
-                        statDisplayMode === "label"
-                          ? "border-primary bg-primary/10 font-medium text-primary"
-                          : "border-input bg-transparent text-muted-foreground hover:bg-accent/50"
-                      )}
-                    >
-                      Label
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setStatDisplayMode("icon")}
-                      className={cn(
-                        "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
-                        statDisplayMode === "icon"
-                          ? "border-primary bg-primary/10 font-medium text-primary"
-                          : "border-input bg-transparent text-muted-foreground hover:bg-accent/50"
-                      )}
-                    >
-                      Icon
-                    </button>
+                  <div className="flex items-center justify-between gap-4">
+                    <Label htmlFor="statDisplayMode" className="leading-snug">
+                      Stat card icons
+                      <span className="block text-xs font-normal text-muted-foreground">
+                        Show icons instead of labels
+                      </span>
+                    </Label>
+                    <Switch
+                      id="statDisplayMode"
+                      checked={statDisplayMode === "icon"}
+                      onCheckedChange={(checked) =>
+                        setStatDisplayMode(checked ? "icon" : "label")
+                      }
+                    />
                   </div>
-                </div>
+                </>
               )}
+
+              {/* Stat card layout preview */}
+              {selectedService &&
+                item &&
+                serviceType === item.serviceType &&
+                item.cachedWidgetData && (
+                  <div className="space-y-2">
+                    <Label>Stat Card Layout</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Drag to reorder · Drop into the unused area to hide
+                    </p>
+                    <WidgetDisplayProvider
+                      value={{
+                        statDisplayMode,
+                        statCardOrder: localStatCardOrder,
+                        editMode: true,
+                        itemId: item.id,
+                        onOrderChange: setLocalStatCardOrder,
+                      }}
+                    >
+                      <selectedService.Widget
+                        {...(item.cachedWidgetData as Record<string, unknown>)}
+                      />
+                    </WidgetDisplayProvider>
+                  </div>
+                )}
             </div>
             <DialogFooter>
               <Button type="submit">{item ? "Update" : "Create"}</Button>

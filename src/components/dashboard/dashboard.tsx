@@ -19,7 +19,7 @@ import { Palette, LogIn, Plus } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
-import type { GroupWithCache, ItemRow } from "@/lib/types"
+import type { GroupWithCache, ItemWithCache } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -44,7 +44,6 @@ import { EditBar } from "./edit-bar"
 import { GroupDialog } from "@/components/editor/group-dialog"
 import { ItemDialog } from "@/components/editor/item-dialog"
 import { reorderGroups } from "@/actions/groups"
-import { getItemConfig } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
 
 interface DashboardProps {
@@ -60,16 +59,8 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   const [groupDialogOpen, setGroupDialogOpen] = useState(false)
   const [itemDialogOpen, setItemDialogOpen] = useState(false)
   const [editingGroup, setEditingGroup] = useState<GroupWithCache | null>(null)
-  const [editingItem, setEditingItem] = useState<ItemRow | null>(null)
+  const [editingItem, setEditingItem] = useState<ItemWithCache | null>(null)
   const [targetGroupId, setTargetGroupId] = useState<string | null>(null)
-  const [itemConfig, setItemConfig] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    if (editingItem?.id) {
-      getItemConfig(editingItem.id).then(setItemConfig)
-    }
-  }, [editingItem?.id])
-
   const dashboardTitle = localTitle ?? title
 
   const sensors = useSensors(

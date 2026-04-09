@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { ItemRow } from "@/lib/types"
+import type { ItemWithCache } from "@/lib/types"
 import { deleteItem } from "@/actions/items"
 import { Pencil, Trash2, GripVertical } from "lucide-react"
 import type { DraggableAttributes } from "@dnd-kit/core"
@@ -9,8 +9,8 @@ import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 
 interface EditModeControlsProps {
-  item: ItemRow
-  onEdit: (item: ItemRow) => void
+  item: ItemWithCache
+  onEdit: (item: ItemWithCache) => void
   onDeleted?: (itemId: string) => void
   setActivatorNodeRef: (element: HTMLElement | null) => void
   attributes: DraggableAttributes
