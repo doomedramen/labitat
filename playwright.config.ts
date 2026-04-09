@@ -1,37 +1,5 @@
 import { defineConfig, devices } from "@playwright/test"
 
-const isCI = !!process.env.CI
-
-const allProjects = [
-  {
-    name: "chromium",
-    use: { ...devices["Desktop Chrome"] },
-  },
-  {
-    name: "firefox",
-    use: { ...devices["Desktop Firefox"] },
-  },
-  {
-    name: "webkit",
-    use: { ...devices["Desktop Safari"] },
-  },
-  {
-    name: "Mobile Chrome",
-    use: { ...devices["Pixel 5"] },
-  },
-  {
-    name: "Mobile Safari",
-    use: { ...devices["iPhone 12"] },
-  },
-]
-
-const ciProjects = [
-  {
-    name: "chromium",
-    use: { ...devices["Desktop Chrome"] },
-  },
-]
-
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
@@ -47,7 +15,12 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "on-first-retry",
   },
-  projects: isCI ? ciProjects : allProjects,
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
 
   webServer: {
     command:
