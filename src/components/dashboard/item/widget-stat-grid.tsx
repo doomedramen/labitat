@@ -20,7 +20,7 @@ import { StatCard, type StatItem } from "@/components/widgets"
 import { useWidgetDisplay } from "@/components/dashboard/item/widget-display-context"
 import { useStatCardOrder } from "@/hooks/use-stat-card-order"
 import { cn } from "@/lib/utils"
-import { Trash2, RotateCcw } from "lucide-react"
+import { Trash2 } from "lucide-react"
 
 interface WidgetStatGridProps {
   items: StatItem[]
@@ -94,19 +94,13 @@ function UnusedZone({
         >
           <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
             {items.map((item) => (
-              <div
-                key={item.id}
-                className="relative rounded-md bg-muted/50 opacity-60"
-              >
+              <div key={item.id} className="opacity-50">
                 <StatCard
                   {...item}
                   displayMode={statDisplayMode}
                   sortable
                   editMode
                 />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <RotateCcw className="h-3 w-3 text-muted-foreground/50" />
-                </div>
               </div>
             ))}
           </div>

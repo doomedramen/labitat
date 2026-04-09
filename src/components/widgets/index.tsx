@@ -306,10 +306,6 @@ export function ActiveStreamItem({
   const progressPercent = duration > 0 ? (progress / duration) * 100 : 0
   const remaining = Math.max(0, duration - progress)
   const displayTitle = subtitle ? `${subtitle} · ${title}` : title
-  const tooltipText =
-    duration > 0
-      ? `${displayTitle} · ${user} · ${formatDuration(progress)} / ${formatDuration(duration)}`
-      : `${displayTitle} · ${user}`
 
   return (
     <Tooltip>
@@ -335,9 +331,6 @@ export function ActiveStreamItem({
               <span className="shrink-0 text-secondary-foreground/30">·</span>
             )}
             <span className="min-w-0 truncate font-medium">{title}</span>
-            <span className="shrink-0 text-secondary-foreground/60">
-              ({user})
-            </span>
           </div>
           <div className="flex shrink-0 items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
             <Clock className="h-3 w-3" />
@@ -350,8 +343,21 @@ export function ActiveStreamItem({
           />
         </div>
       </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-xs text-xs">
-        {tooltipText}
+      <TooltipContent
+        side="top"
+        className="max-w-xs text-xs"
+        sideOffset={8}
+        avoidCollisions
+      >
+        <div className="flex flex-col gap-1">
+          <div className="font-medium">{displayTitle}</div>
+          <div className="text-secondary-foreground/70">User: {user}</div>
+          {duration > 0 && (
+            <div className="text-secondary-foreground/60">
+              {formatDuration(progress)} / {formatDuration(duration)}
+            </div>
+          )}
+        </div>
       </TooltipContent>
     </Tooltip>
   )

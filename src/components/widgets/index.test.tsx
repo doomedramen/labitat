@@ -129,7 +129,8 @@ describe("ActiveStreamItem", () => {
       <ActiveStreamItem {...baseProps} state="playing" />
     )
     expect(screen.getByText("Test Movie")).toBeInTheDocument()
-    expect(screen.getByText("(testuser)")).toBeInTheDocument()
+    // User is now only in tooltip, not visible in list item
+    expect(screen.queryByText("(testuser)")).not.toBeInTheDocument()
   })
 
   it("renders stream item with paused state", () => {
