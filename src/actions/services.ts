@@ -58,23 +58,12 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       return { _status: "none" as const, ...config }
     }
 
-    if (item.serviceType?.startsWith("glances")) {
-      console.log(`[fetchServiceData] ${item.serviceType} - calling fetchData`)
-    }
-
     if (adapter.clientSide && adapter.fetchData) {
       const data = await adapter.fetchData(config)
       return { ...data, _status: data._status ?? "none" }
     }
 
     const data = await adapter.fetchData(config)
-
-    if (item.serviceType?.startsWith("glances")) {
-      console.log(
-        `[fetchServiceData] ${item.serviceType} - fetchData returned:`,
-        Object.keys(data)
-      )
-    }
     const responseData: ServiceData = {
       ...data,
       _status: data._status ?? "ok",

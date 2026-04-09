@@ -30,6 +30,7 @@ export function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
           height={20}
           className="h-5 w-5 object-contain"
           loading="lazy"
+          unoptimized={iconSrc.startsWith("http")}
           onError={(e) => {
             // Fallback to first letter
             const target = e.target as HTMLImageElement

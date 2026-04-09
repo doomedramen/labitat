@@ -33,7 +33,7 @@ export function GlancesTimeseriesWidget({
 
   return (
     <div className="flex h-full flex-col" style={{ minHeight: "150px" }}>
-      <ResponsiveContainer width="100%" height={150}>
+      <ResponsiveContainer width="100%" height={130}>
         <AreaChart
           data={history}
           margin={{ top: 5, right: 0, left: 0, bottom: 0 }}
@@ -64,8 +64,8 @@ export function GlancesTimeseriesWidget({
           <XAxis dataKey="timestamp" hide />
           <YAxis
             domain={[0, 100]}
-            tick={{ fontSize: 10 }}
-            width={30}
+            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+            width={35}
             tickFormatter={(value: number) => `${value}%`}
           />
           <Area
@@ -90,6 +90,22 @@ export function GlancesTimeseriesWidget({
           />
         </AreaChart>
       </ResponsiveContainer>
+      <div className="flex items-center justify-center gap-4 pt-1 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: "var(--chart-1)" }}
+          />
+          CPU
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: "var(--chart-2)" }}
+          />
+          MEM
+        </span>
+      </div>
     </div>
   )
 }
