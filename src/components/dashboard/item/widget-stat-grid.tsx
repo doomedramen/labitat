@@ -100,6 +100,26 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
     (i) => i.id === activeDragId
   )
 
+  // When no context, render simple grid without DnD
+  if (!displaySettings) {
+    return (
+      <div
+        className="grid gap-1.5 text-xs"
+        style={{
+          gridTemplateColumns: cols
+            ? `repeat(${cols}, 1fr)`
+            : "repeat(auto-fit, minmax(60px, 1fr))",
+        }}
+      >
+        {items.map((item) => (
+          <StatCard key={item.id} {...item} />
+        ))}
+      </div>
+    )
+  }
+
+  const { statDisplayMode, editMode } = displaySettings
+
   return (
     <DndContext
       sensors={sensors}

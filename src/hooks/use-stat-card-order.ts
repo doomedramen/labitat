@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react"
 import type { StatItem } from "@/components/widgets"
 import { updateStatCardOrder } from "@/actions/stat-cards"
 
-type UniqueIdentifier = string | number
+type UniqueIdentifier = string | number // dnd-kit compatible type
 
 /** Stored order: which stat cards are active vs unused */
 export type StatCardOrder = {
