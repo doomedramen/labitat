@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -20,9 +20,133 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
+
 import { createItem, updateItem, getItemConfig } from "@/actions/items"
 import { getAllServices } from "@/lib/adapters"
+import type { ServiceDefinition } from "@/lib/adapters"
 import type { ItemRow } from "@/lib/types"
+
+// ── Service type combobox ─────────────────────────────────────────────────────
+
+function ServiceCombobox({
+  services,
+  value,
+  onChange,
+}: {
+  services: ServiceDefinition[]
+  value: string
+  onChange: (id: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState("")
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const sorted = [...services].sort((a, b) => a.name.localeCompare(b.name))
+  const filtered = query
+    ? sorted.filter((s) => s.name.toLowerCase().includes(query.toLowerCase()))
+    : sorted
+
+  const selectedName =
+    value === ""
+      ? "None (link only)"
+      : (services.find((s) => s.id === value)?.name ?? value)
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return
+    function handle(e: MouseEvent) {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handle)
+    return () => document.removeEventListener("mousedown", handle)
+  }, [open])
+
+  function select(id: string) {
+    onChange(id)
+    setOpen(false)
+    setQuery("")
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs",
+          "ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none",
+          "hover:bg-accent/50"
+        )}
+      >
+        <span className={value === "" ? "text-muted-foreground" : ""}>
+          {selectedName}
+        </span>
+        <svg
+          className="h-4 w-4 shrink-0 opacity-50"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="m7 15 5 5 5-5" />
+          <path d="m7 9 5-5 5 5" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md">
+          <div className="p-1">
+            <input
+              autoFocus
+              className="flex h-8 w-full rounded-sm bg-transparent px-2 py-1 text-sm outline-none placeholder:text-muted-foreground"
+              placeholder="Search services..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          <div className="max-h-60 overflow-y-auto">
+            {/* None is always pinned at top, hidden when searching */}
+            {!query && (
+              <button
+                type="button"
+                onClick={() => select("")}
+                className={cn(
+                  "w-full px-2 py-1.5 text-left text-sm",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  value === "" && "bg-accent/50 font-medium"
+                )}
+              >
+                None (link only)
+              </button>
+            )}
+            {filtered.length === 0 ? (
+              <p className="px-2 py-4 text-center text-sm text-muted-foreground">
+                No results
+              </p>
+            ) : (
+              filtered.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => select(s.id)}
+                  className={cn(
+                    "w-full px-2 py-1.5 text-left text-sm",
+                    "hover:bg-accent hover:text-accent-foreground",
+                    value === s.id && "bg-accent/50 font-medium"
+                  )}
+                >
+                  {s.name}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface ItemDialogProps {
   open: boolean
@@ -140,24 +264,13 @@ export function ItemDialog({
 
               {/* Service type */}
               <div className="space-y-2">
-                <Label htmlFor="serviceType">Service Type</Label>
-                <Select
-                  name="serviceType"
-                  value={serviceType || "none"}
-                  onValueChange={(v) => setServiceType(v === "none" ? "" : v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a service..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None (link only)</SelectItem>
-                    {services.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Service Type</Label>
+                <input type="hidden" name="serviceType" value={serviceType} />
+                <ServiceCombobox
+                  services={services}
+                  value={serviceType}
+                  onChange={(id) => setServiceType(id)}
+                />
               </div>
 
               {/* Service config fields */}

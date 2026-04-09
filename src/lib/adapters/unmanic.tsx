@@ -46,8 +46,8 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
       key: "apiKey",
       label: "API Key",
       type: "password",
-      required: true,
-      placeholder: "Your Unmanic API key",
+      required: false,
+      placeholder: "Your Unmanic API key (if enabled)",
     },
   ],
   async fetchData(config) {

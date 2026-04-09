@@ -83,8 +83,16 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       required: true,
       placeholder: "Your qBittorrent password",
     },
+    {
+      key: "showDownloads",
+      label: "Show active downloads",
+      type: "boolean",
+      defaultChecked: true,
+      helperText: "Display currently downloading torrents with progress",
+    },
   ],
   async fetchData(config) {
+    const showDownloads = config.showDownloads === "true"
     const baseUrl = config.url.replace(/\/$/, "")
 
     // Login
@@ -105,46 +113,43 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
 
     const headers = { Cookie: cookie }
 
-    // Get transfer info and torrent list
-    const [infoRes, torrentsRes] = await Promise.all([
+    // Get transfer info, torrent list, and queued count
+    const [infoRes, torrentsRes, queuedRes] = await Promise.all([
       fetch(`${baseUrl}/api/v2/transfer/info`, { headers }),
       fetch(`${baseUrl}/api/v2/torrents/info?filter=downloading`, { headers }),
+      fetch(`${baseUrl}/api/v2/torrents/info?filter=queuedDL`, { headers }),
     ])
 
     if (!infoRes.ok) throw new Error(`qBittorrent error: ${infoRes.status}`)
 
     const info = await infoRes.json()
-    const torrents = await torrentsRes.json()
-
-    // Get queued count
-    const queuedRes = await fetch(
-      `${baseUrl}/api/v2/torrents/info?filter=queuedDL`,
-      { headers }
-    )
+    const torrents = torrentsRes.ok ? await torrentsRes.json() : []
     const queued = queuedRes.ok ? (await queuedRes.json()).length : 0
 
     // Build active download list (top 3 by speed)
-    const downloads = torrents
-      .sort(
-        (a: { dlspeed: number }, b: { dlspeed: number }) =>
-          b.dlspeed - a.dlspeed
-      )
-      .slice(0, 3)
-      .map(
-        (t: {
-          name: string
-          progress: number
-          eta: number
-          dlspeed: number
-          size: number
-        }) => ({
-          title: t.name,
-          progress: Math.round(t.progress * 100),
-          timeLeft: formatTime(t.eta),
-          activity: "downloading",
-          size: formatBytes(t.size),
-        })
-      )
+    const downloads: DownloadItem[] = showDownloads
+      ? torrents
+          .sort(
+            (a: { dlspeed: number }, b: { dlspeed: number }) =>
+              b.dlspeed - a.dlspeed
+          )
+          .slice(0, 3)
+          .map(
+            (t: {
+              name: string
+              progress: number
+              eta: number
+              dlspeed: number
+              size: number
+            }) => ({
+              title: t.name,
+              progress: Math.round(t.progress * 100),
+              timeLeft: formatTime(t.eta),
+              activity: "downloading",
+              size: formatBytes(t.size),
+            })
+          )
+      : []
 
     return {
       _status: "ok",
