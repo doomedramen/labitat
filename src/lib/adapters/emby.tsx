@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Play, Film, Tv, Layers } from "lucide-react"
 
 type EmbyData = {
@@ -11,35 +10,35 @@ type EmbyData = {
   episodes: number
 }
 
-function EmbyWidget({ activeStreams, movies, shows, episodes }: EmbyData) {
-  const items = [
-    {
-      id: "active",
-      value: (activeStreams ?? 0).toLocaleString(),
-      label: "Active Streams",
-      icon: <Play className="h-3 w-3" />,
-    },
-    {
-      id: "movies",
-      value: (movies ?? 0).toLocaleString(),
-      label: "Movies",
-      icon: <Film className="h-3 w-3" />,
-    },
-    {
-      id: "shows",
-      value: (shows ?? 0).toLocaleString(),
-      label: "Shows",
-      icon: <Tv className="h-3 w-3" />,
-    },
-    {
-      id: "episodes",
-      value: (episodes ?? 0).toLocaleString(),
-      label: "Episodes",
-      icon: <Layers className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function embyToPayload(data: EmbyData) {
+  return {
+    stats: [
+      {
+        id: "active",
+        value: (data.activeStreams ?? 0).toLocaleString(),
+        label: "Active Streams",
+        icon: <Play className="h-3 w-3" />,
+      },
+      {
+        id: "movies",
+        value: (data.movies ?? 0).toLocaleString(),
+        label: "Movies",
+        icon: <Film className="h-3 w-3" />,
+      },
+      {
+        id: "shows",
+        value: (data.shows ?? 0).toLocaleString(),
+        label: "Shows",
+        icon: <Tv className="h-3 w-3" />,
+      },
+      {
+        id: "episodes",
+        value: (data.episodes ?? 0).toLocaleString(),
+        label: "Episodes",
+        icon: <Layers className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const embyDefinition: ServiceDefinition<EmbyData> = {
@@ -104,5 +103,5 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
     }
   },
 
-  Widget: EmbyWidget,
+  toPayload: embyToPayload,
 }

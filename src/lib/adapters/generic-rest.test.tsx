@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { genericRestDefinition } from "@/lib/adapters/generic-rest"
 
@@ -180,17 +179,27 @@ describe("generic-rest definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(<genericRestDefinition.Widget value="healthy" label="Status" />)
-      expect(screen.getByText("healthy")).toBeInTheDocument()
-      expect(screen.getByText("Status")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = genericRestDefinition.toPayload!({
+        _status: "ok",
+        value: "healthy",
+        label: "Status",
+      })
+      expect(payload.stats).toHaveLength(1)
+      expect(payload.stats[0].value).toBe("healthy")
+      expect(payload.stats[0].label).toBe("Status")
     })
 
-    it("renders error state", () => {
-      render(<genericRestDefinition.Widget value="Error" label="Status" />)
-      expect(screen.getByText("Error")).toBeInTheDocument()
-      expect(screen.getByText("Status")).toBeInTheDocument()
+    it("handles error state", () => {
+      const payload = genericRestDefinition.toPayload!({
+        _status: "error",
+        _statusText: "Failed to fetch",
+        value: "Error",
+        label: "Status",
+      })
+      expect(payload.stats[0].value).toBe("Error")
+      expect(payload.stats[0].label).toBe("Status")
     })
   })
 })

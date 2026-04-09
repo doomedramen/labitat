@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { piholeDefinition } from "@/lib/adapters/pihole"
 
@@ -165,37 +164,38 @@ describe("pihole definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <piholeDefinition.Widget
-          queries={10000}
-          blocked={2500}
-          percentBlocked="25%"
-          domainsBlocked={150000}
-        />
-      )
-      expect(screen.getByText("10,000")).toBeInTheDocument()
-      expect(screen.getByText("2,500")).toBeInTheDocument()
-      expect(screen.getByText("25%")).toBeInTheDocument()
-      expect(screen.getByText("150,000")).toBeInTheDocument()
-      expect(screen.getByText("Queries")).toBeInTheDocument()
-      expect(screen.getByText("Blocked")).toBeInTheDocument()
-      expect(screen.getByText("Blocked %")).toBeInTheDocument()
-      expect(screen.getByText("Domains")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = piholeDefinition.toPayload!({
+        _status: "ok",
+        queries: 10000,
+        blocked: 2500,
+        percentBlocked: "25%",
+        domainsBlocked: 150000,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe("10,000")
+      expect(payload.stats[0].label).toBe("Queries")
+      expect(payload.stats[1].value).toBe("2,500")
+      expect(payload.stats[1].label).toBe("Blocked")
+      expect(payload.stats[2].value).toBe("25%")
+      expect(payload.stats[2].label).toBe("Blocked %")
+      expect(payload.stats[3].value).toBe("150,000")
+      expect(payload.stats[3].label).toBe("Domains")
     })
 
-    it("renders zero values", () => {
-      render(
-        <piholeDefinition.Widget
-          queries={0}
-          blocked={0}
-          percentBlocked="0%"
-          domainsBlocked={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(3)
-      expect(screen.getByText("0%")).toBeInTheDocument()
+    it("handles zero values", () => {
+      const payload = piholeDefinition.toPayload!({
+        _status: "ok",
+        queries: 0,
+        blocked: 0,
+        percentBlocked: "0%",
+        domainsBlocked: 0,
+      })
+      expect(payload.stats[0].value).toBe("0")
+      expect(payload.stats[1].value).toBe("0")
+      expect(payload.stats[2].value).toBe("0%")
+      expect(payload.stats[3].value).toBe("0")
     })
   })
 })

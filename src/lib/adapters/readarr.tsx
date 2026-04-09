@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Download, Search, BookOpen } from "lucide-react"
 
 type ReadarrData = {
@@ -10,29 +9,29 @@ type ReadarrData = {
   books: number
 }
 
-function ReadarrWidget({ queued, wanted, books }: ReadarrData) {
-  const items = [
-    {
-      id: "wanted",
-      value: wanted,
-      label: "Wanted",
-      icon: <Search className="h-3 w-3" />,
-    },
-    {
-      id: "queued",
-      value: queued,
-      label: "Queued",
-      icon: <Download className="h-3 w-3" />,
-    },
-    {
-      id: "books",
-      value: books,
-      label: "Books",
-      icon: <BookOpen className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function readarrToPayload(data: ReadarrData) {
+  return {
+    stats: [
+      {
+        id: "wanted",
+        value: data.wanted,
+        label: "Wanted",
+        icon: <Search className="h-3 w-3" />,
+      },
+      {
+        id: "queued",
+        value: data.queued,
+        label: "Queued",
+        icon: <Download className="h-3 w-3" />,
+      },
+      {
+        id: "books",
+        value: data.books,
+        label: "Books",
+        icon: <BookOpen className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const readarrDefinition: ServiceDefinition<ReadarrData> = {
@@ -92,5 +91,5 @@ export const readarrDefinition: ServiceDefinition<ReadarrData> = {
     }
   },
 
-  Widget: ReadarrWidget,
+  toPayload: readarrToPayload,
 }

@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Database, Camera, HardDrive, Archive } from "lucide-react"
 
 type ProxmoxBackupServerData = {
@@ -19,42 +18,35 @@ function formatBytes(bytes: number): string {
   return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
 }
 
-function ProxmoxBackupServerWidget({
-  datastores,
-  snapshots,
-  usedSpace,
-  totalSpace,
-}: ProxmoxBackupServerData) {
-  return (
-    <WidgetStatGrid
-      items={[
-        {
-          id: "stores",
-          value: datastores ?? 0,
-          label: "Stores",
-          icon: <Database className="h-3 w-3" />,
-        },
-        {
-          id: "snaps",
-          value: snapshots ?? 0,
-          label: "Snaps",
-          icon: <Camera className="h-3 w-3" />,
-        },
-        {
-          id: "used",
-          value: usedSpace ?? "—",
-          label: "Used",
-          icon: <HardDrive className="h-3 w-3" />,
-        },
-        {
-          id: "total",
-          value: totalSpace ?? "—",
-          label: "Total",
-          icon: <Archive className="h-3 w-3" />,
-        },
-      ]}
-    />
-  )
+function proxmoxBackupServerToPayload(data: ProxmoxBackupServerData) {
+  return {
+    stats: [
+      {
+        id: "stores",
+        value: data.datastores ?? 0,
+        label: "Stores",
+        icon: <Database className="h-3 w-3" />,
+      },
+      {
+        id: "snaps",
+        value: data.snapshots ?? 0,
+        label: "Snaps",
+        icon: <Camera className="h-3 w-3" />,
+      },
+      {
+        id: "used",
+        value: data.usedSpace ?? "—",
+        label: "Used",
+        icon: <HardDrive className="h-3 w-3" />,
+      },
+      {
+        id: "total",
+        value: data.totalSpace ?? "—",
+        label: "Total",
+        icon: <Archive className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const proxmoxBackupServerDefinition: ServiceDefinition<ProxmoxBackupServerData> =
@@ -148,5 +140,5 @@ export const proxmoxBackupServerDefinition: ServiceDefinition<ProxmoxBackupServe
         totalSpace: formatBytes(totalSpace),
       }
     },
-    Widget: ProxmoxBackupServerWidget,
+    toPayload: proxmoxBackupServerToPayload,
   }

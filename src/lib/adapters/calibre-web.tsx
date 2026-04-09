@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Book, PenTool, List, FileText } from "lucide-react"
 
 type CalibreWebData = {
@@ -11,37 +10,35 @@ type CalibreWebData = {
   formats: number
 }
 
-function CalibreWebWidget({ books, authors, series, formats }: CalibreWebData) {
-  return (
-    <WidgetStatGrid
-      items={[
-        {
-          id: "books",
-          value: books,
-          label: "Books",
-          icon: <Book className="h-3 w-3" />,
-        },
-        {
-          id: "authors",
-          value: authors,
-          label: "Authors",
-          icon: <PenTool className="h-3 w-3" />,
-        },
-        {
-          id: "series",
-          value: series,
-          label: "Series",
-          icon: <List className="h-3 w-3" />,
-        },
-        {
-          id: "formats",
-          value: formats,
-          label: "Formats",
-          icon: <FileText className="h-3 w-3" />,
-        },
-      ]}
-    />
-  )
+function calibreWebToPayload(data: CalibreWebData) {
+  return {
+    stats: [
+      {
+        id: "books",
+        value: data.books,
+        label: "Books",
+        icon: <Book className="h-3 w-3" />,
+      },
+      {
+        id: "authors",
+        value: data.authors,
+        label: "Authors",
+        icon: <PenTool className="h-3 w-3" />,
+      },
+      {
+        id: "series",
+        value: data.series,
+        label: "Series",
+        icon: <List className="h-3 w-3" />,
+      },
+      {
+        id: "formats",
+        value: data.formats,
+        label: "Formats",
+        icon: <FileText className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
@@ -113,5 +110,5 @@ export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
       formats: extractStat("Formats") || extractStat("formats"),
     }
   },
-  Widget: CalibreWebWidget,
+  toPayload: calibreWebToPayload,
 }

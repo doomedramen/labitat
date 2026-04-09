@@ -1,6 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { DownloadList, type DownloadItem } from "@/components/widgets"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import type { DownloadItem } from "@/components/widgets"
 import { Tv, Download, AlertTriangle, Search } from "lucide-react"
 
 type SonarrData = {
@@ -30,49 +29,39 @@ function formatTimeLeft(minutes: number): string {
   return `${hours}h ${mins}m`
 }
 
-function SonarrWidget({
-  queued,
-  missing,
-  wanted,
-  series,
-  showActiveDownloads,
-  downloads,
-}: SonarrData) {
-  return (
-    <div className="space-y-2">
-      <WidgetStatGrid
-        items={[
-          {
-            id: "queued",
-            value: queued,
-            label: "Queued",
-            icon: <Download className="h-3 w-3" />,
-          },
-          {
-            id: "missing",
-            value: missing,
-            label: "Missing",
-            icon: <AlertTriangle className="h-3 w-3" />,
-          },
-          {
-            id: "wanted",
-            value: wanted,
-            label: "Wanted",
-            icon: <Search className="h-3 w-3" />,
-          },
-          {
-            id: "series",
-            value: series,
-            label: "Series",
-            icon: <Tv className="h-3 w-3" />,
-          },
-        ]}
-      />
-      {showActiveDownloads && downloads && downloads.length > 0 && (
-        <DownloadList downloads={downloads} />
-      )}
-    </div>
-  )
+function sonarrToPayload(data: SonarrData) {
+  return {
+    stats: [
+      {
+        id: "queued",
+        value: data.queued,
+        label: "Queued",
+        icon: <Download className="h-3 w-3" />,
+      },
+      {
+        id: "missing",
+        value: data.missing,
+        label: "Missing",
+        icon: <AlertTriangle className="h-3 w-3" />,
+      },
+      {
+        id: "wanted",
+        value: data.wanted,
+        label: "Wanted",
+        icon: <Search className="h-3 w-3" />,
+      },
+      {
+        id: "series",
+        value: data.series,
+        label: "Series",
+        icon: <Tv className="h-3 w-3" />,
+      },
+    ],
+    downloads:
+      data.showActiveDownloads && data.downloads?.length
+        ? data.downloads
+        : undefined,
+  }
 }
 
 export const sonarrDefinition: ServiceDefinition<SonarrData> = {
@@ -189,5 +178,5 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
       downloads,
     }
   },
-  Widget: SonarrWidget,
+  toPayload: sonarrToPayload,
 }

@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Users, Image as ImageIcon, Video, HardDrive } from "lucide-react"
 
 type ImmichData = {
@@ -24,35 +23,35 @@ function formatStorage(bytes: number): string {
   return `${(bytes / 1_000).toFixed(0)} KB`
 }
 
-function ImmichWidget({ users, photos, videos, storage }: ImmichData) {
-  const items = [
-    {
-      id: "users",
-      value: users,
-      label: "Users",
-      icon: <Users className="h-3 w-3" />,
-    },
-    {
-      id: "photos",
-      value: photos,
-      label: "Photos",
-      icon: <ImageIcon className="h-3 w-3" />,
-    },
-    {
-      id: "videos",
-      value: videos,
-      label: "Videos",
-      icon: <Video className="h-3 w-3" />,
-    },
-    {
-      id: "storage",
-      value: formatStorage(storage),
-      label: "Storage",
-      icon: <HardDrive className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function immichToPayload(data: ImmichData) {
+  return {
+    stats: [
+      {
+        id: "users",
+        value: data.users,
+        label: "Users",
+        icon: <Users className="h-3 w-3" />,
+      },
+      {
+        id: "photos",
+        value: data.photos,
+        label: "Photos",
+        icon: <ImageIcon className="h-3 w-3" />,
+      },
+      {
+        id: "videos",
+        value: data.videos,
+        label: "Videos",
+        icon: <Video className="h-3 w-3" />,
+      },
+      {
+        id: "storage",
+        value: formatStorage(data.storage),
+        label: "Storage",
+        icon: <HardDrive className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const immichDefinition: ServiceDefinition<ImmichData> = {
@@ -140,5 +139,5 @@ export const immichDefinition: ServiceDefinition<ImmichData> = {
     }
   },
 
-  Widget: ImmichWidget,
+  toPayload: immichToPayload,
 }

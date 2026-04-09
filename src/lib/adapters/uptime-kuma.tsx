@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Check, X, Clock } from "lucide-react"
 
 type UptimeKumaData = {
@@ -10,29 +9,29 @@ type UptimeKumaData = {
   uptime: string
 }
 
-function UptimeKumaWidget({ up, down, uptime }: UptimeKumaData) {
-  const items = [
-    {
-      id: "up",
-      value: String(up),
-      label: "Up",
-      icon: <Check className="h-3 w-3" />,
-    },
-    {
-      id: "down",
-      value: String(down),
-      label: "Down",
-      icon: <X className="h-3 w-3" />,
-    },
-    {
-      id: "uptime",
-      value: String(uptime),
-      label: "Uptime",
-      icon: <Clock className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function uptimeKumaToPayload(data: UptimeKumaData) {
+  return {
+    stats: [
+      {
+        id: "up",
+        value: String(data.up),
+        label: "Up",
+        icon: <Check className="h-3 w-3" />,
+      },
+      {
+        id: "down",
+        value: String(data.down),
+        label: "Down",
+        icon: <X className="h-3 w-3" />,
+      },
+      {
+        id: "uptime",
+        value: String(data.uptime),
+        label: "Uptime",
+        icon: <Clock className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
@@ -113,5 +112,5 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
     }
   },
 
-  Widget: UptimeKumaWidget,
+  toPayload: uptimeKumaToPayload,
 }

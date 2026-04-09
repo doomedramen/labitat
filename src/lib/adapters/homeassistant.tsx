@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Box, Gauge, Lightbulb, ToggleRight } from "lucide-react"
 
 type HomeAssistantData = {
@@ -11,40 +10,35 @@ type HomeAssistantData = {
   switches: number
 }
 
-function HomeAssistantWidget({
-  entities,
-  sensors,
-  lights,
-  switches,
-}: HomeAssistantData) {
-  const items = [
-    {
-      id: "entities",
-      value: (entities ?? 0).toLocaleString(),
-      label: "Entities",
-      icon: <Box className="h-3 w-3" />,
-    },
-    {
-      id: "sensors",
-      value: (sensors ?? 0).toLocaleString(),
-      label: "Sensors",
-      icon: <Gauge className="h-3 w-3" />,
-    },
-    {
-      id: "lights",
-      value: (lights ?? 0).toLocaleString(),
-      label: "Lights",
-      icon: <Lightbulb className="h-3 w-3" />,
-    },
-    {
-      id: "switches",
-      value: (switches ?? 0).toLocaleString(),
-      label: "Switches",
-      icon: <ToggleRight className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function homeassistantToPayload(data: HomeAssistantData) {
+  return {
+    stats: [
+      {
+        id: "entities",
+        value: (data.entities ?? 0).toLocaleString(),
+        label: "Entities",
+        icon: <Box className="h-3 w-3" />,
+      },
+      {
+        id: "sensors",
+        value: (data.sensors ?? 0).toLocaleString(),
+        label: "Sensors",
+        icon: <Gauge className="h-3 w-3" />,
+      },
+      {
+        id: "lights",
+        value: (data.lights ?? 0).toLocaleString(),
+        label: "Lights",
+        icon: <Lightbulb className="h-3 w-3" />,
+      },
+      {
+        id: "switches",
+        value: (data.switches ?? 0).toLocaleString(),
+        label: "Switches",
+        icon: <ToggleRight className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const homeassistantDefinition: ServiceDefinition<HomeAssistantData> = {
@@ -112,5 +106,5 @@ export const homeassistantDefinition: ServiceDefinition<HomeAssistantData> = {
     }
   },
 
-  Widget: HomeAssistantWidget,
+  toPayload: homeassistantToPayload,
 }

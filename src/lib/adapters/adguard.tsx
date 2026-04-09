@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { WidgetContainer } from "@/components/widgets"
 import { Globe, Ban, Percent, Shield, Search, Clock } from "lucide-react"
 
 type AdGuardData = {
@@ -13,54 +13,47 @@ type AdGuardData = {
   latency: number
 }
 
-function AdGuardWidget({
-  queries,
-  blocked,
-  blockedPercent,
-  parentalBlocked,
-  safeSearchBlocked,
-  latency,
-}: AdGuardData) {
-  const items = [
-    {
-      id: "queries",
-      value: queries,
-      label: "Queries",
-      icon: <Globe className="h-3 w-3" />,
-    },
-    {
-      id: "blocked",
-      value: blocked,
-      label: "Blocked",
-      icon: <Ban className="h-3 w-3" />,
-    },
-    {
-      id: "rate",
-      value: `${blockedPercent.toFixed(1)}%`,
-      label: "Rate",
-      icon: <Percent className="h-3 w-3" />,
-    },
-    {
-      id: "parental",
-      value: parentalBlocked,
-      label: "Parental",
-      icon: <Shield className="h-3 w-3" />,
-    },
-    {
-      id: "safe",
-      value: safeSearchBlocked,
-      label: "Safe",
-      icon: <Search className="h-3 w-3" />,
-    },
-    {
-      id: "latency",
-      value: `${latency}ms`,
-      label: "Latency",
-      icon: <Clock className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function adguardToPayload(data: AdGuardData) {
+  return {
+    stats: [
+      {
+        id: "queries",
+        value: data.queries,
+        label: "Queries",
+        icon: <Globe className="h-3 w-3" />,
+      },
+      {
+        id: "blocked",
+        value: data.blocked,
+        label: "Blocked",
+        icon: <Ban className="h-3 w-3" />,
+      },
+      {
+        id: "rate",
+        value: `${data.blockedPercent.toFixed(1)}%`,
+        label: "Rate",
+        icon: <Percent className="h-3 w-3" />,
+      },
+      {
+        id: "parental",
+        value: data.parentalBlocked,
+        label: "Parental",
+        icon: <Shield className="h-3 w-3" />,
+      },
+      {
+        id: "safe",
+        value: data.safeSearchBlocked,
+        label: "Safe",
+        icon: <Search className="h-3 w-3" />,
+      },
+      {
+        id: "latency",
+        value: `${data.latency}ms`,
+        label: "Latency",
+        icon: <Clock className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const adguardDefinition: ServiceDefinition<AdGuardData> = {
@@ -122,5 +115,5 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
       latency,
     }
   },
-  Widget: AdGuardWidget,
+  toPayload: adguardToPayload,
 }

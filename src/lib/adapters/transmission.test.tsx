@@ -1,11 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { transmissionDefinition } from "@/lib/adapters/transmission"
-import { TooltipProvider } from "@/components/ui/tooltip"
-
-function renderWithTooltipProvider(ui: React.ReactElement) {
-  return render(<TooltipProvider>{ui}</TooltipProvider>)
-}
 
 describe("transmission definition", () => {
   it("has correct metadata", () => {
@@ -167,32 +161,45 @@ describe("transmission definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      renderWithTooltipProvider(
-        <transmissionDefinition.Widget
-          leech={3}
-          download={5000000}
-          seed={10}
-          upload={1000000}
-        />
-      )
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("Leech")).toBeInTheDocument()
-      expect(screen.getByText("Seed")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = transmissionDefinition.toPayload!({
+        _status: "ok",
+        leech: 3,
+        download: 5000000,
+        seed: 10,
+        upload: 1000000,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(3)
+      expect(payload.stats[0].label).toBe("Leech")
+      expect(payload.stats[1].label).toBe("Down")
+      expect(payload.stats[2].value).toBe(10)
+      expect(payload.stats[2].label).toBe("Seed")
+      expect(payload.stats[3].label).toBe("Upload")
     })
 
-    it("renders zero values", () => {
-      renderWithTooltipProvider(
-        <transmissionDefinition.Widget
-          leech={0}
-          download={0}
-          seed={0}
-          upload={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(2)
+    it("includes downloads when present", () => {
+      const payload = transmissionDefinition.toPayload!({
+        _status: "ok",
+        leech: 1,
+        download: 1000000,
+        seed: 0,
+        upload: 0,
+        downloads: [{ title: "Test", progress: 50 }],
+      })
+      expect(payload.downloads).toHaveLength(1)
+    })
+
+    it("excludes downloads when empty", () => {
+      const payload = transmissionDefinition.toPayload!({
+        _status: "ok",
+        leech: 0,
+        download: 0,
+        seed: 0,
+        upload: 0,
+      })
+      expect(payload.downloads).toBeUndefined()
     })
   })
 })

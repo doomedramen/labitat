@@ -1,6 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { DownloadList, type DownloadItem } from "@/components/widgets"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import type { DownloadItem } from "@/components/widgets"
 import { ArrowDown, ArrowUp, Download, Upload } from "lucide-react"
 
 type TransmissionData = {
@@ -36,49 +35,36 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`
 }
 
-function TransmissionWidget({
-  leech,
-  download,
-  seed,
-  upload,
-  downloads,
-}: TransmissionData) {
-  const items = [
-    {
-      id: "leech",
-      value: leech,
-      label: "Leech",
-      icon: <Download className="h-3 w-3" />,
-    },
-    {
-      id: "down",
-      value: `${formatBytes(download)}/s`,
-      label: "Down",
-      icon: <ArrowDown className="h-3 w-3" />,
-    },
-    {
-      id: "seed",
-      value: seed,
-      label: "Seed",
-      icon: <Upload className="h-3 w-3" />,
-    },
-    {
-      id: "upload",
-      value: `${formatBytes(upload)}/s`,
-      label: "Upload",
-      icon: <ArrowUp className="h-3 w-3" />,
-    },
-  ]
-
-  return (
-    <div>
-      <WidgetStatGrid items={items} />
-
-      {downloads && downloads.length > 0 && (
-        <DownloadList downloads={downloads} />
-      )}
-    </div>
-  )
+function transmissionToPayload(data: TransmissionData) {
+  return {
+    stats: [
+      {
+        id: "leech",
+        value: data.leech,
+        label: "Leech",
+        icon: <Download className="h-3 w-3" />,
+      },
+      {
+        id: "down",
+        value: `${formatBytes(data.download)}/s`,
+        label: "Down",
+        icon: <ArrowDown className="h-3 w-3" />,
+      },
+      {
+        id: "seed",
+        value: data.seed,
+        label: "Seed",
+        icon: <Upload className="h-3 w-3" />,
+      },
+      {
+        id: "upload",
+        value: `${formatBytes(data.upload)}/s`,
+        label: "Upload",
+        icon: <ArrowUp className="h-3 w-3" />,
+      },
+    ],
+    downloads: data.downloads?.length ? data.downloads : undefined,
+  }
 }
 
 export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
@@ -237,5 +223,5 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     }
   },
 
-  Widget: TransmissionWidget,
+  toPayload: transmissionToPayload,
 }

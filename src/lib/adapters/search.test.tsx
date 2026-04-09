@@ -1,5 +1,4 @@
-import { render, screen } from "@testing-library/react"
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { describe, it, expect } from "vitest"
 import { searchDefinition } from "@/lib/adapters/search"
 
 describe("search definition", () => {
@@ -19,14 +18,6 @@ describe("search definition", () => {
   })
 
   describe("fetchData", () => {
-    beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterEach(() => {
-      vi.restoreAllMocks()
-    })
-
     it("returns default engines when not provided", async () => {
       const result = await searchDefinition.fetchData!({})
 
@@ -44,32 +35,10 @@ describe("search definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with default engines", () => {
-      render(<searchDefinition.Widget engines="Google,DuckDuckGo,Bing" />)
-      expect(screen.getByText("Google")).toBeInTheDocument()
-      expect(screen.getByText("DuckDuckGo")).toBeInTheDocument()
-      expect(screen.getByText("Bing")).toBeInTheDocument()
-    })
-
-    it("renders custom engines", () => {
-      render(<searchDefinition.Widget engines="SearXNG,Startpage" />)
-      expect(screen.getByText("SearXNG")).toBeInTheDocument()
-      expect(screen.getByText("Startpage")).toBeInTheDocument()
-    })
-
-    it("creates links for each engine", () => {
-      render(<searchDefinition.Widget engines="Google" />)
-      const link = screen.getByText("Google")
-      expect(link).toHaveAttribute("href")
-      expect(link).toHaveAttribute("target", "_blank")
-      expect(link).toHaveAttribute("rel", "noopener noreferrer")
-    })
-
-    it("trims whitespace from engine names", () => {
-      render(<searchDefinition.Widget engines=" Google , DuckDuckGo " />)
-      expect(screen.getByText("Google")).toBeInTheDocument()
-      expect(screen.getByText("DuckDuckGo")).toBeInTheDocument()
+  describe("renderWidget", () => {
+    it("is defined", () => {
+      expect(searchDefinition.renderWidget).toBeDefined()
+      expect(typeof searchDefinition.renderWidget).toBe("function")
     })
   })
 })

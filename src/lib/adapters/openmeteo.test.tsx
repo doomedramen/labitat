@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { openmeteoDefinition } from "@/lib/adapters/openmeteo"
 
@@ -118,50 +117,50 @@ describe("openmeteo definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data (daytime)", () => {
-      render(
-        <openmeteoDefinition.Widget
-          temperature={23}
-          humidity={65}
-          windSpeed={16}
-          weatherCode={2}
-          isDay={true}
-        />
-      )
-      expect(screen.getByText("23°C")).toBeInTheDocument()
-      expect(screen.getByText("65%")).toBeInTheDocument()
-      expect(screen.getByText("16 km/h")).toBeInTheDocument()
-      expect(screen.getByText("☀️")).toBeInTheDocument()
-      expect(screen.getByText("Partly cloudy")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats (daytime)", () => {
+      const payload = openmeteoDefinition.toPayload!({
+        _status: "ok",
+        temperature: 23,
+        humidity: 65,
+        windSpeed: 16,
+        weatherCode: 2,
+        isDay: true,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe("23°C")
+      expect(payload.stats[0].label).toBe("Temp")
+      expect(payload.stats[1].value).toBe("65%")
+      expect(payload.stats[1].label).toBe("Humidity")
+      expect(payload.stats[2].value).toBe("16 km/h")
+      expect(payload.stats[2].label).toBe("Wind")
+      expect(payload.stats[3].value).toBe("☀️")
+      expect(payload.stats[3].label).toBe("Partly cloudy")
     })
 
-    it("renders nighttime", () => {
-      render(
-        <openmeteoDefinition.Widget
-          temperature={10}
-          humidity={80}
-          windSpeed={5}
-          weatherCode={0}
-          isDay={false}
-        />
-      )
-      expect(screen.getByText("10°C")).toBeInTheDocument()
-      expect(screen.getByText("🌙")).toBeInTheDocument()
-      expect(screen.getByText("Clear sky")).toBeInTheDocument()
+    it("converts nighttime data", () => {
+      const payload = openmeteoDefinition.toPayload!({
+        _status: "ok",
+        temperature: 10,
+        humidity: 80,
+        windSpeed: 5,
+        weatherCode: 0,
+        isDay: false,
+      })
+      expect(payload.stats[3].value).toBe("🌙")
+      expect(payload.stats[3].label).toBe("Clear sky")
     })
 
     it("shows Unknown for unknown weather code", () => {
-      render(
-        <openmeteoDefinition.Widget
-          temperature={15}
-          humidity={50}
-          windSpeed={10}
-          weatherCode={999}
-          isDay={true}
-        />
-      )
-      expect(screen.getByText("Unknown")).toBeInTheDocument()
+      const payload = openmeteoDefinition.toPayload!({
+        _status: "ok",
+        temperature: 15,
+        humidity: 50,
+        windSpeed: 10,
+        weatherCode: 999,
+        isDay: true,
+      })
+      expect(payload.stats[3].label).toBe("Unknown")
     })
   })
 })

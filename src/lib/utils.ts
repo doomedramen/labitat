@@ -7,13 +7,12 @@ export function cn(...inputs: ClassValue[]) {
 
 /** Format TanStack Form / Zod error objects into a readable string */
 export function formatErrors(errors: unknown[]): string {
-  return errors
-    .map((e) =>
-      typeof e === "string"
-        ? e
-        : ((e as { message?: string }).message ?? String(e))
-    )
-    .join(", ")
+  const messages = errors.map((e) =>
+    typeof e === "string"
+      ? e
+      : ((e as { message?: string }).message ?? String(e))
+  )
+  return [...new Set(messages)].join(", ")
 }
 
 /**

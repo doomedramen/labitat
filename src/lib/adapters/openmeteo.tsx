@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Thermometer, Droplets, Wind, Sun, Moon } from "lucide-react"
 
 type OpenMeteoData = {
@@ -35,49 +34,41 @@ const weatherDescriptions: Record<number, string> = {
   95: "Thunderstorm",
 }
 
-function OpenMeteoWidget({
-  temperature,
-  humidity,
-  windSpeed,
-  weatherCode,
-  isDay,
-}: OpenMeteoData) {
-  const weatherDesc = weatherDescriptions[weatherCode] ?? "Unknown"
+function openmeteoToPayload(data: OpenMeteoData) {
+  const weatherDesc = weatherDescriptions[data.weatherCode] ?? "Unknown"
 
-  return (
-    <WidgetStatGrid
-      items={[
-        {
-          id: "temp",
-          value: `${temperature}°C`,
-          label: "Temp",
-          icon: <Thermometer className="h-3 w-3" />,
-        },
-        {
-          id: "humidity",
-          value: `${humidity}%`,
-          label: "Humidity",
-          icon: <Droplets className="h-3 w-3" />,
-        },
-        {
-          id: "wind",
-          value: `${windSpeed} km/h`,
-          label: "Wind",
-          icon: <Wind className="h-3 w-3" />,
-        },
-        {
-          id: "daynight",
-          value: isDay ? "☀️" : "🌙",
-          label: weatherDesc,
-          icon: isDay ? (
-            <Sun className="h-3 w-3" />
-          ) : (
-            <Moon className="h-3 w-3" />
-          ),
-        },
-      ]}
-    />
-  )
+  return {
+    stats: [
+      {
+        id: "temp",
+        value: `${data.temperature}°C`,
+        label: "Temp",
+        icon: <Thermometer className="h-3 w-3" />,
+      },
+      {
+        id: "humidity",
+        value: `${data.humidity}%`,
+        label: "Humidity",
+        icon: <Droplets className="h-3 w-3" />,
+      },
+      {
+        id: "wind",
+        value: `${data.windSpeed} km/h`,
+        label: "Wind",
+        icon: <Wind className="h-3 w-3" />,
+      },
+      {
+        id: "daynight",
+        value: data.isDay ? "☀️" : "🌙",
+        label: weatherDesc,
+        icon: data.isDay ? (
+          <Sun className="h-3 w-3" />
+        ) : (
+          <Moon className="h-3 w-3" />
+        ),
+      },
+    ],
+  }
 }
 
 export const openmeteoDefinition: ServiceDefinition<OpenMeteoData> = {
@@ -124,5 +115,5 @@ export const openmeteoDefinition: ServiceDefinition<OpenMeteoData> = {
       isDay: current.is_day === 1,
     }
   },
-  Widget: OpenMeteoWidget,
+  toPayload: openmeteoToPayload,
 }

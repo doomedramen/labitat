@@ -1,11 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { nginxProxyManagerDefinition } from "@/lib/adapters/nginx-proxy-manager"
-import { TooltipProvider } from "@/components/ui/tooltip"
-
-function renderWithTooltipProvider(ui: React.ReactElement) {
-  return render(<TooltipProvider>{ui}</TooltipProvider>)
-}
 
 describe("nginx-proxy-manager definition", () => {
   it("has correct metadata", () => {
@@ -144,36 +138,35 @@ describe("nginx-proxy-manager definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      renderWithTooltipProvider(
-        <nginxProxyManagerDefinition.Widget
-          hosts={5}
-          redirHosts={2}
-          streams={3}
-          deadHosts={1}
-        />
-      )
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("2")).toBeInTheDocument()
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("1")).toBeInTheDocument()
-      expect(screen.getByText("Proxy Hosts")).toBeInTheDocument()
-      expect(screen.getByText("Redirections")).toBeInTheDocument()
-      expect(screen.getByText("Streams")).toBeInTheDocument()
-      expect(screen.getByText("Disabled")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = nginxProxyManagerDefinition.toPayload!({
+        _status: "ok",
+        hosts: 5,
+        redirHosts: 2,
+        streams: 3,
+        deadHosts: 1,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(5)
+      expect(payload.stats[0].label).toBe("Proxy Hosts")
+      expect(payload.stats[1].value).toBe(2)
+      expect(payload.stats[1].label).toBe("Redirections")
+      expect(payload.stats[2].value).toBe(3)
+      expect(payload.stats[2].label).toBe("Streams")
+      expect(payload.stats[3].value).toBe(1)
+      expect(payload.stats[3].label).toBe("Disabled")
     })
 
-    it("renders zero values", () => {
-      renderWithTooltipProvider(
-        <nginxProxyManagerDefinition.Widget
-          hosts={0}
-          redirHosts={0}
-          streams={0}
-          deadHosts={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("handles zero values", () => {
+      const payload = nginxProxyManagerDefinition.toPayload!({
+        _status: "ok",
+        hosts: 0,
+        redirHosts: 0,
+        streams: 0,
+        deadHosts: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

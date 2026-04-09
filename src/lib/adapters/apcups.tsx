@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { WidgetContainer } from "@/components/widgets"
 import { Zap, Battery, Clock, Thermometer } from "lucide-react"
 
 type APCUPSData = {
@@ -12,46 +12,38 @@ type APCUPSData = {
   status: string
 }
 
-function APCUPSWidget({
-  loadPercent,
-  batteryCharge,
-  timeLeft,
-  temperature,
-}: APCUPSData) {
-  const load = loadPercent ?? 0
-  const battery = batteryCharge ?? 0
-  const time = timeLeft ?? 0
-  const temp = temperature ?? 0
+function apcupsToPayload(data: APCUPSData) {
+  const time = data.timeLeft ?? 0
   const timeLeftMin = time > 60 ? `${(time / 60).toFixed(0)}m` : `${time}s`
 
-  const items = [
-    {
-      id: "load",
-      value: `${load}%`,
-      label: "Load",
-      icon: <Zap className="h-3 w-3" />,
-    },
-    {
-      id: "battery",
-      value: `${battery}%`,
-      label: "Battery",
-      icon: <Battery className="h-3 w-3" />,
-    },
-    {
-      id: "time",
-      value: timeLeftMin,
-      label: "Time",
-      icon: <Clock className="h-3 w-3" />,
-    },
-    {
-      id: "temp",
-      value: `${temp}°C`,
-      label: "Temp",
-      icon: <Thermometer className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+  return {
+    stats: [
+      {
+        id: "load",
+        value: `${data.loadPercent ?? 0}%`,
+        label: "Load",
+        icon: <Zap className="h-3 w-3" />,
+      },
+      {
+        id: "battery",
+        value: `${data.batteryCharge ?? 0}%`,
+        label: "Battery",
+        icon: <Battery className="h-3 w-3" />,
+      },
+      {
+        id: "time",
+        value: timeLeftMin,
+        label: "Time",
+        icon: <Clock className="h-3 w-3" />,
+      },
+      {
+        id: "temp",
+        value: `${data.temperature ?? 0}°C`,
+        label: "Temp",
+        icon: <Thermometer className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
@@ -103,5 +95,5 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
       status,
     }
   },
-  Widget: APCUPSWidget,
+  toPayload: apcupsToPayload,
 }

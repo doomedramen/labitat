@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { jackettDefinition } from "@/lib/adapters/jackett"
 
@@ -125,18 +124,27 @@ describe("jackett definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(<jackettDefinition.Widget configured={10} errored={2} />)
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("2")).toBeInTheDocument()
-      expect(screen.getByText("Configured")).toBeInTheDocument()
-      expect(screen.getByText("Errored")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = jackettDefinition.toPayload!({
+        _status: "ok",
+        configured: 10,
+        errored: 2,
+      })
+      expect(payload.stats).toHaveLength(2)
+      expect(payload.stats[0].value).toBe("10")
+      expect(payload.stats[0].label).toBe("Configured")
+      expect(payload.stats[1].value).toBe("2")
+      expect(payload.stats[1].label).toBe("Errored")
     })
 
-    it("renders zero values", () => {
-      render(<jackettDefinition.Widget configured={0} errored={0} />)
-      expect(screen.getAllByText("0")).toHaveLength(2)
+    it("handles zero values", () => {
+      const payload = jackettDefinition.toPayload!({
+        _status: "ok",
+        configured: 0,
+        errored: 0,
+      })
+      expect(payload.stats.every((s) => s.value === "0")).toBe(true)
     })
   })
 })

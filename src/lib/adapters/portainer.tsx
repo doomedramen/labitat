@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Play, Square, Layers } from "lucide-react"
 
 type PortainerData = {
@@ -10,29 +9,29 @@ type PortainerData = {
   total: number
 }
 
-function PortainerWidget({ running, stopped, total }: PortainerData) {
-  const items = [
-    {
-      id: "running",
-      value: (running ?? 0).toLocaleString(),
-      label: "Running",
-      icon: <Play className="h-3 w-3" />,
-    },
-    {
-      id: "stopped",
-      value: (stopped ?? 0).toLocaleString(),
-      label: "Stopped",
-      icon: <Square className="h-3 w-3" />,
-    },
-    {
-      id: "total",
-      value: (total ?? 0).toLocaleString(),
-      label: "Total",
-      icon: <Layers className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function portainerToPayload(data: PortainerData) {
+  return {
+    stats: [
+      {
+        id: "running",
+        value: (data.running ?? 0).toLocaleString(),
+        label: "Running",
+        icon: <Play className="h-3 w-3" />,
+      },
+      {
+        id: "stopped",
+        value: (data.stopped ?? 0).toLocaleString(),
+        label: "Stopped",
+        icon: <Square className="h-3 w-3" />,
+      },
+      {
+        id: "total",
+        value: (data.total ?? 0).toLocaleString(),
+        label: "Total",
+        icon: <Layers className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const portainerDefinition: ServiceDefinition<PortainerData> = {
@@ -125,5 +124,5 @@ export const portainerDefinition: ServiceDefinition<PortainerData> = {
     }
   },
 
-  Widget: PortainerWidget,
+  toPayload: portainerToPayload,
 }

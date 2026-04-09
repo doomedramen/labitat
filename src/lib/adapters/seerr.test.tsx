@@ -1,11 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { seerrDefinition } from "@/lib/adapters/seerr"
-import { TooltipProvider } from "@/components/ui/tooltip"
-
-function renderWithTooltipProvider(ui: React.ReactElement) {
-  return render(<TooltipProvider>{ui}</TooltipProvider>)
-}
 
 describe("seerr definition", () => {
   it("has correct metadata", () => {
@@ -94,36 +88,35 @@ describe("seerr definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      renderWithTooltipProvider(
-        <seerrDefinition.Widget
-          pending={2}
-          approved={5}
-          available={3}
-          processing={1}
-        />
-      )
-      expect(screen.getByText("2")).toBeInTheDocument()
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("1")).toBeInTheDocument()
-      expect(screen.getByText("Pending")).toBeInTheDocument()
-      expect(screen.getByText("Approved")).toBeInTheDocument()
-      expect(screen.getByText("Available")).toBeInTheDocument()
-      expect(screen.getByText("Processing")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = seerrDefinition.toPayload!({
+        _status: "ok",
+        pending: 2,
+        approved: 5,
+        available: 3,
+        processing: 1,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(2)
+      expect(payload.stats[0].label).toBe("Pending")
+      expect(payload.stats[1].value).toBe(5)
+      expect(payload.stats[1].label).toBe("Approved")
+      expect(payload.stats[2].value).toBe(3)
+      expect(payload.stats[2].label).toBe("Available")
+      expect(payload.stats[3].value).toBe(1)
+      expect(payload.stats[3].label).toBe("Processing")
     })
 
-    it("renders zero values", () => {
-      renderWithTooltipProvider(
-        <seerrDefinition.Widget
-          pending={0}
-          approved={0}
-          available={0}
-          processing={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("handles zero values", () => {
+      const payload = seerrDefinition.toPayload!({
+        _status: "ok",
+        pending: 0,
+        approved: 0,
+        available: 0,
+        processing: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

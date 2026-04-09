@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { grafanaDefinition } from "@/lib/adapters/grafana"
 
@@ -154,36 +153,35 @@ describe("grafana definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <grafanaDefinition.Widget
-          dashboards={25}
-          datasources={5}
-          totalAlerts={10}
-          alertsTriggered={2}
-        />
-      )
-      expect(screen.getByText("25")).toBeInTheDocument()
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("2")).toBeInTheDocument()
-      expect(screen.getByText("Dashboards")).toBeInTheDocument()
-      expect(screen.getByText("Datasources")).toBeInTheDocument()
-      expect(screen.getByText("Total Alerts")).toBeInTheDocument()
-      expect(screen.getByText("Alerts Triggered")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = grafanaDefinition.toPayload!({
+        _status: "ok",
+        dashboards: 25,
+        datasources: 5,
+        totalAlerts: 10,
+        alertsTriggered: 2,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe("25")
+      expect(payload.stats[0].label).toBe("Dashboards")
+      expect(payload.stats[1].value).toBe("5")
+      expect(payload.stats[1].label).toBe("Datasources")
+      expect(payload.stats[2].value).toBe("10")
+      expect(payload.stats[2].label).toBe("Total Alerts")
+      expect(payload.stats[3].value).toBe("2")
+      expect(payload.stats[3].label).toBe("Alerts Triggered")
     })
 
-    it("renders zero values", () => {
-      render(
-        <grafanaDefinition.Widget
-          dashboards={0}
-          datasources={0}
-          totalAlerts={0}
-          alertsTriggered={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("handles zero values", () => {
+      const payload = grafanaDefinition.toPayload!({
+        _status: "ok",
+        dashboards: 0,
+        datasources: 0,
+        totalAlerts: 0,
+        alertsTriggered: 0,
+      })
+      expect(payload.stats.every((s) => s.value === "0")).toBe(true)
     })
   })
 })

@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { uptimeKumaDefinition } from "@/lib/adapters/uptime-kuma"
 
@@ -112,21 +111,33 @@ describe("uptime-kuma definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(<uptimeKumaDefinition.Widget up={10} down={2} uptime="98.5%" />)
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("2")).toBeInTheDocument()
-      expect(screen.getByText("98.5%")).toBeInTheDocument()
-      expect(screen.getByText("Up")).toBeInTheDocument()
-      expect(screen.getByText("Down")).toBeInTheDocument()
-      expect(screen.getByText("Uptime")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = uptimeKumaDefinition.toPayload!({
+        _status: "ok",
+        up: 10,
+        down: 2,
+        uptime: "98.5%",
+      })
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].value).toBe("10")
+      expect(payload.stats[0].label).toBe("Up")
+      expect(payload.stats[1].value).toBe("2")
+      expect(payload.stats[1].label).toBe("Down")
+      expect(payload.stats[2].value).toBe("98.5%")
+      expect(payload.stats[2].label).toBe("Uptime")
     })
 
-    it("renders zero values", () => {
-      render(<uptimeKumaDefinition.Widget up={0} down={0} uptime="0%" />)
-      expect(screen.getAllByText("0")).toHaveLength(2)
-      expect(screen.getByText("0%")).toBeInTheDocument()
+    it("handles zero values", () => {
+      const payload = uptimeKumaDefinition.toPayload!({
+        _status: "ok",
+        up: 0,
+        down: 0,
+        uptime: "0%",
+      })
+      expect(payload.stats[0].value).toBe("0")
+      expect(payload.stats[1].value).toBe("0")
+      expect(payload.stats[2].value).toBe("0%")
     })
   })
 })

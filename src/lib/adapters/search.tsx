@@ -47,5 +47,5 @@ export const searchDefinition: ServiceDefinition<SearchData> = {
       engines: config.engines || "Google,DuckDuckGo,Bing",
     })
   },
-  Widget: SearchWidget,
+  renderWidget: SearchWidget,
 }

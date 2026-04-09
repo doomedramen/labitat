@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Users, UserPlus, Router, Globe } from "lucide-react"
 
 type UnifiData = {
@@ -11,37 +10,35 @@ type UnifiData = {
   sites: number
 }
 
-function UnifiWidget({ users, guests, devices, sites }: UnifiData) {
-  return (
-    <WidgetStatGrid
-      items={[
-        {
-          id: "users",
-          value: users,
-          label: "Users",
-          icon: <Users className="h-3 w-3" />,
-        },
-        {
-          id: "guests",
-          value: guests,
-          label: "Guests",
-          icon: <UserPlus className="h-3 w-3" />,
-        },
-        {
-          id: "devices",
-          value: devices,
-          label: "Devices",
-          icon: <Router className="h-3 w-3" />,
-        },
-        {
-          id: "sites",
-          value: sites,
-          label: "Sites",
-          icon: <Globe className="h-3 w-3" />,
-        },
-      ]}
-    />
-  )
+function unifiToPayload(data: UnifiData) {
+  return {
+    stats: [
+      {
+        id: "users",
+        value: data.users,
+        label: "Users",
+        icon: <Users className="h-3 w-3" />,
+      },
+      {
+        id: "guests",
+        value: data.guests,
+        label: "Guests",
+        icon: <UserPlus className="h-3 w-3" />,
+      },
+      {
+        id: "devices",
+        value: data.devices,
+        label: "Devices",
+        icon: <Router className="h-3 w-3" />,
+      },
+      {
+        id: "sites",
+        value: data.sites,
+        label: "Sites",
+        icon: <Globe className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const unifiDefinition: ServiceDefinition<UnifiData> = {
@@ -116,5 +113,5 @@ export const unifiDefinition: ServiceDefinition<UnifiData> = {
       sites: 1,
     }
   },
-  Widget: UnifiWidget,
+  toPayload: unifiToPayload,
 }

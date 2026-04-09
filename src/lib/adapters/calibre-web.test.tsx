@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { calibreWebDefinition } from "@/lib/adapters/calibre-web"
 
@@ -118,36 +117,35 @@ describe("calibre-web definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <calibreWebDefinition.Widget
-          books={150}
-          authors={45}
-          series={20}
-          formats={300}
-        />
-      )
-      expect(screen.getByText("150")).toBeInTheDocument()
-      expect(screen.getByText("45")).toBeInTheDocument()
-      expect(screen.getByText("20")).toBeInTheDocument()
-      expect(screen.getByText("300")).toBeInTheDocument()
-      expect(screen.getByText("Books")).toBeInTheDocument()
-      expect(screen.getByText("Authors")).toBeInTheDocument()
-      expect(screen.getByText("Series")).toBeInTheDocument()
-      expect(screen.getByText("Formats")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = calibreWebDefinition.toPayload!({
+        _status: "ok",
+        books: 150,
+        authors: 45,
+        series: 20,
+        formats: 300,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(150)
+      expect(payload.stats[0].label).toBe("Books")
+      expect(payload.stats[1].value).toBe(45)
+      expect(payload.stats[1].label).toBe("Authors")
+      expect(payload.stats[2].value).toBe(20)
+      expect(payload.stats[2].label).toBe("Series")
+      expect(payload.stats[3].value).toBe(300)
+      expect(payload.stats[3].label).toBe("Formats")
     })
 
-    it("renders zero values", () => {
-      render(
-        <calibreWebDefinition.Widget
-          books={0}
-          authors={0}
-          series={0}
-          formats={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("handles zero values", () => {
+      const payload = calibreWebDefinition.toPayload!({
+        _status: "ok",
+        books: 0,
+        authors: 0,
+        series: 0,
+        formats: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

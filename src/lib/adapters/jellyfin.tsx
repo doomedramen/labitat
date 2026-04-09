@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Play, Film, Tv, Layers } from "lucide-react"
 
 type JellyfinData = {
@@ -11,40 +10,35 @@ type JellyfinData = {
   episodes: number
 }
 
-function JellyfinWidget({
-  activeStreams,
-  movies,
-  shows,
-  episodes,
-}: JellyfinData) {
-  const items = [
-    {
-      id: "active",
-      value: activeStreams,
-      label: "Active Streams",
-      icon: <Play className="h-3 w-3" />,
-    },
-    {
-      id: "movies",
-      value: movies,
-      label: "Movies",
-      icon: <Film className="h-3 w-3" />,
-    },
-    {
-      id: "shows",
-      value: shows,
-      label: "Shows",
-      icon: <Tv className="h-3 w-3" />,
-    },
-    {
-      id: "episodes",
-      value: episodes,
-      label: "Episodes",
-      icon: <Layers className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function jellyfinToPayload(data: JellyfinData) {
+  return {
+    stats: [
+      {
+        id: "active",
+        value: data.activeStreams,
+        label: "Active Streams",
+        icon: <Play className="h-3 w-3" />,
+      },
+      {
+        id: "movies",
+        value: data.movies,
+        label: "Movies",
+        icon: <Film className="h-3 w-3" />,
+      },
+      {
+        id: "shows",
+        value: data.shows,
+        label: "Shows",
+        icon: <Tv className="h-3 w-3" />,
+      },
+      {
+        id: "episodes",
+        value: data.episodes,
+        label: "Episodes",
+        icon: <Layers className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
@@ -132,5 +126,5 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
     }
   },
 
-  Widget: JellyfinWidget,
+  toPayload: jellyfinToPayload,
 }

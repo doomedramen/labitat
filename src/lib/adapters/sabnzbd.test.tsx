@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { sabnzbdDefinition } from "@/lib/adapters/sabnzbd"
 
@@ -137,36 +136,47 @@ describe("sabnzbd definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders downloading state", () => {
-      render(
-        <sabnzbdDefinition.Widget
-          speed="15.5 MB/s"
-          remaining="02:30:00"
-          queueSize={5}
-          downloading={true}
-        />
-      )
-      expect(screen.getByText("15.5 MB/s")).toBeInTheDocument()
-      expect(screen.getByText("02:30:00")).toBeInTheDocument()
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("Speed")).toBeInTheDocument()
-      expect(screen.getByText("Left")).toBeInTheDocument()
-      expect(screen.getByText("Queue")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts downloading state to payload", () => {
+      const payload = sabnzbdDefinition.toPayload!({
+        _status: "ok",
+        speed: "15.5 MB/s",
+        remaining: "02:30:00",
+        queueSize: 5,
+        downloading: true,
+      })
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].value).toBe("15.5 MB/s")
+      expect(payload.stats[0].label).toBe("Speed")
+      expect(payload.stats[1].value).toBe("02:30:00")
+      expect(payload.stats[1].label).toBe("Left")
+      expect(payload.stats[2].value).toBe(5)
+      expect(payload.stats[2].label).toBe("Queue")
     })
 
-    it("renders idle state", () => {
-      render(
-        <sabnzbdDefinition.Widget
-          speed="0 B/s"
-          remaining="—"
-          queueSize={0}
-          downloading={false}
-        />
-      )
-      expect(screen.getByText("Idle")).toBeInTheDocument()
-      expect(screen.getByText("—")).toBeInTheDocument()
-      expect(screen.getByText("0")).toBeInTheDocument()
+    it("converts idle state to payload", () => {
+      const payload = sabnzbdDefinition.toPayload!({
+        _status: "ok",
+        speed: "0 B/s",
+        remaining: "",
+        queueSize: 0,
+        downloading: false,
+      })
+      expect(payload.stats[0].value).toBe("Idle")
+      expect(payload.stats[1].value).toBe("—")
+      expect(payload.stats[2].value).toBe(0)
+    })
+
+    it("includes downloads when present", () => {
+      const payload = sabnzbdDefinition.toPayload!({
+        _status: "ok",
+        speed: "10 MB/s",
+        remaining: "01:00:00",
+        queueSize: 1,
+        downloading: true,
+        downloads: [{ title: "Test.nzb", progress: 50 }],
+      })
+      expect(payload.downloads).toHaveLength(1)
     })
   })
 })

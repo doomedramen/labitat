@@ -1,11 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { bazarrDefinition } from "@/lib/adapters/bazarr"
-import { TooltipProvider } from "@/components/ui/tooltip"
-
-function renderWithTooltipProvider(ui: React.ReactElement) {
-  return render(<TooltipProvider>{ui}</TooltipProvider>)
-}
 
 describe("bazarr definition", () => {
   it("has correct metadata", () => {
@@ -92,22 +86,27 @@ describe("bazarr definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      renderWithTooltipProvider(
-        <bazarrDefinition.Widget missingMovies={15} missingEpisodes={42} />
-      )
-      expect(screen.getByText("15")).toBeInTheDocument()
-      expect(screen.getByText("42")).toBeInTheDocument()
-      expect(screen.getByText("Missing Movies")).toBeInTheDocument()
-      expect(screen.getByText("Missing Episodes")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = bazarrDefinition.toPayload!({
+        _status: "ok",
+        missingMovies: 15,
+        missingEpisodes: 42,
+      })
+      expect(payload.stats).toHaveLength(2)
+      expect(payload.stats[0].value).toBe(15)
+      expect(payload.stats[0].label).toBe("Missing Movies")
+      expect(payload.stats[1].value).toBe(42)
+      expect(payload.stats[1].label).toBe("Missing Episodes")
     })
 
-    it("renders zero values", () => {
-      renderWithTooltipProvider(
-        <bazarrDefinition.Widget missingMovies={0} missingEpisodes={0} />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(2)
+    it("handles zero values", () => {
+      const payload = bazarrDefinition.toPayload!({
+        _status: "ok",
+        missingMovies: 0,
+        missingEpisodes: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

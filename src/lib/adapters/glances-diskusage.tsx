@@ -127,5 +127,5 @@ export const glancesDiskUsageDefinition: ServiceDefinition<GlancesDiskUsageData>
         free: formatBytes(free),
       }
     },
-    Widget: GlancesDiskUsageWidget,
+    renderWidget: GlancesDiskUsageWidget,
   }

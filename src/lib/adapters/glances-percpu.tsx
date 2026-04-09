@@ -118,5 +118,5 @@ export const glancesPerCpuDefinition: ServiceDefinition<GlancesPerCpuData> = {
       coreUsages: cpuValues,
     }
   },
-  Widget: GlancesPerCpuWidget,
+  renderWidget: GlancesPerCpuWidget,
 }

@@ -30,6 +30,7 @@ import { getAllServices } from "@/lib/adapters"
 import type { ServiceDefinition } from "@/lib/adapters"
 import type { ItemWithCache } from "@/lib/types"
 import { WidgetDisplayProvider } from "@/components/dashboard/item/widget-display-context"
+import { WidgetContainer } from "@/components/widgets"
 import type { StatCardOrder } from "@/hooks/use-stat-card-order"
 
 const itemSchema = z.object({
@@ -564,9 +565,15 @@ export function ItemDialog({
                         onOrderChange: setLocalStatCardOrder,
                       }}
                     >
-                      <selectedService.Widget
-                        {...(item.cachedWidgetData as Record<string, unknown>)}
-                      />
+                      {selectedService.renderWidget ? (
+                        <selectedService.renderWidget
+                          {...(item.cachedWidgetData as Record<string, unknown>)}
+                        />
+                      ) : selectedService.toPayload && item.cachedWidgetData ? (
+                        <WidgetContainer
+                          payload={selectedService.toPayload(item.cachedWidgetData)}
+                        />
+                      ) : null}
                     </WidgetDisplayProvider>
                   </div>
                 )}

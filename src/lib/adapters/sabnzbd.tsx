@@ -1,6 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { DownloadList, type DownloadItem } from "@/components/widgets"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import type { DownloadItem } from "@/components/widgets"
 import { ArrowDown, Clock, List } from "lucide-react"
 
 type SABnzbdData = {
@@ -13,42 +12,30 @@ type SABnzbdData = {
   downloads?: DownloadItem[]
 }
 
-function SABnzbdWidget({
-  speed,
-  remaining,
-  queueSize,
-  downloading,
-  downloads,
-}: SABnzbdData) {
-  return (
-    <div className="space-y-2">
-      <WidgetStatGrid
-        items={[
-          {
-            id: "speed",
-            value: downloading ? speed : "Idle",
-            label: "Speed",
-            icon: <ArrowDown className="h-3 w-3" />,
-          },
-          {
-            id: "left",
-            value: downloading ? remaining : "—",
-            label: "Left",
-            icon: <Clock className="h-3 w-3" />,
-          },
-          {
-            id: "queue",
-            value: queueSize,
-            label: "Queue",
-            icon: <List className="h-3 w-3" />,
-          },
-        ]}
-      />
-      {downloads && downloads.length > 0 && (
-        <DownloadList downloads={downloads} />
-      )}
-    </div>
-  )
+function sabnzbdToPayload(data: SABnzbdData) {
+  return {
+    stats: [
+      {
+        id: "speed",
+        value: data.downloading ? data.speed : "Idle",
+        label: "Speed",
+        icon: <ArrowDown className="h-3 w-3" />,
+      },
+      {
+        id: "left",
+        value: data.downloading ? data.remaining : "—",
+        label: "Left",
+        icon: <Clock className="h-3 w-3" />,
+      },
+      {
+        id: "queue",
+        value: data.queueSize,
+        label: "Queue",
+        icon: <List className="h-3 w-3" />,
+      },
+    ],
+    downloads: data.downloads?.length ? data.downloads : undefined,
+  }
 }
 
 export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
@@ -107,5 +94,5 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
       downloads,
     }
   },
-  Widget: SABnzbdWidget,
+  toPayload: sabnzbdToPayload,
 }

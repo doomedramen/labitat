@@ -1,11 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { plexDefinition } from "@/lib/adapters/plex"
-import { TooltipProvider } from "@/components/ui/tooltip"
-
-function renderWithTooltipProvider(ui: React.ReactElement) {
-  return render(<TooltipProvider>{ui}</TooltipProvider>)
-}
 
 describe("plex definition", () => {
   it("has correct metadata", () => {
@@ -135,38 +129,51 @@ describe("plex definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      renderWithTooltipProvider(
-        <plexDefinition.Widget
-          streams={3}
-          albums={10}
-          movies={50}
-          tvShows={20}
-          showActiveStreams={false}
-        />
-      )
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("50")).toBeInTheDocument()
-      expect(screen.getByText("20")).toBeInTheDocument()
-      expect(screen.getByText("Active")).toBeInTheDocument()
-      expect(screen.getByText("Albums")).toBeInTheDocument()
-      expect(screen.getByText("Movies")).toBeInTheDocument()
-      expect(screen.getByText("Shows")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = plexDefinition.toPayload!({
+        _status: "ok",
+        streams: 3,
+        albums: 10,
+        movies: 50,
+        tvShows: 20,
+        showActiveStreams: false,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(3)
+      expect(payload.stats[0].label).toBe("Active")
+      expect(payload.stats[1].value).toBe(10)
+      expect(payload.stats[1].label).toBe("Albums")
+      expect(payload.stats[2].value).toBe(50)
+      expect(payload.stats[2].label).toBe("Movies")
+      expect(payload.stats[3].value).toBe(20)
+      expect(payload.stats[3].label).toBe("Shows")
     })
 
-    it("renders without active streams", () => {
-      renderWithTooltipProvider(
-        <plexDefinition.Widget
-          streams={0}
-          albums={0}
-          movies={0}
-          tvShows={0}
-          showActiveStreams={false}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("includes streams when enabled", () => {
+      const payload = plexDefinition.toPayload!({
+        _status: "ok",
+        streams: 1,
+        albums: 0,
+        movies: 0,
+        tvShows: 0,
+        showActiveStreams: true,
+        sessions: [{ title: "Test", user: "User", progress: 60, duration: 120 }],
+      })
+      expect(payload.streams).toHaveLength(1)
+    })
+
+    it("excludes streams when disabled", () => {
+      const payload = plexDefinition.toPayload!({
+        _status: "ok",
+        streams: 1,
+        albums: 0,
+        movies: 0,
+        tvShows: 0,
+        showActiveStreams: false,
+        sessions: [{ title: "Test", user: "User", progress: 60, duration: 120 }],
+      })
+      expect(payload.streams).toBeUndefined()
     })
   })
 })

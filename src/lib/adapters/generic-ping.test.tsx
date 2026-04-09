@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { genericPingDefinition } from "@/lib/adapters/generic-ping"
 
@@ -82,25 +81,30 @@ describe("generic-ping definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders online status", () => {
-      render(<genericPingDefinition.Widget status="up" responseTime={45} />)
-      expect(screen.getByText("✓")).toBeInTheDocument()
-      expect(screen.getByText("Online")).toBeInTheDocument()
-      expect(screen.getByText("45ms")).toBeInTheDocument()
-      expect(screen.getByText("Response")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts online status to payload", () => {
+      const payload = genericPingDefinition.toPayload!({
+        _status: "ok",
+        status: "up",
+        responseTime: 45,
+      })
+      expect(payload.stats).toHaveLength(2)
+      expect(payload.stats[0].value).toBe("✓")
+      expect(payload.stats[0].label).toBe("Online")
+      expect(payload.stats[1].value).toBe("45ms")
+      expect(payload.stats[1].label).toBe("Response")
     })
 
-    it("renders offline status with destructive color", () => {
-      const { container } = render(
-        <genericPingDefinition.Widget status="down" responseTime={0} />
-      )
-      expect(screen.getByText("✗")).toBeInTheDocument()
-      expect(screen.getByText("Offline")).toBeInTheDocument()
-      expect(screen.getByText("0ms")).toBeInTheDocument()
-      const destructiveElements =
-        container.querySelectorAll(".text-destructive")
-      expect(destructiveElements.length).toBeGreaterThan(0)
+    it("converts offline status to payload", () => {
+      const payload = genericPingDefinition.toPayload!({
+        _status: "error",
+        _statusText: "Host unreachable",
+        status: "down",
+        responseTime: 0,
+      })
+      expect(payload.stats[0].value).toBe("✗")
+      expect(payload.stats[0].label).toBe("Offline")
+      expect(payload.stats[1].value).toBe("0ms")
     })
   })
 })

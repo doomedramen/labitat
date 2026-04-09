@@ -1,6 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { ActiveStreamList, type ActiveStream } from "@/components/widgets"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import type { ActiveStream } from "@/components/widgets"
 import { Activity, Cpu, Monitor, Play, Radio } from "lucide-react"
 
 type TautulliData = {
@@ -22,60 +21,47 @@ function formatBytes(bytes: number): string {
   return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
 }
 
-function TautulliWidget({
-  streamCount,
-  totalBandwidth,
-  transcodeStreams,
-  directPlayStreams,
-  directStreamStreams,
-  sessions,
-}: TautulliData) {
-  const items = [
-    {
-      id: "streams",
-      value: streamCount,
-      label: "Streams",
-      icon: <Play className="h-3 w-3" />,
-      tooltip: "Streams",
-    },
-    {
-      id: "bandwidth",
-      value: totalBandwidth,
-      label: "Bandwidth",
-      icon: <Activity className="h-3 w-3" />,
-      tooltip: "Bandwidth",
-    },
-    {
-      id: "transcoding",
-      value: transcodeStreams,
-      label: "Transcoding",
-      icon: <Cpu className="h-3 w-3" />,
-      tooltip: "Transcoding",
-    },
-    {
-      id: "direct-play",
-      value: directPlayStreams,
-      label: "Direct Play",
-      icon: <Monitor className="h-3 w-3" />,
-      tooltip: "Direct Play",
-    },
-    {
-      id: "direct-stream",
-      value: directStreamStreams,
-      label: "Direct Stream",
-      icon: <Radio className="h-3 w-3" />,
-      tooltip: "Direct Stream",
-    },
-  ]
-
-  return (
-    <div className="space-y-2">
-      <WidgetStatGrid items={items} />
-      {sessions && sessions.length > 0 && (
-        <ActiveStreamList streams={sessions} />
-      )}
-    </div>
-  )
+function tautulliToPayload(data: TautulliData) {
+  return {
+    stats: [
+      {
+        id: "streams",
+        value: data.streamCount,
+        label: "Streams",
+        icon: <Play className="h-3 w-3" />,
+        tooltip: "Streams",
+      },
+      {
+        id: "bandwidth",
+        value: data.totalBandwidth,
+        label: "Bandwidth",
+        icon: <Activity className="h-3 w-3" />,
+        tooltip: "Bandwidth",
+      },
+      {
+        id: "transcoding",
+        value: data.transcodeStreams,
+        label: "Transcoding",
+        icon: <Cpu className="h-3 w-3" />,
+        tooltip: "Transcoding",
+      },
+      {
+        id: "direct-play",
+        value: data.directPlayStreams,
+        label: "Direct Play",
+        icon: <Monitor className="h-3 w-3" />,
+        tooltip: "Direct Play",
+      },
+      {
+        id: "direct-stream",
+        value: data.directStreamStreams,
+        label: "Direct Stream",
+        icon: <Radio className="h-3 w-3" />,
+        tooltip: "Direct Stream",
+      },
+    ],
+    streams: data.sessions?.length ? data.sessions : undefined,
+  }
 }
 
 export const tautulliDefinition: ServiceDefinition<TautulliData> = {
@@ -168,5 +154,5 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
       sessions: activeStreams,
     }
   },
-  Widget: TautulliWidget,
+  toPayload: tautulliToPayload,
 }

@@ -428,3 +428,5 @@ export function DownloadList({ downloads }: { downloads: DownloadItem[] }) {
     </div>
   )
 }
+
+export { WidgetContainer } from "./widget-container"

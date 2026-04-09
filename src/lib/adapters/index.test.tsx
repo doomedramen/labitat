@@ -20,8 +20,10 @@ describe("Service Registry", () => {
       expect(service.category).toBeDefined()
       expect(service.configFields).toBeDefined()
       expect(Array.isArray(service.configFields)).toBe(true)
-      expect(service.Widget).toBeDefined()
-      expect(typeof service.Widget).toBe("function")
+      // Each service must have either toPayload or renderWidget
+      expect(
+        service.toPayload || service.renderWidget
+      ).toBeDefined()
     })
   })
 })

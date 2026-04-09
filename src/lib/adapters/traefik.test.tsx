@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { traefikDefinition } from "@/lib/adapters/traefik"
 
@@ -124,24 +123,31 @@ describe("traefik definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <traefikDefinition.Widget routers={10} services={15} middlewares={5} />
-      )
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("15")).toBeInTheDocument()
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("Routers")).toBeInTheDocument()
-      expect(screen.getByText("Services")).toBeInTheDocument()
-      expect(screen.getByText("Middlewares")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = traefikDefinition.toPayload!({
+        _status: "ok",
+        routers: 10,
+        services: 15,
+        middlewares: 5,
+      })
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].value).toBe("10")
+      expect(payload.stats[0].label).toBe("Routers")
+      expect(payload.stats[1].value).toBe("15")
+      expect(payload.stats[1].label).toBe("Services")
+      expect(payload.stats[2].value).toBe("5")
+      expect(payload.stats[2].label).toBe("Middlewares")
     })
 
-    it("renders zero values", () => {
-      render(
-        <traefikDefinition.Widget routers={0} services={0} middlewares={0} />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(3)
+    it("handles zero values", () => {
+      const payload = traefikDefinition.toPayload!({
+        _status: "ok",
+        routers: 0,
+        services: 0,
+        middlewares: 0,
+      })
+      expect(payload.stats.every((s) => s.value === "0")).toBe(true)
     })
   })
 })

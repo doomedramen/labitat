@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { radarrDefinition } from "@/lib/adapters/radarr"
 
@@ -245,31 +244,61 @@ describe("radarr definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <radarrDefinition.Widget
-          queued={5}
-          missing={3}
-          wanted={10}
-          movies={50}
-        />
-      )
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("50")).toBeInTheDocument()
-      expect(screen.getByText("Queued")).toBeInTheDocument()
-      expect(screen.getByText("Missing")).toBeInTheDocument()
-      expect(screen.getByText("Wanted")).toBeInTheDocument()
-      expect(screen.getByText("Movies")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = radarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 5,
+        missing: 3,
+        wanted: 10,
+        movies: 50,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(5)
+      expect(payload.stats[0].label).toBe("Queued")
+      expect(payload.stats[1].value).toBe(3)
+      expect(payload.stats[1].label).toBe("Missing")
+      expect(payload.stats[2].value).toBe(10)
+      expect(payload.stats[2].label).toBe("Wanted")
+      expect(payload.stats[3].value).toBe(50)
+      expect(payload.stats[3].label).toBe("Movies")
     })
 
-    it("renders zero values", () => {
-      render(
-        <radarrDefinition.Widget queued={0} missing={0} wanted={0} movies={0} />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("includes downloads when enabled", () => {
+      const payload = radarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 1,
+        missing: 0,
+        wanted: 0,
+        movies: 1,
+        showActiveDownloads: true,
+        downloads: [{ title: "Test Movie", progress: 50 }],
+      })
+      expect(payload.downloads).toHaveLength(1)
+    })
+
+    it("excludes downloads when disabled", () => {
+      const payload = radarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 1,
+        missing: 0,
+        wanted: 0,
+        movies: 1,
+        showActiveDownloads: false,
+        downloads: [{ title: "Test", progress: 50 }],
+      })
+      expect(payload.downloads).toBeUndefined()
+    })
+
+    it("handles zero values", () => {
+      const payload = radarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 0,
+        missing: 0,
+        wanted: 0,
+        movies: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

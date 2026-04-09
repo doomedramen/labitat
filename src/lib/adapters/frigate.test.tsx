@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { frigateDefinition } from "@/lib/adapters/frigate"
 
@@ -151,33 +150,43 @@ describe("frigate definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <frigateDefinition.Widget cameras={3} uptime={86400} version="0.14.0" />
-      )
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("1d 0h")).toBeInTheDocument()
-      expect(screen.getByText("0.14.0")).toBeInTheDocument()
-      expect(screen.getByText("Cameras")).toBeInTheDocument()
-      expect(screen.getByText("Uptime")).toBeInTheDocument()
-      expect(screen.getByText("Version")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = frigateDefinition.toPayload!({
+        _status: "ok",
+        cameras: 3,
+        uptime: 86400,
+        version: "0.14.0",
+      })
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].value).toBe("3")
+      expect(payload.stats[0].label).toBe("Cameras")
+      expect(payload.stats[1].value).toBe("1d 0h")
+      expect(payload.stats[1].label).toBe("Uptime")
+      expect(payload.stats[2].value).toBe("0.14.0")
+      expect(payload.stats[2].label).toBe("Version")
     })
 
-    it("renders zero values", () => {
-      render(
-        <frigateDefinition.Widget cameras={0} uptime={0} version="unknown" />
-      )
-      expect(screen.getByText("0")).toBeInTheDocument()
-      expect(screen.getByText("0m")).toBeInTheDocument()
-      expect(screen.getByText("unknown")).toBeInTheDocument()
+    it("handles zero values", () => {
+      const payload = frigateDefinition.toPayload!({
+        _status: "ok",
+        cameras: 0,
+        uptime: 0,
+        version: "unknown",
+      })
+      expect(payload.stats[0].value).toBe("0")
+      expect(payload.stats[1].value).toBe("0m")
+      expect(payload.stats[2].value).toBe("unknown")
     })
 
     it("formats uptime with hours", () => {
-      render(
-        <frigateDefinition.Widget cameras={1} uptime={7200} version="0.14.0" />
-      )
-      expect(screen.getByText("2h 0m")).toBeInTheDocument()
+      const payload = frigateDefinition.toPayload!({
+        _status: "ok",
+        cameras: 1,
+        uptime: 7200,
+        version: "0.14.0",
+      })
+      expect(payload.stats[1].value).toBe("2h 0m")
     })
   })
 })

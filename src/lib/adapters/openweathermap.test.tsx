@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { openweathermapDefinition } from "@/lib/adapters/openweathermap"
 
@@ -156,40 +155,44 @@ describe("openweathermap definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <openweathermapDefinition.Widget
-          temperature={23}
-          humidity={65}
-          windSpeed={6}
-          description="scattered clouds"
-          feelsLike={24}
-          unitSymbol="°C"
-          speedUnit="m/s"
-        />
-      )
-      expect(screen.getByText("23°C")).toBeInTheDocument()
-      expect(screen.getByText("24°C")).toBeInTheDocument()
-      expect(screen.getByText("65%")).toBeInTheDocument()
-      expect(screen.getByText("6 m/s")).toBeInTheDocument()
-      expect(screen.getByText("scattered clouds")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = openweathermapDefinition.toPayload!({
+        _status: "ok",
+        temperature: 23,
+        humidity: 65,
+        windSpeed: 6,
+        description: "scattered clouds",
+        feelsLike: 24,
+        unitSymbol: "°C",
+        speedUnit: "m/s",
+      })
+      expect(payload.stats).toHaveLength(5)
+      expect(payload.stats[0].value).toBe("23°C")
+      expect(payload.stats[0].label).toBe("Temp")
+      expect(payload.stats[1].value).toBe("24°C")
+      expect(payload.stats[1].label).toBe("Feels Like")
+      expect(payload.stats[2].value).toBe("65%")
+      expect(payload.stats[2].label).toBe("Humidity")
+      expect(payload.stats[3].value).toBe("6 m/s")
+      expect(payload.stats[3].label).toBe("Wind")
+      expect(payload.stats[4].value).toBe("scattered clouds")
+      expect(payload.stats[4].label).toBe("Condition")
     })
 
-    it("renders imperial units", () => {
-      render(
-        <openweathermapDefinition.Widget
-          temperature={73}
-          humidity={50}
-          windSpeed={10}
-          description="clear sky"
-          feelsLike={75}
-          unitSymbol="°F"
-          speedUnit="mph"
-        />
-      )
-      expect(screen.getByText("73°F")).toBeInTheDocument()
-      expect(screen.getByText("10 mph")).toBeInTheDocument()
+    it("handles imperial units", () => {
+      const payload = openweathermapDefinition.toPayload!({
+        _status: "ok",
+        temperature: 73,
+        humidity: 50,
+        windSpeed: 10,
+        description: "clear sky",
+        feelsLike: 75,
+        unitSymbol: "°F",
+        speedUnit: "mph",
+      })
+      expect(payload.stats[0].value).toBe("73°F")
+      expect(payload.stats[3].value).toBe("10 mph")
     })
   })
 })

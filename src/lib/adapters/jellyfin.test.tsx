@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { jellyfinDefinition } from "@/lib/adapters/jellyfin"
 
@@ -129,36 +128,35 @@ describe("jellyfin definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <jellyfinDefinition.Widget
-          activeStreams={3}
-          movies={100}
-          shows={15}
-          episodes={300}
-        />
-      )
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("100")).toBeInTheDocument()
-      expect(screen.getByText("15")).toBeInTheDocument()
-      expect(screen.getByText("300")).toBeInTheDocument()
-      expect(screen.getByText("Active Streams")).toBeInTheDocument()
-      expect(screen.getByText("Movies")).toBeInTheDocument()
-      expect(screen.getByText("Shows")).toBeInTheDocument()
-      expect(screen.getByText("Episodes")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = jellyfinDefinition.toPayload!({
+        _status: "ok",
+        activeStreams: 3,
+        movies: 100,
+        shows: 15,
+        episodes: 300,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(3)
+      expect(payload.stats[0].label).toBe("Active Streams")
+      expect(payload.stats[1].value).toBe(100)
+      expect(payload.stats[1].label).toBe("Movies")
+      expect(payload.stats[2].value).toBe(15)
+      expect(payload.stats[2].label).toBe("Shows")
+      expect(payload.stats[3].value).toBe(300)
+      expect(payload.stats[3].label).toBe("Episodes")
     })
 
-    it("renders zero values", () => {
-      render(
-        <jellyfinDefinition.Widget
-          activeStreams={0}
-          movies={0}
-          shows={0}
-          episodes={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("handles zero values", () => {
+      const payload = jellyfinDefinition.toPayload!({
+        _status: "ok",
+        activeStreams: 0,
+        movies: 0,
+        shows: 0,
+        episodes: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

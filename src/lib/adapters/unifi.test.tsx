@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { unifiDefinition } from "@/lib/adapters/unifi"
 
@@ -152,26 +151,35 @@ describe("unifi definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <unifiDefinition.Widget users={10} guests={5} devices={3} sites={1} />
-      )
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("1")).toBeInTheDocument()
-      expect(screen.getByText("Users")).toBeInTheDocument()
-      expect(screen.getByText("Guests")).toBeInTheDocument()
-      expect(screen.getByText("Devices")).toBeInTheDocument()
-      expect(screen.getByText("Sites")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = unifiDefinition.toPayload!({
+        _status: "ok",
+        users: 10,
+        guests: 5,
+        devices: 3,
+        sites: 1,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(10)
+      expect(payload.stats[0].label).toBe("Users")
+      expect(payload.stats[1].value).toBe(5)
+      expect(payload.stats[1].label).toBe("Guests")
+      expect(payload.stats[2].value).toBe(3)
+      expect(payload.stats[2].label).toBe("Devices")
+      expect(payload.stats[3].value).toBe(1)
+      expect(payload.stats[3].label).toBe("Sites")
     })
 
-    it("renders zero values", () => {
-      render(
-        <unifiDefinition.Widget users={0} guests={0} devices={0} sites={0} />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("handles zero values", () => {
+      const payload = unifiDefinition.toPayload!({
+        _status: "ok",
+        users: 0,
+        guests: 0,
+        devices: 0,
+        sites: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

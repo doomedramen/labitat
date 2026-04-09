@@ -1,11 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { qbittorrentDefinition } from "@/lib/adapters/qbittorrent"
-import { TooltipProvider } from "@/components/ui/tooltip"
-
-function renderWithTooltipProvider(ui: React.ReactElement) {
-  return render(<TooltipProvider>{ui}</TooltipProvider>)
-}
 
 describe("qbittorrent definition", () => {
   it("has correct metadata", () => {
@@ -190,44 +184,47 @@ describe("qbittorrent definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      renderWithTooltipProvider(
-        <qbittorrentDefinition.Widget
-          downSpeed="15.0 MB/s"
-          upSpeed="1.0 MB/s"
-          activeDownloads={3}
-          queued={5}
-          downloads={[
-            {
-              title: "Movie.mkv",
-              progress: 50,
-              timeLeft: "1:00h",
-              activity: "downloading",
-              size: "4.7 GB",
-            },
-          ]}
-        />
-      )
-      expect(screen.getByText("15.0 MB/s")).toBeInTheDocument()
-      expect(screen.getByText("1.0 MB/s")).toBeInTheDocument()
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("Movie.mkv")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = qbittorrentDefinition.toPayload!({
+        _status: "ok",
+        downSpeed: "15.0 MB/s",
+        upSpeed: "1.0 MB/s",
+        activeDownloads: 3,
+        queued: 5,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe("15.0 MB/s")
+      expect(payload.stats[0].label).toBe("Down")
+      expect(payload.stats[1].value).toBe("1.0 MB/s")
+      expect(payload.stats[1].label).toBe("Up")
+      expect(payload.stats[2].value).toBe(3)
+      expect(payload.stats[2].label).toBe("Active")
+      expect(payload.stats[3].value).toBe(5)
+      expect(payload.stats[3].label).toBe("Queued")
     })
 
-    it("renders without downloads", () => {
-      renderWithTooltipProvider(
-        <qbittorrentDefinition.Widget
-          downSpeed="100 KB/s"
-          upSpeed="50 KB/s"
-          activeDownloads={0}
-          queued={0}
-        />
-      )
-      expect(screen.getByText("100 KB/s")).toBeInTheDocument()
-      expect(screen.getByText("50 KB/s")).toBeInTheDocument()
-      expect(screen.getAllByText("0")).toHaveLength(2)
+    it("includes downloads when present", () => {
+      const payload = qbittorrentDefinition.toPayload!({
+        _status: "ok",
+        downSpeed: "10 MB/s",
+        upSpeed: "1 MB/s",
+        activeDownloads: 1,
+        queued: 0,
+        downloads: [{ title: "Movie.mkv", progress: 50 }],
+      })
+      expect(payload.downloads).toHaveLength(1)
+    })
+
+    it("excludes downloads when empty", () => {
+      const payload = qbittorrentDefinition.toPayload!({
+        _status: "ok",
+        downSpeed: "0 B/s",
+        upSpeed: "0 B/s",
+        activeDownloads: 0,
+        queued: 0,
+      })
+      expect(payload.downloads).toBeUndefined()
     })
   })
 })

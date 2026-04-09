@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Camera, Clock, Tag } from "lucide-react"
 
 type FrigateData = {
@@ -20,29 +19,29 @@ function formatUptime(seconds: number): string {
   return `${minutes}m`
 }
 
-function FrigateWidget({ cameras, uptime, version }: FrigateData) {
-  const items = [
-    {
-      id: "cameras",
-      value: (cameras ?? 0).toLocaleString(),
-      label: "Cameras",
-      icon: <Camera className="h-3 w-3" />,
-    },
-    {
-      id: "uptime",
-      value: formatUptime(uptime ?? 0),
-      label: "Uptime",
-      icon: <Clock className="h-3 w-3" />,
-    },
-    {
-      id: "version",
-      value: version,
-      label: "Version",
-      icon: <Tag className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function frigateToPayload(data: FrigateData) {
+  return {
+    stats: [
+      {
+        id: "cameras",
+        value: (data.cameras ?? 0).toLocaleString(),
+        label: "Cameras",
+        icon: <Camera className="h-3 w-3" />,
+      },
+      {
+        id: "uptime",
+        value: formatUptime(data.uptime ?? 0),
+        label: "Uptime",
+        icon: <Clock className="h-3 w-3" />,
+      },
+      {
+        id: "version",
+        value: data.version,
+        label: "Version",
+        icon: <Tag className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const frigateDefinition: ServiceDefinition<FrigateData> = {
@@ -130,5 +129,5 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
     }
   },
 
-  Widget: FrigateWidget,
+  toPayload: frigateToPayload,
 }

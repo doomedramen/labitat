@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Loader, List, CheckCircle, Trophy } from "lucide-react"
 
 type UnmanicData = {
@@ -11,42 +10,35 @@ type UnmanicData = {
   totalCompleted: number
 }
 
-function UnmanicWidget({
-  activeWorkers,
-  queuedItems,
-  completedToday,
-  totalCompleted,
-}: UnmanicData) {
-  return (
-    <WidgetStatGrid
-      items={[
-        {
-          id: "active",
-          value: activeWorkers,
-          label: "Active",
-          icon: <Loader className="h-3 w-3" />,
-        },
-        {
-          id: "queued",
-          value: queuedItems,
-          label: "Queued",
-          icon: <List className="h-3 w-3" />,
-        },
-        {
-          id: "today",
-          value: completedToday,
-          label: "Today",
-          icon: <CheckCircle className="h-3 w-3" />,
-        },
-        {
-          id: "total",
-          value: totalCompleted,
-          label: "Total",
-          icon: <Trophy className="h-3 w-3" />,
-        },
-      ]}
-    />
-  )
+function unmanicToPayload(data: UnmanicData) {
+  return {
+    stats: [
+      {
+        id: "active",
+        value: data.activeWorkers,
+        label: "Active",
+        icon: <Loader className="h-3 w-3" />,
+      },
+      {
+        id: "queued",
+        value: data.queuedItems,
+        label: "Queued",
+        icon: <List className="h-3 w-3" />,
+      },
+      {
+        id: "today",
+        value: data.completedToday,
+        label: "Today",
+        icon: <CheckCircle className="h-3 w-3" />,
+      },
+      {
+        id: "total",
+        value: data.totalCompleted,
+        label: "Total",
+        icon: <Trophy className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
@@ -93,5 +85,5 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
       totalCompleted: status.total_completed ?? 0,
     }
   },
-  Widget: UnmanicWidget,
+  toPayload: unmanicToPayload,
 }

@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { WidgetContainer } from "@/components/widgets"
 import type { ServiceData } from "@/lib/adapters/types"
 import type { ServiceDefinition } from "@/lib/adapters/types"
 import type { ItemRow } from "@/lib/types"
@@ -41,33 +42,16 @@ export function WidgetRenderer({
   cleanMode,
   item,
 }: WidgetRendererProps) {
-  const Widget = serviceDef?.Widget
-
-  // Show widget if we have data (even with warnings)
-  const hasWidget =
-    !editMode && Widget && serviceDef && (isClientSide || effectiveData)
+  // Custom widget takes precedence, otherwise use toPayload
+  const hasCustomWidget =
+    serviceDef?.renderWidget && (isClientSide || effectiveData)
+  const hasPayload =
+    serviceDef?.toPayload && effectiveData && !hasCustomWidget
 
   const showWidgetSkeleton =
     !editMode && effectiveLoading && !isClientSide && !effectiveData
 
-  const widgetProps =
-    isClientSide && serviceDef
-      ? {
-          ...effectiveData,
-          config: serviceDef.configFields.reduce(
-            (acc, field) => {
-              if (effectiveData?.[field.key] !== undefined) {
-                acc[field.key] = effectiveData[field.key]
-              }
-              return acc
-            },
-            {} as Record<string, unknown>
-          ),
-        }
-      : effectiveData
-
-  // Always render the container to avoid layout jumps
-  const isVisible = hasWidget && (effectiveData || !effectiveLoading)
+  const isVisible = (hasCustomWidget || hasPayload) && (effectiveData || !effectiveLoading)
 
   return (
     <div
@@ -84,7 +68,7 @@ export function WidgetRenderer({
           ))}
         </div>
       )}
-      {isVisible && Widget && effectiveData && (
+      {isVisible && effectiveData && serviceDef && (
         <WidgetDisplayProvider
           value={{
             statDisplayMode:
@@ -94,7 +78,11 @@ export function WidgetRenderer({
             itemId: item.id,
           }}
         >
-          <Widget {...(widgetProps as Record<string, unknown>)} />
+          {hasCustomWidget && serviceDef.renderWidget ? (
+            <serviceDef.renderWidget {...(effectiveData as Record<string, unknown>)} />
+          ) : hasPayload && serviceDef.toPayload ? (
+            <WidgetContainer payload={serviceDef.toPayload(effectiveData)} />
+          ) : null}
         </WidgetDisplayProvider>
       )}
     </div>

@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Route, Server, Shield } from "lucide-react"
 
 type TraefikData = {
@@ -10,29 +9,29 @@ type TraefikData = {
   middlewares: number
 }
 
-function TraefikWidget({ routers, services, middlewares }: TraefikData) {
-  const items = [
-    {
-      id: "routers",
-      value: (routers ?? 0).toLocaleString(),
-      label: "Routers",
-      icon: <Route className="h-3 w-3" />,
-    },
-    {
-      id: "services",
-      value: (services ?? 0).toLocaleString(),
-      label: "Services",
-      icon: <Server className="h-3 w-3" />,
-    },
-    {
-      id: "middlewares",
-      value: (middlewares ?? 0).toLocaleString(),
-      label: "Middlewares",
-      icon: <Shield className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function traefikToPayload(data: TraefikData) {
+  return {
+    stats: [
+      {
+        id: "routers",
+        value: (data.routers ?? 0).toLocaleString(),
+        label: "Routers",
+        icon: <Route className="h-3 w-3" />,
+      },
+      {
+        id: "services",
+        value: (data.services ?? 0).toLocaleString(),
+        label: "Services",
+        icon: <Server className="h-3 w-3" />,
+      },
+      {
+        id: "middlewares",
+        value: (data.middlewares ?? 0).toLocaleString(),
+        label: "Middlewares",
+        icon: <Shield className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const traefikDefinition: ServiceDefinition<TraefikData> = {
@@ -100,5 +99,5 @@ export const traefikDefinition: ServiceDefinition<TraefikData> = {
     }
   },
 
-  Widget: TraefikWidget,
+  toPayload: traefikToPayload,
 }

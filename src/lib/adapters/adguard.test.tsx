@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { adguardDefinition } from "@/lib/adapters/adguard"
 
@@ -142,28 +141,30 @@ describe("adguard definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders all stat items", () => {
-      render(
-        <adguardDefinition.Widget
-          queries={10000}
-          blocked={2500}
-          blockedPercent={25}
-          parentalBlocked={100}
-          safeSearchBlocked={50}
-          latency={45}
-        />
-      )
-      expect(screen.getByText("10000")).toBeInTheDocument()
-      expect(screen.getByText("2500")).toBeInTheDocument()
-      expect(screen.getByText("25.0%")).toBeInTheDocument()
-      expect(screen.getByText("Queries")).toBeInTheDocument()
-      expect(screen.getByText("Blocked")).toBeInTheDocument()
-      expect(screen.getByText("Rate")).toBeInTheDocument()
-      expect(screen.getByText("Parental")).toBeInTheDocument()
-      expect(screen.getByText("Safe")).toBeInTheDocument()
-      expect(screen.getByText("45ms")).toBeInTheDocument()
-      expect(screen.getByText("Latency")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = adguardDefinition.toPayload!({
+        _status: "ok",
+        queries: 10000,
+        blocked: 2500,
+        blockedPercent: 25,
+        parentalBlocked: 100,
+        safeSearchBlocked: 50,
+        latency: 45,
+      })
+      expect(payload.stats).toHaveLength(6)
+      expect(payload.stats[0].value).toBe(10000)
+      expect(payload.stats[0].label).toBe("Queries")
+      expect(payload.stats[1].value).toBe(2500)
+      expect(payload.stats[1].label).toBe("Blocked")
+      expect(payload.stats[2].value).toBe("25.0%")
+      expect(payload.stats[2].label).toBe("Rate")
+      expect(payload.stats[3].value).toBe(100)
+      expect(payload.stats[3].label).toBe("Parental")
+      expect(payload.stats[4].value).toBe(50)
+      expect(payload.stats[4].label).toBe("Safe")
+      expect(payload.stats[5].value).toBe("45ms")
+      expect(payload.stats[5].label).toBe("Latency")
     })
   })
 })

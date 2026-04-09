@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Search, Download, List } from "lucide-react"
 
 type ProwlarrData = {
@@ -10,31 +9,29 @@ type ProwlarrData = {
   indexers: number
 }
 
-function ProwlarrWidget({ queries, grabs, indexers }: ProwlarrData) {
-  return (
-    <WidgetStatGrid
-      items={[
-        {
-          id: "queries",
-          value: queries,
-          label: "Queries",
-          icon: <Search className="h-3 w-3" />,
-        },
-        {
-          id: "grabs",
-          value: grabs,
-          label: "Grabs",
-          icon: <Download className="h-3 w-3" />,
-        },
-        {
-          id: "indexers",
-          value: indexers,
-          label: "Indexers",
-          icon: <List className="h-3 w-3" />,
-        },
-      ]}
-    />
-  )
+function prowlarrToPayload(data: ProwlarrData) {
+  return {
+    stats: [
+      {
+        id: "queries",
+        value: data.queries,
+        label: "Queries",
+        icon: <Search className="h-3 w-3" />,
+      },
+      {
+        id: "grabs",
+        value: data.grabs,
+        label: "Grabs",
+        icon: <Download className="h-3 w-3" />,
+      },
+      {
+        id: "indexers",
+        value: data.indexers,
+        label: "Indexers",
+        icon: <List className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
@@ -95,5 +92,5 @@ export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
       indexers: Array.isArray(indexers) ? indexers.length : 0,
     }
   },
-  Widget: ProwlarrWidget,
+  toPayload: prowlarrToPayload,
 }

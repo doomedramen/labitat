@@ -1,6 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { DownloadList, type DownloadItem } from "@/components/widgets"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import type { DownloadItem } from "@/components/widgets"
 import { ArrowDown, ArrowUp, Download, List } from "lucide-react"
 
 type QBittorrentData = {
@@ -33,48 +32,36 @@ function formatTime(seconds: number): string {
   return `${m} min`
 }
 
-function QBittorrentWidget({
-  downSpeed,
-  upSpeed,
-  activeDownloads,
-  queued,
-  downloads,
-}: QBittorrentData) {
-  return (
-    <div className="space-y-2">
-      <WidgetStatGrid
-        items={[
-          {
-            id: "down",
-            value: downSpeed,
-            label: "Down",
-            icon: <ArrowDown className="h-3 w-3" />,
-          },
-          {
-            id: "up",
-            value: upSpeed,
-            label: "Up",
-            icon: <ArrowUp className="h-3 w-3" />,
-          },
-          {
-            id: "active",
-            value: activeDownloads,
-            label: "Active",
-            icon: <Download className="h-3 w-3" />,
-          },
-          {
-            id: "queued",
-            value: queued,
-            label: "Queued",
-            icon: <List className="h-3 w-3" />,
-          },
-        ]}
-      />
-      {downloads && downloads.length > 0 && (
-        <DownloadList downloads={downloads} />
-      )}
-    </div>
-  )
+function qbittorrentToPayload(data: QBittorrentData) {
+  return {
+    stats: [
+      {
+        id: "down",
+        value: data.downSpeed,
+        label: "Down",
+        icon: <ArrowDown className="h-3 w-3" />,
+      },
+      {
+        id: "up",
+        value: data.upSpeed,
+        label: "Up",
+        icon: <ArrowUp className="h-3 w-3" />,
+      },
+      {
+        id: "active",
+        value: data.activeDownloads,
+        label: "Active",
+        icon: <Download className="h-3 w-3" />,
+      },
+      {
+        id: "queued",
+        value: data.queued,
+        label: "Queued",
+        icon: <List className="h-3 w-3" />,
+      },
+    ],
+    downloads: data.downloads?.length ? data.downloads : undefined,
+  }
 }
 
 export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
@@ -172,5 +159,5 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       downloads,
     }
   },
-  Widget: QBittorrentWidget,
+  toPayload: qbittorrentToPayload,
 }

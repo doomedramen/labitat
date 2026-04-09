@@ -1,6 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { ActiveStreamList } from "@/components/widgets"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import type { ActiveStream } from "@/components/widgets"
 import { Play, Music, Film, Tv } from "lucide-react"
 
 type PlexSession = {
@@ -23,61 +22,46 @@ type PlexData = {
   sessions?: PlexSession[]
 }
 
-function PlexWidget({
-  streams,
-  albums,
-  movies,
-  tvShows,
-  showActiveStreams,
-  sessions,
-}: PlexData) {
-  const statsItems = [
-    {
-      id: "active",
-      value: streams,
-      label: "Active",
-      icon: <Play className="h-3 w-3" />,
-    },
-    {
-      id: "albums",
-      value: albums,
-      label: "Albums",
-      icon: <Music className="h-3 w-3" />,
-    },
-    {
-      id: "movies",
-      value: movies,
-      label: "Movies",
-      icon: <Film className="h-3 w-3" />,
-    },
-    {
-      id: "shows",
-      value: tvShows,
-      label: "Shows",
-      icon: <Tv className="h-3 w-3" />,
-    },
-  ]
-
-  return (
-    <div className="space-y-2">
-      <WidgetStatGrid items={statsItems} />
-
-      {showActiveStreams && sessions && sessions.length > 0 && (
-        <div className="mx-1 flex flex-col pb-1">
-          <ActiveStreamList
-            streams={sessions.map((session) => ({
-              title: session.title,
-              subtitle: session.subtitle,
-              user: session.user,
-              progress: session.progress,
-              duration: session.duration,
-              state: session.state,
-            }))}
-          />
-        </div>
-      )}
-    </div>
-  )
+function plexToPayload(data: PlexData) {
+  return {
+    stats: [
+      {
+        id: "active",
+        value: data.streams,
+        label: "Active",
+        icon: <Play className="h-3 w-3" />,
+      },
+      {
+        id: "albums",
+        value: data.albums,
+        label: "Albums",
+        icon: <Music className="h-3 w-3" />,
+      },
+      {
+        id: "movies",
+        value: data.movies,
+        label: "Movies",
+        icon: <Film className="h-3 w-3" />,
+      },
+      {
+        id: "shows",
+        value: data.tvShows,
+        label: "Shows",
+        icon: <Tv className="h-3 w-3" />,
+      },
+    ],
+    streams:
+      data.showActiveStreams && data.sessions?.length
+        ? data.sessions.map((session) => ({
+            title: session.title,
+            subtitle: session.subtitle,
+            user: session.user,
+            progress: session.progress,
+            duration: session.duration,
+            state: session.state,
+          }))
+        : undefined,
+  }
 }
 
 export const plexDefinition: ServiceDefinition<PlexData> = {
@@ -246,5 +230,5 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
       sessions,
     }
   },
-  Widget: PlexWidget,
+  toPayload: plexToPayload,
 }

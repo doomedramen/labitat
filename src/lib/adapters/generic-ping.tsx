@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { CheckCircle, XCircle } from "lucide-react"
 
 type GenericPingData = {
@@ -9,29 +8,29 @@ type GenericPingData = {
   responseTime: number
 }
 
-function GenericPingWidget({ status, responseTime }: GenericPingData) {
-  const isOnline = status === "up"
-  const items = [
-    {
-      id: "status",
-      value: isOnline ? "✓" : "✗",
-      label: isOnline ? "Online" : "Offline",
-      icon: isOnline ? (
-        <CheckCircle className="h-3 w-3" />
-      ) : (
-        <XCircle className="h-3 w-3" />
-      ),
-      valueClassName: isOnline ? undefined : "text-destructive",
-    },
-    {
-      id: "response",
-      value: `${responseTime}ms`,
-      label: "Response",
-      valueClassName: isOnline ? undefined : "text-destructive",
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function genericPingToPayload(data: GenericPingData) {
+  const isOnline = data.status === "up"
+  return {
+    stats: [
+      {
+        id: "status",
+        value: isOnline ? "✓" : "✗",
+        label: isOnline ? "Online" : "Offline",
+        icon: isOnline ? (
+          <CheckCircle className="h-3 w-3" />
+        ) : (
+          <XCircle className="h-3 w-3" />
+        ),
+        valueClassName: isOnline ? undefined : "text-destructive",
+      },
+      {
+        id: "response",
+        value: `${data.responseTime}ms`,
+        label: "Response",
+        valueClassName: isOnline ? undefined : "text-destructive",
+      },
+    ],
+  }
 }
 
 export const genericPingDefinition: ServiceDefinition<GenericPingData> = {
@@ -94,5 +93,5 @@ export const genericPingDefinition: ServiceDefinition<GenericPingData> = {
     }
   },
 
-  Widget: GenericPingWidget,
+  toPayload: genericPingToPayload,
 }

@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { immichDefinition } from "@/lib/adapters/immich"
 
@@ -112,32 +111,38 @@ describe("immich definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <immichDefinition.Widget
-          users={3}
-          photos={5000}
-          videos={500}
-          storage={50000000000}
-        />
-      )
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("5000")).toBeInTheDocument()
-      expect(screen.getByText("500")).toBeInTheDocument()
-      expect(screen.getByText("50.0 GB")).toBeInTheDocument()
-      expect(screen.getByText("Users")).toBeInTheDocument()
-      expect(screen.getByText("Photos")).toBeInTheDocument()
-      expect(screen.getByText("Videos")).toBeInTheDocument()
-      expect(screen.getByText("Storage")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = immichDefinition.toPayload!({
+        _status: "ok",
+        users: 3,
+        photos: 5000,
+        videos: 500,
+        storage: 50000000000,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(3)
+      expect(payload.stats[0].label).toBe("Users")
+      expect(payload.stats[1].value).toBe(5000)
+      expect(payload.stats[1].label).toBe("Photos")
+      expect(payload.stats[2].value).toBe(500)
+      expect(payload.stats[2].label).toBe("Videos")
+      expect(payload.stats[3].value).toBe("50.0 GB")
+      expect(payload.stats[3].label).toBe("Storage")
     })
 
-    it("renders zero values", () => {
-      render(
-        <immichDefinition.Widget users={0} photos={0} videos={0} storage={0} />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(3)
-      expect(screen.getByText("0 KB")).toBeInTheDocument()
+    it("handles zero values", () => {
+      const payload = immichDefinition.toPayload!({
+        _status: "ok",
+        users: 0,
+        photos: 0,
+        videos: 0,
+        storage: 0,
+      })
+      expect(payload.stats[0].value).toBe(0)
+      expect(payload.stats[1].value).toBe(0)
+      expect(payload.stats[2].value).toBe(0)
+      expect(payload.stats[3].value).toBe("0 KB")
     })
   })
 })

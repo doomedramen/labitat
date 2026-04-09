@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { sonarrDefinition } from "@/lib/adapters/sonarr"
 
@@ -249,31 +248,62 @@ describe("sonarr definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <sonarrDefinition.Widget
-          queued={3}
-          missing={7}
-          wanted={10}
-          series={25}
-        />
-      )
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("7")).toBeInTheDocument()
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("25")).toBeInTheDocument()
-      expect(screen.getByText("Queued")).toBeInTheDocument()
-      expect(screen.getByText("Missing")).toBeInTheDocument()
-      expect(screen.getByText("Wanted")).toBeInTheDocument()
-      expect(screen.getByText("Series")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = sonarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 3,
+        missing: 7,
+        wanted: 10,
+        series: 25,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(3)
+      expect(payload.stats[0].label).toBe("Queued")
+      expect(payload.stats[1].value).toBe(7)
+      expect(payload.stats[1].label).toBe("Missing")
+      expect(payload.stats[2].value).toBe(10)
+      expect(payload.stats[2].label).toBe("Wanted")
+      expect(payload.stats[3].value).toBe(25)
+      expect(payload.stats[3].label).toBe("Series")
     })
 
-    it("renders zero values", () => {
-      render(
-        <sonarrDefinition.Widget queued={0} missing={0} wanted={0} series={0} />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("includes downloads when enabled", () => {
+      const payload = sonarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 1,
+        missing: 0,
+        wanted: 0,
+        series: 1,
+        showActiveDownloads: true,
+        downloads: [{ title: "Test", progress: 50 }],
+      })
+      expect(payload.downloads).toHaveLength(1)
+      expect(payload.downloads![0].title).toBe("Test")
+    })
+
+    it("excludes downloads when disabled", () => {
+      const payload = sonarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 1,
+        missing: 0,
+        wanted: 0,
+        series: 1,
+        showActiveDownloads: false,
+        downloads: [{ title: "Test", progress: 50 }],
+      })
+      expect(payload.downloads).toBeUndefined()
+    })
+
+    it("handles zero values", () => {
+      const payload = sonarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 0,
+        missing: 0,
+        wanted: 0,
+        series: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

@@ -1,11 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { tautulliDefinition } from "@/lib/adapters/tautulli"
-import { TooltipProvider } from "@/components/ui/tooltip"
-
-function renderWithTooltipProvider(ui: React.ReactElement) {
-  return render(<TooltipProvider>{ui}</TooltipProvider>)
-}
 
 describe("tautulli definition", () => {
   it("has correct metadata", () => {
@@ -207,45 +201,57 @@ describe("tautulli definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      renderWithTooltipProvider(
-        <tautulliDefinition.Widget
-          streamCount={3}
-          totalBandwidth="15.0 MB/s"
-          transcodeStreams={2}
-          directPlayStreams={5}
-          directStreamStreams={8}
-          sessions={[
-            {
-              title: "Movie",
-              user: "user1",
-              progress: 3600,
-              duration: 7200,
-              state: "playing",
-            },
-          ]}
-        />
-      )
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("15.0 MB/s")).toBeInTheDocument()
-      expect(screen.getByText("2")).toBeInTheDocument()
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("Movie")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = tautulliDefinition.toPayload!({
+        _status: "ok",
+        streamCount: 3,
+        totalBandwidth: "15.0 MB/s",
+        transcodeStreams: 2,
+        directPlayStreams: 5,
+        directStreamStreams: 8,
+      })
+      expect(payload.stats).toHaveLength(5)
+      expect(payload.stats[0].value).toBe(3)
+      expect(payload.stats[0].label).toBe("Streams")
+      expect(payload.stats[1].value).toBe("15.0 MB/s")
+      expect(payload.stats[1].label).toBe("Bandwidth")
+      expect(payload.stats[2].value).toBe(2)
+      expect(payload.stats[2].label).toBe("Transcoding")
     })
 
-    it("renders without sessions", () => {
-      renderWithTooltipProvider(
-        <tautulliDefinition.Widget
-          streamCount={0}
-          totalBandwidth="0 B/s"
-          transcodeStreams={0}
-          directPlayStreams={0}
-          directStreamStreams={0}
-        />
-      )
-      expect(screen.getByText("0 B/s")).toBeInTheDocument()
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("includes sessions when present", () => {
+      const payload = tautulliDefinition.toPayload!({
+        _status: "ok",
+        streamCount: 1,
+        totalBandwidth: "1.0 MB/s",
+        transcodeStreams: 0,
+        directPlayStreams: 1,
+        directStreamStreams: 0,
+        sessions: [
+          {
+            title: "Movie",
+            user: "user1",
+            progress: 3600,
+            duration: 7200,
+            state: "playing",
+          },
+        ],
+      })
+      expect(payload.streams).toHaveLength(1)
+      expect(payload.streams![0].title).toBe("Movie")
+    })
+
+    it("excludes sessions when empty", () => {
+      const payload = tautulliDefinition.toPayload!({
+        _status: "ok",
+        streamCount: 0,
+        totalBandwidth: "0 B/s",
+        transcodeStreams: 0,
+        directPlayStreams: 0,
+        directStreamStreams: 0,
+      })
+      expect(payload.streams).toBeUndefined()
     })
   })
 })

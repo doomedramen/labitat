@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { WidgetContainer } from "@/components/widgets"
 import { Globe, Ban, Percent, Shield } from "lucide-react"
 
 type PiholeData = {
@@ -11,40 +11,35 @@ type PiholeData = {
   domainsBlocked: number
 }
 
-function PiholeWidget({
-  queries,
-  blocked,
-  percentBlocked,
-  domainsBlocked,
-}: PiholeData) {
-  const items = [
-    {
-      id: "queries",
-      value: (queries ?? 0).toLocaleString(),
-      label: "Queries",
-      icon: <Globe className="h-3 w-3" />,
-    },
-    {
-      id: "blocked",
-      value: (blocked ?? 0).toLocaleString(),
-      label: "Blocked",
-      icon: <Ban className="h-3 w-3" />,
-    },
-    {
-      id: "percent-blocked",
-      value: percentBlocked,
-      label: "Blocked %",
-      icon: <Percent className="h-3 w-3" />,
-    },
-    {
-      id: "domains",
-      value: (domainsBlocked ?? 0).toLocaleString(),
-      label: "Domains",
-      icon: <Shield className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function piholeToPayload(data: PiholeData) {
+  return {
+    stats: [
+      {
+        id: "queries",
+        value: (data.queries ?? 0).toLocaleString(),
+        label: "Queries",
+        icon: <Globe className="h-3 w-3" />,
+      },
+      {
+        id: "blocked",
+        value: (data.blocked ?? 0).toLocaleString(),
+        label: "Blocked",
+        icon: <Ban className="h-3 w-3" />,
+      },
+      {
+        id: "percent-blocked",
+        value: data.percentBlocked,
+        label: "Blocked %",
+        icon: <Percent className="h-3 w-3" />,
+      },
+      {
+        id: "domains",
+        value: (data.domainsBlocked ?? 0).toLocaleString(),
+        label: "Domains",
+        icon: <Shield className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const piholeDefinition: ServiceDefinition<PiholeData> = {
@@ -122,5 +117,5 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
     }
   },
 
-  Widget: PiholeWidget,
+  toPayload: piholeToPayload,
 }

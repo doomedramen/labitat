@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { unmanicDefinition } from "@/lib/adapters/unmanic"
 
@@ -114,36 +113,35 @@ describe("unmanic definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <unmanicDefinition.Widget
-          activeWorkers={2}
-          queuedItems={5}
-          completedToday={10}
-          totalCompleted={150}
-        />
-      )
-      expect(screen.getByText("2")).toBeInTheDocument()
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("150")).toBeInTheDocument()
-      expect(screen.getByText("Active")).toBeInTheDocument()
-      expect(screen.getByText("Queued")).toBeInTheDocument()
-      expect(screen.getByText("Today")).toBeInTheDocument()
-      expect(screen.getByText("Total")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = unmanicDefinition.toPayload!({
+        _status: "ok",
+        activeWorkers: 2,
+        queuedItems: 5,
+        completedToday: 10,
+        totalCompleted: 150,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe(2)
+      expect(payload.stats[0].label).toBe("Active")
+      expect(payload.stats[1].value).toBe(5)
+      expect(payload.stats[1].label).toBe("Queued")
+      expect(payload.stats[2].value).toBe(10)
+      expect(payload.stats[2].label).toBe("Today")
+      expect(payload.stats[3].value).toBe(150)
+      expect(payload.stats[3].label).toBe("Total")
     })
 
-    it("renders zero values", () => {
-      render(
-        <unmanicDefinition.Widget
-          activeWorkers={0}
-          queuedItems={0}
-          completedToday={0}
-          totalCompleted={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("handles zero values", () => {
+      const payload = unmanicDefinition.toPayload!({
+        _status: "ok",
+        activeWorkers: 0,
+        queuedItems: 0,
+        completedToday: 0,
+        totalCompleted: 0,
+      })
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })
   })
 })

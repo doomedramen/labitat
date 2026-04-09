@@ -1,6 +1,22 @@
-import { render, screen } from "@testing-library/react"
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { render } from "@testing-library/react"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { pipesDefinition } from "@/lib/adapters/pipes"
+
+const mockCtx = {
+  fillStyle: "",
+  strokeStyle: "",
+  lineWidth: 0,
+  lineCap: "" as CanvasLineCap,
+  font: "",
+  fillRect: vi.fn(),
+  fillText: vi.fn(),
+  beginPath: vi.fn(),
+  arc: vi.fn(),
+  fill: vi.fn(),
+  moveTo: vi.fn(),
+  lineTo: vi.fn(),
+  stroke: vi.fn(),
+}
 
 describe("pipes definition", () => {
   it("has correct metadata", () => {
@@ -10,55 +26,44 @@ describe("pipes definition", () => {
     expect(pipesDefinition.category).toBe("info")
   })
 
-  it("has configFields defined", () => {
-    expect(pipesDefinition.configFields).toBeDefined()
-    expect(pipesDefinition.configFields).toHaveLength(1)
-    expect(pipesDefinition.configFields[0].key).toBe("message")
-    expect(pipesDefinition.configFields[0].type).toBe("text")
-    expect(pipesDefinition.configFields[0].required).toBe(false)
+  it("has no required config fields", () => {
+    expect(pipesDefinition.configFields).toHaveLength(0)
   })
 
   describe("fetchData", () => {
+    it("returns ok status with no config needed", async () => {
+      const result = await pipesDefinition.fetchData!({})
+      expect(result._status).toBe("ok")
+    })
+  })
+
+  describe("renderWidget", () => {
     beforeEach(() => {
-      vi.resetAllMocks()
+      vi.stubGlobal(
+        "ResizeObserver",
+        vi.fn(() => ({ observe: vi.fn(), disconnect: vi.fn() }))
+      )
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
+        mockCtx as unknown as CanvasRenderingContext2D
+      )
     })
 
     afterEach(() => {
       vi.restoreAllMocks()
     })
 
-    it("returns default message when not provided", async () => {
-      const result = await pipesDefinition.fetchData!({})
-
-      expect(result._status).toBe("ok")
-      expect(result.message).toBe("Pipes connected!")
+    it("renders a canvas element", () => {
+      const Widget = pipesDefinition.renderWidget!
+      const { container } = render(<Widget />)
+      expect(container.querySelector("canvas")).toBeInTheDocument()
     })
 
-    it("uses provided message", async () => {
-      const result = await pipesDefinition.fetchData!({
-        message: "Custom message",
-      })
-
-      expect(result._status).toBe("ok")
-      expect(result.message).toBe("Custom message")
-    })
-  })
-
-  describe("Widget", () => {
-    it("renders with default message", () => {
-      render(<pipesDefinition.Widget message="Pipes connected!" />)
-      expect(screen.getByText("Pipes connected!")).toBeInTheDocument()
-    })
-
-    it("renders custom message", () => {
-      render(<pipesDefinition.Widget message="Hello, World!" />)
-      expect(screen.getByText("Hello, World!")).toBeInTheDocument()
-    })
-
-    it("applies muted foreground styling", () => {
-      const { container } = render(<pipesDefinition.Widget message="Test" />)
-      const element = container.querySelector(".text-muted-foreground")
-      expect(element).toBeInTheDocument()
+    it("canvas has dark background style", () => {
+      const Widget = pipesDefinition.renderWidget!
+      const { container } = render(<Widget />)
+      const canvas = container.querySelector("canvas")
+      // jsdom normalises #0a0a0a → rgb(10, 10, 10)
+      expect(canvas?.style.background).toBe("rgb(10, 10, 10)")
     })
   })
 })

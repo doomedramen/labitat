@@ -1,6 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { DownloadList, type DownloadItem } from "@/components/widgets"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import type { DownloadItem } from "@/components/widgets"
 import { Film, Download, AlertTriangle, Search } from "lucide-react"
 
 type RadarrData = {
@@ -30,49 +29,39 @@ function formatTimeLeft(minutes: number): string {
   return `${hours}h ${mins}m`
 }
 
-function RadarrWidget({
-  queued,
-  missing,
-  wanted,
-  movies,
-  showActiveDownloads,
-  downloads,
-}: RadarrData) {
-  return (
-    <div className="space-y-2">
-      <WidgetStatGrid
-        items={[
-          {
-            id: "queued",
-            value: queued,
-            label: "Queued",
-            icon: <Download className="h-3 w-3" />,
-          },
-          {
-            id: "missing",
-            value: missing,
-            label: "Missing",
-            icon: <AlertTriangle className="h-3 w-3" />,
-          },
-          {
-            id: "wanted",
-            value: wanted,
-            label: "Wanted",
-            icon: <Search className="h-3 w-3" />,
-          },
-          {
-            id: "movies",
-            value: movies,
-            label: "Movies",
-            icon: <Film className="h-3 w-3" />,
-          },
-        ]}
-      />
-      {showActiveDownloads && downloads && downloads.length > 0 && (
-        <DownloadList downloads={downloads} />
-      )}
-    </div>
-  )
+function radarrToPayload(data: RadarrData) {
+  return {
+    stats: [
+      {
+        id: "queued",
+        value: data.queued,
+        label: "Queued",
+        icon: <Download className="h-3 w-3" />,
+      },
+      {
+        id: "missing",
+        value: data.missing,
+        label: "Missing",
+        icon: <AlertTriangle className="h-3 w-3" />,
+      },
+      {
+        id: "wanted",
+        value: data.wanted,
+        label: "Wanted",
+        icon: <Search className="h-3 w-3" />,
+      },
+      {
+        id: "movies",
+        value: data.movies,
+        label: "Movies",
+        icon: <Film className="h-3 w-3" />,
+      },
+    ],
+    downloads:
+      data.showActiveDownloads && data.downloads?.length
+        ? data.downloads
+        : undefined,
+  }
 }
 
 export const radarrDefinition: ServiceDefinition<RadarrData> = {
@@ -182,5 +171,5 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
       downloads,
     }
   },
-  Widget: RadarrWidget,
+  toPayload: radarrToPayload,
 }

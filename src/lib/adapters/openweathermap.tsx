@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { WidgetContainer } from "@/components/widgets"
 import {
   Thermometer,
   Droplets,
@@ -20,51 +20,41 @@ type OpenWeatherMapData = {
   speedUnit: string
 }
 
-function OpenWeatherMapWidget({
-  temperature,
-  humidity,
-  windSpeed,
-  description,
-  feelsLike,
-  unitSymbol,
-  speedUnit,
-}: OpenWeatherMapData) {
-  return (
-    <WidgetStatGrid
-      items={[
-        {
-          id: "temp",
-          value: `${temperature}${unitSymbol}`,
-          label: "Temp",
-          icon: <Thermometer className="h-3 w-3" />,
-        },
-        {
-          id: "feels-like",
-          value: `${feelsLike}${unitSymbol}`,
-          label: "Feels Like",
-          icon: <ThermometerSun className="h-3 w-3" />,
-        },
-        {
-          id: "humidity",
-          value: `${humidity}%`,
-          label: "Humidity",
-          icon: <Droplets className="h-3 w-3" />,
-        },
-        {
-          id: "wind",
-          value: `${windSpeed} ${speedUnit}`,
-          label: "Wind",
-          icon: <Wind className="h-3 w-3" />,
-        },
-        {
-          id: "condition",
-          value: description,
-          label: "Condition",
-          icon: <Cloud className="h-3 w-3" />,
-        },
-      ]}
-    />
-  )
+function openweathermapToPayload(data: OpenWeatherMapData) {
+  return {
+    stats: [
+      {
+        id: "temp",
+        value: `${data.temperature}${data.unitSymbol}`,
+        label: "Temp",
+        icon: <Thermometer className="h-3 w-3" />,
+      },
+      {
+        id: "feels-like",
+        value: `${data.feelsLike}${data.unitSymbol}`,
+        label: "Feels Like",
+        icon: <ThermometerSun className="h-3 w-3" />,
+      },
+      {
+        id: "humidity",
+        value: `${data.humidity}%`,
+        label: "Humidity",
+        icon: <Droplets className="h-3 w-3" />,
+      },
+      {
+        id: "wind",
+        value: `${data.windSpeed} ${data.speedUnit}`,
+        label: "Wind",
+        icon: <Wind className="h-3 w-3" />,
+      },
+      {
+        id: "condition",
+        value: data.description,
+        label: "Condition",
+        icon: <Cloud className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const openweathermapDefinition: ServiceDefinition<OpenWeatherMapData> = {
@@ -128,5 +118,5 @@ export const openweathermapDefinition: ServiceDefinition<OpenWeatherMapData> = {
       speedUnit,
     }
   },
-  Widget: OpenWeatherMapWidget,
+  toPayload: openweathermapToPayload,
 }

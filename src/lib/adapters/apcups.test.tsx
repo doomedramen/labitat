@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { apcupsDefinition } from "@/lib/adapters/apcups"
 
@@ -112,34 +111,38 @@ describe("apcups definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <apcupsDefinition.Widget
-          loadPercent={45}
-          batteryCharge={100}
-          timeLeft={2100}
-          temperature={32}
-          status="ONLINE"
-        />
-      )
-      expect(screen.getByText("45%")).toBeInTheDocument()
-      expect(screen.getByText("100%")).toBeInTheDocument()
-      expect(screen.getByText("35m")).toBeInTheDocument()
-      expect(screen.getByText("32°C")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = apcupsDefinition.toPayload!({
+        _status: "ok",
+        loadPercent: 45,
+        batteryCharge: 100,
+        timeLeft: 2100,
+        temperature: 32,
+        status: "ONLINE",
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe("45%")
+      expect(payload.stats[0].label).toBe("Load")
+      expect(payload.stats[1].value).toBe("100%")
+      expect(payload.stats[1].label).toBe("Battery")
+      expect(payload.stats[2].value).toBe("35m")
+      expect(payload.stats[2].label).toBe("Time")
+      expect(payload.stats[3].value).toBe("32°C")
+      expect(payload.stats[3].label).toBe("Temp")
     })
 
     it("shows seconds when time left is under 60", () => {
-      render(
-        <apcupsDefinition.Widget
-          loadPercent={80}
-          batteryCharge={10}
-          timeLeft={30}
-          temperature={35}
-          status="ONBATT"
-        />
-      )
-      expect(screen.getByText("30s")).toBeInTheDocument()
+      const payload = apcupsDefinition.toPayload!({
+        _status: "warn",
+        _statusText: "UPS Status: ONBATT",
+        loadPercent: 80,
+        batteryCharge: 10,
+        timeLeft: 30,
+        temperature: 35,
+        status: "ONBATT",
+      })
+      expect(payload.stats[2].value).toBe("30s")
     })
   })
 })

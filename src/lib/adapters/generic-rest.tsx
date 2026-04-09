@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Activity } from "lucide-react"
 
 type GenericRestData = {
@@ -9,14 +8,12 @@ type GenericRestData = {
   label: string
 }
 
-function GenericRestWidget({ value, label }: GenericRestData) {
-  return (
-    <WidgetStatGrid
-      items={[
-        { id: "value", value, label, icon: <Activity className="h-3 w-3" /> },
-      ]}
-    />
-  )
+function genericRestToPayload(data: GenericRestData) {
+  return {
+    stats: [
+      { id: "value", value: data.value, label: data.label, icon: <Activity className="h-3 w-3" /> },
+    ],
+  }
 }
 
 export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
@@ -128,5 +125,5 @@ export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
     }
   },
 
-  Widget: GenericRestWidget,
+  toPayload: genericRestToPayload,
 }

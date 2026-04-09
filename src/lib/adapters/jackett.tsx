@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Settings, AlertCircle } from "lucide-react"
 
 type JackettData = {
@@ -9,23 +8,23 @@ type JackettData = {
   errored: number
 }
 
-function JackettWidget({ configured, errored }: JackettData) {
-  const items = [
-    {
-      id: "configured",
-      value: (configured ?? 0).toLocaleString(),
-      label: "Configured",
-      icon: <Settings className="h-3 w-3" />,
-    },
-    {
-      id: "errored",
-      value: (errored ?? 0).toLocaleString(),
-      label: "Errored",
-      icon: <AlertCircle className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function jackettToPayload(data: JackettData) {
+  return {
+    stats: [
+      {
+        id: "configured",
+        value: (data.configured ?? 0).toLocaleString(),
+        label: "Configured",
+        icon: <Settings className="h-3 w-3" />,
+      },
+      {
+        id: "errored",
+        value: (data.errored ?? 0).toLocaleString(),
+        label: "Errored",
+        icon: <AlertCircle className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const jackettDefinition: ServiceDefinition<JackettData> = {
@@ -114,5 +113,5 @@ export const jackettDefinition: ServiceDefinition<JackettData> = {
     }
   },
 
-  Widget: JackettWidget,
+  toPayload: jackettToPayload,
 }

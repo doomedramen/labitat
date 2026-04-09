@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { embyDefinition } from "@/lib/adapters/emby"
 
@@ -130,36 +129,35 @@ describe("emby definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <embyDefinition.Widget
-          activeStreams={3}
-          movies={150}
-          shows={20}
-          episodes={500}
-        />
-      )
-      expect(screen.getByText("3")).toBeInTheDocument()
-      expect(screen.getByText("150")).toBeInTheDocument()
-      expect(screen.getByText("20")).toBeInTheDocument()
-      expect(screen.getByText("500")).toBeInTheDocument()
-      expect(screen.getByText("Active Streams")).toBeInTheDocument()
-      expect(screen.getByText("Movies")).toBeInTheDocument()
-      expect(screen.getByText("Shows")).toBeInTheDocument()
-      expect(screen.getByText("Episodes")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = embyDefinition.toPayload!({
+        _status: "ok",
+        activeStreams: 3,
+        movies: 150,
+        shows: 20,
+        episodes: 500,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe("3")
+      expect(payload.stats[0].label).toBe("Active Streams")
+      expect(payload.stats[1].value).toBe("150")
+      expect(payload.stats[1].label).toBe("Movies")
+      expect(payload.stats[2].value).toBe("20")
+      expect(payload.stats[2].label).toBe("Shows")
+      expect(payload.stats[3].value).toBe("500")
+      expect(payload.stats[3].label).toBe("Episodes")
     })
 
-    it("renders zero values", () => {
-      render(
-        <embyDefinition.Widget
-          activeStreams={0}
-          movies={0}
-          shows={0}
-          episodes={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("handles zero values", () => {
+      const payload = embyDefinition.toPayload!({
+        _status: "ok",
+        activeStreams: 0,
+        movies: 0,
+        shows: 0,
+        episodes: 0,
+      })
+      expect(payload.stats.every((s) => s.value === "0")).toBe(true)
     })
   })
 })

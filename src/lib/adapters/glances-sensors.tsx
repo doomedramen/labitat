@@ -121,5 +121,5 @@ export const glancesSensorsDefinition: ServiceDefinition<GlancesSensorsData> = {
       fanSpeed,
     }
   },
-  Widget: GlancesSensorsWidget,
+  renderWidget: GlancesSensorsWidget,
 }

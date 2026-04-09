@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Server, Monitor, Container } from "lucide-react"
 
 type ProxmoxData = {
@@ -12,37 +11,29 @@ type ProxmoxData = {
   runningContainers: number
 }
 
-function ProxmoxWidget({
-  nodes,
-  vms,
-  containers,
-  runningVMs,
-  runningContainers,
-}: ProxmoxData) {
-  return (
-    <WidgetStatGrid
-      items={[
-        {
-          id: "nodes",
-          value: nodes ?? 0,
-          label: "Nodes",
-          icon: <Server className="h-3 w-3" />,
-        },
-        {
-          id: "vms",
-          value: `${runningVMs ?? 0}/${vms ?? 0}`,
-          label: "VMs",
-          icon: <Monitor className="h-3 w-3" />,
-        },
-        {
-          id: "lxcs",
-          value: `${runningContainers ?? 0}/${containers ?? 0}`,
-          label: "LXCs",
-          icon: <Container className="h-3 w-3" />,
-        },
-      ]}
-    />
-  )
+function proxmoxToPayload(data: ProxmoxData) {
+  return {
+    stats: [
+      {
+        id: "nodes",
+        value: data.nodes ?? 0,
+        label: "Nodes",
+        icon: <Server className="h-3 w-3" />,
+      },
+      {
+        id: "vms",
+        value: `${data.runningVMs ?? 0}/${data.vms ?? 0}`,
+        label: "VMs",
+        icon: <Monitor className="h-3 w-3" />,
+      },
+      {
+        id: "lxcs",
+        value: `${data.runningContainers ?? 0}/${data.containers ?? 0}`,
+        label: "LXCs",
+        icon: <Container className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
@@ -134,5 +125,5 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
       runningContainers,
     }
   },
-  Widget: ProxmoxWidget,
+  toPayload: proxmoxToPayload,
 }

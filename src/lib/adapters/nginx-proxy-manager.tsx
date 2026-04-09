@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { Globe, ArrowRight, Wifi, Ban } from "lucide-react"
 
 type NginxProxyManagerData = {
@@ -11,46 +10,39 @@ type NginxProxyManagerData = {
   deadHosts: number
 }
 
-function NginxProxyManagerWidget({
-  hosts,
-  redirHosts,
-  streams,
-  deadHosts,
-}: NginxProxyManagerData) {
-  return (
-    <WidgetStatGrid
-      items={[
-        {
-          id: "hosts",
-          value: hosts,
-          label: "Proxy Hosts",
-          icon: <Globe className="h-3 w-3" />,
-          tooltip: "Proxy Hosts",
-        },
-        {
-          id: "redirections",
-          value: redirHosts,
-          label: "Redirections",
-          icon: <ArrowRight className="h-3 w-3" />,
-          tooltip: "Redirections",
-        },
-        {
-          id: "streams",
-          value: streams,
-          label: "Streams",
-          icon: <Wifi className="h-3 w-3" />,
-          tooltip: "Streams",
-        },
-        {
-          id: "disabled",
-          value: deadHosts,
-          label: "Disabled",
-          icon: <Ban className="h-3 w-3" />,
-          tooltip: "Disabled",
-        },
-      ]}
-    />
-  )
+function nginxProxyManagerToPayload(data: NginxProxyManagerData) {
+  return {
+    stats: [
+      {
+        id: "hosts",
+        value: data.hosts,
+        label: "Proxy Hosts",
+        icon: <Globe className="h-3 w-3" />,
+        tooltip: "Proxy Hosts",
+      },
+      {
+        id: "redirections",
+        value: data.redirHosts,
+        label: "Redirections",
+        icon: <ArrowRight className="h-3 w-3" />,
+        tooltip: "Redirections",
+      },
+      {
+        id: "streams",
+        value: data.streams,
+        label: "Streams",
+        icon: <Wifi className="h-3 w-3" />,
+        tooltip: "Streams",
+      },
+      {
+        id: "disabled",
+        value: data.deadHosts,
+        label: "Disabled",
+        icon: <Ban className="h-3 w-3" />,
+        tooltip: "Disabled",
+      },
+    ],
+  }
 }
 
 function parseCount(data: unknown): number {
@@ -135,5 +127,5 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         deadHosts,
       }
     },
-    Widget: NginxProxyManagerWidget,
+    toPayload: nginxProxyManagerToPayload,
   }

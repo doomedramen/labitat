@@ -149,5 +149,5 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
       uptime,
     }
   },
-  Widget: GlancesWidget,
+  renderWidget: GlancesWidget,
 }

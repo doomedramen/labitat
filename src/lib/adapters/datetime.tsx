@@ -90,5 +90,5 @@ export const datetimeDefinition: ServiceDefinition<DateTimeData> = {
       timeZoneOffset: offsetStr,
     })
   },
-  Widget: DateTimeWidget,
+  renderWidget: DateTimeWidget,
 }

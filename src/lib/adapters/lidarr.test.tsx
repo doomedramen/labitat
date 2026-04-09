@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { lidarrDefinition } from "@/lib/adapters/lidarr"
 
@@ -114,20 +113,31 @@ describe("lidarr definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(<lidarrDefinition.Widget queued={5} wanted={10} artists={25} />)
-      expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("25")).toBeInTheDocument()
-      expect(screen.getByText("Wanted")).toBeInTheDocument()
-      expect(screen.getByText("Queued")).toBeInTheDocument()
-      expect(screen.getByText("Artists")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = lidarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 5,
+        wanted: 10,
+        artists: 25,
+      })
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].value).toBe("10")
+      expect(payload.stats[0].label).toBe("Wanted")
+      expect(payload.stats[1].value).toBe("5")
+      expect(payload.stats[1].label).toBe("Queued")
+      expect(payload.stats[2].value).toBe("25")
+      expect(payload.stats[2].label).toBe("Artists")
     })
 
-    it("renders zero values", () => {
-      render(<lidarrDefinition.Widget queued={0} wanted={0} artists={0} />)
-      expect(screen.getAllByText("0")).toHaveLength(3)
+    it("handles zero values", () => {
+      const payload = lidarrDefinition.toPayload!({
+        _status: "ok",
+        queued: 0,
+        wanted: 0,
+        artists: 0,
+      })
+      expect(payload.stats.every((s) => s.value === "0")).toBe(true)
     })
   })
 })

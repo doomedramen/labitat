@@ -1,4 +1,3 @@
-import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { homeassistantDefinition } from "@/lib/adapters/homeassistant"
 
@@ -126,36 +125,35 @@ describe("homeassistant definition", () => {
     })
   })
 
-  describe("Widget", () => {
-    it("renders with sample data", () => {
-      render(
-        <homeassistantDefinition.Widget
-          entities={150}
-          sensors={50}
-          lights={20}
-          switches={15}
-        />
-      )
-      expect(screen.getByText("150")).toBeInTheDocument()
-      expect(screen.getByText("50")).toBeInTheDocument()
-      expect(screen.getByText("20")).toBeInTheDocument()
-      expect(screen.getByText("15")).toBeInTheDocument()
-      expect(screen.getByText("Entities")).toBeInTheDocument()
-      expect(screen.getByText("Sensors")).toBeInTheDocument()
-      expect(screen.getByText("Lights")).toBeInTheDocument()
-      expect(screen.getByText("Switches")).toBeInTheDocument()
+  describe("toPayload", () => {
+    it("converts data to payload with stats", () => {
+      const payload = homeassistantDefinition.toPayload!({
+        _status: "ok",
+        entities: 150,
+        sensors: 50,
+        lights: 20,
+        switches: 15,
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[0].value).toBe("150")
+      expect(payload.stats[0].label).toBe("Entities")
+      expect(payload.stats[1].value).toBe("50")
+      expect(payload.stats[1].label).toBe("Sensors")
+      expect(payload.stats[2].value).toBe("20")
+      expect(payload.stats[2].label).toBe("Lights")
+      expect(payload.stats[3].value).toBe("15")
+      expect(payload.stats[3].label).toBe("Switches")
     })
 
-    it("renders zero values", () => {
-      render(
-        <homeassistantDefinition.Widget
-          entities={0}
-          sensors={0}
-          lights={0}
-          switches={0}
-        />
-      )
-      expect(screen.getAllByText("0")).toHaveLength(4)
+    it("handles zero values", () => {
+      const payload = homeassistantDefinition.toPayload!({
+        _status: "ok",
+        entities: 0,
+        sensors: 0,
+        lights: 0,
+        switches: 0,
+      })
+      expect(payload.stats.every((s) => s.value === "0")).toBe(true)
     })
   })
 })

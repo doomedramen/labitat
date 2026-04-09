@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { LayoutDashboard, Database, Bell, AlertTriangle } from "lucide-react"
 
 type GrafanaData = {
@@ -11,40 +10,35 @@ type GrafanaData = {
   alertsTriggered: number
 }
 
-function GrafanaWidget({
-  dashboards,
-  datasources,
-  totalAlerts,
-  alertsTriggered,
-}: GrafanaData) {
-  const items = [
-    {
-      id: "dashboards",
-      value: (dashboards ?? 0).toLocaleString(),
-      label: "Dashboards",
-      icon: <LayoutDashboard className="h-3 w-3" />,
-    },
-    {
-      id: "datasources",
-      value: (datasources ?? 0).toLocaleString(),
-      label: "Datasources",
-      icon: <Database className="h-3 w-3" />,
-    },
-    {
-      id: "total-alerts",
-      value: (totalAlerts ?? 0).toLocaleString(),
-      label: "Total Alerts",
-      icon: <Bell className="h-3 w-3" />,
-    },
-    {
-      id: "alerts-triggered",
-      value: (alertsTriggered ?? 0).toLocaleString(),
-      label: "Alerts Triggered",
-      icon: <AlertTriangle className="h-3 w-3" />,
-    },
-  ]
-
-  return <WidgetStatGrid items={items} />
+function grafanaToPayload(data: GrafanaData) {
+  return {
+    stats: [
+      {
+        id: "dashboards",
+        value: (data.dashboards ?? 0).toLocaleString(),
+        label: "Dashboards",
+        icon: <LayoutDashboard className="h-3 w-3" />,
+      },
+      {
+        id: "datasources",
+        value: (data.datasources ?? 0).toLocaleString(),
+        label: "Datasources",
+        icon: <Database className="h-3 w-3" />,
+      },
+      {
+        id: "total-alerts",
+        value: (data.totalAlerts ?? 0).toLocaleString(),
+        label: "Total Alerts",
+        icon: <Bell className="h-3 w-3" />,
+      },
+      {
+        id: "alerts-triggered",
+        value: (data.alertsTriggered ?? 0).toLocaleString(),
+        label: "Alerts Triggered",
+        icon: <AlertTriangle className="h-3 w-3" />,
+      },
+    ],
+  }
 }
 
 export const grafanaDefinition: ServiceDefinition<GrafanaData> = {
@@ -110,5 +104,5 @@ export const grafanaDefinition: ServiceDefinition<GrafanaData> = {
     }
   },
 
-  Widget: GrafanaWidget,
+  toPayload: grafanaToPayload,
 }
