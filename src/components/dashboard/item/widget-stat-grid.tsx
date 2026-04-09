@@ -12,11 +12,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragOverlay,
 } from "@dnd-kit/core"
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable"
-import { useState } from "react"
-import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core"
+import type { DragEndEvent } from "@dnd-kit/core"
 import { StatCard, type StatItem } from "@/components/widgets"
 import { useWidgetDisplay } from "@/components/dashboard/item/widget-display-context"
 import { useStatCardOrder } from "@/hooks/use-stat-card-order"
@@ -39,20 +37,12 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
       displaySettings?.statCardOrder ?? null
     )
 
-  const [activeDragId, setActiveDragId] = useState<string | null>(null)
-
   const sensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 8 },
   })
   const sensors = useSensors(sensor)
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveDragId(event.active.id as string)
-  }
-
   const handleDragEnd = (event: DragEndEvent) => {
-    setActiveDragId(null)
-
     const { active, over } = event
     if (!over || !displaySettings) return
 
@@ -116,10 +106,6 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
     }
   }
 
-  const draggedItem = [...activeItems, ...unusedItems].find(
-    (i) => i.id === activeDragId
-  )
-
   const { statDisplayMode, editMode } = displaySettings ?? {
     statDisplayMode: "label" as const,
     editMode: false,
@@ -146,7 +132,6 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <div className="space-y-2">
@@ -215,19 +200,6 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
           )}
         </div>
       </div>
-
-      <DragOverlay dropAnimation={null}>
-        {draggedItem ? (
-          <div className="rounded-md bg-popover/90 shadow-lg ring-2 ring-ring backdrop-blur-sm">
-            <StatCard
-              {...draggedItem}
-              displayMode={statDisplayMode}
-              sortable={false}
-              editMode={false}
-            />
-          </div>
-        ) : null}
-      </DragOverlay>
     </DndContext>
   )
 }
