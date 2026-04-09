@@ -120,25 +120,27 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
     (i) => i.id === activeDragId
   )
 
-  // When no context, render simple grid without DnD
-  if (!displaySettings) {
+  const { statDisplayMode, editMode } = displaySettings ?? {
+    statDisplayMode: "label" as const,
+    editMode: false,
+  }
+
+  const gridStyle = {
+    gridTemplateColumns: cols
+      ? `repeat(${cols}, 1fr)`
+      : "repeat(auto-fit, minmax(60px, 1fr))",
+  }
+
+  // Non-edit mode: simple grid, no DnD overhead (avoids nested DndContext on dashboard)
+  if (!editMode) {
     return (
-      <div
-        className="grid gap-1.5 text-xs"
-        style={{
-          gridTemplateColumns: cols
-            ? `repeat(${cols}, 1fr)`
-            : "repeat(auto-fit, minmax(60px, 1fr))",
-        }}
-      >
-        {items.map((item) => (
-          <StatCard key={item.id} {...item} />
+      <div className="grid gap-1.5 text-xs" style={gridStyle}>
+        {activeItems.map((item) => (
+          <StatCard key={item.id} {...item} displayMode={statDisplayMode} />
         ))}
       </div>
     )
   }
-
-  const { statDisplayMode, editMode } = displaySettings
 
   return (
     <DndContext
@@ -153,80 +155,68 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
           items={activeItems.map((i) => i.id)}
           strategy={rectSortingStrategy}
         >
-          <div
-            className="grid gap-1.5 text-xs"
-            style={{
-              gridTemplateColumns: cols
-                ? `repeat(${cols}, 1fr)`
-                : "repeat(auto-fit, minmax(60px, 1fr))",
-            }}
-          >
+          <div className="grid gap-1.5 text-xs" style={gridStyle}>
             {activeItems.map((item) => (
               <StatCard
                 key={item.id}
                 {...item}
                 displayMode={statDisplayMode}
-                sortable={editMode}
-                editMode={editMode}
+                sortable
+                editMode
               />
             ))}
           </div>
         </SortableContext>
 
-        {/* Unused stat cards drop zone (edit mode only) */}
-        {editMode && (
-          <div
-            className={cn(
-              "rounded-lg border-2 border-dashed p-3 transition-colors",
-              unusedItems.length > 0
-                ? "border-muted-foreground/30"
-                : "border-muted-foreground/15"
-            )}
-          >
-            <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Trash2 className="h-3 w-3" />
-              <span>Unused stat cards</span>
-              {unusedItems.length > 0 && (
-                <span className="ml-auto text-[10px]">
-                  Drag back to restore
-                </span>
-              )}
-            </div>
-            {unusedItems.length > 0 ? (
-              <SortableContext
-                items={unusedItems.map((i) => i.id)}
-                strategy={rectSortingStrategy}
-              >
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
-                  {unusedItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="relative rounded-md bg-muted/50 opacity-60"
-                    >
-                      <StatCard
-                        {...item}
-                        displayMode={statDisplayMode}
-                        sortable={editMode}
-                        editMode={editMode}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <RotateCcw className="h-3 w-3 text-muted-foreground/50" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </SortableContext>
-            ) : (
-              <p className="text-center text-[11px] text-muted-foreground/50">
-                Drag stat cards here to hide them
-              </p>
+        {/* Unused stat cards drop zone */}
+        <div
+          className={cn(
+            "rounded-lg border-2 border-dashed p-3 transition-colors",
+            unusedItems.length > 0
+              ? "border-muted-foreground/30"
+              : "border-muted-foreground/15"
+          )}
+        >
+          <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Trash2 className="h-3 w-3" />
+            <span>Unused stat cards</span>
+            {unusedItems.length > 0 && (
+              <span className="ml-auto text-[10px]">Drag back to restore</span>
             )}
           </div>
-        )}
+          {unusedItems.length > 0 ? (
+            <SortableContext
+              items={unusedItems.map((i) => i.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
+                {unusedItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="relative rounded-md bg-muted/50 opacity-60"
+                  >
+                    <StatCard
+                      {...item}
+                      displayMode={statDisplayMode}
+                      sortable
+                      editMode
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <RotateCcw className="h-3 w-3 text-muted-foreground/50" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SortableContext>
+          ) : (
+            <p className="text-center text-[11px] text-muted-foreground/50">
+              Drag stat cards here to hide them
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Drag overlay */}
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {draggedItem ? (
           <div className="rounded-md bg-popover/90 shadow-lg ring-2 ring-ring backdrop-blur-sm">
             <StatCard

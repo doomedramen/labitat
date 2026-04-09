@@ -13,13 +13,15 @@ describe("sonarr definition", () => {
 
   it("has configFields defined", () => {
     expect(sonarrDefinition.configFields).toBeDefined()
-    expect(sonarrDefinition.configFields).toHaveLength(2)
+    expect(sonarrDefinition.configFields).toHaveLength(3)
     expect(sonarrDefinition.configFields[0].key).toBe("url")
     expect(sonarrDefinition.configFields[0].type).toBe("url")
     expect(sonarrDefinition.configFields[0].required).toBe(true)
     expect(sonarrDefinition.configFields[1].key).toBe("apiKey")
     expect(sonarrDefinition.configFields[1].type).toBe("password")
     expect(sonarrDefinition.configFields[1].required).toBe(true)
+    expect(sonarrDefinition.configFields[2].key).toBe("showActiveDownloads")
+    expect(sonarrDefinition.configFields[2].type).toBe("boolean")
   })
 
   describe("fetchData", () => {
@@ -36,7 +38,11 @@ describe("sonarr definition", () => {
         if (url.includes("/queue")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ totalRecords: 3 }),
+            json: () =>
+              Promise.resolve({
+                totalRecords: 3,
+                records: [],
+              }),
           })
         }
         if (url.includes("/series")) {
@@ -71,10 +77,11 @@ describe("sonarr definition", () => {
       expect(result.missing).toBe(7)
       expect(result.wanted).toBe(12)
       expect(result.series).toBe(3)
+      expect(result.downloads).toEqual([])
 
       expect(mockFetch).toHaveBeenCalledTimes(4)
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://sonarr.example.com/api/v3/queue?pageSize=1",
+        "https://sonarr.example.com/api/v3/queue?pageSize=50&includeSeries=true",
         { headers: { "X-Api-Key": "test-key" } }
       )
     })
@@ -107,6 +114,118 @@ describe("sonarr definition", () => {
       expect(result.missing).toBe(0)
       expect(result.wanted).toBe(0)
       expect(result.series).toBe(0)
+      expect(result.downloads).toEqual([])
+    })
+
+    it("fetches active downloads when enabled", async () => {
+      const futureTime = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/queue")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                totalRecords: 1,
+                records: [
+                  {
+                    title: "S01E01 Test Episode",
+                    size: 1073741824,
+                    sizeleft: 536870912,
+                    trackedDownloadState: "downloading",
+                    estimatedCompletionTime: futureTime,
+                    series: { title: "Test Series" },
+                  },
+                ],
+              }),
+          })
+        }
+        if (url.includes("/series")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([{ id: 1 }]),
+          })
+        }
+        if (url.includes("/wanted/missing")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ totalRecords: 0 }),
+          })
+        }
+        if (url.includes("/wanted/cutoff")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ totalRecords: 0 }),
+          })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      const result = await sonarrDefinition.fetchData!({
+        url: "https://sonarr.example.com",
+        apiKey: "test-key",
+        showActiveDownloads: "true",
+      })
+
+      expect(result.downloads).toHaveLength(1)
+      expect(result.downloads![0].title).toBe(
+        "Test Series - S01E01 Test Episode"
+      )
+      expect(result.downloads![0].progress).toBe(50)
+      expect(result.downloads![0].activity).toBe("Downloading")
+      expect(result.downloads![0].size).toBe("1.0 GB")
+    })
+
+    it("shows importing state correctly", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/queue")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                totalRecords: 1,
+                records: [
+                  {
+                    title: "S01E02 Another Episode",
+                    size: 2147483648,
+                    sizeleft: 0,
+                    trackedDownloadState: "importing",
+                    series: { title: "Another Series" },
+                  },
+                ],
+              }),
+          })
+        }
+        if (url.includes("/series")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([{ id: 1 }]),
+          })
+        }
+        if (url.includes("/wanted/missing")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ totalRecords: 0 }),
+          })
+        }
+        if (url.includes("/wanted/cutoff")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ totalRecords: 0 }),
+          })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      const result = await sonarrDefinition.fetchData!({
+        url: "https://sonarr.example.com",
+        apiKey: "test-key",
+        showActiveDownloads: "true",
+      })
+
+      expect(result.downloads![0].activity).toBe("Importing")
+      expect(result.downloads![0].progress).toBe(100)
     })
 
     it("strips trailing slash from URL", async () => {
