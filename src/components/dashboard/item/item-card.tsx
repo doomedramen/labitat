@@ -124,7 +124,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       className={cn(
         "group/item relative overflow-hidden rounded-xl bg-card transition-all duration-300 ease-in-out",
         editMode ? "border border-ring/50" : "border border-border/50",
-        !editMode && "hover:scale-[1.02] hover:shadow-md",
+        !editMode && "transform hover:scale-[1.02] hover:shadow-md",
         !editMode && item.href && "cursor-pointer"
       )}
     >
