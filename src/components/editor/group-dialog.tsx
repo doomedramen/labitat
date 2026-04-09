@@ -1,5 +1,8 @@
 "use client"
 
+import React from "react"
+import { useForm } from "@tanstack/react-form"
+import { z } from "zod"
 import {
   Dialog,
   DialogContent,
@@ -14,6 +17,10 @@ import { Label } from "@/components/ui/label"
 import { createGroup, updateGroup } from "@/actions/groups"
 import type { GroupWithCache } from "@/lib/types"
 
+const groupSchema = z.object({
+  name: z.string().min(1, "Group name is required."),
+})
+
 interface GroupDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -21,20 +28,44 @@ interface GroupDialogProps {
 }
 
 export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
-  async function handleSubmit(formData: FormData) {
-    if (group) {
-      await updateGroup(group.id, formData)
-    } else {
-      await createGroup(formData)
+  const form = useForm({
+    defaultValues: {
+      name: group?.name ?? "",
+    },
+    validators: {
+      onChange: groupSchema,
+      onBlur: groupSchema,
+    },
+    onSubmit: async ({ value }) => {
+      const formData = new FormData()
+      formData.append("name", value.name)
+      if (group) {
+        await updateGroup(group.id, formData)
+      } else {
+        await createGroup(formData)
+      }
+      onOpenChange(false)
+    },
+  })
+
+  // Reset form when dialog opens/closes
+  React.useEffect(() => {
+    if (open) {
+      form.setFieldValue("name", group?.name ?? "")
     }
-    onOpenChange(false)
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
+  }, [open, group?.name])
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent>
-          <form action={handleSubmit}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.handleSubmit()
+            }}
+          >
             <DialogHeader>
               <DialogTitle>{group ? "Edit Group" : "New Group"}</DialogTitle>
               <DialogDescription>
@@ -44,16 +75,31 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  defaultValue={group?.name ?? ""}
-                  placeholder="My Services"
-                  required
-                />
-              </div>
+              <form.Field name="name">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0
+                  return (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>Name</Label>
+                      <Input
+                        id={field.name}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                        placeholder="My Services"
+                        aria-invalid={isInvalid || undefined}
+                      />
+                      {isInvalid && (
+                        <p className="text-sm text-destructive">
+                          {field.state.meta.errors.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  )
+                }}
+              </form.Field>
             </div>
             <DialogFooter>
               <Button type="submit">{group ? "Update" : "Create"}</Button>

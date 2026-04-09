@@ -25,11 +25,6 @@ try {
   console.error("[cache] Failed to create cache directory:", err)
 }
 
-// Initialize cache directory
-async function ensureCacheDir() {
-  await fs.mkdir(CACHE_DIR, { recursive: true })
-}
-
 // Load cache from disk on first access
 let cacheLoadPromise: Promise<void> | null = null
 

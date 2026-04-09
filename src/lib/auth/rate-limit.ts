@@ -89,3 +89,8 @@ export function cleanupExpiredEntries(): void {
     }
   }
 }
+
+/** Reset all rate limit entries (test use only) */
+export function resetAllRateLimits(): void {
+  store.clear()
+}

@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useForm } from "@tanstack/react-form"
+import { z } from "zod"
 import {
   DndContext,
   DragOverlay,
@@ -201,29 +203,80 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     if (localTitle && localTitle.trim()) {
       updateDashboardTitle(localTitle.trim()).then(() => {
         setLocalTitle(null)
+        titleForm.reset()
         toast.success("Dashboard saved")
       })
     }
   }
+
+  const titleForm = useForm({
+    defaultValues: {
+      title: title,
+    },
+    validators: {
+      onChange: z.object({
+        title: z.string().min(1, "Title is required."),
+      }),
+    },
+    onSubmit: async ({ value }) => {
+      if (value.title.trim()) {
+        updateDashboardTitle(value.title.trim()).then(() => {
+          setLocalTitle(null)
+          titleForm.reset()
+          toast.success("Dashboard saved")
+        })
+      }
+    },
+  })
+
+  useEffect(() => {
+    titleForm.setFieldValue("title", localTitle ?? title)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- titleForm is a stable reference from useForm
+  }, [localTitle, title])
 
   return (
     <div className={cn("min-h-svh bg-background p-6", editMode && "pb-24")}>
       {/* Header */}
       <header className="mb-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
         {editMode ? (
-          <Input
-            value={dashboardTitle}
-            onChange={(e) => setLocalTitle(e.target.value)}
-            className="h-8 w-full max-w-[200px]"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSaveTitle()
-              if (e.key === "Escape") {
-                setLocalTitle(null)
-                setEditMode(false)
-              }
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              titleForm.handleSubmit()
             }}
-            autoFocus
-          />
+            className="w-full max-w-[200px]"
+          >
+            <titleForm.Field name="title">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
+                return (
+                  <Input
+                    value={field.state.value}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value)
+                      setLocalTitle(e.target.value)
+                    }}
+                    onBlur={field.handleBlur}
+                    className="h-8"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        titleForm.handleSubmit()
+                      }
+                      if (e.key === "Escape") {
+                        setLocalTitle(null)
+                        setEditMode(false)
+                      }
+                    }}
+                    aria-invalid={isInvalid || undefined}
+                    autoFocus
+                  />
+                )
+              }}
+            </titleForm.Field>
+          </form>
         ) : (
           <h1 className="text-lg font-semibold">{dashboardTitle}</h1>
         )}

@@ -53,9 +53,9 @@ jobs:
       - name: Run ${{ matrix.task }}
         run: pnpm ${{ matrix.task }}
 
-  # ── E2E Tests ───────────────────────────────────────────────────────────────
-  e2e:
-    name: E2E Tests
+  # ── Tests ───────────────────────────────────────────────────────────────
+  tests:
+    name: Tests
     runs-on: ubuntu-latest
     needs: test
 
@@ -90,14 +90,17 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run E2E tests
+      - name: Run tests
         run: pnpm test
+        env:
+          SECRET_KEY: ci-secret-key-for-e2e-tests-must-be-32chars!
+          TEST_SECRET: e2e-test-reset-token
 
   # ── Docker Build & Push ─────────────────────────────────────────────────────
   docker:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: [test, e2e]
+    needs: [test, tests]
     if: github.event_name == 'push'
     permissions:
       contents: read

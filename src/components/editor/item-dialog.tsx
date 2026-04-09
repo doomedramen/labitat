@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useForm } from "@tanstack/react-form"
+import { z } from "zod"
 import {
   Dialog,
   DialogContent,
@@ -28,6 +30,13 @@ import type { ServiceDefinition } from "@/lib/adapters"
 import type { ItemWithCache } from "@/lib/types"
 import { WidgetDisplayProvider } from "@/components/dashboard/item/widget-display-context"
 import type { StatCardOrder } from "@/hooks/use-stat-card-order"
+
+const itemSchema = z.object({
+  label: z.string().min(1, "Label is required."),
+  href: z.string().url("Must be a valid URL.").or(z.literal("")),
+  iconUrl: z.string().url("Must be a valid URL.").or(z.literal("")),
+  pollingMs: z.number().min(1, "Must be at least 1 second."),
+})
 
 // ── Service type combobox ─────────────────────────────────────────────────────
 
@@ -188,18 +197,66 @@ export function ItemDialog({
     useState<StatCardOrder | null>(toStatCardOrder(item?.statCardOrder))
   const selectedService = services.find((s) => s.id === serviceType)
 
+  const form = useForm({
+    defaultValues: {
+      label: item?.label ?? "",
+      href: item?.href ?? "",
+      iconUrl: item?.iconUrl ?? "",
+      pollingMs: item?.pollingMs ? item.pollingMs / 1000 : 10,
+    },
+    validators: {
+      onChange: itemSchema,
+      onBlur: itemSchema,
+    },
+    onSubmit: async ({ value }) => {
+      const formData = new FormData()
+      formData.append("label", value.label)
+      formData.append("href", value.href)
+      formData.append("iconUrl", value.iconUrl)
+      formData.append("pollingMs", String(value.pollingMs * 1000))
+      formData.append("serviceType", serviceType)
+      formData.append("displayMode", "label")
+      formData.append("cleanMode", cleanMode ? "true" : "false")
+      formData.append("statDisplayMode", statDisplayMode)
+
+      // Add config fields
+      Object.entries(configFields).forEach(([key, val]) => {
+        formData.append(`config_${key}`, val)
+      })
+
+      if (item) {
+        await updateItem(item.id, formData)
+      } else {
+        await createItem(groupId, formData)
+      }
+      onOpenChange(false)
+    },
+  })
+
   // Sync state when item changes
   useEffect(() => {
     setServiceType(item?.serviceType ?? "")
     setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label")
     setCleanMode(item?.cleanMode ?? false)
     setLocalStatCardOrder(toStatCardOrder(item?.statCardOrder))
+    form.setFieldValue("label", item?.label ?? "")
+    form.setFieldValue("href", item?.href ?? "")
+    form.setFieldValue("iconUrl", item?.iconUrl ?? "")
+    form.setFieldValue(
+      "pollingMs",
+      item?.pollingMs ? item.pollingMs / 1000 : 10
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
   }, [
     item?.id,
     item?.serviceType,
     item?.statDisplayMode,
     item?.statCardOrder,
     item?.cleanMode,
+    item?.label,
+    item?.href,
+    item?.iconUrl,
+    item?.pollingMs,
   ])
 
   // Load config when editing an existing item
@@ -243,13 +300,9 @@ export function ItemDialog({
           className="max-h-[80vh] overflow-y-auto"
         >
           <form
-            action={async (formData) => {
-              if (item) {
-                await updateItem(item.id, formData)
-              } else {
-                await createItem(groupId, formData)
-              }
-              onOpenChange(false)
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.handleSubmit()
             }}
           >
             <DialogHeader>
@@ -262,41 +315,87 @@ export function ItemDialog({
             </DialogHeader>
             <div className="space-y-4 py-4">
               {/* Basic fields */}
-              <div className="space-y-2">
-                <Label htmlFor="label">Label</Label>
-                <Input
-                  id="label"
-                  name="label"
-                  defaultValue={item?.label ?? ""}
-                  placeholder="My Service"
-                  required
-                />
-              </div>
+              <form.Field name="label">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0
+                  return (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>Label</Label>
+                      <Input
+                        id={field.name}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                        placeholder="My Service"
+                        aria-invalid={isInvalid || undefined}
+                      />
+                      {isInvalid && (
+                        <p className="text-sm text-destructive">
+                          {field.state.meta.errors.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  )
+                }}
+              </form.Field>
 
-              <div className="space-y-2">
-                <Label htmlFor="href">URL</Label>
-                <Input
-                  id="href"
-                  name="href"
-                  defaultValue={item?.href ?? ""}
-                  placeholder="https://service.example.org"
-                />
-              </div>
+              <form.Field name="href">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0
+                  return (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>URL</Label>
+                      <Input
+                        id={field.name}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                        placeholder="https://service.example.org"
+                        aria-invalid={isInvalid || undefined}
+                      />
+                      {isInvalid && (
+                        <p className="text-sm text-destructive">
+                          {field.state.meta.errors.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  )
+                }}
+              </form.Field>
 
-              <div className="space-y-2">
-                <Label htmlFor="iconUrl">Icon URL</Label>
-                <Input
-                  id="iconUrl"
-                  name="iconUrl"
-                  defaultValue={item?.iconUrl ?? ""}
-                  placeholder="https://cdn.jsdelivr.net/gh/selfhst/icons/png/service.png"
-                />
-              </div>
+              <form.Field name="iconUrl">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0
+                  return (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>Icon URL</Label>
+                      <Input
+                        id={field.name}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                        placeholder="https://cdn.jsdelivr.net/gh/selfhst/icons/png/service.png"
+                        aria-invalid={isInvalid || undefined}
+                      />
+                      {isInvalid && (
+                        <p className="text-sm text-destructive">
+                          {field.state.meta.errors.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  )
+                }}
+              </form.Field>
 
               {/* Service type */}
               <div className="space-y-2">
                 <Label>Service Type</Label>
-                <input type="hidden" name="serviceType" value={serviceType} />
                 <ServiceCombobox
                   services={services}
                   value={serviceType}
@@ -321,7 +420,6 @@ export function ItemDialog({
                           <div className="flex items-center gap-2">
                             <Switch
                               id={`config_${field.key}`}
-                              name={`config_${field.key}`}
                               checked={fieldValue === "true"}
                               onCheckedChange={(checked) =>
                                 setConfigFields((prev) => ({
@@ -341,11 +439,6 @@ export function ItemDialog({
                               }))
                             }
                           >
-                            <input
-                              type="hidden"
-                              name={`config_${field.key}`}
-                              value={fieldValue ?? ""}
-                            />
                             <SelectTrigger>
                               <SelectValue placeholder={field.placeholder} />
                             </SelectTrigger>
@@ -360,7 +453,6 @@ export function ItemDialog({
                         ) : (
                           <Input
                             id={`config_${field.key}`}
-                            name={`config_${field.key}`}
                             type={
                               field.type === "password"
                                 ? "password"
@@ -376,7 +468,6 @@ export function ItemDialog({
                               }))
                             }
                             placeholder={field.placeholder}
-                            required={field.required}
                           />
                         )}
                         {field.helperText && (
@@ -391,18 +482,38 @@ export function ItemDialog({
               )}
 
               {/* Polling interval */}
-              <div className="space-y-2">
-                <Label htmlFor="pollingMs">Polling Interval (seconds)</Label>
-                <Input
-                  id="pollingMs"
-                  name="pollingMs"
-                  type="number"
-                  defaultValue={
-                    item?.pollingMs ? String(item.pollingMs / 1000) : "10"
-                  }
-                  placeholder="10"
-                />
-              </div>
+              <form.Field name="pollingMs">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0
+                  return (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>
+                        Polling Interval (seconds)
+                      </Label>
+                      <Input
+                        id={field.name}
+                        value={String(field.state.value)}
+                        onChange={(e) => {
+                          const val =
+                            e.target.value === "" ? "" : Number(e.target.value)
+                          field.handleChange(typeof val === "number" ? val : 0)
+                        }}
+                        onBlur={field.handleBlur}
+                        type="number"
+                        placeholder="10"
+                        aria-invalid={isInvalid || undefined}
+                      />
+                      {isInvalid && (
+                        <p className="text-sm text-destructive">
+                          {field.state.meta.errors.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  )
+                }}
+              </form.Field>
 
               {/* Clean mode */}
               <div className="flex items-center gap-2">
@@ -411,40 +522,26 @@ export function ItemDialog({
                   checked={cleanMode}
                   onCheckedChange={setCleanMode}
                 />
-                <input
-                  type="hidden"
-                  name="cleanMode"
-                  value={cleanMode ? "true" : "false"}
-                />
                 <Label htmlFor="cleanMode">Clean mode (minimal display)</Label>
               </div>
 
-              <input type="hidden" name="displayMode" value="label" />
-
               {/* Stat display mode */}
               {selectedService && (
-                <>
-                  <input
-                    type="hidden"
-                    name="statDisplayMode"
-                    value={statDisplayMode}
+                <div className="flex items-center justify-between gap-4">
+                  <Label htmlFor="statDisplayMode" className="leading-snug">
+                    Stat card icons
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      Show icons instead of labels
+                    </span>
+                  </Label>
+                  <Switch
+                    id="statDisplayMode"
+                    checked={statDisplayMode === "icon"}
+                    onCheckedChange={(checked) =>
+                      setStatDisplayMode(checked ? "icon" : "label")
+                    }
                   />
-                  <div className="flex items-center justify-between gap-4">
-                    <Label htmlFor="statDisplayMode" className="leading-snug">
-                      Stat card icons
-                      <span className="block text-xs font-normal text-muted-foreground">
-                        Show icons instead of labels
-                      </span>
-                    </Label>
-                    <Switch
-                      id="statDisplayMode"
-                      checked={statDisplayMode === "icon"}
-                      onCheckedChange={(checked) =>
-                        setStatDisplayMode(checked ? "icon" : "label")
-                      }
-                    />
-                  </div>
-                </>
+                </div>
               )}
 
               {/* Stat card layout preview */}

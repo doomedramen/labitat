@@ -40,7 +40,7 @@ describe("qbittorrent definition", () => {
     })
 
     it("fetches data successfully", async () => {
-      const mockFetch = vi.fn((url: string, opts: Record<string, unknown>) => {
+      const mockFetch = vi.fn((url: string) => {
         if (url.includes("/auth/login")) {
           return Promise.resolve({
             ok: true,

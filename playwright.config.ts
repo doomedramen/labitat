@@ -1,13 +1,45 @@
 import { defineConfig, devices } from "@playwright/test"
 
+const isCI = !!process.env.CI
+
+const allProjects = [
+  {
+    name: "chromium",
+    use: { ...devices["Desktop Chrome"] },
+  },
+  {
+    name: "firefox",
+    use: { ...devices["Desktop Firefox"] },
+  },
+  {
+    name: "webkit",
+    use: { ...devices["Desktop Safari"] },
+  },
+  {
+    name: "Mobile Chrome",
+    use: { ...devices["Pixel 5"] },
+  },
+  {
+    name: "Mobile Safari",
+    use: { ...devices["iPhone 12"] },
+  },
+]
+
+const ciProjects = [
+  {
+    name: "chromium",
+    use: { ...devices["Desktop Chrome"] },
+  },
+]
+
 export default defineConfig({
-  testDir: "./tests",
-  fullyParallel: true,
+  testDir: "./tests/e2e",
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: 1,
-  timeout: 30000,
-  maxFailures: 1,
+  timeout: 45_000,
+  maxFailures: 0,
   reporter: "list",
   use: {
     baseURL: "http://localhost:3000",
@@ -15,44 +47,8 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "on-first-retry",
   },
-  projects: [
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-    },
+  projects: isCI ? ciProjects : allProjects,
 
-    // {
-    //   name: "firefox",
-    //   use: { ...devices["Desktop Firefox"] },
-    // },
-
-    // {
-    //   name: "webkit",
-    //   use: { ...devices["Desktop Safari"] },
-    // },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
-  ],
-
-  /* Run your local dev server before starting the tests */
   webServer: {
     command:
       "node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm dev",
@@ -63,6 +59,8 @@ export default defineConfig({
       NODE_ENV: "test",
       PORT: "3000",
       DATABASE_URL: "file:./data/labitat.test.db",
+      SECRET_KEY: "test-secret-key-for-e2e-tests-at-least-32-chars!",
+      TEST_SECRET: "e2e-test-reset-token",
     },
   },
 })

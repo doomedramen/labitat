@@ -1,5 +1,4 @@
 import { getSession } from "./index"
-import { redirect } from "next/navigation"
 
 /** Require authenticated user in server actions. Throws if not logged in. */
 export async function requireAuth(): Promise<string> {

@@ -2,6 +2,8 @@
 import DefaultTheme from "vitepress/theme"
 import "./style.css"
 
-export default {
+const theme = {
   ...DefaultTheme,
 }
+
+export default theme

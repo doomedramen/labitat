@@ -17,7 +17,6 @@ function APCUPSWidget({
   batteryCharge,
   timeLeft,
   temperature,
-  status,
 }: APCUPSData) {
   const load = loadPercent ?? 0
   const battery = batteryCharge ?? 0

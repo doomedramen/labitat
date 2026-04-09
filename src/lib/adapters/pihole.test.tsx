@@ -32,7 +32,7 @@ describe("pihole definition", () => {
     })
 
     it("fetches data using v6 API", async () => {
-      const mockFetch = vi.fn((url: string, opts: Record<string, unknown>) => {
+      const mockFetch = vi.fn((url: string) => {
         if (url.includes("/api/auth")) {
           return Promise.resolve({
             ok: true,

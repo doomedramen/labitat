@@ -36,7 +36,7 @@ function ImmichWidget({ users, photos, videos, storage }: ImmichData) {
       id: "photos",
       value: photos,
       label: "Photos",
-      icon: <Image className="h-3 w-3" />,
+      icon: <Image className="h-3 w-3" alt="" />,
     },
     {
       id: "videos",

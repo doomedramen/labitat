@@ -10,7 +10,7 @@ type GlancesPerCpuData = {
   coreUsages: number[]
 }
 
-function CoreBar({ index, pct }: { index: number; pct: number }) {
+function CoreBar({ pct }: { pct: number }) {
   const barColor =
     pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-amber-500" : "bg-primary"
   const textColor =
@@ -38,7 +38,7 @@ function CoreBar({ index, pct }: { index: number; pct: number }) {
   )
 }
 
-function GlancesPerCpuWidget({ coreUsages, avgCpu }: GlancesPerCpuData) {
+function GlancesPerCpuWidget({ coreUsages }: GlancesPerCpuData) {
   const usages = coreUsages ?? []
 
   if (usages.length === 0) {

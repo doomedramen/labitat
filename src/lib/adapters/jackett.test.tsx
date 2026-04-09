@@ -98,7 +98,7 @@ describe("jackett definition", () => {
     })
 
     it("authenticates with password when provided", async () => {
-      const mockFetch = vi.fn((url: string, opts: Record<string, unknown>) => {
+      const mockFetch = vi.fn((url: string) => {
         if (url.includes("/UI/Dashboard")) {
           return Promise.resolve({
             ok: true,
