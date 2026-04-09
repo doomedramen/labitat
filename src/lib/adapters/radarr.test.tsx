@@ -118,7 +118,7 @@ describe("radarr definition", () => {
       })
 
       // Verify no double slashes in URLs (trailing slash was stripped before appending path)
-      const calls = mockFetch.mock.calls
+      const calls = mockFetch.mock.calls as [string, ...unknown[]][]
       for (const call of calls) {
         expect(call[0]).not.toMatch(/\/\/api/)
       }

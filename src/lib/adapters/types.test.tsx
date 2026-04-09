@@ -59,7 +59,7 @@ describe("ServiceDefinition type", () => {
       configFields: [],
       fetchData: async (config) => ({
         _status: "ok" as const,
-        value: config.multiplier * 2,
+        value: parseInt(config.multiplier, 10) * 2,
       }),
       Widget: () => null,
     }
