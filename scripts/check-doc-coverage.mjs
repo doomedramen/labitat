@@ -43,8 +43,8 @@ function getAdapterIds() {
     const filePath = path.join(adaptersDir, file)
     const content = fs.readFileSync(filePath, "utf8")
 
-    // Match pattern: id: "adapter-name"
-    const idMatch = content.match(/id:\s*["']([^"']+)["']/)
+    // Match the adapter id from the ServiceDefinition export block
+    const idMatch = content.match(/ServiceDefinition[^=]*=\s*\{[^}]*?id:\s*["']([^"']+)["']/s)
     if (idMatch) {
       ids.push({
         id: idMatch[1],
