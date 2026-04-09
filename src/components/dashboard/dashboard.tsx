@@ -199,13 +199,11 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     setDragStartGroupId(null)
   }
 
-  function handleSaveTitle() {
+  async function handleSaveTitle() {
     if (localTitle && localTitle.trim()) {
-      updateDashboardTitle(localTitle.trim()).then(() => {
-        setLocalTitle(null)
-        titleForm.reset()
-        toast.success("Dashboard saved")
-      })
+      await updateDashboardTitle(localTitle.trim())
+      toast.success("Dashboard saved")
+      // Keep localTitle set so h1 shows the saved value immediately after exit
     }
   }
 
@@ -217,15 +215,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
       onChange: z.object({
         title: z.string().min(1, "Title is required."),
       }),
-    },
-    onSubmit: async ({ value }) => {
-      if (value.title.trim()) {
-        updateDashboardTitle(value.title.trim()).then(() => {
-          setLocalTitle(null)
-          titleForm.reset()
-          toast.success("Dashboard saved")
-        })
-      }
     },
   })
 
@@ -388,8 +377,8 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
       {editMode && isLoggedIn && (
         <EditBar
-          onDone={() => {
-            handleSaveTitle()
+          onDone={async () => {
+            await handleSaveTitle()
             setEditMode(false)
           }}
         />
