@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import { StatGrid } from "@/components/widgets"
+import { Globe, ArrowRight, Wifi, Ban } from "lucide-react"
 
 type NginxProxyManagerData = {
   _status?: "ok" | "warn" | "error"
@@ -19,13 +20,43 @@ function NginxProxyManagerWidget({
   return (
     <StatGrid
       items={[
-        { value: hosts, label: "Proxy Hosts" },
-        { value: redirHosts, label: "Redirections" },
-        { value: streams, label: "Streams" },
-        { value: deadHosts, label: "Disabled" },
+        {
+          value: hosts,
+          label: "Proxy Hosts",
+          icon: <Globe className="h-3 w-3" />,
+          tooltip: "Proxy Hosts",
+        },
+        {
+          value: redirHosts,
+          label: "Redirections",
+          icon: <ArrowRight className="h-3 w-3" />,
+          tooltip: "Redirections",
+        },
+        {
+          value: streams,
+          label: "Streams",
+          icon: <Wifi className="h-3 w-3" />,
+          tooltip: "Streams",
+        },
+        {
+          value: deadHosts,
+          label: "Disabled",
+          icon: <Ban className="h-3 w-3" />,
+          tooltip: "Disabled",
+        },
       ]}
     />
   )
+}
+
+function parseCount(data: unknown): number {
+  if (Array.isArray(data)) return data.length
+  if (data && typeof data === "object") {
+    const obj = data as Record<string, unknown>
+    if (Array.isArray(obj.data)) return (obj.data as unknown[]).length
+    if (typeof obj.total === "number") return obj.total
+  }
+  return 0
 }
 
 export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerData> =
@@ -74,22 +105,23 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
       if (!loginRes.ok) throw new Error(`NPM login failed: ${loginRes.status}`)
 
       const tokenData = await loginRes.json()
-      const headers = { Authorization: `Bearer ${tokenData.token}` }
+      const token = tokenData.token
+      if (!token) throw new Error("NPM login failed: no token in response")
+
+      const headers = { Authorization: `Bearer ${token}` }
 
       // Get counts
       const [hostsRes, redirRes, streamsRes, deadRes] = await Promise.all([
-        fetch(`${baseUrl}/api/nginx/proxy-hosts?expand=owner`, { headers }),
-        fetch(`${baseUrl}/api/nginx/redirection-hosts?expand=owner`, {
-          headers,
-        }),
-        fetch(`${baseUrl}/api/nginx/streams?expand=owner`, { headers }),
-        fetch(`${baseUrl}/api/nginx/dead-hosts?expand=owner`, { headers }),
+        fetch(`${baseUrl}/api/nginx/proxy-hosts`, { headers }),
+        fetch(`${baseUrl}/api/nginx/redirection-hosts`, { headers }),
+        fetch(`${baseUrl}/api/nginx/streams`, { headers }),
+        fetch(`${baseUrl}/api/nginx/dead-hosts`, { headers }),
       ])
 
-      const hosts = hostsRes.ok ? (await hostsRes.json()).length : 0
-      const redirHosts = redirRes.ok ? (await redirRes.json()).length : 0
-      const streams = streamsRes.ok ? (await streamsRes.json()).length : 0
-      const deadHosts = deadRes.ok ? (await deadRes.json()).length : 0
+      const hosts = hostsRes.ok ? parseCount(await hostsRes.json()) : 0
+      const redirHosts = redirRes.ok ? parseCount(await redirRes.json()) : 0
+      const streams = streamsRes.ok ? parseCount(await streamsRes.json()) : 0
+      const deadHosts = deadRes.ok ? parseCount(await deadRes.json()) : 0
 
       return {
         _status: "ok",

@@ -51,28 +51,28 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const [queueRes, movieRes, wantedRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v3/queue?includeUnknownMovieItems=true`, {
-        headers,
-      }),
+    const [queueRes, movieRes, missingRes, cutoffRes] = await Promise.all([
+      fetch(`${baseUrl}/api/v3/queue?pageSize=1`, { headers }),
       fetch(`${baseUrl}/api/v3/movie`, { headers }),
-      fetch(`${baseUrl}/api/v3/wanted/missing`, { headers }),
+      fetch(`${baseUrl}/api/v3/wanted/missing?pageSize=1`, { headers }),
+      fetch(`${baseUrl}/api/v3/wanted/cutoff?pageSize=1`, { headers }),
     ])
 
     if (!queueRes.ok) throw new Error(`Radarr error: ${queueRes.status}`)
     if (!movieRes.ok) throw new Error(`Radarr error: ${movieRes.status}`)
-    if (!wantedRes.ok) throw new Error(`Radarr error: ${wantedRes.status}`)
+    if (!missingRes.ok) throw new Error(`Radarr error: ${missingRes.status}`)
 
     const queue = await queueRes.json()
     const movies = await movieRes.json()
-    const wanted = await wantedRes.json()
+    const missing = await missingRes.json()
+    const cutoff = cutoffRes.ok ? await cutoffRes.json() : { totalRecords: 0 }
 
     return {
       _status: "ok",
-      queued: queue.totalCount ?? 0,
-      missing: wanted.total ?? 0,
-      wanted: wanted.total ?? 0,
-      movies: movies.length ?? 0,
+      queued: queue.totalRecords ?? 0,
+      missing: missing.totalRecords ?? 0,
+      wanted: cutoff.totalRecords ?? 0,
+      movies: Array.isArray(movies) ? movies.length : 0,
     }
   },
   Widget: RadarrWidget,

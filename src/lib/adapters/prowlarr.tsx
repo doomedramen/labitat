@@ -57,11 +57,26 @@ export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
     const indexers = await indexerRes.json()
     const stats = statsRes.ok ? await statsRes.json() : {}
 
+    // indexerstats returns { indexers: [...], userAgents: [...] }
+    // each indexer has numberOfQueries and numberOfGrabs
+    const indexerStats: Array<{
+      numberOfQueries?: number
+      numberOfGrabs?: number
+    }> = stats.indexers ?? []
+    const queries = indexerStats.reduce(
+      (sum, i) => sum + (i.numberOfQueries ?? 0),
+      0
+    )
+    const grabs = indexerStats.reduce(
+      (sum, i) => sum + (i.numberOfGrabs ?? 0),
+      0
+    )
+
     return {
       _status: "ok",
-      queries: stats.numberOfQueries ?? 0,
-      grabs: stats.numberOfGrabs ?? 0,
-      indexers: indexers.length ?? 0,
+      queries,
+      grabs,
+      indexers: Array.isArray(indexers) ? indexers.length : 0,
     }
   },
   Widget: ProwlarrWidget,

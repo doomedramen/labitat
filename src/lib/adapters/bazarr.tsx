@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import { StatGrid } from "@/components/widgets"
+import { Film, Tv } from "lucide-react"
 
 type BazarrData = {
   _status?: "ok" | "warn" | "error"
@@ -12,8 +13,18 @@ function BazarrWidget({ missingMovies, missingEpisodes }: BazarrData) {
   return (
     <StatGrid
       items={[
-        { value: missingMovies, label: "Missing Movies" },
-        { value: missingEpisodes, label: "Missing Episodes" },
+        {
+          value: missingMovies,
+          label: "Missing Movies",
+          icon: <Film className="h-3 w-3" />,
+          tooltip: "Missing Movies",
+        },
+        {
+          value: missingEpisodes,
+          label: "Missing Episodes",
+          icon: <Tv className="h-3 w-3" />,
+          tooltip: "Missing Episodes",
+        },
       ]}
     />
   )
@@ -46,19 +57,19 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
     const headers = { "X-Api-Key": config.apiKey }
 
     const [moviesRes, episodesRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/movies/wanted?pageSize=1`, { headers }),
-      fetch(`${baseUrl}/api/v1/episodes/wanted?pageSize=1`, { headers }),
+      fetch(`${baseUrl}/api/v1/movies/wanted?start=0&length=1`, { headers }),
+      fetch(`${baseUrl}/api/v1/episodes/wanted?start=0&length=1`, { headers }),
     ])
 
     if (!moviesRes.ok) throw new Error(`Bazarr error: ${moviesRes.status}`)
 
-    const missingMovies = await moviesRes.json()
-    const missingEpisodes = episodesRes.ok ? await episodesRes.json() : {}
+    const moviesData = await moviesRes.json()
+    const episodesData = episodesRes.ok ? await episodesRes.json() : {}
 
     return {
       _status: "ok",
-      missingMovies: missingMovies.total ?? 0,
-      missingEpisodes: missingEpisodes.total ?? 0,
+      missingMovies: moviesData.total ?? 0,
+      missingEpisodes: episodesData.total ?? 0,
     }
   },
   Widget: BazarrWidget,

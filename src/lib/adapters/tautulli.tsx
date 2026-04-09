@@ -4,6 +4,7 @@ import {
   ActiveStreamList,
   type ActiveStream,
 } from "@/components/widgets"
+import { Activity, Cpu, Monitor, Play, Radio } from "lucide-react"
 
 type TautulliData = {
   _status?: "ok" | "warn" | "error"
@@ -36,11 +37,36 @@ function TautulliWidget({
     <div className="space-y-2">
       <StatGrid
         items={[
-          { value: streamCount, label: "Streams" },
-          { value: totalBandwidth, label: "Bandwidth" },
-          { value: transcodeStreams, label: "Transcoding" },
-          { value: directPlayStreams, label: "Direct Play" },
-          { value: directStreamStreams, label: "Direct Stream" },
+          {
+            value: streamCount,
+            label: "Streams",
+            icon: <Play className="h-3 w-3" />,
+            tooltip: "Streams",
+          },
+          {
+            value: totalBandwidth,
+            label: "Bandwidth",
+            icon: <Activity className="h-3 w-3" />,
+            tooltip: "Bandwidth",
+          },
+          {
+            value: transcodeStreams,
+            label: "Transcoding",
+            icon: <Cpu className="h-3 w-3" />,
+            tooltip: "Transcoding",
+          },
+          {
+            value: directPlayStreams,
+            label: "Direct Play",
+            icon: <Monitor className="h-3 w-3" />,
+            tooltip: "Direct Play",
+          },
+          {
+            value: directStreamStreams,
+            label: "Direct Stream",
+            icon: <Radio className="h-3 w-3" />,
+            tooltip: "Direct Stream",
+          },
         ]}
       />
       {sessions && sessions.length > 0 && (

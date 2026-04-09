@@ -77,13 +77,23 @@ export type StatItem = {
   value: string | number
   label: string
   icon?: React.ReactNode
+  /** When set, the label text is hidden and shown only in a tooltip */
+  tooltip?: string
   valueClassName?: string
 }
 
-export function StatCard({ value, label, icon, valueClassName }: StatItem) {
-  return (
+export function StatCard({
+  value,
+  label,
+  icon,
+  tooltip,
+  valueClassName,
+}: StatItem) {
+  const inner = (
     <div className="flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground">
-      {icon && <div className="mb-0.5">{icon}</div>}
+      {icon && (
+        <div className="mb-0.5 text-secondary-foreground/50">{icon}</div>
+      )}
       <span
         className={cn(
           "font-medium tabular-nums",
@@ -92,9 +102,25 @@ export function StatCard({ value, label, icon, valueClassName }: StatItem) {
       >
         {value}
       </span>
-      <span className="text-secondary-foreground/60">{label}</span>
+      {tooltip ? (
+        <span className="sr-only">{tooltip}</span>
+      ) : (
+        <span className="text-secondary-foreground/60">{label}</span>
+      )}
     </div>
   )
+
+  if (tooltip) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{inner}</TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          {tooltip}
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+  return inner
 }
 
 export function StatGrid({

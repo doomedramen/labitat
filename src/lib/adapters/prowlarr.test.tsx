@@ -37,7 +37,12 @@ describe("prowlarr definition", () => {
           return Promise.resolve({
             ok: true,
             json: () =>
-              Promise.resolve({ numberOfQueries: 150, numberOfGrabs: 42 }),
+              Promise.resolve({
+                indexers: [
+                  { numberOfQueries: 100, numberOfGrabs: 30 },
+                  { numberOfQueries: 50, numberOfGrabs: 12 },
+                ],
+              }),
           })
         }
         if (url.includes("/indexer")) {

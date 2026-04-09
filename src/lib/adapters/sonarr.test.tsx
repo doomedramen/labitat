@@ -36,7 +36,7 @@ describe("sonarr definition", () => {
         if (url.includes("/queue")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ totalCount: 3 }),
+            json: () => Promise.resolve({ totalRecords: 3 }),
           })
         }
         if (url.includes("/series")) {
@@ -45,10 +45,16 @@ describe("sonarr definition", () => {
             json: () => Promise.resolve([{ id: 1 }, { id: 2 }, { id: 3 }]),
           })
         }
-        if (url.includes("/wanted")) {
+        if (url.includes("/wanted/missing")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ total: 7 }),
+            json: () => Promise.resolve({ totalRecords: 7 }),
+          })
+        }
+        if (url.includes("/wanted/cutoff")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ totalRecords: 12 }),
           })
         }
         return Promise.reject(new Error("Unexpected URL"))
@@ -63,12 +69,12 @@ describe("sonarr definition", () => {
       expect(result._status).toBe("ok")
       expect(result.queued).toBe(3)
       expect(result.missing).toBe(7)
-      expect(result.wanted).toBe(7)
+      expect(result.wanted).toBe(12)
       expect(result.series).toBe(3)
 
-      expect(mockFetch).toHaveBeenCalledTimes(3)
+      expect(mockFetch).toHaveBeenCalledTimes(4)
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://sonarr.example.com/api/v3/queue?includeUnknownSeriesItems=true",
+        "https://sonarr.example.com/api/v3/queue?pageSize=1",
         { headers: { "X-Api-Key": "test-key" } }
       )
     })

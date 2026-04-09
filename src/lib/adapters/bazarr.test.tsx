@@ -1,6 +1,11 @@
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { bazarrDefinition } from "@/lib/adapters/bazarr"
+import { TooltipProvider } from "@/components/ui/tooltip"
+
+function renderWithTooltipProvider(ui: React.ReactElement) {
+  return render(<TooltipProvider>{ui}</TooltipProvider>)
+}
 
 describe("bazarr definition", () => {
   it("has correct metadata", () => {
@@ -93,7 +98,7 @@ describe("bazarr definition", () => {
 
   describe("Widget", () => {
     it("renders with sample data", () => {
-      render(
+      renderWithTooltipProvider(
         <bazarrDefinition.Widget missingMovies={15} missingEpisodes={42} />
       )
       expect(screen.getByText("15")).toBeInTheDocument()
@@ -103,7 +108,9 @@ describe("bazarr definition", () => {
     })
 
     it("renders zero values", () => {
-      render(<bazarrDefinition.Widget missingMovies={0} missingEpisodes={0} />)
+      renderWithTooltipProvider(
+        <bazarrDefinition.Widget missingMovies={0} missingEpisodes={0} />
+      )
       expect(screen.getAllByText("0")).toHaveLength(2)
     })
   })

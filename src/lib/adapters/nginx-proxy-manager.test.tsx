@@ -1,6 +1,11 @@
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { nginxProxyManagerDefinition } from "@/lib/adapters/nginx-proxy-manager"
+import { TooltipProvider } from "@/components/ui/tooltip"
+
+function renderWithTooltipProvider(ui: React.ReactElement) {
+  return render(<TooltipProvider>{ui}</TooltipProvider>)
+}
 
 describe("nginx-proxy-manager definition", () => {
   it("has correct metadata", () => {
@@ -141,7 +146,7 @@ describe("nginx-proxy-manager definition", () => {
 
   describe("Widget", () => {
     it("renders with sample data", () => {
-      render(
+      renderWithTooltipProvider(
         <nginxProxyManagerDefinition.Widget
           hosts={5}
           redirHosts={2}
@@ -160,7 +165,7 @@ describe("nginx-proxy-manager definition", () => {
     })
 
     it("renders zero values", () => {
-      render(
+      renderWithTooltipProvider(
         <nginxProxyManagerDefinition.Widget
           hosts={0}
           redirHosts={0}

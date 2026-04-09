@@ -36,7 +36,7 @@ describe("radarr definition", () => {
         if (url.includes("/queue")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ totalCount: 5 }),
+            json: () => Promise.resolve({ totalRecords: 5 }),
           })
         }
         if (url.includes("/movie")) {
@@ -45,10 +45,16 @@ describe("radarr definition", () => {
             json: () => Promise.resolve([{ id: 1 }, { id: 2 }]),
           })
         }
-        if (url.includes("/wanted")) {
+        if (url.includes("/wanted/missing")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ total: 3 }),
+            json: () => Promise.resolve({ totalRecords: 3 }),
+          })
+        }
+        if (url.includes("/wanted/cutoff")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ totalRecords: 7 }),
           })
         }
         return Promise.reject(new Error("Unexpected URL"))
@@ -63,12 +69,12 @@ describe("radarr definition", () => {
       expect(result._status).toBe("ok")
       expect(result.queued).toBe(5)
       expect(result.missing).toBe(3)
-      expect(result.wanted).toBe(3)
+      expect(result.wanted).toBe(7)
       expect(result.movies).toBe(2)
 
-      expect(mockFetch).toHaveBeenCalledTimes(3)
+      expect(mockFetch).toHaveBeenCalledTimes(4)
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://radarr.example.com/api/v3/queue?includeUnknownMovieItems=true",
+        "https://radarr.example.com/api/v3/queue?pageSize=1",
         { headers: { "X-Api-Key": "test-key" } }
       )
     })
@@ -117,7 +123,6 @@ describe("radarr definition", () => {
         apiKey: "test-key",
       })
 
-      // Verify no double slashes in URLs (trailing slash was stripped before appending path)
       const calls = mockFetch.mock.calls as unknown as [string, ...unknown[]][]
       for (const call of calls) {
         expect(call[0]).not.toMatch(/\/\/api/)

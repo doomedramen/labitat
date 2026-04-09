@@ -51,28 +51,28 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const [queueRes, seriesRes, wantedRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v3/queue?includeUnknownSeriesItems=true`, {
-        headers,
-      }),
+    const [queueRes, seriesRes, missingRes, cutoffRes] = await Promise.all([
+      fetch(`${baseUrl}/api/v3/queue?pageSize=1`, { headers }),
       fetch(`${baseUrl}/api/v3/series`, { headers }),
-      fetch(`${baseUrl}/api/v3/wanted/missing`, { headers }),
+      fetch(`${baseUrl}/api/v3/wanted/missing?pageSize=1`, { headers }),
+      fetch(`${baseUrl}/api/v3/wanted/cutoff?pageSize=1`, { headers }),
     ])
 
     if (!queueRes.ok) throw new Error(`Sonarr error: ${queueRes.status}`)
     if (!seriesRes.ok) throw new Error(`Sonarr error: ${seriesRes.status}`)
-    if (!wantedRes.ok) throw new Error(`Sonarr error: ${wantedRes.status}`)
+    if (!missingRes.ok) throw new Error(`Sonarr error: ${missingRes.status}`)
 
     const queue = await queueRes.json()
     const series = await seriesRes.json()
-    const wanted = await wantedRes.json()
+    const missing = await missingRes.json()
+    const cutoff = cutoffRes.ok ? await cutoffRes.json() : { totalRecords: 0 }
 
     return {
       _status: "ok",
-      queued: queue.totalCount ?? 0,
-      missing: wanted.total ?? 0,
-      wanted: wanted.total ?? 0,
-      series: series.length ?? 0,
+      queued: queue.totalRecords ?? 0,
+      missing: missing.totalRecords ?? 0,
+      wanted: cutoff.totalRecords ?? 0,
+      series: Array.isArray(series) ? series.length : 0,
     }
   },
   Widget: SonarrWidget,
