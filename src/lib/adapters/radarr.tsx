@@ -60,6 +60,8 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     ])
 
     if (!queueRes.ok) throw new Error(`Radarr error: ${queueRes.status}`)
+    if (!movieRes.ok) throw new Error(`Radarr error: ${movieRes.status}`)
+    if (!wantedRes.ok) throw new Error(`Radarr error: ${wantedRes.status}`)
 
     const queue = await queueRes.json()
     const movies = await movieRes.json()

@@ -66,9 +66,9 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
     })
 
     if (sessionRes.ok) {
-      // v6 API available
+      // v6 API available — session object contains the SID token
       const sessionData = await sessionRes.json()
-      const token = sessionData.session
+      const token = sessionData.session?.sid
 
       const summaryRes = await fetch(`${baseUrl}/api/stats/summary`, {
         headers: { Authorization: `Bearer ${token}` },

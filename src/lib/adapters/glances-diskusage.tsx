@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { StatGrid, ResourceBar } from "@/components/widgets"
 
 type GlancesDiskUsageData = {
   _status?: "ok" | "warn" | "error"
@@ -24,20 +24,23 @@ function GlancesDiskUsageWidget({
   total,
   free,
 }: GlancesDiskUsageData) {
-  const pct = usedPercent ?? 0
-
-  const color =
-    pct > 90 ? "text-destructive" : pct > 75 ? "text-amber-500" : undefined
-
   return (
-    <StatGrid
-      items={[
-        { value: `${pct}%`, label: "Used", valueClassName: color },
-        { value: used ?? "—", label: "Used Space" },
-        { value: free ?? "—", label: "Free" },
-        { value: total ?? "—", label: "Total" },
-      ]}
-    />
+    <div className="flex flex-col gap-2 text-xs">
+      <ResourceBar
+        label="Disk"
+        value={usedPercent ?? 0}
+        hint={`${used} / ${total}`}
+        warningAt={75}
+        criticalAt={90}
+      />
+      <StatGrid
+        items={[
+          { value: used ?? "—", label: "Used" },
+          { value: free ?? "—", label: "Free" },
+          { value: total ?? "—", label: "Total" },
+        ]}
+      />
+    </div>
   )
 }
 

@@ -34,10 +34,10 @@ describe("glances-percpu definition", () => {
           ok: true,
           json: () =>
             Promise.resolve([
-              { cpu: 45 },
-              { cpu: 60 },
-              { cpu: 30 },
-              { cpu: 80 },
+              { cpu_percent: 45 },
+              { cpu_percent: 60 },
+              { cpu_percent: 30 },
+              { cpu_percent: 80 },
             ]),
         })
       )
@@ -95,7 +95,7 @@ describe("glances-percpu definition", () => {
       })
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://glances.example.com/api/4/cores",
+        "https://glances.example.com/api/4/percpu",
         {
           headers: {
             Authorization: `Basic ${btoa("admin:secret")}`,
@@ -106,24 +106,31 @@ describe("glances-percpu definition", () => {
   })
 
   describe("Widget", () => {
-    it("renders with sample data", () => {
+    it("renders per-core bars", () => {
       render(
-        <glancesPerCpuDefinition.Widget cores={8} maxCore={95} avgCpu={45} />
+        <glancesPerCpuDefinition.Widget
+          cores={4}
+          maxCore={95}
+          avgCpu={45}
+          coreUsages={[45, 95, 30, 20]}
+        />
       )
-      expect(screen.getByText("8")).toBeInTheDocument()
-      expect(screen.getByText("95%")).toBeInTheDocument()
       expect(screen.getByText("45%")).toBeInTheDocument()
-      expect(screen.getByText("Cores")).toBeInTheDocument()
-      expect(screen.getByText("Max Core")).toBeInTheDocument()
-      expect(screen.getByText("Average")).toBeInTheDocument()
+      expect(screen.getByText("95%")).toBeInTheDocument()
+      expect(screen.getByText("30%")).toBeInTheDocument()
+      expect(screen.getByText("20%")).toBeInTheDocument()
     })
 
-    it("renders zero values", () => {
+    it("renders no-data fallback when coreUsages is empty", () => {
       render(
-        <glancesPerCpuDefinition.Widget cores={0} maxCore={0} avgCpu={0} />
+        <glancesPerCpuDefinition.Widget
+          cores={0}
+          maxCore={0}
+          avgCpu={0}
+          coreUsages={[]}
+        />
       )
-      expect(screen.getByText("0")).toBeInTheDocument()
-      expect(screen.getAllByText("0%")).toHaveLength(2)
+      expect(screen.getByText("No core data")).toBeInTheDocument()
     })
   })
 })

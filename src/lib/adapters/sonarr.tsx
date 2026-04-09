@@ -60,6 +60,8 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
     ])
 
     if (!queueRes.ok) throw new Error(`Sonarr error: ${queueRes.status}`)
+    if (!seriesRes.ok) throw new Error(`Sonarr error: ${seriesRes.status}`)
+    if (!wantedRes.ok) throw new Error(`Sonarr error: ${wantedRes.status}`)
 
     const queue = await queueRes.json()
     const series = await seriesRes.json()

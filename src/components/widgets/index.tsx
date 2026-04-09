@@ -13,6 +13,64 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+// ── Resource bar ──────────────────────────────────────────────────────────────
+
+export type ResourceBarProps = {
+  label: string
+  value: number // 0–100 percentage
+  hint?: string // shown alongside value (e.g. "12.4 GB")
+  warningAt?: number
+  criticalAt?: number
+}
+
+export function ResourceBar({
+  label,
+  value,
+  hint,
+  warningAt = 70,
+  criticalAt = 90,
+}: ResourceBarProps) {
+  const pct = Math.min(100, Math.max(0, value ?? 0))
+  const isCritical = pct >= criticalAt
+  const isWarning = pct >= warningAt
+
+  const barColor = isCritical
+    ? "bg-destructive"
+    : isWarning
+      ? "bg-amber-500"
+      : "bg-primary"
+  const valueColor = isCritical
+    ? "text-destructive"
+    : isWarning
+      ? "text-amber-500"
+      : "text-secondary-foreground"
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-baseline justify-between">
+        <span className="text-secondary-foreground/60">{label}</span>
+        <span className={cn("font-medium tabular-nums", valueColor)}>
+          {pct}%
+          {hint && (
+            <span className="ml-1.5 font-normal text-secondary-foreground/50">
+              {hint}
+            </span>
+          )}
+        </span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+        <div
+          className={cn(
+            "h-full rounded-full transition-all duration-500",
+            barColor
+          )}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 // ── Stat grid ─────────────────────────────────────────────────────────────────
 
 export type StatItem = {
@@ -93,14 +151,17 @@ export function ActiveStreamItem({
   state,
 }: ActiveStream) {
   const progressPercent = duration > 0 ? (progress / duration) * 100 : 0
-  const tooltipText = `${title} (${user}) - ${formatDuration(progress)}`
+  const tooltipText =
+    duration > 0
+      ? `${title} · ${user} · ${formatDuration(progress)} / ${formatDuration(duration)}`
+      : `${title} · ${user}`
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <div
           className={cn(
-            "flex items-center gap-2 rounded-md px-2 py-1 text-xs",
+            "relative flex items-center gap-2 overflow-hidden rounded-md px-2 py-1 text-xs",
             "hover:bg-secondary/50"
           )}
         >
@@ -117,9 +178,9 @@ export function ActiveStreamItem({
             <Clock className="h-3 w-3 shrink-0" />
             {formatDuration(progress)}
           </div>
-          {/* Progress bar background */}
+          {/* Playback progress bar */}
           <div
-            className="absolute bottom-0 left-0 h-0.5 bg-primary/30"
+            className="absolute bottom-0 left-0 h-px bg-primary/50"
             style={{ width: `${progressPercent}%` }}
           />
         </div>

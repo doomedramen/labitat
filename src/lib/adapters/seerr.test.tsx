@@ -32,21 +32,17 @@ describe("seerr definition", () => {
     })
 
     it("fetches data successfully", async () => {
-      const mockRequests = {
-        results: [
-          { status: 1 },
-          { status: 1 },
-          { status: 2 },
-          { status: 3 },
-          { status: 3 },
-          { status: 3 },
-          { status: 4 },
-        ],
+      const mockCounts = {
+        pending: 2,
+        approved: 1,
+        available: 3,
+        processing: 1,
+        declined: 0,
       }
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve(mockRequests),
+          json: () => Promise.resolve(mockCounts),
         })
       )
 
@@ -73,7 +69,7 @@ describe("seerr definition", () => {
       ).rejects.toThrow("Overseerr error: 403")
     })
 
-    it("handles empty results with defaults", async () => {
+    it("handles missing count fields with defaults", async () => {
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
@@ -90,23 +86,6 @@ describe("seerr definition", () => {
       expect(result.approved).toBe(0)
       expect(result.available).toBe(0)
       expect(result.processing).toBe(0)
-    })
-
-    it("handles empty results array", async () => {
-      vi.stubGlobal("fetch", () =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ results: [] }),
-        })
-      )
-
-      const result = await seerrDefinition.fetchData!({
-        url: "https://overseerr.example.com",
-        apiKey: "test-key",
-      })
-
-      expect(result._status).toBe("ok")
-      expect(result.pending).toBe(0)
     })
   })
 

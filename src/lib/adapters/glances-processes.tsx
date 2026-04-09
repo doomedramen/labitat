@@ -13,7 +13,7 @@ type GlancesProcessesData = {
   _status?: "ok" | "warn" | "error"
   _statusText?: string
   processes: ProcessInfo[]
-  sortBy: "cpu" | "memory"
+  sortBy: "cpu" | "memory" | "both"
 }
 
 export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData> =
@@ -59,6 +59,7 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
         options: [
           { label: "CPU usage", value: "cpu" },
           { label: "Memory usage", value: "memory" },
+          { label: "Highest of either", value: "both" },
         ],
       },
     ],
@@ -85,16 +86,14 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
         throw new Error("Unexpected processlist response format")
       }
 
-      // Sort processes by CPU or memory
-      const sorted = [...procList].sort(
-        (
-          a: { cpu_percent?: number; memory_percent?: number },
-          b: { cpu_percent?: number; memory_percent?: number }
-        ) =>
-          sortBy === "memory"
-            ? (b.memory_percent ?? 0) - (a.memory_percent ?? 0)
-            : (b.cpu_percent ?? 0) - (a.cpu_percent ?? 0)
-      )
+      // Sort processes by CPU, memory, or the highest of either
+      const score = (p: { cpu_percent?: number; memory_percent?: number }) => {
+        if (sortBy === "memory") return p.memory_percent ?? 0
+        if (sortBy === "both")
+          return Math.max(p.cpu_percent ?? 0, p.memory_percent ?? 0)
+        return p.cpu_percent ?? 0
+      }
+      const sorted = [...procList].sort((a, b) => score(b) - score(a))
 
       // Take top N processes
       const topProcesses = sorted.slice(0, topCount).map((p) => ({
@@ -107,7 +106,7 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
       return {
         _status: "ok",
         processes: topProcesses,
-        sortBy: sortBy as "cpu" | "memory",
+        sortBy: sortBy as "cpu" | "memory" | "both",
       }
     },
     Widget: () => null, // Placeholder - real widget is client-side

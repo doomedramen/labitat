@@ -97,6 +97,10 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
     })
     if (!loginRes.ok)
       throw new Error(`qBittorrent login failed: ${loginRes.status}`)
+    // qBittorrent returns HTTP 200 with body "Fails." on bad credentials
+    const loginBody = await loginRes.text()
+    if (loginBody.trim() === "Fails.")
+      throw new Error("qBittorrent login failed: invalid credentials")
     const cookie = loginRes.headers.getSetCookie?.()[0] ?? ""
 
     const headers = { Cookie: cookie }

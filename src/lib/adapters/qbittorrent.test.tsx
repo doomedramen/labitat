@@ -44,6 +44,7 @@ describe("qbittorrent definition", () => {
         if (url.includes("/auth/login")) {
           return Promise.resolve({
             ok: true,
+            text: () => Promise.resolve("Ok."),
             headers: {
               getSetCookie: () => ["SID=abc123"],
             },
@@ -111,11 +112,30 @@ describe("qbittorrent definition", () => {
       ).rejects.toThrow("qBittorrent login failed: 403")
     })
 
+    it("throws on invalid credentials (200 with Fails. body)", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve("Fails."),
+          headers: { getSetCookie: () => [] },
+        })
+      )
+
+      await expect(
+        qbittorrentDefinition.fetchData!({
+          url: "https://qb.example.com",
+          username: "admin",
+          password: "wrong",
+        })
+      ).rejects.toThrow("qBittorrent login failed: invalid credentials")
+    })
+
     it("throws on API error after login", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/auth/login")) {
           return Promise.resolve({
             ok: true,
+            text: () => Promise.resolve("Ok."),
             headers: { getSetCookie: () => ["SID=abc123"] },
           })
         }
@@ -137,6 +157,7 @@ describe("qbittorrent definition", () => {
         if (url.includes("/auth/login")) {
           return Promise.resolve({
             ok: true,
+            text: () => Promise.resolve("Ok."),
             headers: { getSetCookie: () => ["SID=abc123"] },
           })
         }

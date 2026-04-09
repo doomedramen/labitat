@@ -46,25 +46,14 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
     const headers = { "X-Api-Key": config.apiKey }
 
     const [moviesRes, episodesRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/badges?urlType=missingMovies`, { headers }),
-      fetch(`${baseUrl}/api/v1/badges?urlType=missingEpisodes`, { headers }),
+      fetch(`${baseUrl}/api/v1/movies/wanted?pageSize=1`, { headers }),
+      fetch(`${baseUrl}/api/v1/episodes/wanted?pageSize=1`, { headers }),
     ])
 
-    // Bazarr uses different API structure - get counts from system/status
-    const [systemRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/system/status`, { headers }),
-    ])
+    if (!moviesRes.ok) throw new Error(`Bazarr error: ${moviesRes.status}`)
 
-    if (!systemRes.ok) throw new Error(`Bazarr error: ${systemRes.status}`)
-
-    // Fetch actual missing counts
-    const [missingMoviesRes, missingEpisodesRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/movies?pageSize=1`, { headers }),
-      fetch(`${baseUrl}/api/v1/episodes?pageSize=1`, { headers }),
-    ])
-
-    const missingMovies = await missingMoviesRes.json()
-    const missingEpisodes = await missingEpisodesRes.json()
+    const missingMovies = await moviesRes.json()
+    const missingEpisodes = episodesRes.ok ? await episodesRes.json() : {}
 
     return {
       _status: "ok",

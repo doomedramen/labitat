@@ -117,7 +117,7 @@ describe("glances-sensors definition", () => {
       expect(screen.getByText("70°C")).toBeInTheDocument()
       expect(screen.getByText("1500 RPM")).toBeInTheDocument()
       expect(screen.getByText("CPU Temp")).toBeInTheDocument()
-      expect(screen.getByText("Max Temp")).toBeInTheDocument()
+      expect(screen.getByText("Max")).toBeInTheDocument()
       expect(screen.getByText("Fan")).toBeInTheDocument()
     })
 

@@ -79,9 +79,11 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
       // Get counts
       const [hostsRes, redirRes, streamsRes, deadRes] = await Promise.all([
         fetch(`${baseUrl}/api/nginx/proxy-hosts?expand=owner`, { headers }),
-        fetch(`${baseUrl}/api/redirection-hosts?expand=owner`, { headers }),
-        fetch(`${baseUrl}/api/streams?expand=owner`, { headers }),
-        fetch(`${baseUrl}/api/dead-hosts?expand=owner`, { headers }),
+        fetch(`${baseUrl}/api/nginx/redirection-hosts?expand=owner`, {
+          headers,
+        }),
+        fetch(`${baseUrl}/api/nginx/streams?expand=owner`, { headers }),
+        fetch(`${baseUrl}/api/nginx/dead-hosts?expand=owner`, { headers }),
       ])
 
       const hosts = hostsRes.ok ? (await hostsRes.json()).length : 0

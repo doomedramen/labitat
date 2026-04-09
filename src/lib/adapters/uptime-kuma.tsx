@@ -11,9 +11,9 @@ type UptimeKumaData = {
 
 function UptimeKumaWidget({ up, down, uptime }: UptimeKumaData) {
   const items = [
-    { value: up, label: "Up" },
-    { value: down, label: "Down" },
-    { value: uptime, label: "Uptime" },
+    { value: String(up), label: "Up" },
+    { value: String(down), label: "Down" },
+    { value: String(uptime), label: "Uptime" },
   ]
 
   return <StatGrid items={items} />

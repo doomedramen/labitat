@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { StatGrid, ResourceBar } from "@/components/widgets"
 
 type GlancesSensorsData = {
   _status?: "ok" | "warn" | "error"
@@ -18,17 +18,25 @@ function GlancesSensorsWidget({
   const max = maxTemp ?? 0
   const fan = fanSpeed ?? 0
 
-  const tempColor =
-    cpu > 80 ? "text-destructive" : cpu > 60 ? "text-amber-500" : undefined
+  // Scale temperature as % of 100°C for the progress bar
+  const tempPct = Math.min(100, Math.round(cpu))
 
   return (
-    <StatGrid
-      items={[
-        { value: `${cpu}°C`, label: "CPU Temp", valueClassName: tempColor },
-        { value: `${max}°C`, label: "Max Temp" },
-        { value: fan > 0 ? `${fan} RPM` : "N/A", label: "Fan" },
-      ]}
-    />
+    <div className="flex flex-col gap-2 text-xs">
+      <ResourceBar
+        label="CPU Temp"
+        value={tempPct}
+        hint={`${cpu}°C`}
+        warningAt={60}
+        criticalAt={80}
+      />
+      <StatGrid
+        items={[
+          { value: `${max}°C`, label: "Max" },
+          { value: fan > 0 ? `${fan} RPM` : "N/A", label: "Fan" },
+        ]}
+      />
+    </div>
   )
 }
 

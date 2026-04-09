@@ -36,7 +36,8 @@ describe("pihole definition", () => {
         if (url.includes("/api/auth")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ session: "token123" }),
+            json: () =>
+              Promise.resolve({ session: { sid: "token123", valid: true } }),
           })
         }
         if (url.includes("/api/stats/summary")) {
@@ -138,7 +139,8 @@ describe("pihole definition", () => {
         if (url.includes("/api/auth")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ session: "token123" }),
+            json: () =>
+              Promise.resolve({ session: { sid: "token123", valid: true } }),
           })
         }
         if (url.includes("/api/stats/summary")) {

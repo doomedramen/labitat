@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types"
-import { StatGrid } from "@/components/widgets"
+import { StatGrid, ResourceBar } from "@/components/widgets"
 
 type GlancesData = {
   _status?: "ok" | "warn" | "error"
@@ -41,20 +41,18 @@ function GlancesWidget({
   const swap = swapPercent ?? 0
   const load = load1 ?? 0
 
-  const cpuColor = cpu > 90 ? "text-destructive" : undefined
-  const memColor = mem > 90 ? "text-destructive" : undefined
-
   return (
-    <StatGrid
-      items={[
-        { value: `${cpu}%`, label: "CPU", valueClassName: cpuColor },
-        { value: `${mem}%`, label: "RAM", valueClassName: memColor },
-        { value: memUsed ?? "—", label: "Memory" },
-        { value: `${swap}%`, label: "Swap" },
-        { value: load.toFixed(2), label: "Load" },
-        { value: uptime ?? "—", label: "Uptime" },
-      ]}
-    />
+    <div className="flex flex-col gap-2 text-xs">
+      <ResourceBar label="CPU" value={cpu} />
+      <ResourceBar label="RAM" value={mem} hint={memUsed} />
+      <StatGrid
+        items={[
+          { value: `${swap}%`, label: "Swap" },
+          { value: load.toFixed(2), label: "Load" },
+          { value: uptime ?? "—", label: "Uptime" },
+        ]}
+      />
+    </div>
   )
 }
 
@@ -96,21 +94,42 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
         `Basic ${btoa(`${config.username}:${config.password}`)}`
     }
 
-    const res = await fetch(`${baseUrl}/api/4/quicklook`, { headers })
-    if (!res.ok) throw new Error(`Glances error: ${res.status}`)
+    const [quickRes, memRes] = await Promise.all([
+      fetch(`${baseUrl}/api/4/quicklook`, { headers }),
+      fetch(`${baseUrl}/api/4/mem`, { headers }),
+    ])
 
-    const data = await res.json()
+    if (!quickRes.ok) throw new Error(`Glances error: ${quickRes.status}`)
+
+    const data = await quickRes.json()
+    const memData = memRes.ok ? await memRes.json() : {}
+
+    // Memory used: prefer /api/4/mem, fall back to quicklook calculation
+    const memUsedBytes =
+      memData.used ??
+      (data.memory_total ? ((data.mem ?? 0) * data.memory_total) / 100 : 0)
+
+    // Load: quicklook may return an object {min1, cpucore} or a bare number
+    const loadRaw = data.load ?? 0
+    const loadMin1 = typeof loadRaw === "object" ? (loadRaw.min1 ?? 0) : loadRaw
+    const loadCores = typeof loadRaw === "object" ? (loadRaw.cpucore ?? 1) : 1
+    const load1 = loadCores > 1 ? loadMin1 / loadCores : loadMin1
+
+    // Uptime: may be seconds (number) or a pre-formatted string
+    const uptimeRaw = data.uptime ?? 0
+    const uptime =
+      typeof uptimeRaw === "string"
+        ? uptimeRaw.replace(/^"|"$/g, "").trim() || "—"
+        : formatUptime(uptimeRaw)
 
     return {
       _status: "ok",
       cpuPercent: Math.round(data.cpu ?? 0),
       memPercent: Math.round(data.mem ?? 0),
-      memUsed: `${formatBytes(((data.mem ?? 0) * (data.memory_total ?? 0)) / 100)}`,
+      memUsed: memUsedBytes > 0 ? formatBytes(memUsedBytes) : "—",
       swapPercent: Math.round(data.swap ?? 0),
-      load1: data.load?.cpucore
-        ? (data.load?.min1 ?? 0) / (data.load?.cpucore ?? 1)
-        : (data.load?.min1 ?? 0),
-      uptime: formatUptime(data.uptime ?? 0),
+      load1,
+      uptime,
     }
   },
   Widget: GlancesWidget,

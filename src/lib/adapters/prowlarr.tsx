@@ -55,7 +55,7 @@ export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
     if (!indexerRes.ok) throw new Error(`Prowlarr error: ${indexerRes.status}`)
 
     const indexers = await indexerRes.json()
-    const stats = await statsRes.json()
+    const stats = statsRes.ok ? await statsRes.json() : {}
 
     return {
       _status: "ok",

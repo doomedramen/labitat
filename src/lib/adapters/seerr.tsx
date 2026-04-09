@@ -49,31 +49,17 @@ export const seerrDefinition: ServiceDefinition<SeerrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const res = await fetch(`${baseUrl}/api/v1/request?take=100`, { headers })
+    const res = await fetch(`${baseUrl}/api/v1/request/count`, { headers })
     if (!res.ok) throw new Error(`Overseerr error: ${res.status}`)
 
-    const requests = await res.json()
-    const results = requests.results ?? []
-
-    const pending = results.filter(
-      (r: { status: number }) => r.status === 1
-    ).length
-    const approved = results.filter(
-      (r: { status: number }) => r.status === 2
-    ).length
-    const available = results.filter(
-      (r: { status: number }) => r.status === 3
-    ).length
-    const processing = results.filter(
-      (r: { status: number }) => r.status === 4
-    ).length
+    const counts = await res.json()
 
     return {
       _status: "ok",
-      pending,
-      approved,
-      available,
-      processing,
+      pending: counts.pending ?? 0,
+      approved: counts.approved ?? 0,
+      available: counts.available ?? 0,
+      processing: counts.processing ?? 0,
     }
   },
   Widget: SeerrWidget,
