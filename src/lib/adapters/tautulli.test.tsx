@@ -18,7 +18,7 @@ describe("tautulli definition", () => {
 
   it("has configFields defined", () => {
     expect(tautulliDefinition.configFields).toBeDefined()
-    expect(tautulliDefinition.configFields).toHaveLength(2)
+    expect(tautulliDefinition.configFields).toHaveLength(7)
     expect(tautulliDefinition.configFields[0].key).toBe("url")
     expect(tautulliDefinition.configFields[0].type).toBe("url")
     expect(tautulliDefinition.configFields[0].required).toBe(true)
@@ -159,7 +159,6 @@ describe("tautulli definition", () => {
       expect(screen.getByText("15.0 MB/s")).toBeInTheDocument()
       expect(screen.getByText("2")).toBeInTheDocument()
       expect(screen.getByText("5")).toBeInTheDocument()
-      expect(screen.getByText("8")).toBeInTheDocument()
       expect(screen.getByText("Movie")).toBeInTheDocument()
     })
 
@@ -174,7 +173,7 @@ describe("tautulli definition", () => {
         />
       )
       expect(screen.getByText("0 B/s")).toBeInTheDocument()
-      expect(screen.getAllByText("0")).toHaveLength(4)
+      expect(screen.getAllByText("0")).toHaveLength(3)
     })
   })
 })

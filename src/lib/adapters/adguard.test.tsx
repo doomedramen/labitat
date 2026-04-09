@@ -179,7 +179,7 @@ describe("adguard definition", () => {
       expect(screen.getByText("25.0%")).toBeInTheDocument()
       expect(screen.getByText("Queries")).toBeInTheDocument()
       expect(screen.getByText("Blocked")).toBeInTheDocument()
-      expect(screen.getByText("Block Rate")).toBeInTheDocument()
+      expect(screen.getByText("Rate")).toBeInTheDocument()
     })
 
     it("hides fields when show flags are false", () => {
@@ -197,7 +197,7 @@ describe("adguard definition", () => {
       )
       expect(screen.queryByText("Queries")).not.toBeInTheDocument()
       expect(screen.queryByText("Blocked")).not.toBeInTheDocument()
-      expect(screen.queryByText("Block Rate")).not.toBeInTheDocument()
+      expect(screen.queryByText("Rate")).not.toBeInTheDocument()
     })
 
     it("shows optional fields when enabled", () => {
@@ -218,7 +218,7 @@ describe("adguard definition", () => {
       expect(screen.getByText("50")).toBeInTheDocument()
       expect(screen.getByText("45ms")).toBeInTheDocument()
       expect(screen.getByText("Parental")).toBeInTheDocument()
-      expect(screen.getByText("Safe Search")).toBeInTheDocument()
+      expect(screen.getByText("Safe")).toBeInTheDocument()
       expect(screen.getByText("Latency")).toBeInTheDocument()
     })
   })

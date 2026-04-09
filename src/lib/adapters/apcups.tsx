@@ -9,6 +9,7 @@ type APCUPSData = {
   timeLeft: number
   temperature: number
   status: string
+  showStatus?: boolean
 }
 
 function APCUPSWidget({
@@ -17,6 +18,7 @@ function APCUPSWidget({
   timeLeft,
   temperature,
   status,
+  showStatus = false,
 }: APCUPSData) {
   const load = loadPercent ?? 0
   const battery = batteryCharge ?? 0
@@ -24,17 +26,18 @@ function APCUPSWidget({
   const temp = temperature ?? 0
   const timeLeftMin = time > 60 ? `${(time / 60).toFixed(0)}m` : `${time}s`
 
-  return (
-    <StatGrid
-      items={[
-        { value: `${load}%`, label: "Load" },
-        { value: `${battery}%`, label: "Battery" },
-        { value: timeLeftMin, label: "Time Left" },
-        { value: `${temp}°C`, label: "Temp" },
-        { value: status ?? "—", label: "Status" },
-      ]}
-    />
-  )
+  const items = [
+    { value: `${load}%`, label: "Load" },
+    { value: `${battery}%`, label: "Battery" },
+    { value: timeLeftMin, label: "Time" },
+    { value: `${temp}°C`, label: "Temp" },
+  ]
+
+  if (showStatus) {
+    items.push({ value: status ?? "—", label: "Status" })
+  }
+
+  return <StatGrid items={items} />
 }
 
 export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
@@ -49,8 +52,16 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
       label: "URL",
       type: "url",
       required: true,
-      placeholder: "https://apcupsd.example.org",
-      helperText: "URL to your apcupsd CGI status page",
+      placeholder: "http://192.168.1.100",
+      helperText:
+        "HTTP URL of your apcupsd web CGI server. This is an http(s) address — not the apcupsd TCP daemon port (3551).",
+    },
+    {
+      key: "showStatus",
+      label: "Show Status",
+      type: "boolean",
+      defaultChecked: false,
+      helperText: "Display UPS status string (e.g. ONLINE, ONBATT)",
     },
   ],
   async fetchData(config) {
@@ -61,7 +72,6 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
 
     const html = await res.text()
 
-    // Parse values from HTML
     const extractValue = (label: string): string => {
       const regex = new RegExp(`${label}[^<]*<[^>]*>([^<]+)</`, "i")
       const match = html.match(regex)
@@ -84,6 +94,7 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
       timeLeft,
       temperature,
       status,
+      showStatus: config.showStatus === "true",
     }
   },
   Widget: APCUPSWidget,

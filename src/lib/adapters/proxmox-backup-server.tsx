@@ -27,8 +27,8 @@ function ProxmoxBackupServerWidget({
   return (
     <StatGrid
       items={[
-        { value: datastores ?? 0, label: "Datastores" },
-        { value: snapshots ?? 0, label: "Snapshots" },
+        { value: datastores ?? 0, label: "Stores" },
+        { value: snapshots ?? 0, label: "Snaps" },
         { value: usedSpace ?? "—", label: "Used" },
         { value: totalSpace ?? "—", label: "Total" },
       ]}

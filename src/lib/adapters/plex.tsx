@@ -30,10 +30,10 @@ function PlexWidget({
   sessions,
 }: PlexData) {
   const statsItems = [
-    { value: streams, label: "Active Streams" },
+    { value: streams, label: "Active" },
     { value: albums, label: "Albums" },
     { value: movies, label: "Movies" },
-    { value: tvShows, label: "TV Shows" },
+    { value: tvShows, label: "Shows" },
   ]
 
   return (

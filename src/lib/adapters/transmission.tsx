@@ -45,7 +45,7 @@ function TransmissionWidget({
 }: TransmissionData) {
   const items = [
     { value: leech, label: "Leech" },
-    { value: `${formatBytes(download)}/s`, label: "Download" },
+    { value: `${formatBytes(download)}/s`, label: "Down" },
     { value: seed, label: "Seed" },
     { value: `${formatBytes(upload)}/s`, label: "Upload" },
   ]

@@ -23,7 +23,7 @@ function SABnzbdWidget({
       <StatGrid
         items={[
           { value: downloading ? speed : "Idle", label: "Speed" },
-          { value: downloading ? remaining : "—", label: "Remaining" },
+          { value: downloading ? remaining : "—", label: "Left" },
           { value: queueSize, label: "Queue" },
         ]}
       />

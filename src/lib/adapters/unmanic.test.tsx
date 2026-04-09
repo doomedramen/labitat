@@ -19,7 +19,7 @@ describe("unmanic definition", () => {
     expect(unmanicDefinition.configFields[0].required).toBe(true)
     expect(unmanicDefinition.configFields[1].key).toBe("apiKey")
     expect(unmanicDefinition.configFields[1].type).toBe("password")
-    expect(unmanicDefinition.configFields[1].required).toBe(true)
+    expect(unmanicDefinition.configFields[1].required).toBe(false)
   })
 
   describe("fetchData", () => {

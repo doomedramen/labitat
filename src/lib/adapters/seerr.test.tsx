@@ -1,6 +1,11 @@
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { seerrDefinition } from "@/lib/adapters/seerr"
+import { TooltipProvider } from "@/components/ui/tooltip"
+
+function renderWithTooltipProvider(ui: React.ReactElement) {
+  return render(<TooltipProvider>{ui}</TooltipProvider>)
+}
 
 describe("seerr definition", () => {
   it("has correct metadata", () => {
@@ -91,7 +96,7 @@ describe("seerr definition", () => {
 
   describe("Widget", () => {
     it("renders with sample data", () => {
-      render(
+      renderWithTooltipProvider(
         <seerrDefinition.Widget
           pending={2}
           approved={5}
@@ -110,7 +115,7 @@ describe("seerr definition", () => {
     })
 
     it("renders zero values", () => {
-      render(
+      renderWithTooltipProvider(
         <seerrDefinition.Widget
           pending={0}
           approved={0}

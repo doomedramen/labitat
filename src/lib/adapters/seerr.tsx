@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import { StatGrid } from "@/components/widgets"
+import { Clock, Check, Package, RefreshCw } from "lucide-react"
 
 type SeerrData = {
   _status?: "ok" | "warn" | "error"
@@ -14,10 +15,30 @@ function SeerrWidget({ pending, approved, available, processing }: SeerrData) {
   return (
     <StatGrid
       items={[
-        { value: pending, label: "Pending" },
-        { value: approved, label: "Approved" },
-        { value: available, label: "Available" },
-        { value: processing, label: "Processing" },
+        {
+          value: pending,
+          label: "Pending",
+          icon: <Clock className="h-3 w-3" />,
+          tooltip: "Pending",
+        },
+        {
+          value: approved,
+          label: "Approved",
+          icon: <Check className="h-3 w-3" />,
+          tooltip: "Approved",
+        },
+        {
+          value: available,
+          label: "Available",
+          icon: <Package className="h-3 w-3" />,
+          tooltip: "Available",
+        },
+        {
+          value: processing,
+          label: "Processing",
+          icon: <RefreshCw className="h-3 w-3" />,
+          tooltip: "Processing",
+        },
       ]}
     />
   )

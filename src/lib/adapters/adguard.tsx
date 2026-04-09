@@ -43,14 +43,14 @@ function AdGuardWidget({
   if (showBlockedPercent) {
     items.push({
       value: `${blockedPercent?.toFixed(1) ?? 0}%`,
-      label: "Block Rate",
+      label: "Rate",
     })
   }
   if (showParentalBlocked) {
     items.push({ value: parentalBlocked, label: "Parental" })
   }
   if (showSafeSearchBlocked) {
-    items.push({ value: safeSearchBlocked, label: "Safe Search" })
+    items.push({ value: safeSearchBlocked, label: "Safe" })
   }
   if (showLatency && latency !== undefined) {
     items.push({ value: `${latency}ms`, label: "Latency" })

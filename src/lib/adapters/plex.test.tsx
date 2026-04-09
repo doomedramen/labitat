@@ -150,10 +150,10 @@ describe("plex definition", () => {
       expect(screen.getByText("10")).toBeInTheDocument()
       expect(screen.getByText("50")).toBeInTheDocument()
       expect(screen.getByText("20")).toBeInTheDocument()
-      expect(screen.getByText("Active Streams")).toBeInTheDocument()
+      expect(screen.getByText("Active")).toBeInTheDocument()
       expect(screen.getByText("Albums")).toBeInTheDocument()
       expect(screen.getByText("Movies")).toBeInTheDocument()
-      expect(screen.getByText("TV Shows")).toBeInTheDocument()
+      expect(screen.getByText("Shows")).toBeInTheDocument()
     })
 
     it("renders without active streams", () => {

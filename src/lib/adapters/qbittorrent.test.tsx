@@ -18,7 +18,7 @@ describe("qbittorrent definition", () => {
 
   it("has configFields defined", () => {
     expect(qbittorrentDefinition.configFields).toBeDefined()
-    expect(qbittorrentDefinition.configFields).toHaveLength(3)
+    expect(qbittorrentDefinition.configFields).toHaveLength(4)
     expect(qbittorrentDefinition.configFields[0].key).toBe("url")
     expect(qbittorrentDefinition.configFields[0].type).toBe("url")
     expect(qbittorrentDefinition.configFields[0].required).toBe(true)
@@ -28,6 +28,8 @@ describe("qbittorrent definition", () => {
     expect(qbittorrentDefinition.configFields[2].key).toBe("password")
     expect(qbittorrentDefinition.configFields[2].type).toBe("password")
     expect(qbittorrentDefinition.configFields[2].required).toBe(true)
+    expect(qbittorrentDefinition.configFields[3].key).toBe("showDownloads")
+    expect(qbittorrentDefinition.configFields[3].type).toBe("boolean")
   })
 
   describe("fetchData", () => {
@@ -89,6 +91,7 @@ describe("qbittorrent definition", () => {
         url: "https://qb.example.com/",
         username: "admin",
         password: "secret",
+        showDownloads: "true",
       })
 
       expect(result._status).toBe("ok")
