@@ -334,7 +334,8 @@ export function ActiveStreamItem({
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
-            <Clock className="h-3 w-3" />-{formatDuration(remaining)}
+            <Clock className="h-3 w-3" />
+            {formatDuration(remaining)}
           </div>
           {/* Playback progress bar */}
           <div

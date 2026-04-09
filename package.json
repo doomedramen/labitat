@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.207",
+  "version": "0.0.208",
   "type": "module",
   "private": true,
   "scripts": {
@@ -39,6 +39,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@t3-oss/env-nextjs": "^0.13.11",
+    "@tanstack/react-form": "^1.28.6",
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^12.8.0",
     "class-variance-authority": "^0.7.1",
