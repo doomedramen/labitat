@@ -106,7 +106,7 @@ describe("plex definition", () => {
             ok: true,
             text: () =>
               Promise.resolve(
-                '<MediaContainer size="1"><Video title="Law &amp; Order: SVU" grandparentTitle="Season 1" originalTitle="Law &amp; Order" viewOffset="1000" duration="2000"><User title="user&amp;test" /><Player state="playing" /></Video></MediaContainer>'
+                '<MediaContainer size="1"><Video title="Law &amp; Order: SVU" type="episode" grandparentTitle="Show Name" parentIndex="1" index="3" originalTitle="Law &amp; Order" viewOffset="1000" duration="2000"><User title="user&amp;test" /><Player state="playing" /></Video></MediaContainer>'
               ),
           })
         }
@@ -127,9 +127,42 @@ describe("plex definition", () => {
       })
 
       expect(result.sessions).toHaveLength(1)
-      expect(result.sessions![0].title).toBe("Law & Order: SVU")
-      expect(result.sessions![0].subtitle).toBe("Season 1")
+      expect(result.sessions![0].title).toBe("S01E03 - Law & Order: SVU")
+      expect(result.sessions![0].subtitle).toBe("Show Name")
       expect(result.sessions![0].user).toBe("user&test")
+    })
+
+    it("formats TV episodes with SxxEyy", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/status/sessions")) {
+          return Promise.resolve({
+            ok: true,
+            text: () =>
+              Promise.resolve(
+                '<MediaContainer size="1"><Video title="Episode Name" type="episode" grandparentTitle="Show Name" parentIndex="2" index="5" viewOffset="1000" duration="2000"><User title="TestUser" /><Player state="playing" /></Video></MediaContainer>'
+              ),
+          })
+        }
+        if (url.includes("/library/sections") && !url.includes("/all")) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve("<MediaContainer />"),
+          })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      const result = await plexDefinition.fetchData!({
+        url: "https://plex.example.com",
+        token: "test-token",
+        showActiveStreams: "true",
+      })
+
+      expect(result.sessions).toHaveLength(1)
+      expect(result.sessions![0].title).toBe("S02E05 - Episode Name")
+      expect(result.sessions![0].subtitle).toBe("Show Name")
+      expect(result.sessions![0].user).toBe("TestUser")
     })
 
     it("handles empty library", async () => {

@@ -127,13 +127,32 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
     const torrents = torrentsRes.ok ? await torrentsRes.json() : []
     const queued = queuedRes.ok ? (await queuedRes.json()).length : 0
 
-    // Build active download list (top 3 by speed)
+    // Build active download list with state-priority sorting
+    // State priority (like Homepage): downloading > forcedDL > metaDL > stalledDL > queuedDL > pausedDL
+    const statePriority: Record<string, number> = {
+      downloading: 0,
+      forcedDL: 1,
+      metaDL: 2,
+      stalledDL: 3,
+      queuedDL: 4,
+      pausedDL: 5,
+    }
+
     const downloads: DownloadItem[] = torrents
       .sort(
-        (a: { dlspeed: number }, b: { dlspeed: number }) =>
-          b.dlspeed - a.dlspeed
+        (
+          a: { state: string; dlspeed: number },
+          b: { state: string; dlspeed: number }
+        ) => {
+          // First sort by state priority
+          const stateA = statePriority[a.state] ?? 99
+          const stateB = statePriority[b.state] ?? 99
+          if (stateA !== stateB) return stateA - stateB
+          // Then by download speed (descending)
+          return b.dlspeed - a.dlspeed
+        }
       )
-      .slice(0, 3)
+      .slice(0, 5)
       .map(
         (t: {
           name: string
@@ -141,13 +160,24 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
           eta: number
           dlspeed: number
           size: number
-        }) => ({
-          title: t.name,
-          progress: Math.round(t.progress * 100),
-          timeLeft: formatTime(t.eta),
-          activity: "downloading",
-          size: formatBytes(t.size),
-        })
+          state: string
+        }) => {
+          // Map qBittorrent states to user-friendly labels
+          let activity = "downloading"
+          if (t.state === "stalledDL") activity = "Stalled"
+          else if (t.state === "queuedDL") activity = "Queued"
+          else if (t.state === "pausedDL") activity = "Paused"
+          else if (t.state === "metaDL") activity = "Fetching metadata"
+          else if (t.state === "forcedDL") activity = "Forced downloading"
+
+          return {
+            title: t.name,
+            progress: Math.round(t.progress * 100),
+            timeLeft: formatTime(t.eta),
+            activity,
+            size: formatBytes(t.size),
+          }
+        }
       )
 
     return {

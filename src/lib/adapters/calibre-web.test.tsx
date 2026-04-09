@@ -41,11 +41,16 @@ describe("calibre-web definition", () => {
             headers: { getSetCookie: () => ["session=abc123"] },
           })
         }
-        if (url === "https://calibre.example.com/") {
+        if (url.includes("/opds/stats")) {
           return Promise.resolve({
             ok: true,
-            text: () =>
-              Promise.resolve("Books: 150 Authors: 45 Series: 20 Formats: 300"),
+            json: () =>
+              Promise.resolve({
+                books: 150,
+                authors: 45,
+                series: 20,
+                formats: 300,
+              }),
           })
         }
         return Promise.reject(new Error("Unexpected URL"))
@@ -83,7 +88,7 @@ describe("calibre-web definition", () => {
           username: "admin",
           password: "secret",
         })
-      ).rejects.toThrow("Calibre-Web error: 500")
+      ).rejects.toThrow("Calibre-Web stats error: 500")
     })
 
     it("handles missing stats with defaults", async () => {
@@ -94,10 +99,10 @@ describe("calibre-web definition", () => {
             headers: { getSetCookie: () => ["session=abc123"] },
           })
         }
-        if (url === "https://calibre.example.com/") {
+        if (url.includes("/opds/stats")) {
           return Promise.resolve({
             ok: true,
-            text: () => Promise.resolve("No stats available"),
+            json: () => Promise.resolve({}),
           })
         }
         return Promise.reject(new Error("Unexpected URL"))

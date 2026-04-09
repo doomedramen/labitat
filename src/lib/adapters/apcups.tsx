@@ -53,45 +53,113 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
   defaultPollingMs: 15_000,
   configFields: [
     {
-      key: "url",
-      label: "URL",
-      type: "url",
+      key: "connectionType",
+      label: "Connection Type",
+      type: "select",
       required: true,
-      placeholder: "http://192.168.1.100",
+      options: [
+        { value: "tcp", label: "TCP Daemon (port 3551)" },
+        { value: "http", label: "HTTP CGI (multimon.cgi)" },
+      ],
       helperText:
-        "HTTP URL of your apcupsd web CGI server. This is an http(s) address — not the apcupsd TCP daemon port (3551).",
+        "TCP Daemon is recommended — most users don't have the CGI web interface enabled",
+    },
+    {
+      key: "host",
+      label: "Host",
+      type: "text",
+      required: true,
+      placeholder: "192.168.1.100",
+      helperText: "IP address or hostname of your APC UPS server",
+    },
+    {
+      key: "port",
+      label: "Port (TCP only)",
+      type: "number",
+      required: false,
+      placeholder: "3551",
+      helperText: "apcupsd TCP daemon port (default: 3551)",
+    },
+    {
+      key: "url",
+      label: "HTTP URL (HTTP only)",
+      type: "url",
+      required: false,
+      placeholder: "http://192.168.1.100",
+      helperText: "HTTP URL of your apcupsd web CGI server (if using HTTP CGI)",
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const res = await fetch(`${baseUrl}/multimon.cgi`)
+    const connectionType = config.connectionType ?? "tcp"
 
-    if (!res.ok) throw new Error(`APC UPS error: ${res.status}`)
+    if (connectionType === "tcp") {
+      // TCP daemon connection (recommended)
+      const host = config.host
+      const port = parseInt(config.port ?? "3551", 10)
 
-    const html = await res.text()
+      if (!host) {
+        throw new Error("Host is required for TCP connection")
+      }
 
-    const extractValue = (label: string): string => {
-      const regex = new RegExp(`${label}[^<]*<[^>]*>([^<]+)</`, "i")
-      const match = html.match(regex)
-      return match?.[1]?.trim() ?? ""
-    }
+      try {
+        // Import server-only TCP utility
+        const { fetchApcupsTcpStatus } = await import("@/lib/apcups-tcp")
+        const { loadPercent, batteryCharge, timeLeft, temperature, status } =
+          await fetchApcupsTcpStatus(host, port)
 
-    const loadPercent = parseFloat(extractValue("LOADPCT")) || 0
-    const batteryCharge = parseFloat(extractValue("BCHARGE")) || 0
-    const timeLeft = parseFloat(extractValue("TIMELEFT")) || 0
-    const temperature = parseFloat(extractValue("ITEMP")) || 0
-    const status = extractValue("STATUS") || "Unknown"
+        return {
+          _status: status.includes("ONLINE") ? "ok" : "warn",
+          _statusText: status.includes("ONLINE")
+            ? undefined
+            : `UPS Status: ${status}`,
+          loadPercent,
+          batteryCharge,
+          timeLeft,
+          temperature,
+          status,
+        }
+      } catch (error) {
+        throw new Error(
+          `TCP connection to ${host}:${port} failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        )
+      }
+    } else {
+      // HTTP CGI fallback (original method)
+      const baseUrl = (config.url ?? "").replace(/\/$/, "")
 
-    return {
-      _status: status.includes("ONLINE") ? "ok" : "warn",
-      _statusText: status.includes("ONLINE")
-        ? undefined
-        : `UPS Status: ${status}`,
-      loadPercent,
-      batteryCharge,
-      timeLeft,
-      temperature,
-      status,
+      if (!baseUrl) {
+        throw new Error("URL is required for HTTP CGI connection")
+      }
+
+      const res = await fetch(`${baseUrl}/multimon.cgi`)
+
+      if (!res.ok) throw new Error(`APC UPS error: ${res.status}`)
+
+      const html = await res.text()
+
+      const extractValue = (label: string): string => {
+        const regex = new RegExp(`${label}[^<]*<[^>]*>([^<]+)</`, "i")
+        const match = html.match(regex)
+        return match?.[1]?.trim() ?? ""
+      }
+
+      const loadPercent = parseFloat(extractValue("LOADPCT")) || 0
+      const batteryCharge = parseFloat(extractValue("BCHARGE")) || 0
+      const timeLeft = parseFloat(extractValue("TIMELEFT")) || 0
+      const temperature = parseFloat(extractValue("ITEMP")) || 0
+      const status = extractValue("STATUS") || "Unknown"
+
+      return {
+        _status: status.includes("ONLINE") ? "ok" : "warn",
+        _statusText: status.includes("ONLINE")
+          ? undefined
+          : `UPS Status: ${status}`,
+        loadPercent,
+        batteryCharge,
+        timeLeft,
+        temperature,
+        status,
+      }
     }
   },
   toPayload: apcupsToPayload,

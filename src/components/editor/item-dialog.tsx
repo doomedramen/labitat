@@ -231,6 +231,7 @@ export function ItemDialog({
       } else {
         await createItem(groupId, formData)
       }
+      form.reset()
       onOpenChange(false)
     },
   })
@@ -241,25 +242,29 @@ export function ItemDialog({
     setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label")
     setCleanMode(item?.cleanMode ?? false)
     setLocalStatCardOrder(toStatCardOrder(item?.statCardOrder))
-    form.setFieldValue("label", item?.label ?? "")
-    form.setFieldValue("href", item?.href ?? "")
-    form.setFieldValue("iconUrl", item?.iconUrl ?? "")
-    form.setFieldValue(
-      "pollingMs",
-      item?.pollingMs ? item.pollingMs / 1000 : 10
-    )
+    form.reset({
+      label: item?.label ?? "",
+      href: item?.href ?? "",
+      iconUrl: item?.iconUrl ?? "",
+      pollingMs: item?.pollingMs ? item.pollingMs / 1000 : 10,
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
-  }, [
-    item?.id,
-    item?.serviceType,
-    item?.statDisplayMode,
-    item?.statCardOrder,
-    item?.cleanMode,
-    item?.label,
-    item?.href,
-    item?.iconUrl,
-    item?.pollingMs,
-  ])
+  }, [item?.id])
+
+  // Auto-set label based on service type when creating a new item
+  useEffect(() => {
+    // Only for new items (no existing item)
+    if (item) return
+
+    if (selectedService) {
+      const currentLabel = form.getFieldValue("label")
+      // Set label to service name if no label is defined
+      if (!currentLabel || currentLabel === "") {
+        form.setFieldValue("label", selectedService.name)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when serviceType changes
+  }, [item, serviceType])
 
   // Load config when editing an existing item
   useEffect(() => {

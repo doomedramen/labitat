@@ -8,6 +8,12 @@ type PlexSession = {
   progress: number
   duration: number
   state?: "playing" | "paused"
+  streamId?: string
+  transcoding?: {
+    isDirect?: boolean
+    hardwareDecoding?: boolean
+    hardwareEncoding?: boolean
+  }
 }
 
 type PlexData = {
@@ -29,6 +35,42 @@ function decodeXMLEntities(str: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#?39;/g, "'")
     .replace(/&apos;/g, "'")
+}
+
+/**
+ * Format media title with consistent SxxEyy formatting for TV episodes.
+ * Shared across Plex, Jellyfin, Emby, and Tautulli adapters for UI consistency.
+ */
+function formatMediaTitle(
+  title: string,
+  options: {
+    type?: string
+    seriesName?: string
+    season?: number | null
+    episode?: number | null
+    albumArtist?: string
+    album?: string
+  } = {}
+): { title: string; subtitle?: string } {
+  const { type, seriesName, season, episode, albumArtist, album } = options
+
+  // TV Episode: S01E05 - Episode Name
+  if (type === "episode" && seriesName) {
+    let formattedTitle = title
+    if (season != null && episode != null) {
+      formattedTitle = `S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")} - ${title}`
+    }
+    return { title: formattedTitle, subtitle: seriesName }
+  }
+
+  // Audio: Album - Song Name (subtitle = Artist)
+  if (type === "track" && albumArtist) {
+    const formattedTitle = album ? `${album} - ${title}` : title
+    return { title: formattedTitle, subtitle: albumArtist }
+  }
+
+  // Movie or other: just the title
+  return { title, subtitle: undefined }
 }
 
 function plexToPayload(data: PlexData) {
@@ -68,6 +110,8 @@ function plexToPayload(data: PlexData) {
             progress: session.progress,
             duration: session.duration,
             state: session.state,
+            streamId: session.streamId,
+            transcoding: session.transcoding,
           }))
         : undefined,
   }
@@ -184,31 +228,27 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
         const grandparentTitle = getAttr("grandparentTitle")
           ? decodeXMLEntities(getAttr("grandparentTitle")!)
           : null
-        const originalTitle = getAttr("originalTitle")
-          ? decodeXMLEntities(getAttr("originalTitle")!)
-          : null
-        const librarySectionTitle = getAttr("librarySectionTitle")
-          ? decodeXMLEntities(getAttr("librarySectionTitle")!)
-          : null
         const type = getAttr("type")
         const viewOffset = getAttr("viewOffset")
         const duration = getAttr("duration")
 
-        // For TV: subtitle = show name, title = episode title
-        // For movies: no subtitle, resolve title from originalTitle if needed
-        let episodeTitle = title
-        let subtitle: string | undefined
-        if (grandparentTitle) {
-          subtitle = grandparentTitle
-          episodeTitle =
-            title === grandparentTitle ? originalTitle || title : title
-        } else if (type === "movie") {
-          if (librarySectionTitle && title === librarySectionTitle) {
-            episodeTitle = originalTitle || title
-          } else if (title.includes("(") && originalTitle) {
-            episodeTitle = originalTitle
-          }
-        }
+        // Extract season/episode numbers for TV episodes
+        const seasonNumber = getAttr("parentIndex")
+          ? parseInt(getAttr("parentIndex")!, 10)
+          : null
+        const episodeNumber = getAttr("index")
+          ? parseInt(getAttr("index")!, 10)
+          : null
+
+        // Use shared formatMediaTitle for consistent formatting across all media adapters
+        const { title: formattedTitle, subtitle } = formatMediaTitle(title, {
+          type: type ?? undefined,
+          seriesName: grandparentTitle ?? undefined,
+          season: seasonNumber,
+          episode: episodeNumber,
+          albumArtist: getAttr("originalTitle") ?? undefined,
+          album: getAttr("parentTitle") ?? undefined,
+        })
 
         const userMatch = videoEl.match(/<User[^>]*title="([^"]*)"/)
         const user = userMatch ? decodeXMLEntities(userMatch[1]) : "Unknown"
@@ -224,13 +264,38 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
         const safeProgress =
           durationSec > 0 ? Math.min(progress, durationSec) : progress
 
+        // Extract transcoding info from Plex XML
+        // Plex uses videoDecision="direct play", "transcode", or "copy"
+        const videoDecision = getAttr("videoDecision")?.toLowerCase()
+        const isDirectPlay = videoDecision === "direct play"
+        const isTranscoding = videoDecision === "transcode"
+
+        // Check for hardware transcoding in TranscodeSession
+        const transcodeHw =
+          videoEl.includes('hwAccel="1"') || videoEl.includes('hwDecode="1"')
+        const transcodingInfo = isTranscoding
+          ? {
+              isDirect: false,
+              hardwareDecoding: transcodeHw,
+              hardwareEncoding: transcodeHw,
+            }
+          : isDirectPlay
+            ? {
+                isDirect: true,
+                hardwareDecoding: false,
+                hardwareEncoding: false,
+              }
+            : undefined
+
         sessions.push({
-          title: episodeTitle,
+          title: formattedTitle,
           subtitle,
           user,
           progress: safeProgress,
           duration: durationSec,
           state,
+          streamId: getAttr("ratingKey") ?? undefined,
+          transcoding: transcodingInfo,
         })
       }
     }

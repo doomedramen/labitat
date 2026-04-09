@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { EventEmitter } from "events"
+
+vi.mock("net", () => ({
+  createConnection: vi.fn(),
+}))
+
 import { apcupsDefinition } from "@/lib/adapters/apcups"
+import * as net from "net"
 
 describe("apcups definition", () => {
   it("has correct metadata", () => {
@@ -12,10 +19,15 @@ describe("apcups definition", () => {
 
   it("has configFields defined", () => {
     expect(apcupsDefinition.configFields).toBeDefined()
-    expect(apcupsDefinition.configFields).toHaveLength(1)
-    expect(apcupsDefinition.configFields[0].key).toBe("url")
-    expect(apcupsDefinition.configFields[0].type).toBe("url")
-    expect(apcupsDefinition.configFields[0].required).toBe(true)
+    expect(apcupsDefinition.configFields).toHaveLength(4)
+    expect(apcupsDefinition.configFields[0].key).toBe("connectionType")
+    expect(apcupsDefinition.configFields[0].type).toBe("select")
+    expect(apcupsDefinition.configFields[1].key).toBe("host")
+    expect(apcupsDefinition.configFields[1].type).toBe("text")
+    expect(apcupsDefinition.configFields[2].key).toBe("port")
+    expect(apcupsDefinition.configFields[2].type).toBe("number")
+    expect(apcupsDefinition.configFields[3].key).toBe("url")
+    expect(apcupsDefinition.configFields[3].type).toBe("url")
   })
 
   describe("fetchData", () => {
@@ -27,7 +39,81 @@ describe("apcups definition", () => {
       vi.restoreAllMocks()
     })
 
-    it("fetches data successfully from HTML", async () => {
+    it("fetches data successfully via TCP", async () => {
+      const mockTcpData = `APC      : 001,034,0871
+DATE     : 2024-01-15 10:30:00 +0000
+HOSTNAME : server
+VERSION  : 3.14.14 (31 May 2016) redhat
+UPSNAME  : myups
+LOADPCT  : 45.2 Percent
+BCHARGE  : 100.0 Percent
+TIMELEFT : 35.0 Minutes
+ITEMP    : 32.5 C
+STATUS   : ONLINE
+`
+
+      const mockSocket = new EventEmitter() as net.Socket & {
+        write: ReturnType<typeof vi.fn>
+        destroy: ReturnType<typeof vi.fn>
+      }
+      mockSocket.write = vi.fn()
+      mockSocket.destroy = vi.fn()
+
+      vi.mocked(net.createConnection).mockImplementation(
+        (_options, callback) => {
+          // Simulate connection established
+          setTimeout(() => callback?.(), 0)
+          // Simulate data received
+          setTimeout(() => mockSocket.emit("data", Buffer.from(mockTcpData)), 5)
+          // Simulate connection end
+          setTimeout(() => mockSocket.emit("end"), 10)
+          return mockSocket
+        }
+      )
+
+      const result = await apcupsDefinition.fetchData!({
+        connectionType: "tcp",
+        host: "192.168.1.100",
+        port: "3551",
+      })
+
+      expect(result._status).toBe("ok")
+      expect(result.loadPercent).toBe(45.2)
+      expect(result.batteryCharge).toBe(100)
+      expect(result.timeLeft).toBe(35)
+      expect(result.temperature).toBe(32.5)
+      expect(result.status).toBe("ONLINE")
+    })
+
+    it("throws error when TCP connection fails", async () => {
+      const mockSocket = new EventEmitter() as net.Socket & {
+        write: ReturnType<typeof vi.fn>
+        destroy: ReturnType<typeof vi.fn>
+      }
+      mockSocket.write = vi.fn()
+      mockSocket.destroy = vi.fn()
+
+      vi.mocked(net.createConnection).mockImplementation(
+        (_options, callback) => {
+          // Simulate connection error
+          setTimeout(
+            () => mockSocket.emit("error", new Error("Connection refused")),
+            5
+          )
+          return mockSocket
+        }
+      )
+
+      await expect(
+        apcupsDefinition.fetchData!({
+          connectionType: "tcp",
+          host: "192.168.1.100",
+          port: "3551",
+        })
+      ).rejects.toThrow("TCP connection to 192.168.1.100:3551 failed")
+    })
+
+    it("fetches data successfully from HTTP CGI", async () => {
       const mockHtml = `
         <table>
           <tr><td>LOADPCT : <span>45.2 Percent</span></td></tr>
@@ -45,6 +131,7 @@ describe("apcups definition", () => {
       )
 
       const result = await apcupsDefinition.fetchData!({
+        connectionType: "http",
         url: "https://apcups.example.com/",
       })
 
@@ -74,6 +161,7 @@ describe("apcups definition", () => {
       )
 
       const result = await apcupsDefinition.fetchData!({
+        connectionType: "http",
         url: "https://apcups.example.com",
       })
 
@@ -86,6 +174,7 @@ describe("apcups definition", () => {
 
       await expect(
         apcupsDefinition.fetchData!({
+          connectionType: "http",
           url: "https://apcups.example.com",
         })
       ).rejects.toThrow("APC UPS error: 404")
@@ -100,6 +189,7 @@ describe("apcups definition", () => {
       )
 
       const result = await apcupsDefinition.fetchData!({
+        connectionType: "http",
         url: "https://apcups.example.com",
       })
 

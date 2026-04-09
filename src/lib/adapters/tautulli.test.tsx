@@ -51,6 +51,9 @@ describe("tautulli definition", () => {
                     {
                       title: "Episode Title",
                       grandparent_title: "Show Name",
+                      media_type: "episode",
+                      season_number: 1,
+                      episode_number: 5,
                       user: "user2",
                       progress_percent: 25,
                       duration: 3600,
@@ -78,7 +81,7 @@ describe("tautulli definition", () => {
       expect(result.sessions).toHaveLength(2)
       expect(result.sessions?.[0].title).toBe("Movie 1")
       expect(result.sessions?.[0].state).toBe("playing")
-      expect(result.sessions?.[1].title).toBe("Episode Title")
+      expect(result.sessions?.[1].title).toBe("S01E05 - Episode Title")
       expect(result.sessions?.[1].subtitle).toBe("Show Name")
       expect(result.sessions?.[1].state).toBe("paused")
     })

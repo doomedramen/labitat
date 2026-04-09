@@ -65,6 +65,7 @@ describe("qbittorrent definition", () => {
                   eta: 3600,
                   dlspeed: 10000000,
                   size: 5000000000,
+                  state: "downloading",
                 },
               ]),
           })
@@ -93,6 +94,74 @@ describe("qbittorrent definition", () => {
       expect(result.queued).toBe(2)
       expect(result.downloads).toHaveLength(1)
       expect(result.downloads?.[0].title).toBe("Movie.mkv")
+      expect(result.downloads?.[0].activity).toBe("downloading")
+    })
+
+    it("sorts torrents by state priority then speed", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/auth/login")) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve("Ok."),
+            headers: { getSetCookie: () => ["SID=abc123"] },
+          })
+        }
+        if (url.includes("/transfer/info")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ dl_info_speed: 0, up_info_speed: 0 }),
+          })
+        }
+        if (url.includes("/torrents/info?filter=downloading")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve([
+                {
+                  name: "Stalled.torrent",
+                  progress: 0.3,
+                  eta: 7200,
+                  dlspeed: 1000,
+                  size: 1000000,
+                  state: "stalledDL",
+                },
+                {
+                  name: "Active.torrent",
+                  progress: 0.5,
+                  eta: 3600,
+                  dlspeed: 5000000,
+                  size: 2000000,
+                  state: "downloading",
+                },
+                {
+                  name: "Queued.torrent",
+                  progress: 0.1,
+                  eta: -1,
+                  dlspeed: 0,
+                  size: 3000000,
+                  state: "queuedDL",
+                },
+              ]),
+          })
+        }
+        if (url.includes("/torrents/info?filter=queuedDL")) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      const result = await qbittorrentDefinition.fetchData!({
+        url: "https://qb.example.com",
+        username: "admin",
+        password: "secret",
+      })
+
+      // Should be sorted: downloading (priority 0) > stalledDL (priority 3) > queuedDL (priority 4)
+      expect(result.downloads).toHaveLength(3)
+      expect(result.downloads?.[0].activity).toBe("downloading")
+      expect(result.downloads?.[1].activity).toBe("Stalled")
+      expect(result.downloads?.[2].activity).toBe("Queued")
     })
 
     it("throws on login failure", async () => {

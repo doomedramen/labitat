@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities"
 import type { DragEndEvent } from "@dnd-kit/core"
 import { useCallback } from "react"
 import { cn } from "@/lib/utils"
-import { Clock, Pause, Play, Monitor, Cpu, VolumeX } from "lucide-react"
+import { Clock, Pause, Play, Monitor, Cpu } from "lucide-react"
 import {
   Tooltip,
   TooltipContent,
@@ -506,7 +506,7 @@ export function ActiveStreamItem({
 export function ActiveStreamList({
   streams,
   onTogglePlayback,
-  expandSingleStream = true,
+  expandSingleStream: _expandSingleStream = true,
 }: {
   streams: ActiveStream[]
   onTogglePlayback?: (streamId: string) => void
@@ -523,7 +523,7 @@ export function ActiveStreamList({
   })
 
   // Homepage feature: expand single stream to show more details
-  const shouldExpand = expandSingleStream && sorted.length === 1
+  // Note: expandSingleStream prop can be used to enable/disable this behavior
 
   return (
     <div className="flex w-full flex-col gap-0.5">

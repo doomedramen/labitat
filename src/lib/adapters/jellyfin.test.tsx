@@ -19,8 +19,8 @@ describe("jellyfin definition", () => {
     expect(jellyfinDefinition.configFields[1].key).toBe("apiKey")
     expect(jellyfinDefinition.configFields[1].type).toBe("password")
     expect(jellyfinDefinition.configFields[1].required).toBe(true)
-    expect(jellyfinDefinition.configFields[2].key).toBe("version")
-    expect(jellyfinDefinition.configFields[2].type).toBe("select")
+    expect(jellyfinDefinition.configFields[2].key).toBe("showActiveStreams")
+    expect(jellyfinDefinition.configFields[2].type).toBe("boolean")
   })
 
   describe("fetchData", () => {
@@ -69,7 +69,6 @@ describe("jellyfin definition", () => {
       const result = await jellyfinDefinition.fetchData!({
         url: "https://jellyfin.example.com/",
         apiKey: "test-key",
-        version: "2",
       })
 
       expect(result._status).toBe("ok")
@@ -77,6 +76,7 @@ describe("jellyfin definition", () => {
       expect(result.movies).toBe(100)
       expect(result.shows).toBe(15)
       expect(result.episodes).toBe(300)
+      expect(result.songs).toBe(500)
     })
 
     it("throws on invalid API key", async () => {
@@ -110,7 +110,10 @@ describe("jellyfin definition", () => {
           })
         }
         if (url.includes("/Items/Counts")) {
-          return Promise.resolve({ ok: false, status: 500 })
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({}),
+          })
         }
         return Promise.reject(new Error("Unexpected URL"))
       })
@@ -125,6 +128,68 @@ describe("jellyfin definition", () => {
       expect(result.movies).toBe(0)
       expect(result.shows).toBe(0)
       expect(result.episodes).toBe(0)
+      expect(result.songs).toBe(0)
+    })
+
+    it("fetches active streams when enabled", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/Sessions")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve([
+                {
+                  Id: "session-1",
+                  UserName: "TestUser",
+                  NowPlayingItem: {
+                    Name: "Test Episode",
+                    SeriesName: "Test Series",
+                    Type: "Episode",
+                    ParentIndexNumber: 1,
+                    IndexNumber: 5,
+                    RunTimeTicks: 36000000000, // 1 hour in ticks
+                  },
+                  PlayState: {
+                    IsPaused: false,
+                    PositionTicks: 18000000000, // 30 minutes
+                  },
+                  TranscodingInfo: {
+                    IsVideoDirect: true,
+                  },
+                },
+              ]),
+          })
+        }
+        if (url.includes("/Items/Counts")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                MovieCount: 100,
+                SeriesCount: 15,
+                EpisodeCount: 300,
+                SongCount: 500,
+              }),
+          })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      const result = await jellyfinDefinition.fetchData!({
+        url: "https://jellyfin.example.com",
+        apiKey: "test-key",
+        showActiveStreams: "true",
+      })
+
+      expect(result.showActiveStreams).toBe(true)
+      expect(result.sessions).toHaveLength(1)
+      expect(result.sessions![0].title).toBe("S01E05 - Test Episode")
+      expect(result.sessions![0].subtitle).toBe("Test Series")
+      expect(result.sessions![0].user).toBe("TestUser")
+      expect(result.sessions![0].state).toBe("playing")
+      expect(result.sessions![0].streamId).toBe("session-1")
+      expect(result.sessions![0].transcoding?.isDirect).toBe(true)
     })
   })
 
@@ -136,8 +201,9 @@ describe("jellyfin definition", () => {
         movies: 100,
         shows: 15,
         episodes: 300,
+        songs: 500,
       })
-      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats).toHaveLength(5)
       expect(payload.stats[0].value).toBe(3)
       expect(payload.stats[0].label).toBe("Active Streams")
       expect(payload.stats[1].value).toBe(100)
@@ -146,6 +212,54 @@ describe("jellyfin definition", () => {
       expect(payload.stats[2].label).toBe("Shows")
       expect(payload.stats[3].value).toBe(300)
       expect(payload.stats[3].label).toBe("Episodes")
+      expect(payload.stats[4].value).toBe(500)
+      expect(payload.stats[4].label).toBe("Songs")
+    })
+
+    it("includes streams when enabled", () => {
+      const payload = jellyfinDefinition.toPayload!({
+        _status: "ok",
+        activeStreams: 1,
+        movies: 100,
+        shows: 15,
+        episodes: 300,
+        songs: 500,
+        showActiveStreams: true,
+        sessions: [
+          {
+            title: "Test Episode",
+            subtitle: "Test Series",
+            user: "TestUser",
+            progress: 1800,
+            duration: 3600,
+            state: "playing",
+            streamId: "session-1",
+          },
+        ],
+      })
+      expect(payload.streams).toHaveLength(1)
+      expect(payload.streams![0].title).toBe("Test Episode")
+    })
+
+    it("excludes streams when disabled", () => {
+      const payload = jellyfinDefinition.toPayload!({
+        _status: "ok",
+        activeStreams: 1,
+        movies: 100,
+        shows: 15,
+        episodes: 300,
+        songs: 500,
+        showActiveStreams: false,
+        sessions: [
+          {
+            title: "Test Episode",
+            user: "TestUser",
+            progress: 1800,
+            duration: 3600,
+          },
+        ],
+      })
+      expect(payload.streams).toBeUndefined()
     })
 
     it("handles zero values", () => {
@@ -155,6 +269,7 @@ describe("jellyfin definition", () => {
         movies: 0,
         shows: 0,
         episodes: 0,
+        songs: 0,
       })
       expect(payload.stats.every((s) => s.value === 0)).toBe(true)
     })

@@ -73,7 +73,7 @@ export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
 
-    // Login
+    // Login to get session cookie
     const loginRes = await fetch(`${baseUrl}/login`, {
       method: "POST",
       headers: {
@@ -86,28 +86,29 @@ export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
       redirect: "manual",
     })
 
+    if (!loginRes.ok && loginRes.status !== 302) {
+      throw new Error(`Calibre-Web login failed: ${loginRes.status}`)
+    }
+
     const cookie = loginRes.headers.getSetCookie?.().join("; ") ?? ""
     const headers = { Cookie: cookie }
 
-    // Get stats from the main page
-    const res = await fetch(`${baseUrl}/`, { headers })
-    if (!res.ok) throw new Error(`Calibre-Web error: ${res.status}`)
+    // Use OPDS stats endpoint (JSON API - more reliable than HTML scraping)
+    const statsRes = await fetch(`${baseUrl}/opds/stats`, { headers })
 
-    const html = await res.text()
-
-    // Parse stats from HTML (Calibre-Web shows them in the sidebar)
-    const extractStat = (label: string): number => {
-      const regex = new RegExp(`${label}\\s*[:\\s]*(\\d+)`, "i")
-      const match = html.match(regex)
-      return match ? parseInt(match[1], 10) : 0
+    if (!statsRes.ok) {
+      throw new Error(`Calibre-Web stats error: ${statsRes.status}`)
     }
 
+    const statsData = await statsRes.json()
+
+    // OPDS stats returns an object with counts
     return {
       _status: "ok",
-      books: extractStat("Books") || extractStat("books"),
-      authors: extractStat("Authors") || extractStat("authors"),
-      series: extractStat("Series") || extractStat("series"),
-      formats: extractStat("Formats") || extractStat("formats"),
+      books: statsData.books ?? statsData.total ?? 0,
+      authors: statsData.authors ?? 0,
+      series: statsData.series ?? 0,
+      formats: statsData.formats ?? statsData.formats_total ?? 0,
     }
   },
   toPayload: calibreWebToPayload,

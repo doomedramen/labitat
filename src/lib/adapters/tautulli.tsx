@@ -21,6 +21,42 @@ function formatBytes(bytes: number): string {
   return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
 }
 
+/**
+ * Format media title with consistent SxxEyy formatting for TV episodes.
+ * Shared across Plex, Jellyfin, Emby, and Tautulli adapters for UI consistency.
+ */
+function formatMediaTitle(
+  title: string,
+  options: {
+    type?: string
+    seriesName?: string
+    season?: number | null
+    episode?: number | null
+    albumArtist?: string
+    album?: string
+  } = {}
+): { title: string; subtitle?: string } {
+  const { type, seriesName, season, episode, albumArtist, album } = options
+
+  // TV Episode: S01E05 - Episode Name
+  if (type === "episode" && seriesName) {
+    let formattedTitle = title
+    if (season != null && episode != null) {
+      formattedTitle = `S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")} - ${title}`
+    }
+    return { title: formattedTitle, subtitle: seriesName }
+  }
+
+  // Audio: Album - Song Name (subtitle = Artist)
+  if (type === "track" && albumArtist) {
+    const formattedTitle = album ? `${album} - ${title}` : title
+    return { title: formattedTitle, subtitle: albumArtist }
+  }
+
+  // Movie or other: just the title
+  return { title, subtitle: undefined }
+}
+
 function tautulliToPayload(data: TautulliData) {
   return {
     stats: [
@@ -106,13 +142,20 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
         title: string
         grandparent_title?: string
         parent_title?: string
+        media_type?: string
+        season_number?: number
+        episode_number?: number
         user: string
         progress_percent: number
         duration: number
         view_offset: number
         state: string
         video_decision: string
+        video_decision_text?: string
+        transcode_decision?: string
         bandwidth: number
+        stream_container_direct_play?: number
+        stream_container_video_decision?: string
       }) => {
         totalBandwidth += s.bandwidth ?? 0
 
@@ -120,11 +163,19 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
         else if (s.video_decision === "direct play") directPlayStreams++
         else if (s.video_decision === "copy") directStreamStreams++
 
-        // subtitle = series/show name for TV episodes; omit for movies
-        const subtitle =
-          s.grandparent_title ||
-          (s.parent_title !== s.title ? s.parent_title : undefined) ||
-          undefined
+        // Determine media type for consistent formatting
+        const mediaType = s.media_type ?? "video"
+
+        // Format title with SxxEyy for TV episodes (consistent with Plex/Jellyfin/Emby)
+        const { title: formattedTitle, subtitle } = formatMediaTitle(
+          s.title ?? "Unknown",
+          {
+            type: mediaType === "episode" ? "episode" : undefined,
+            seriesName: s.grandparent_title,
+            season: s.season_number,
+            episode: s.episode_number,
+          }
+        )
 
         // Tautulli API returns view_offset and duration in milliseconds
         const viewOffsetMs =
@@ -133,13 +184,32 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
         const progressSec = viewOffsetMs / 1000
         const durationSec = (s.duration ?? 0) / 1000
 
+        // Build transcoding info (consistent with Jellyfin/Emby)
+        const isDirectPlay = s.video_decision === "direct play"
+        const isTranscoding = s.video_decision === "transcode"
+        const transcodingInfo = isTranscoding
+          ? {
+              isDirect: false,
+              hardwareDecoding: s.transcode_decision?.includes("hw") ?? false,
+              hardwareEncoding: s.transcode_decision?.includes("hw") ?? false,
+            }
+          : isDirectPlay
+            ? {
+                isDirect: true,
+                hardwareDecoding: false,
+                hardwareEncoding: false,
+              }
+            : undefined
+
         return {
-          title: s.title ?? "Unknown",
+          title: formattedTitle,
           subtitle,
           user: s.user ?? "Unknown",
           progress: progressSec,
           duration: durationSec,
           state: s.state === "paused" ? "paused" : "playing",
+          streamId: s.session_key,
+          transcoding: transcodingInfo,
         }
       }
     )

@@ -12,13 +12,15 @@ describe("emby definition", () => {
 
   it("has configFields defined", () => {
     expect(embyDefinition.configFields).toBeDefined()
-    expect(embyDefinition.configFields).toHaveLength(2)
+    expect(embyDefinition.configFields).toHaveLength(3)
     expect(embyDefinition.configFields[0].key).toBe("url")
     expect(embyDefinition.configFields[0].type).toBe("url")
     expect(embyDefinition.configFields[0].required).toBe(true)
     expect(embyDefinition.configFields[1].key).toBe("apiKey")
     expect(embyDefinition.configFields[1].type).toBe("password")
     expect(embyDefinition.configFields[1].required).toBe(true)
+    expect(embyDefinition.configFields[2].key).toBe("showActiveStreams")
+    expect(embyDefinition.configFields[2].type).toBe("boolean")
   })
 
   describe("fetchData", () => {
@@ -78,6 +80,7 @@ describe("emby definition", () => {
       expect(result.movies).toBe(150)
       expect(result.shows).toBe(20)
       expect(result.episodes).toBe(500)
+      expect(result.songs).toBe(1000)
     })
 
     it("throws on invalid API key", async () => {
@@ -111,7 +114,10 @@ describe("emby definition", () => {
           })
         }
         if (url.includes("/Items/Counts")) {
-          return Promise.resolve({ ok: false, status: 500 })
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({}),
+          })
         }
         return Promise.reject(new Error("Unexpected URL"))
       })
@@ -126,6 +132,68 @@ describe("emby definition", () => {
       expect(result.movies).toBe(0)
       expect(result.shows).toBe(0)
       expect(result.episodes).toBe(0)
+      expect(result.songs).toBe(0)
+    })
+
+    it("fetches active streams when enabled", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/Sessions")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve([
+                {
+                  Id: "session-1",
+                  UserName: "TestUser",
+                  NowPlayingItem: {
+                    Name: "Test Episode",
+                    SeriesName: "Test Series",
+                    Type: "Episode",
+                    ParentIndexNumber: 1,
+                    IndexNumber: 5,
+                    RunTimeTicks: 36000000000,
+                  },
+                  PlayState: {
+                    IsPaused: false,
+                    PositionTicks: 18000000000,
+                  },
+                  TranscodingInfo: {
+                    IsVideoDirect: true,
+                  },
+                },
+              ]),
+          })
+        }
+        if (url.includes("/Items/Counts")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                MovieCount: 150,
+                SeriesCount: 20,
+                EpisodeCount: 500,
+                SongCount: 1000,
+              }),
+          })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      const result = await embyDefinition.fetchData!({
+        url: "https://emby.example.com",
+        apiKey: "test-key",
+        showActiveStreams: "true",
+      })
+
+      expect(result.showActiveStreams).toBe(true)
+      expect(result.sessions).toHaveLength(1)
+      expect(result.sessions![0].title).toBe("S01E05 - Test Episode")
+      expect(result.sessions![0].subtitle).toBe("Test Series")
+      expect(result.sessions![0].user).toBe("TestUser")
+      expect(result.sessions![0].state).toBe("playing")
+      expect(result.sessions![0].streamId).toBe("session-1")
+      expect(result.sessions![0].transcoding?.isDirect).toBe(true)
     })
   })
 
@@ -137,8 +205,9 @@ describe("emby definition", () => {
         movies: 150,
         shows: 20,
         episodes: 500,
+        songs: 1000,
       })
-      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats).toHaveLength(5)
       expect(payload.stats[0].value).toBe("3")
       expect(payload.stats[0].label).toBe("Active Streams")
       expect(payload.stats[1].value).toBe("150")
@@ -147,6 +216,54 @@ describe("emby definition", () => {
       expect(payload.stats[2].label).toBe("Shows")
       expect(payload.stats[3].value).toBe("500")
       expect(payload.stats[3].label).toBe("Episodes")
+      expect(payload.stats[4].value).toBe("1,000")
+      expect(payload.stats[4].label).toBe("Songs")
+    })
+
+    it("includes streams when enabled", () => {
+      const payload = embyDefinition.toPayload!({
+        _status: "ok",
+        activeStreams: 1,
+        movies: 150,
+        shows: 20,
+        episodes: 500,
+        songs: 1000,
+        showActiveStreams: true,
+        sessions: [
+          {
+            title: "Test Episode",
+            subtitle: "Test Series",
+            user: "TestUser",
+            progress: 1800,
+            duration: 3600,
+            state: "playing",
+            streamId: "session-1",
+          },
+        ],
+      })
+      expect(payload.streams).toHaveLength(1)
+      expect(payload.streams![0].title).toBe("Test Episode")
+    })
+
+    it("excludes streams when disabled", () => {
+      const payload = embyDefinition.toPayload!({
+        _status: "ok",
+        activeStreams: 1,
+        movies: 150,
+        shows: 20,
+        episodes: 500,
+        songs: 1000,
+        showActiveStreams: false,
+        sessions: [
+          {
+            title: "Test Episode",
+            user: "TestUser",
+            progress: 1800,
+            duration: 3600,
+          },
+        ],
+      })
+      expect(payload.streams).toBeUndefined()
     })
 
     it("handles zero values", () => {
@@ -156,6 +273,7 @@ describe("emby definition", () => {
         movies: 0,
         shows: 0,
         episodes: 0,
+        songs: 0,
       })
       expect(payload.stats.every((s) => s.value === "0")).toBe(true)
     })
