@@ -72,7 +72,7 @@ export async function createItem(groupId: string, formData: FormData) {
   const nextOrder = (result?.maxOrder ?? -1) + 1
 
   const pollingMsStr = formData.get("pollingMs") as string
-  const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) * 1000 : null
+  const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) : null
 
   const cleanMode = formData.get("cleanMode") === "true"
   const displayMode = (formData.get("displayMode") as string) || "label"
