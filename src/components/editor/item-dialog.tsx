@@ -170,6 +170,7 @@ export function ItemDialog({
   const [statDisplayMode, setStatDisplayMode] = useState<"icon" | "label">(
     (item?.statDisplayMode as "icon" | "label") ?? "label"
   )
+  const [cleanMode, setCleanMode] = useState<boolean>(item?.cleanMode ?? false)
   const selectedService = services.find((s) => s.id === serviceType)
 
   // Sync serviceType when item changes, then load config
@@ -177,6 +178,7 @@ export function ItemDialog({
     setServiceType(item?.serviceType ?? "")
     setDisplayMode((item?.displayMode as "icon" | "label") ?? "label")
     setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label")
+    setCleanMode(item?.cleanMode ?? false)
   }, [item?.id, item?.serviceType, item?.displayMode, item?.statDisplayMode])
 
   // Load config when editing an existing item
@@ -385,8 +387,13 @@ export function ItemDialog({
               <div className="flex items-center gap-2">
                 <Switch
                   id="cleanMode"
+                  checked={cleanMode}
+                  onCheckedChange={setCleanMode}
+                />
+                <input
+                  type="hidden"
                   name="cleanMode"
-                  defaultChecked={item?.cleanMode ?? false}
+                  value={cleanMode ? "true" : "false"}
                 />
                 <Label htmlFor="cleanMode">Clean mode (minimal display)</Label>
               </div>

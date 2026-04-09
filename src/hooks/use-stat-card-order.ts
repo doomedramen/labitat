@@ -57,7 +57,7 @@ export function useStatCardOrder(
       persist(
         active.map((i) => i.id),
         unused.map((i) => i.id)
-      )
+      ).catch(console.error)
     },
     [persist]
   )

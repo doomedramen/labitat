@@ -74,15 +74,6 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
 
       {(!item.cleanMode || editMode) && (
         <div className="flex items-center gap-3">
-          {editMode && (
-            <button
-              className="-ml-1 flex-none cursor-grab touch-none text-muted-foreground/50 hover:text-muted-foreground active:cursor-grabbing"
-              aria-label="Drag to reorder item"
-            >
-              {/* Replaced by EditModeControls */}
-            </button>
-          )}
-
           {item.displayMode === "icon" ? (
             <ItemIcon
               iconUrl={item.iconUrl}

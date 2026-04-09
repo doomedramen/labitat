@@ -8,6 +8,20 @@ import type { ItemRow } from "@/lib/types"
 import { WidgetDisplayProvider } from "./widget-display-context"
 import type { StatCardOrder } from "@/hooks/use-stat-card-order"
 
+function parseStatCardOrder(value: unknown): StatCardOrder | null {
+  if (
+    value &&
+    typeof value === "object" &&
+    "active" in value &&
+    "unused" in value &&
+    Array.isArray((value as StatCardOrder).active) &&
+    Array.isArray((value as StatCardOrder).unused)
+  ) {
+    return value as StatCardOrder
+  }
+  return null
+}
+
 interface WidgetRendererProps {
   serviceDef: ServiceDefinition | null
   effectiveData: ServiceData | null
@@ -75,7 +89,7 @@ export function WidgetRenderer({
           value={{
             statDisplayMode:
               (item.statDisplayMode as "icon" | "label") ?? "label",
-            statCardOrder: (item.statCardOrder as StatCardOrder | null) ?? null,
+            statCardOrder: parseStatCardOrder(item.statCardOrder),
             editMode,
             itemId: item.id,
           }}
