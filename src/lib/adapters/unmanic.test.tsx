@@ -163,7 +163,7 @@ describe("unmanic definition", () => {
         call[0].includes("/v1/status")
       )
       expect(v1Call).toBeDefined()
-      expect(v1Call[1]).toMatchObject({
+      expect(v1Call![0]).toMatchObject({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ api_key: "secret-key" }),
