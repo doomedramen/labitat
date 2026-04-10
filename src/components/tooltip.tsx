@@ -37,14 +37,18 @@ const tooltipStore = {
 
 export function TooltipRoot() {
   const [state, setState] = React.useState(tooltipStore.state)
+  const [visible, setVisible] = React.useState(false)
 
   React.useEffect(() => {
-    return tooltipStore.subscribe(() => {
-      setState({ ...tooltipStore.state })
-    })
-  }, [])
+    if (state.open) {
+      // Trigger fade-in on next frame so the element is mounted first
+      requestAnimationFrame(() => setVisible(true))
+    } else {
+      setVisible(false)
+    }
+  }, [state.open])
 
-  if (!state.open || !state.content) return null
+  if (!state.content) return null
 
   const arrowSize = 10
 
@@ -63,6 +67,8 @@ export function TooltipRoot() {
             : "translate(0, -50%)",
     zIndex: 9999,
     pointerEvents: "none",
+    opacity: visible ? 1 : 0,
+    transition: "opacity 150ms ease",
   }
 
   return (
@@ -70,10 +76,12 @@ export function TooltipRoot() {
       <div className="rounded-md bg-foreground px-3 py-1.5 text-xs text-background shadow-lg">
         {state.content}
       </div>
-      {/* Arrow */}
-      <div
-        className="absolute size-2.5 rotate-45 bg-foreground"
+      {/* Arrow — SVG for clean rendering */}
+      <svg
+        className="absolute block fill-foreground"
         style={{
+          width: 10,
+          height: 5,
           left: "50%",
           top:
             state.side === "top"
@@ -90,14 +98,23 @@ export function TooltipRoot() {
                 : "50%",
           transform:
             state.side === "top" || state.side === "bottom"
-              ? "translateX(-50%) rotate(45deg)"
-              : "translateY(-50%) rotate(45deg)",
-          marginTop: state.side === "top" ? "-5px" : undefined,
-          marginBottom: state.side === "bottom" ? "-5px" : undefined,
-          marginLeft: state.side === "left" ? "-5px" : undefined,
-          marginRight: state.side === "right" ? "-5px" : undefined,
+              ? "translateX(-50%)"
+              : "translateY(-50%)",
+          marginTop: state.side === "top" ? "-1px" : undefined,
+          marginBottom: state.side === "bottom" ? "-1px" : undefined,
+          marginLeft: state.side === "left" ? "-1px" : undefined,
+          marginRight: state.side === "right" ? "-1px" : undefined,
         }}
-      />
+        width="10"
+        height="5"
+        viewBox="0 0 30 10"
+        preserveAspectRatio="none"
+      >
+        {state.side === "top" && <polygon points="0,0 30,0 15,10" />}
+        {state.side === "bottom" && <polygon points="0,10 30,10 15,0" />}
+        {state.side === "left" && <polygon points="0,0 10,5 0,10" />}
+        {state.side === "right" && <polygon points="10,0 0,5 10,10" />}
+      </svg>
     </div>
   )
 }
