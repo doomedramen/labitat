@@ -29,7 +29,7 @@ function adguardToPayload(data: AdGuardData) {
       },
       {
         id: "rate",
-        value: `${data.blockedPercent.toFixed(1)}%`,
+        value: `${(data.blockedPercent ?? 0).toFixed(1)}%`,
         label: "Rate",
         icon: Percent,
       },

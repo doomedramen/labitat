@@ -39,16 +39,16 @@ function proxmoxToPayload(data: ProxmoxData) {
       },
       {
         id: "cpu",
-        value: `${data.cpuUsage.toFixed(1)}%`,
+        value: `${(data.cpuUsage ?? 0).toFixed(1)}%`,
         label: "CPU",
         icon: Cpu,
       },
       {
         id: "memory",
-        value: `${data.memoryUsage.toFixed(1)}%`,
+        value: `${(data.memoryUsage ?? 0).toFixed(1)}%`,
         label: "Memory",
         icon: MemoryStick,
-        tooltip: `${data.memoryUsed} / ${data.memoryTotal}`,
+        tooltip: `${data.memoryUsed ?? "0 B"} / ${data.memoryTotal ?? "0 B"}`,
       },
     ],
   }
