@@ -82,6 +82,14 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
       required: true,
       placeholder: "Your Proxmox password",
     },
+    {
+      key: "node",
+      label: "Node (optional)",
+      type: "text",
+      required: false,
+      placeholder: "Leave empty for cluster-wide stats",
+      helperText: "Specify a node name to filter resources (e.g., pve1)",
+    },
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
@@ -114,11 +122,17 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
     if (!res.ok) throw new Error(`Proxmox error: ${res.status}`)
 
     const data = await res.json()
-    const resources = data.data ?? []
+    const allResources = data.data ?? []
+    const selectedNode = config.node?.trim()
 
-    const nodes = resources.filter(
-      (r: { type: string }) => r.type === "node"
-    ).length
+    // Filter resources by node if specified
+    const resources = selectedNode
+      ? allResources.filter((r: { node?: string }) => r.node === selectedNode)
+      : allResources
+
+    const nodes = selectedNode
+      ? 1
+      : resources.filter((r: { type: string }) => r.type === "node").length
     const vms = resources.filter(
       (r: { type: string }) => r.type === "qemu"
     ).length
@@ -134,8 +148,8 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
         r.type === "lxc" && r.status === "running"
     ).length
 
-    // Calculate CPU and memory utilization across all resources
-    // Matches Homepage's approach: aggregate from cluster resources
+    // Calculate CPU and memory utilization from node-level resources only
+    // Using node-level data avoids double-counting (VMs/containers run on nodes)
     let totalCpu = 0
     let totalCpuMax = 0
     let totalMem = 0
@@ -149,7 +163,7 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
         mem?: number
         maxmem?: number
       }) => {
-        if (r.type === "qemu" || r.type === "lxc" || r.type === "node") {
+        if (r.type === "node") {
           totalCpu += r.cpu ?? 0
           totalCpuMax += r.maxcpu ?? 0
           totalMem += r.mem ?? 0

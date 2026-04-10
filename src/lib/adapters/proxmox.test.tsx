@@ -12,7 +12,7 @@ describe("proxmox definition", () => {
 
   it("has configFields defined", () => {
     expect(proxmoxDefinition.configFields).toBeDefined()
-    expect(proxmoxDefinition.configFields).toHaveLength(3)
+    expect(proxmoxDefinition.configFields).toHaveLength(4)
     expect(proxmoxDefinition.configFields[0].key).toBe("url")
     expect(proxmoxDefinition.configFields[0].type).toBe("url")
     expect(proxmoxDefinition.configFields[0].required).toBe(true)
@@ -22,6 +22,9 @@ describe("proxmox definition", () => {
     expect(proxmoxDefinition.configFields[2].key).toBe("password")
     expect(proxmoxDefinition.configFields[2].type).toBe("password")
     expect(proxmoxDefinition.configFields[2].required).toBe(true)
+    expect(proxmoxDefinition.configFields[3].key).toBe("node")
+    expect(proxmoxDefinition.configFields[3].type).toBe("text")
+    expect(proxmoxDefinition.configFields[3].required).toBe(false)
   })
 
   describe("fetchData", () => {
@@ -202,6 +205,92 @@ describe("proxmox definition", () => {
       expect(result.memoryUsage).toBe(0)
       expect(result.memoryUsed).toBe("0 B")
       expect(result.memoryTotal).toBe("0 B")
+    })
+
+    it("filters by node when specified", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/access/ticket")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                data: { ticket: "ticket123", CSRFPreventionToken: "csrf123" },
+              }),
+          })
+        }
+        if (url.includes("/cluster/resources")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                data: [
+                  {
+                    type: "node",
+                    node: "pve1",
+                    cpu: 0.5,
+                    maxcpu: 4,
+                    mem: 4000000000,
+                    maxmem: 16000000000,
+                  },
+                  {
+                    type: "node",
+                    node: "pve2",
+                    cpu: 0.3,
+                    maxcpu: 4,
+                    mem: 3000000000,
+                    maxmem: 16000000000,
+                  },
+                  {
+                    type: "qemu",
+                    node: "pve1",
+                    status: "running",
+                    cpu: 1.0,
+                    maxcpu: 2,
+                    mem: 2000000000,
+                    maxmem: 8000000000,
+                  },
+                  {
+                    type: "qemu",
+                    node: "pve2",
+                    status: "running",
+                    cpu: 0.5,
+                    maxcpu: 2,
+                    mem: 1000000000,
+                    maxmem: 8000000000,
+                  },
+                  {
+                    type: "lxc",
+                    node: "pve1",
+                    status: "running",
+                    cpu: 0.2,
+                    maxcpu: 1,
+                    mem: 500000000,
+                    maxmem: 4000000000,
+                  },
+                ],
+              }),
+          })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      const result = await proxmoxDefinition.fetchData!({
+        url: "https://proxmox.example.com:8006",
+        username: "root@pam",
+        password: "secret",
+        node: "pve1",
+      })
+
+      expect(result._status).toBe("ok")
+      expect(result.nodes).toBe(1)
+      expect(result.vms).toBe(1)
+      expect(result.containers).toBe(1)
+      expect(result.runningVMs).toBe(1)
+      expect(result.runningContainers).toBe(1)
+      // CPU/memory should only come from pve1 node
+      expect(result.cpuUsage).toBeGreaterThan(0)
+      expect(result.memoryUsage).toBeGreaterThan(0)
     })
   })
 
