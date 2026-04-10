@@ -1,5 +1,7 @@
 import type { ServiceDefinition } from "./types"
+import type { ActiveStream } from "@/components/widgets"
 import { Play, Music, Film, Tv } from "lucide-react"
+import { buildStreamsTooltip } from "@/lib/utils/format-media"
 
 type PlexSession = {
   title: string
@@ -74,6 +76,18 @@ function formatMediaTitle(
 }
 
 function plexToPayload(data: PlexData) {
+  const sessions =
+    data.sessions?.map((s) => ({
+      title: s.title,
+      subtitle: s.subtitle,
+      user: s.user,
+      progress: s.progress,
+      duration: s.duration,
+      state: s.state,
+      streamId: s.streamId,
+      transcoding: s.transcoding,
+    })) ?? []
+
   return {
     stats: [
       {
@@ -81,6 +95,7 @@ function plexToPayload(data: PlexData) {
         value: data.streams,
         label: "Active",
         icon: Play,
+        tooltip: buildStreamsTooltip(sessions),
       },
       {
         id: "albums",

@@ -1,6 +1,7 @@
 import type { ServiceDefinition } from "./types"
 import type { ActiveStream } from "@/components/widgets"
 import { formatBytes } from "@/lib/utils/format"
+import { buildStreamsTooltip } from "@/lib/utils/format-media"
 import { Activity, Cpu, Monitor, Play, Radio } from "lucide-react"
 
 type TautulliData = {
@@ -58,7 +59,7 @@ function tautulliToPayload(data: TautulliData) {
         value: data.streamCount,
         label: "Streams",
         icon: Play,
-        tooltip: "Streams",
+        tooltip: buildStreamsTooltip(data.sessions ?? []),
       },
       {
         id: "bandwidth",

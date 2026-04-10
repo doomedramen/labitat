@@ -1,6 +1,7 @@
 import type { ServiceDefinition } from "./types"
 import type { ActiveStream } from "@/components/widgets"
 import { Play, Film, Tv, Layers, Music } from "lucide-react"
+import { buildStreamsTooltip } from "@/lib/utils/format-media"
 
 type EmbyData = {
   _status?: "ok" | "warn" | "error"
@@ -58,6 +59,7 @@ function embyToPayload(data: EmbyData) {
         value: (data.activeStreams ?? 0).toLocaleString(),
         label: "Active Streams",
         icon: Play,
+        tooltip: buildStreamsTooltip(data.sessions ?? []),
       },
       {
         id: "movies",
