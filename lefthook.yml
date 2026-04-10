@@ -13,6 +13,7 @@ pre-commit:
       run: pnpm format --write {staged_files}
       stage_fixed: true
     generate-icons:
+      glob: "logo.svg"
       run: pnpm generate-icons
       stage_fixed: true
     generate-migration:
