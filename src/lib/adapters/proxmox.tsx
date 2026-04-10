@@ -112,8 +112,10 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
       throw new Error(`Proxmox login failed: ${loginRes.status}`)
 
     const loginData = await loginRes.json()
-    const ticket = loginData.data.ticket
-    const csrfToken = loginData.data.CSRFPreventionToken
+    const ticket = loginData.data?.ticket
+    const csrfToken = loginData.data?.CSRFPreventionToken
+    if (!ticket)
+      throw new Error("Proxmox login succeeded but no ticket returned")
 
     // Get cluster resources
     const res = await fetchWithTimeout(

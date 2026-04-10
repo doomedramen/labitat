@@ -1,6 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import type { DownloadItem } from "@/components/widgets"
-import { validateResponse } from "./validate"
+import { validateResponse, parseBool } from "./validate"
 import { ArrowDown, Clock, List } from "lucide-react"
 
 type SABnzbdData = {
@@ -72,7 +72,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
-    const showDownloads = config.showDownloads !== "false"
+    const showDownloads = parseBool(config.showDownloads, true)
     const url = `${baseUrl}/api?output=json&apikey=${config.apiKey}&mode=queue`
 
     const res = await fetchWithTimeout(url)

@@ -112,19 +112,11 @@ All 35+ adapters called `.json()` and accessed fields without validation. A malf
 
 ---
 
-### MEDIUM: Inconsistent Boolean Config Parsing
+### MEDIUM: Inconsistent Boolean Config Parsing — FIXED
 
-Two conventions exist:
+Two conventions existed (`=== "true"` vs `!== "false"`).
 
-```ts
-// Convention A (default-false)
-const show = config.showActiveDownloads === "true"
-
-// Convention B (default-true)
-const show = config.showDownloads !== "false"
-```
-
-Easy to confuse when copying between adapters. Should use a shared `parseBooleanConfig(value, defaultValue)` utility.
+**Fix applied:** Created shared `parseBool(value, default_)` utility in `validate.ts`. All 9 boolean config fields across 8 adapters now use it.
 
 ---
 
@@ -144,7 +136,7 @@ Accepts `unknown[]` and immediately casts to `ServiceDefinition[]`, bypassing al
 
 ---
 
-### MEDIUM: Auth Tokens Not Validated
+### MEDIUM: Auth Tokens Not Validated — FIXED
 
 **Files:** `portainer.tsx:99-100`, `proxmox.tsx:110`, `proxmox-backup-server.tsx:120`
 
@@ -160,7 +152,7 @@ Mutates imported objects at module scope. If import order changes or tree-shakin
 
 ---
 
-### LOW: Pi-hole v6 Silent Failure
+### LOW: Pi-hole v6 Silent Failure — FIXED
 
 **File:** `src/lib/adapters/pihole.tsx:83-94`
 
@@ -192,7 +184,7 @@ Should be removed with a migration plan.
 
 ---
 
-### LOW: Duplicated `toStatCardOrder` / `parseStatCardOrder`
+### LOW: Duplicated `toStatCardOrder` / `parseStatCardOrder` — FIXED
 
 **Files:** `src/components/editor/item-dialog.tsx:164-176`, `src/components/dashboard/item/widget-renderer.tsx:12-24`
 
@@ -332,7 +324,7 @@ Running Playwright E2E tests and a full build on every push is very slow. Consid
 
 ---
 
-### MEDIUM: Missing Database Indexes
+### MEDIUM: Missing Database Indexes — FIXED
 
 **File:** `src/lib/db/schema.ts`
 
@@ -376,7 +368,7 @@ The `.dockerignore` doesn't exclude `docs/`, `tests/`, `coverage/`, or `install.
 
 ---
 
-### LOW: `drizzle.config.ts` Fallback Missing `file:` Prefix
+### LOW: `drizzle.config.ts` Fallback Missing `file:` Prefix — FIXED
 
 **File:** `drizzle.config.ts:8`
 
@@ -465,13 +457,13 @@ Multiple mock functions accept `baseUrl` but use `urlPatterns.contains("/api")` 
 
 ## Dependency & Configuration
 
-### MEDIUM: Both `uuid` and `nanoid`
+### MEDIUM: Both `uuid` and `nanoid` — FIXED
 
 **File:** `package.json`
 
 Both packages serve the same purpose (unique ID generation). `nanoid` is already used throughout — `uuid` appears unused and can be removed.
 
-### MEDIUM: No `engines` Field
+### MEDIUM: No `engines` Field — FIXED
 
 **File:** `package.json`
 

@@ -15,6 +15,7 @@ type SonarrData = {
   downloads?: DownloadItem[]
 }
 import { fetchWithTimeout } from "./fetch-with-timeout"
+import { parseBool } from "./validate"
 
 /**
  * Format episode title with SxxEyy format for consistency with media adapters.
@@ -119,8 +120,8 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
-    const showActiveDownloads = config.showActiveDownloads === "true"
-    const enableQueue = config.enableQueue !== "false" // Default to true
+    const showActiveDownloads = parseBool(config.showActiveDownloads)
+    const enableQueue = parseBool(config.enableQueue, true)
 
     const [queueRes, seriesRes, missingRes, cutoffRes] = await Promise.all([
       fetchWithTimeout(

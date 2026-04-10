@@ -1,6 +1,7 @@
 import type { ServiceDefinition } from "./types"
 import { Play, Music, Film, Tv } from "lucide-react"
 import { buildStreamsTooltip, formatMediaTitle } from "@/lib/utils/format-media"
+import { parseBool } from "./validate"
 
 type PlexSession = {
   title: string
@@ -129,7 +130,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Plex-Token": config.token }
-    const showActiveStreams = config.showActiveStreams === "true"
+    const showActiveStreams = parseBool(config.showActiveStreams)
 
     const [sessionsRes, libraryRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/status/sessions`, { headers }),

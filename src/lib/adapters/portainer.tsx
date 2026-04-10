@@ -99,6 +99,8 @@ export const portainerDefinition: ServiceDefinition<PortainerData> = {
 
     const authData = await authRes.json()
     const token = authData.jwt
+    if (!token)
+      throw new Error("Portainer auth succeeded but no JWT token returned")
 
     const headers = { Authorization: `Bearer ${token}` }
 

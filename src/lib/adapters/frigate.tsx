@@ -12,6 +12,7 @@ type FrigateEvent = {
   thumbnail?: string
 }
 import { fetchWithTimeout } from "./fetch-with-timeout"
+import { parseBool } from "./validate"
 
 type FrigateData = {
   _status?: "ok" | "warn" | "error"
@@ -102,7 +103,7 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
-    const showRecentEvents = config.showRecentEvents === "true"
+    const showRecentEvents = parseBool(config.showRecentEvents)
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     }

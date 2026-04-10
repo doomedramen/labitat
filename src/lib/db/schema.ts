@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core"
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
 import { sql, relations } from "drizzle-orm"
 
 // ── Users ─────────────────────────────────────────────────────────────────────
@@ -22,30 +22,34 @@ export const groups = sqliteTable("groups", {
 
 // ── Items ─────────────────────────────────────────────────────────────────────
 
-export const items = sqliteTable("items", {
-  id: text("id").primaryKey(),
-  groupId: text("group_id")
-    .notNull()
-    .references(() => groups.id, { onDelete: "cascade" }),
-  label: text("label").notNull(),
-  href: text("href"),
-  iconUrl: text("icon_url"),
-  serviceType: text("service_type"),
-  serviceUrl: text("service_url"),
-  /** @deprecated — use configEnc instead */
-  apiKeyEnc: text("api_key_enc"),
-  configEnc: text("config_enc"),
-  order: integer("order").notNull(),
-  pollingMs: integer("polling_ms").default(10000),
-  cleanMode: integer("clean_mode", { mode: "boolean" }).default(false),
-  /** Controls whether the card header shows the icon or the label */
-  displayMode: text("display_mode").default("label"),
-  /** Controls whether stat cards in widgets show icons or labels */
-  statDisplayMode: text("stat_display_mode").default("label"),
-  /** Custom order of stat cards within widget grids (JSON array of IDs) */
-  statCardOrder: text("stat_card_order", { mode: "json" }),
-  createdAt: text("created_at").default(sql`(current_timestamp)`),
-})
+export const items = sqliteTable(
+  "items",
+  {
+    id: text("id").primaryKey(),
+    groupId: text("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    label: text("label").notNull(),
+    href: text("href"),
+    iconUrl: text("icon_url"),
+    serviceType: text("service_type"),
+    serviceUrl: text("service_url"),
+    /** @deprecated — use configEnc instead */
+    apiKeyEnc: text("api_key_enc"),
+    configEnc: text("config_enc"),
+    order: integer("order").notNull(),
+    pollingMs: integer("polling_ms").default(10000),
+    cleanMode: integer("clean_mode", { mode: "boolean" }).default(false),
+    /** Controls whether the card header shows the icon or the label */
+    displayMode: text("display_mode").default("label"),
+    /** Controls whether stat cards in widgets show icons or labels */
+    statDisplayMode: text("stat_display_mode").default("label"),
+    /** Custom order of stat cards within widget grids (JSON array of IDs) */
+    statCardOrder: text("stat_card_order", { mode: "json" }),
+    createdAt: text("created_at").default(sql`(current_timestamp)`),
+  },
+  (table) => [index("items_group_id_idx").on(table.groupId)]
+)
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 

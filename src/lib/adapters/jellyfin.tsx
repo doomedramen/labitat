@@ -15,6 +15,7 @@ type JellyfinData = {
   sessions?: ActiveStream[]
 }
 import { fetchWithTimeout } from "./fetch-with-timeout"
+import { parseBool } from "./validate"
 
 function jellyfinToPayload(data: JellyfinData) {
   return {
@@ -103,7 +104,7 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
-    const showActiveStreams = config.showActiveStreams === "true"
+    const showActiveStreams = parseBool(config.showActiveStreams)
 
     // Jellyfin uses MediaBrowser auth header format
     const deviceId = encodeURIComponent(

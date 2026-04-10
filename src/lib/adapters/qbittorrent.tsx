@@ -1,7 +1,7 @@
 import type { ServiceDefinition } from "./types"
 import type { DownloadItem } from "@/components/widgets"
 import { formatBytes, formatDuration } from "@/lib/utils/format"
-import { validateResponse, validateArrayResponse } from "./validate"
+import { validateResponse, validateArrayResponse, parseBool } from "./validate"
 import { ArrowDown, ArrowUp, Download, List } from "lucide-react"
 
 type QBittorrentData = {
@@ -90,7 +90,7 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
-    const showDownloads = config.showDownloads !== "false"
+    const showDownloads = parseBool(config.showDownloads, true)
 
     // Login
     const loginRes = await fetchWithTimeout(`${baseUrl}/api/v2/auth/login`, {

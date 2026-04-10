@@ -122,8 +122,9 @@ export const proxmoxBackupServerDefinition: ServiceDefinition<ProxmoxBackupServe
       if (!loginRes.ok) throw new Error(`PBS login failed: ${loginRes.status}`)
 
       const loginData = await loginRes.json()
-      const ticket = loginData.data.ticket
-      const csrfToken = loginData.data.CSRFPreventionToken
+      const ticket = loginData.data?.ticket
+      const csrfToken = loginData.data?.CSRFPreventionToken
+      if (!ticket) throw new Error("PBS login succeeded but no ticket returned")
       const headers = {
         Cookie: `PBSAuthCookie=${ticket}`,
         CSRFPreventionToken: csrfToken,

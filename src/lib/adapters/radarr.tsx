@@ -1,7 +1,7 @@
 import type { ServiceDefinition } from "./types"
 import type { DownloadItem } from "@/components/widgets"
 import { formatBytes, formatTimeLeft } from "@/lib/utils/format"
-import { validateResponse, validateArrayResponse } from "./validate"
+import { validateResponse, validateArrayResponse, parseBool } from "./validate"
 import { Film, Download, AlertTriangle, Search } from "lucide-react"
 
 type RadarrData = {
@@ -92,8 +92,8 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
-    const showActiveDownloads = config.showActiveDownloads === "true"
-    const enableQueue = config.enableQueue !== "false" // Default to true
+    const showActiveDownloads = parseBool(config.showActiveDownloads)
+    const enableQueue = parseBool(config.enableQueue, true)
 
     const [queueRes, movieRes, missingRes, cutoffRes] = await Promise.all([
       fetchWithTimeout(

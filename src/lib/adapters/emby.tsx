@@ -15,6 +15,7 @@ type EmbyData = {
   sessions?: ActiveStream[]
 }
 import { fetchWithTimeout } from "./fetch-with-timeout"
+import { parseBool } from "./validate"
 
 function embyToPayload(data: EmbyData) {
   return {
@@ -103,7 +104,7 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
-    const showActiveStreams = config.showActiveStreams === "true"
+    const showActiveStreams = parseBool(config.showActiveStreams)
     const headers = { "X-Emby-Token": config.apiKey }
 
     const [sessionsRes, countsRes] = await Promise.all([

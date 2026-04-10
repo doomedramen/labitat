@@ -7,21 +7,7 @@ import type { ServiceData } from "@/lib/adapters/types"
 import type { ServiceDefinition } from "@/lib/adapters/types"
 import type { ItemRow } from "@/lib/types"
 import { WidgetDisplayProvider } from "./widget-display-context"
-import type { StatCardOrder } from "@/hooks/use-stat-card-order"
-
-function parseStatCardOrder(value: unknown): StatCardOrder | null {
-  if (
-    value &&
-    typeof value === "object" &&
-    "active" in value &&
-    "unused" in value &&
-    Array.isArray((value as StatCardOrder).active) &&
-    Array.isArray((value as StatCardOrder).unused)
-  ) {
-    return value as StatCardOrder
-  }
-  return null
-}
+import { parseStatCardOrder } from "@/hooks/use-stat-card-order"
 
 interface WidgetRendererProps {
   serviceDef: ServiceDefinition | null

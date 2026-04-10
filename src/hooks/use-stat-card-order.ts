@@ -10,6 +10,21 @@ export type StatCardOrder = {
   unused: string[]
 }
 
+/** Validate an unknown value as a StatCardOrder, returning null if invalid */
+export function parseStatCardOrder(value: unknown): StatCardOrder | null {
+  if (
+    value &&
+    typeof value === "object" &&
+    "active" in value &&
+    "unused" in value &&
+    Array.isArray((value as StatCardOrder).active) &&
+    Array.isArray((value as StatCardOrder).unused)
+  ) {
+    return value as StatCardOrder
+  }
+  return null
+}
+
 /**
  * Hook for managing stat card order within a widget grid.
  * Handles reordering, moving to/from unused, and persistence.

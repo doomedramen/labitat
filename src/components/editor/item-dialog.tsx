@@ -32,7 +32,10 @@ import type { ServiceDefinition } from "@/lib/adapters"
 import type { ItemWithCache } from "@/lib/types"
 import { WidgetDisplayProvider } from "@/components/dashboard/item/widget-display-context"
 import { WidgetContainer } from "@/components/widgets"
-import type { StatCardOrder } from "@/hooks/use-stat-card-order"
+import {
+  parseStatCardOrder,
+  type StatCardOrder,
+} from "@/hooks/use-stat-card-order"
 
 const itemSchema = z.object({
   label: z.string().min(1, "Label is required."),
@@ -227,20 +230,6 @@ function ServiceCombobox({
   )
 }
 
-function toStatCardOrder(value: unknown): StatCardOrder | null {
-  if (
-    value &&
-    typeof value === "object" &&
-    "active" in value &&
-    "unused" in value &&
-    Array.isArray((value as StatCardOrder).active) &&
-    Array.isArray((value as StatCardOrder).unused)
-  ) {
-    return value as StatCardOrder
-  }
-  return null
-}
-
 interface ItemDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -262,7 +251,7 @@ export function ItemDialog({
   )
   const [cleanMode, setCleanMode] = useState<boolean>(item?.cleanMode ?? false)
   const [localStatCardOrder, setLocalStatCardOrder] =
-    useState<StatCardOrder | null>(toStatCardOrder(item?.statCardOrder))
+    useState<StatCardOrder | null>(parseStatCardOrder(item?.statCardOrder))
   const selectedService = services.find((s) => s.id === serviceType)
 
   const form = useForm({
@@ -311,7 +300,7 @@ export function ItemDialog({
     setServiceType(item?.serviceType ?? "")
     setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label")
     setCleanMode(item?.cleanMode ?? false)
-    setLocalStatCardOrder(toStatCardOrder(item?.statCardOrder))
+    setLocalStatCardOrder(parseStatCardOrder(item?.statCardOrder))
     form.reset({
       label: item?.label ?? "",
       href: item?.href ?? "",

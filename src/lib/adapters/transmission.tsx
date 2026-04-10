@@ -14,6 +14,7 @@ type TransmissionData = {
   downloads?: DownloadItem[]
 }
 import { fetchWithTimeout } from "./fetch-with-timeout"
+import { parseBool } from "./validate"
 
 function transmissionToPayload(data: TransmissionData) {
   return {
@@ -98,7 +99,7 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const rpcUrl = config.rpcUrl ?? "/transmission/"
     const rpcEndpoint = `${baseUrl}${rpcUrl}rpc`
-    const showDownloads = config.showDownloads !== "false"
+    const showDownloads = parseBool(config.showDownloads, true)
 
     const auth = Buffer.from(`${config.username}:${config.password}`).toString(
       "base64"

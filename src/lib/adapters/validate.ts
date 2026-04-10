@@ -195,3 +195,16 @@ export function validateArrayResponse<T = unknown>(
     `[${adapter}] API returned ${typeLabel(value)} instead of a JSON array`
   )
 }
+
+/**
+ * Parse a string config value as a boolean.
+ * @param value   The raw config string (e.g. "true", "false", or undefined)
+ * @param default_ The default value when the config is missing or empty
+ */
+export function parseBool(
+  value: string | undefined,
+  default_: boolean = false
+): boolean {
+  if (value === undefined || value === "") return default_
+  return value === "true"
+}

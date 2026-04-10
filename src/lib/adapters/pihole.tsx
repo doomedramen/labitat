@@ -85,6 +85,10 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
       // v6 API available — session object contains the SID token
       const sessionData = await sessionRes.json()
       const token = sessionData.session?.sid
+      if (!token)
+        throw new Error(
+          "Pi-hole v6 auth succeeded but no session token returned"
+        )
 
       const summaryRes = await fetchWithTimeout(
         `${baseUrl}/api/stats/summary`,
@@ -93,9 +97,11 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
         }
       )
 
-      if (summaryRes.ok) {
-        summaryData = await summaryRes.json()
+      if (!summaryRes.ok) {
+        throw new Error(`Pi-hole v6 stats error: ${summaryRes.status}`)
       }
+
+      summaryData = await summaryRes.json()
     } else {
       // Fall back to v5 API
       const summaryRes = await fetchWithTimeout(
