@@ -80,12 +80,7 @@ export type {
 function buildRegistry(definitions: unknown[]): ServiceRegistry {
   const registry: Record<string, ServiceDefinition> = {}
   for (const def of definitions as ServiceDefinition[]) {
-    if (!def.id || !def.name || typeof def.fetchData !== "function") {
-      throw new Error(
-        `Invalid service definition: ${def.id ?? def.name ?? JSON.stringify(def)}`
-      )
-    }
-    registry[def.id] = def
+    if (def?.id) registry[def.id] = def
   }
   return registry as ServiceRegistry
 }
