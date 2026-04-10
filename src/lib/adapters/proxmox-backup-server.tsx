@@ -41,10 +41,10 @@ function proxmoxBackupServerToPayload(data: ProxmoxBackupServerData) {
       },
       {
         id: "usage",
-        value: `${data.usagePercent.toFixed(1)}%`,
+        value: `${(data.usagePercent ?? 0).toFixed(1)}%`,
         label: "Usage",
         icon: HardDrive,
-        tooltip: `${data.usedSpace} / ${data.totalSpace}`,
+        tooltip: `${data.usedSpace ?? "0 B"} / ${data.totalSpace ?? "0 B"}`,
       },
       {
         id: "failed",
@@ -55,16 +55,16 @@ function proxmoxBackupServerToPayload(data: ProxmoxBackupServerData) {
       },
       {
         id: "cpu",
-        value: `${data.cpuUsage.toFixed(1)}%`,
+        value: `${(data.cpuUsage ?? 0).toFixed(1)}%`,
         label: "CPU",
         icon: Cpu,
       },
       {
         id: "memory",
-        value: `${data.memoryUsage.toFixed(1)}%`,
+        value: `${(data.memoryUsage ?? 0).toFixed(1)}%`,
         label: "Memory",
         icon: MemoryStick,
-        tooltip: `${data.memoryUsed} / ${data.memoryTotal}`,
+        tooltip: `${data.memoryUsed ?? "0 B"} / ${data.memoryTotal ?? "0 B"}`,
       },
     ],
     // Default to 4 stats: hide CPU and Memory
