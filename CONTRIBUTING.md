@@ -22,8 +22,8 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. In sh
 
 ### Requirements
 
-- Node.js 20+
-- pnpm 8+
+- Node.js 22+
+- pnpm 10+
 - Git
 
 ### Commands
@@ -226,7 +226,6 @@ docker run -p 3000:3000 -v $(pwd)/data:/data labitat:test
 
 - Open an issue for bugs or feature requests
 - Join discussions in existing issues
-- Check [PROJECT_SPEC.md](./PROJECT_SPEC.md) for architecture details
 
 ## License
 

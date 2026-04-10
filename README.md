@@ -8,8 +8,6 @@
 
 A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support.
 
-![Labitat Dashboard](docs/public/images/labitat_dash.png)
-
 ## Features
 
 - **Live Service Monitoring** — Real-time status and metrics for 20+ services (30+ with experimental adapters)
@@ -64,17 +62,33 @@ pnpm start
 
 ## Supported Services
 
-| Category       | Services                                                            |
-| -------------- | ------------------------------------------------------------------- |
-| **Downloads**  | Radarr, Sonarr, Prowlarr, qBittorrent, SABnzbd, Bazarr              |
-| **Media**      | Plex, Unmanic, Tautulli, Overseerr (Seerr)                          |
-| **Networking** | AdGuard Home, Nginx Proxy Manager                                   |
-| **Monitoring** | APCUPS, Unifi, Glances                                              |
-| **General**    | Open-Meteo Weather, OpenWeatherMap, Date/Time, Search, Service Logo |
+| Category         | Services                                                             |
+| ---------------- | -------------------------------------------------------------------- |
+| **Downloads**    | Radarr, Sonarr, Prowlarr, qBittorrent, SABnzbd, Bazarr               |
+| **Media**        | Plex, Unmanic, Tautulli, Overseerr (Seerr)                           |
+| **Networking**   | AdGuard Home, Nginx Proxy Manager                                    |
+| **Monitoring**   | APCUPS, UniFi, Glances (5 variants), Proxmox, Proxmox Backup Server  |
+| **Storage**      | Proxmox Backup Server                                                |
+| **Productivity** | Calibre Web                                                          |
+| **Info**         | Open-Meteo Weather, OpenWeatherMap, Date/Time, Search, Matrix, Pipes |
+| **General**      | Service Logo                                                         |
+
+### Glances Variants
+
+The Glances adapter provides 5 separate widget types:
+
+| Widget             | Shows                           |
+| ------------------ | ------------------------------- |
+| Glances            | CPU, RAM, swap, load, uptime    |
+| Glances Timeseries | Historical CPU/RAM charts       |
+| Glances Per-CPU    | Per-core CPU usage              |
+| Glances Processes  | Top processes by CPU/memory     |
+| Glances Sensors    | Temperature sensors, fan speeds |
+| Glances Disk Usage | Disk space per mount point      |
 
 ### Experimental (Available but Not Manually Tested)
 
-These adapters exist in the codebase but are disabled by default. Enable them by uncommenting the relevant lines in `lib/adapters/index.ts`:
+These adapters exist in the codebase but are not manually tested. Enable them by uncommenting the relevant lines in `lib/adapters/index.ts`:
 
 | Category       | Services                                 |
 | -------------- | ---------------------------------------- |
@@ -103,12 +117,14 @@ This key encrypts stored service credentials using AES-256-GCM. Lose it and you 
 
 ## Environment Variables
 
-| Variable       | Required | Description                                                                |
-| -------------- | -------- | -------------------------------------------------------------------------- |
-| `SECRET_KEY`   | No       | 32+ char random string for encryption. Auto-generated if not set (Docker). |
-| `DATABASE_URL` | No       | SQLite path (default: `./data/labitat.db`)                                 |
-| `NODE_ENV`     | No       | Set to `production` for deployment                                         |
-| `PORT`         | No       | Override default port (3000)                                               |
+| Variable                          | Required | Description                                                                |
+| --------------------------------- | -------- | -------------------------------------------------------------------------- |
+| `SECRET_KEY`                      | No       | 32+ char random string for encryption. Auto-generated if not set (Docker). |
+| `DATABASE_URL`                    | No       | SQLite path (default: `file:./data/labitat.db`)                            |
+| `NODE_ENV`                        | No       | Set to `production` for deployment                                         |
+| `PORT`                            | No       | Override default port (3000)                                               |
+| `CACHE_DIR`                       | No       | Cache directory for widget cache (default: `/data/cache` in Docker)        |
+| `NEXT_PUBLIC_ALLOWED_DEV_ORIGINS` | No       | Allowed origins for development (e.g., `http://localhost:3000`)            |
 
 ## Development
 
