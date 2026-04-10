@@ -55,7 +55,7 @@ function buildServicesSidebar(): DefaultTheme.SidebarItem[] {
       ...rootFiles.map((f) => ({
         text: slugToTitle(f),
         link: `/services/${f}`,
-      })),
+      }))
     )
   }
 
@@ -74,7 +74,7 @@ function buildInstallationSidebar(): DefaultTheme.SidebarItem[] {
       ...files.map((f) => ({
         text: slugToTitle(f),
         link: `/installation/${f}`,
-      })),
+      }))
     )
   }
 
