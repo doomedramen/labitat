@@ -41,7 +41,7 @@ function unmanicToPayload(data: UnmanicData) {
       {
         id: "completed",
         value: data.totalCompleted,
-        label: "Total",
+        label: "Completed",
         icon: Trophy,
       },
     ],

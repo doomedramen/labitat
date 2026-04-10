@@ -125,7 +125,7 @@ describe("unmanic definition", () => {
       expect(payload.stats[3].value).toBe(10)
       expect(payload.stats[3].label).toBe("Today")
       expect(payload.stats[4].value).toBe(150)
-      expect(payload.stats[4].label).toBe("Total")
+      expect(payload.stats[4].label).toBe("Completed")
     })
 
     it("handles zero values", () => {

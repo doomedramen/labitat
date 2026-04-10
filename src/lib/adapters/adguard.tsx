@@ -17,13 +17,13 @@ function adguardToPayload(data: AdGuardData) {
     stats: [
       {
         id: "queries",
-        value: data.queries,
+        value: (data.queries ?? 0).toLocaleString(),
         label: "Queries",
         icon: Globe,
       },
       {
         id: "blocked",
-        value: data.blocked,
+        value: (data.blocked ?? 0).toLocaleString(),
         label: "Blocked",
         icon: Ban,
       },
@@ -35,13 +35,13 @@ function adguardToPayload(data: AdGuardData) {
       },
       {
         id: "parental",
-        value: data.parentalBlocked,
+        value: (data.parentalBlocked ?? 0).toLocaleString(),
         label: "Parental",
         icon: Shield,
       },
       {
         id: "safe",
-        value: data.safeSearchBlocked,
+        value: (data.safeSearchBlocked ?? 0).toLocaleString(),
         label: "Safe",
         icon: Search,
       },
