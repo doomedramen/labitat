@@ -37,16 +37,12 @@ const tooltipStore = {
 
 export function TooltipRoot() {
   const [state, setState] = React.useState(tooltipStore.state)
-  const [visible, setVisible] = React.useState(false)
 
   React.useEffect(() => {
-    if (state.open) {
-      // Trigger fade-in on next frame so the element is mounted first
-      requestAnimationFrame(() => setVisible(true))
-    } else {
-      setVisible(false)
-    }
-  }, [state.open])
+    return tooltipStore.subscribe(() => {
+      setState({ ...tooltipStore.state })
+    })
+  }, [])
 
   if (!state.content) return null
 
@@ -67,7 +63,7 @@ export function TooltipRoot() {
             : "translate(0, -50%)",
     zIndex: 9999,
     pointerEvents: "none",
-    opacity: visible ? 1 : 0,
+    opacity: state.open ? 1 : 0,
     transition: "opacity 150ms ease",
   }
 
