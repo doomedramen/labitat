@@ -2,18 +2,20 @@
 
 import { fetchServiceData } from "./services"
 import { preloadDatapoints } from "@/lib/last-datapoints"
-import { requireAuth, isAuthenticated } from "@/lib/auth/guard"
+import { isAuthenticated } from "@/lib/auth/guard"
 import type { ServiceData } from "@/lib/adapters/types"
 
 export async function getWidgetData(itemId: string): Promise<ServiceData> {
-  await requireAuth()
+  // Auth not required for viewing — only editing requires authentication
+  await isAuthenticated() // session check but no throw
   return fetchServiceData(itemId)
 }
 
 export async function getBatchWidgetData(
   itemIds: string[]
 ): Promise<Record<string, ServiceData>> {
-  await requireAuth()
+  // Auth not required for viewing — only editing requires authentication
+  await isAuthenticated() // session check but no throw
   const results = await Promise.all(
     itemIds.map(async (id) => {
       try {

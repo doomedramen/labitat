@@ -1,11 +1,12 @@
 "use server"
 
 import { cachePingStatus } from "@/lib/last-datapoints"
-import { requireAuth } from "@/lib/auth/guard"
+import { isAuthenticated } from "@/lib/auth/guard"
 import type { ServiceStatus } from "@/lib/adapters/types"
 
 export async function pingUrl(url: string): Promise<ServiceStatus> {
-  await requireAuth()
+  // Auth not required for viewing — only editing requires authentication
+  await isAuthenticated() // session check but no throw
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 5000)
@@ -61,7 +62,8 @@ export async function pingAndCache(
   itemId: string,
   url: string
 ): Promise<ServiceStatus> {
-  await requireAuth()
+  // Auth not required for viewing — only editing requires authentication
+  await isAuthenticated() // session check but no throw
   const status = await pingUrl(url)
   await cachePingStatus(itemId, status)
   return status
