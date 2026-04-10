@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 import {
@@ -80,14 +80,15 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [dragStartGroupId, setDragStartGroupId] = useState<string | null>(null)
 
-  const activeItem = activeId
-    ? (localGroups.flatMap((g) => g.items).find((i) => i.id === activeId) ??
-      null)
-    : null
-  const activeGroup =
-    activeId && !activeItem
+  const { activeItem, activeGroup } = useMemo(() => {
+    if (!activeId) return { activeItem: null, activeGroup: null }
+    const item =
+      localGroups.flatMap((g) => g.items).find((i) => i.id === activeId) ?? null
+    const group = !item
       ? (localGroups.find((g) => g.id === activeId) ?? null)
       : null
+    return { activeItem: item, activeGroup: group }
+  }, [activeId, localGroups])
 
   const dashboardTitle = localTitle ?? title
 

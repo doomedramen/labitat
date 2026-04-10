@@ -54,16 +54,7 @@ function jellyfinToPayload(data: JellyfinData) {
     ],
     streams:
       data.showActiveStreams && data.sessions?.length
-        ? data.sessions.map((session) => ({
-            title: session.title,
-            subtitle: session.subtitle,
-            user: session.user,
-            progress: session.progress,
-            duration: session.duration,
-            state: session.state,
-            streamId: session.streamId,
-            transcoding: session.transcoding,
-          }))
+        ? data.sessions
         : undefined,
     // Default to 4 stats: hide Active Streams
     defaultActiveIds: ["movies", "shows", "episodes", "songs"],

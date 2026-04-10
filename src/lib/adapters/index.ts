@@ -25,11 +25,9 @@ import { datetimeDefinition } from "./datetime"
 import { glancesDefinition } from "./glances"
 import { glancesTimeseriesDefinition } from "./glances-timeseries"
 import { GlancesTimeseriesWidget } from "@/components/widgets/glances-timeseries-widget"
-glancesTimeseriesDefinition.renderWidget = GlancesTimeseriesWidget
 import { glancesPerCpuDefinition } from "./glances-percpu"
 import { glancesProcessesDefinition } from "./glances-processes"
 import { GlancesProcessesWidget } from "@/components/widgets/glances-processes-widget"
-glancesProcessesDefinition.renderWidget = GlancesProcessesWidget
 import { glancesSensorsDefinition } from "./glances-sensors"
 import { glancesDiskUsageDefinition } from "./glances-diskusage"
 import { openweathermapDefinition } from "./openweathermap"
@@ -76,13 +74,31 @@ export type {
  *
  * Type safety is enforced at each adapter's definition site where
  * Widget: FC<TData> must match the TData returned by fetchData().
+ *
+ * Runtime validation catches missing id/name/fetchData fields.
  */
 function buildRegistry(definitions: unknown[]): ServiceRegistry {
   const registry: Record<string, ServiceDefinition> = {}
   for (const def of definitions as ServiceDefinition[]) {
+    if (!def.id || !def.name || typeof def.fetchData !== "function") {
+      throw new Error(
+        `Invalid service definition: ${def.id ?? def.name ?? JSON.stringify(def)}`
+      )
+    }
     registry[def.id] = def
   }
   return registry as ServiceRegistry
+}
+
+// Override renderWidget for adapters that need client-side widgets.
+// Using spread + override avoids mutating the imported definitions.
+const glancesTimeseriesWithWidget: typeof glancesTimeseriesDefinition = {
+  ...glancesTimeseriesDefinition,
+  renderWidget: GlancesTimeseriesWidget,
+}
+const glancesProcessesWithWidget: typeof glancesProcessesDefinition = {
+  ...glancesProcessesDefinition,
+  renderWidget: GlancesProcessesWidget,
 }
 
 export const registry = buildRegistry([
@@ -109,9 +125,9 @@ export const registry = buildRegistry([
   openmeteoDefinition,
   datetimeDefinition,
   glancesDefinition,
-  glancesTimeseriesDefinition,
+  glancesTimeseriesWithWidget,
   glancesPerCpuDefinition,
-  glancesProcessesDefinition,
+  glancesProcessesWithWidget,
   glancesSensorsDefinition,
   glancesDiskUsageDefinition,
   openweathermapDefinition,

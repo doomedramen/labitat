@@ -2,7 +2,7 @@
 # See: https://github.com/evilmartians/lefthook
 
 pre-commit:
-  parallel: true
+  parallel: false
   commands:
     lint:
       glob: "*.{ts,tsx,js,jsx}"
@@ -16,7 +16,7 @@ pre-commit:
       glob: "src/lib/db/schema.ts"
       run: npx drizzle-kit generate
     version-bump:
-      run: npx -y package-bump@latest patch --stage
+      run: npx -y package-bump@1.1.7 patch --stage
       stage_fixed: true
 
 pre-push:

@@ -5,6 +5,7 @@ import { afterEach, vi } from "vitest"
 // Auto-cleanup after each test
 afterEach(() => {
   cleanup()
+  vi.unstubAllGlobals()
 })
 
 // Mock next/navigation

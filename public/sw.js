@@ -62,7 +62,8 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Static JS/CSS (immutable filenames) → CacheFirst
-  if (/\.(?:js|css)$/i.test(url.pathname)) {
+  // Exclude the service worker itself from caching
+  if (/\.(?:js|css)$/i.test(url.pathname) && !url.pathname.endsWith("/sw.js")) {
     event.respondWith(cacheFirst(request))
     return
   }

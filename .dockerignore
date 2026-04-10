@@ -54,3 +54,12 @@ temp
 # Runtime files (not needed in build)
 config.yaml
 data/
+
+# Additional exclusions
+docs/
+tests/
+coverage/
+install.sh
+*.test.ts
+*.test.tsx
+IMPROVEMENTS.md

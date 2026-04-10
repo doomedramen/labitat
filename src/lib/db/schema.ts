@@ -34,8 +34,6 @@ export const items = sqliteTable(
     iconUrl: text("icon_url"),
     serviceType: text("service_type"),
     serviceUrl: text("service_url"),
-    /** @deprecated — use configEnc instead */
-    apiKeyEnc: text("api_key_enc"),
     configEnc: text("config_enc"),
     order: integer("order").notNull(),
     pollingMs: integer("polling_ms").default(10000),

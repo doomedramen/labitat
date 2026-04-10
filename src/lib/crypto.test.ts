@@ -75,7 +75,12 @@ describe("crypto", () => {
       const secret =
         "this-is-a-test-secret-key-that-is-at-least-32-characters-long"
       const salt = Buffer.from(secret.slice(0, 16))
-      const key = scryptSync(secret, salt, 32)
+      const key = scryptSync(secret, salt, 32, {
+        N: 16384,
+        r: 8,
+        p: 1,
+        maxmem: 256 * 1024 * 1024,
+      })
       const iv = randomBytes(16)
       const cipher = createCipheriv("aes-256-gcm", key, iv)
       let ciphertext = cipher.update("legacy test", "utf8", "base64")

@@ -83,7 +83,6 @@ export async function createItem(groupId: string, formData: FormData) {
     iconUrl: (formData.get("iconUrl") as string) || null,
     serviceType,
     serviceUrl,
-    apiKeyEnc: null,
     configEnc,
     pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
     cleanMode,
@@ -189,7 +188,8 @@ export async function getItemConfig(
   try {
     const decrypted = await decrypt(item.configEnc)
     return JSON.parse(decrypted)
-  } catch {
+  } catch (err) {
+    console.warn("[items] Failed to decrypt config for item", id, err)
     return {}
   }
 }

@@ -640,9 +640,9 @@ export function ActiveStreamList({
 
   return (
     <div className="flex w-full flex-col gap-0.5">
-      {sorted.map((stream, idx) => (
+      {sorted.map((stream) => (
         <ActiveStreamItem
-          key={idx}
+          key={`${stream.title}-${stream.user}`}
           {...stream}
           onTogglePlayback={onTogglePlayback}
         />
@@ -710,8 +710,8 @@ export function DownloadList({ downloads }: { downloads: DownloadItem[] }) {
 
   return (
     <div className="flex flex-col gap-0.5">
-      {sorted.map((download, idx) => (
-        <DownloadItem key={idx} {...download} />
+      {sorted.map((download) => (
+        <DownloadItem key={download.title} {...download} />
       ))}
     </div>
   )

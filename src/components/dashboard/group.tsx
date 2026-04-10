@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { memo, useState } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable"
@@ -21,7 +21,7 @@ interface GroupCardProps {
   onEditItem: (item: ItemWithCache) => void
 }
 
-export function GroupCard({
+export const GroupCard = memo(function GroupCard({
   group,
   editMode,
   onEditGroup,
@@ -139,4 +139,4 @@ export function GroupCard({
       />
     </>
   )
-}
+})

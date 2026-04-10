@@ -15,6 +15,20 @@
       "when": 1775740973109,
       "tag": "0001_windy_mister_fear",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1775847025751,
+      "tag": "0002_elite_spiral",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1775848147918,
+      "tag": "0003_jittery_warbound",
+      "breakpoints": true
     }
   ]
 }

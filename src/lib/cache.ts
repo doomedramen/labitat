@@ -57,7 +57,10 @@ function saveCacheToFile() {
     writeChain = writeChain.then(async () => {
       try {
         const obj = Object.fromEntries(memoryCache.entries())
-        await fs.writeFile(CACHE_FILE, JSON.stringify(obj), "utf-8")
+        await fs.writeFile(CACHE_FILE, JSON.stringify(obj), {
+          encoding: "utf-8",
+          mode: 0o600,
+        })
       } catch (err) {
         console.error("[cache] Failed to save cache:", err)
       }

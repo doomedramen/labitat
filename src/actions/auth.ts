@@ -38,8 +38,8 @@ export async function setupAdmin(
     return { error: "Please enter a valid email address" }
   }
 
-  if (!password || password.length < 6) {
-    return { error: "Password must be at least 6 characters" }
+  if (!password || password.length < 12) {
+    return { error: "Password must be at least 12 characters" }
   }
 
   if (password !== confirmPassword) {
@@ -98,8 +98,9 @@ export async function login(
 
   const user = await getUserByEmail(email)
 
+  // Real bcrypt hash of a dummy password — ensures consistent timing whether the user exists or not
   const dummyHash =
-    "$2b$12$invalidhashpaddinginvalidhashpaddinginvalidhashpadding00"
+    "$2b$12$KICHgWshYqLVNz3OHsBQ2OzWOf3Vx8vXHGKf0y3Xl7RPNqQlF9qTu"
   const hashToCompare = user ? user.passwordHash : dummyHash
   const passwordMatch = await bcrypt.compare(password, hashToCompare)
 

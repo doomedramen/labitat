@@ -10,6 +10,13 @@ const ALGORITHM = "aes-256-gcm"
 const KEY_LENGTH = 32
 const IV_LENGTH = 16
 const SALT_LENGTH = 16
+const SCRYPT_OPTIONS = { N: 65536, r: 8, p: 1, maxmem: 256 * 1024 * 1024 }
+const SCRYPT_OPTIONS_LEGACY = {
+  N: 16384,
+  r: 8,
+  p: 1,
+  maxmem: 256 * 1024 * 1024,
+}
 
 /**
  * Derive a 256-bit encryption key from the SECRET_KEY using the given salt.
@@ -19,7 +26,7 @@ function deriveKey(salt: Buffer): Buffer {
   if (!secret || secret.length < 32) {
     throw new Error("SECRET_KEY must be at least 32 characters for encryption")
   }
-  return scryptSync(secret, salt, KEY_LENGTH)
+  return scryptSync(secret, salt, KEY_LENGTH, SCRYPT_OPTIONS)
 }
 
 /**
@@ -32,7 +39,7 @@ function deriveKeyLegacy(): Buffer {
     throw new Error("SECRET_KEY must be at least 32 characters for encryption")
   }
   const salt = Buffer.from(secret.slice(0, SALT_LENGTH))
-  return scryptSync(secret, salt, KEY_LENGTH)
+  return scryptSync(secret, salt, KEY_LENGTH, SCRYPT_OPTIONS_LEGACY)
 }
 
 /**

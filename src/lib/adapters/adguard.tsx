@@ -92,9 +92,9 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
     const headers = { Authorization: `Basic ${auth}` }
 
     const startTime = Date.now()
-    const [statsRes] = await Promise.all([
-      fetchWithTimeout(`${baseUrl}/control/stats`, { headers }),
-    ])
+    const statsRes = await fetchWithTimeout(`${baseUrl}/control/stats`, {
+      headers,
+    })
     const latency = Date.now() - startTime
 
     if (!statsRes.ok) throw new Error(`AdGuard error: ${statsRes.status}`)
