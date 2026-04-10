@@ -8,10 +8,10 @@ import {
   DownloadItem,
   DownloadList,
 } from "@/components/widgets"
-import { TooltipProvider } from "@/components/ui/tooltip"
 
-function renderWithTooltipProvider(ui: React.ReactElement) {
-  return render(<TooltipProvider>{ui}</TooltipProvider>)
+// Custom tooltip doesn't need a provider — renders at root level via TooltipRoot
+function renderWithTooltip(ui: React.ReactElement) {
+  return render(ui)
 }
 
 describe("StatCard", () => {
@@ -23,7 +23,7 @@ describe("StatCard", () => {
 
   it("renders icon when provided", () => {
     const TestIcon = () => <span data-testid="test-icon">🔥</span>
-    renderWithTooltipProvider(
+    renderWithTooltip(
       <StatCard
         id="test-2"
         value="Test"
@@ -39,7 +39,7 @@ describe("StatCard", () => {
 
   it("places icon below value in DOM order", () => {
     const TestIcon = () => <span data-testid="test-icon">🔥</span>
-    const { container } = renderWithTooltipProvider(
+    const { container } = renderWithTooltip(
       <StatCard
         id="test-3"
         value="42"
@@ -125,29 +125,25 @@ describe("ActiveStreamItem", () => {
   }
 
   it("renders stream item with playing state", () => {
-    renderWithTooltipProvider(
-      <ActiveStreamItem {...baseProps} state="playing" />
-    )
+    renderWithTooltip(<ActiveStreamItem {...baseProps} state="playing" />)
     expect(screen.getByText("Test Movie")).toBeInTheDocument()
     // User is now only in tooltip, not visible in list item
     expect(screen.queryByText("(testuser)")).not.toBeInTheDocument()
   })
 
   it("renders stream item with paused state", () => {
-    renderWithTooltipProvider(
-      <ActiveStreamItem {...baseProps} state="paused" />
-    )
+    renderWithTooltip(<ActiveStreamItem {...baseProps} state="paused" />)
     expect(screen.getByText("Test Movie")).toBeInTheDocument()
   })
 
   it("formats duration correctly", () => {
-    renderWithTooltipProvider(<ActiveStreamItem {...baseProps} />)
+    renderWithTooltip(<ActiveStreamItem {...baseProps} />)
     // 120 - 60 = 60 seconds remaining = 1:00
     expect(screen.getByText("1:00")).toBeInTheDocument()
   })
 
   it("formats long duration with hours", () => {
-    renderWithTooltipProvider(
+    renderWithTooltip(
       <ActiveStreamItem
         title="Long Movie"
         user="user"
@@ -160,17 +156,14 @@ describe("ActiveStreamItem", () => {
   })
 
   it("shows tooltip on hover", () => {
-    const { container } = renderWithTooltipProvider(
-      <ActiveStreamItem {...baseProps} />
-    )
-    // Tooltip trigger element should exist with proper data attributes
+    const { container } = renderWithTooltip(<ActiveStreamItem {...baseProps} />)
+    // Tooltip trigger element should exist
     const trigger = container.querySelector('[data-slot="tooltip-trigger"]')
     expect(trigger).toBeInTheDocument()
-    expect(trigger).toHaveAttribute("data-state", "closed")
   })
 
   it("handles zero duration gracefully", () => {
-    renderWithTooltipProvider(
+    renderWithTooltip(
       <ActiveStreamItem
         title="Zero Duration"
         user="user"
@@ -194,7 +187,7 @@ describe("ActiveStreamList", () => {
       { title: "Alpha", user: "user2", progress: 0, duration: 100 },
       { title: "Middle", user: "user3", progress: 0, duration: 100 },
     ]
-    renderWithTooltipProvider(<ActiveStreamList streams={streams} />)
+    renderWithTooltip(<ActiveStreamList streams={streams} />)
     const titles = screen
       .getAllByText(/.+/)
       .filter((el) =>
@@ -211,7 +204,7 @@ describe("ActiveStreamList", () => {
       { title: "Movie A", user: "user1", progress: 30, duration: 120 },
       { title: "Movie B", user: "user2", progress: 60, duration: 120 },
     ]
-    renderWithTooltipProvider(<ActiveStreamList streams={streams} />)
+    renderWithTooltip(<ActiveStreamList streams={streams} />)
     expect(screen.getByText("Movie A")).toBeInTheDocument()
     expect(screen.getByText("Movie B")).toBeInTheDocument()
   })
@@ -227,19 +220,19 @@ describe("DownloadItem", () => {
   }
 
   it("renders download item with all props", () => {
-    renderWithTooltipProvider(<DownloadItem {...baseProps} />)
+    renderWithTooltip(<DownloadItem {...baseProps} />)
     expect(screen.getByText("Test Download")).toBeInTheDocument()
     expect(screen.getByText("downloading")).toBeInTheDocument()
     expect(screen.getByText("5 min")).toBeInTheDocument()
   })
 
   it("renders without optional props", () => {
-    renderWithTooltipProvider(<DownloadItem title="Simple" progress={25} />)
+    renderWithTooltip(<DownloadItem title="Simple" progress={25} />)
     expect(screen.getByText("Simple")).toBeInTheDocument()
   })
 
   it("shows size in tooltip and display", () => {
-    renderWithTooltipProvider(
+    renderWithTooltip(
       <DownloadItem
         title="With Size"
         progress={50}
@@ -254,20 +247,20 @@ describe("DownloadItem", () => {
   })
 
   it("shows activity without timeLeft", () => {
-    renderWithTooltipProvider(
+    renderWithTooltip(
       <DownloadItem title="No Time" progress={75} activity="seeding" />
     )
     expect(screen.getByText("seeding")).toBeInTheDocument()
   })
 
   it("clamps progress to 0-100 range visually", () => {
-    const { container: c1 } = renderWithTooltipProvider(
+    const { container: c1 } = renderWithTooltip(
       <DownloadItem title="Over" progress={150} />
     )
     const bar1 = c1.querySelector('[style*="width: 100%"]')
     expect(bar1).toBeInTheDocument()
 
-    const { container: c2 } = renderWithTooltipProvider(
+    const { container: c2 } = renderWithTooltip(
       <DownloadItem title="Zero" progress={0} />
     )
     const bar2 = c2.querySelector('[style*="width: 0%"]')
@@ -286,7 +279,7 @@ describe("DownloadList", () => {
       { title: "File A", progress: 25 },
       { title: "File B", progress: 75 },
     ]
-    renderWithTooltipProvider(<DownloadList downloads={downloads} />)
+    renderWithTooltip(<DownloadList downloads={downloads} />)
     expect(screen.getByText("File A")).toBeInTheDocument()
     expect(screen.getByText("File B")).toBeInTheDocument()
   })

@@ -22,11 +22,7 @@ import type { DragEndEvent } from "@dnd-kit/core"
 import { useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { Clock, Download, Pause, Play, Monitor, Cpu } from "lucide-react"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { TooltipTrigger } from "@/components/tooltip"
 import type { StatDisplayMode } from "@/lib/types"
 
 // ── Generic List Item ─────────────────────────────────────────────────────────
@@ -185,17 +181,9 @@ export function ListItem({
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>{content}</TooltipTrigger>
-      <TooltipContent
-        side="top"
-        className="max-w-xs text-xs"
-        sideOffset={8}
-        avoidCollisions
-      >
-        {tooltip}
-      </TooltipContent>
-    </Tooltip>
+    <TooltipTrigger content={tooltip} side="top">
+      {content}
+    </TooltipTrigger>
   )
 }
 
@@ -426,12 +414,9 @@ export function StatCard({
 
   if (effectiveTooltip) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>{inner}</TooltipTrigger>
-        <TooltipContent side="top" className="text-xs">
-          {effectiveTooltip}
-        </TooltipContent>
-      </Tooltip>
+      <TooltipTrigger content={effectiveTooltip} side="top">
+        {inner}
+      </TooltipTrigger>
     )
   }
   return inner

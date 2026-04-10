@@ -2,11 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import type { ServiceStatus } from "@/lib/adapters/types"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { TooltipTrigger } from "@/components/tooltip"
 
 interface StatusDotProps {
   status: ServiceStatus
@@ -49,12 +45,9 @@ export function StatusDot({ status }: StatusDotProps) {
 
   if (reason) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>{dot}</TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs text-xs">
-          {reason}
-        </TooltipContent>
-      </Tooltip>
+      <TooltipTrigger content={reason} side="top">
+        {dot}
+      </TooltipTrigger>
     )
   }
 

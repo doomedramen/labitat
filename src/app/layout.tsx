@@ -7,7 +7,7 @@ import { ThemeColorUpdater } from "@/components/theme-color-updater"
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
-import { TooltipProvider } from "@/components/ui/tooltip"
+import { TooltipRoot } from "@/components/tooltip"
 
 import "./globals.css"
 
@@ -95,12 +95,11 @@ export default async function RootLayout({
     >
       <body>
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
-          <TooltipProvider delayDuration={0} disableHoverableContent>
-            <ThemeColorUpdater />
-            {children}
-            <Toaster richColors position="top-right" />
-            <ServiceWorkerRegistrar />
-          </TooltipProvider>
+          <ThemeColorUpdater />
+          {children}
+          <TooltipRoot />
+          <Toaster richColors position="top-right" />
+          <ServiceWorkerRegistrar />
         </ThemeProvider>
       </body>
     </html>
