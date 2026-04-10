@@ -21,6 +21,14 @@ export function StatusDot({ status }: StatusDotProps) {
     error: "bg-red-500",
   }
 
+  const labels = {
+    unknown: "Status unknown",
+    healthy: "Healthy",
+    reachable: "Reachable",
+    unreachable: "Unreachable",
+    error: "Error",
+  }
+
   const reason =
     status.state === "unreachable" || status.state === "error"
       ? status.reason
@@ -28,6 +36,10 @@ export function StatusDot({ status }: StatusDotProps) {
 
   const dot = (
     <div
+      role="status"
+      aria-label={
+        reason ? `${labels[status.state]}: ${reason}` : labels[status.state]
+      }
       className={cn(
         "h-2.5 w-2.5 rounded-full transition-colors",
         colors[status.state]

@@ -2,15 +2,18 @@
 
 import { fetchServiceData } from "./services"
 import { preloadDatapoints } from "@/lib/last-datapoints"
+import { requireAuth } from "@/lib/auth/guard"
 import type { ServiceData } from "@/lib/adapters/types"
 
 export async function getWidgetData(itemId: string): Promise<ServiceData> {
+  await requireAuth()
   return fetchServiceData(itemId)
 }
 
 export async function getBatchWidgetData(
   itemIds: string[]
 ): Promise<Record<string, ServiceData>> {
+  await requireAuth()
   const results = await Promise.all(
     itemIds.map(async (id) => {
       try {
@@ -28,5 +31,6 @@ export async function getBatchWidgetData(
 }
 
 export async function preloadAllDatapoints(itemIds: string[]) {
+  await requireAuth()
   return preloadDatapoints(itemIds)
 }

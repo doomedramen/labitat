@@ -33,7 +33,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: '22'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -74,7 +74,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: '22'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -188,7 +188,7 @@ jobs:
 
       - name: Generate release notes
         run: |
-          cat > /tmp/release_notes.md << 'EOF'
+          cat > /tmp/release_notes.md << EOF
           ## Changes
 
           $(git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"* %s")

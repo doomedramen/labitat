@@ -9,6 +9,7 @@ import type { GroupWithCache, ItemWithCache } from "@/lib/types"
 import { ItemCard } from "./item/item-card"
 import { deleteGroup } from "@/actions/groups"
 import { deleteItem } from "@/actions/items"
+import { toast } from "sonner"
 import { Pencil, Trash2, Plus, GripVertical } from "lucide-react"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 
@@ -103,11 +104,16 @@ export function GroupCard({
                 item={item}
                 editMode={editMode}
                 onEdit={onEditItem}
-                onDeleted={(id) => deleteItem(id)}
+                onDeleted={(id) =>
+                  deleteItem(id).catch(() =>
+                    toast.error("Failed to delete item")
+                  )
+                }
               />
             ))}
             {editMode && (
               <button
+                type="button"
                 onClick={onAddItem}
                 className="flex min-h-20 items-center justify-center rounded-xl border-2 border-dashed border-border/50 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
               >
@@ -125,7 +131,9 @@ export function GroupCard({
         title="Delete group"
         description={`Are you sure you want to delete "${group.name}"? All items inside will also be deleted. This cannot be undone.`}
         onConfirm={() => {
-          deleteGroup(group.id)
+          deleteGroup(group.id).catch(() =>
+            toast.error("Failed to delete group")
+          )
           setDeleteConfirmOpen(false)
         }}
       />

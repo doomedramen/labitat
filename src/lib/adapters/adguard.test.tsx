@@ -119,7 +119,11 @@ describe("adguard definition", () => {
       const mockFetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({}),
+          json: () =>
+            Promise.resolve({
+              num_dns_queries: 100,
+              num_blocked_filtering: 30,
+            }),
         })
       )
       vi.stubGlobal("fetch", mockFetch)

@@ -9,15 +9,14 @@
 import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { ActiveStreamList, DownloadList } from "@/components/widgets"
 import { Skeleton } from "@/components/ui/skeleton"
-import { AlertCircle, RefreshCw } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 import type { WidgetPayload } from "@/lib/adapters/widget-types"
 
 interface WidgetContainerProps {
   payload: WidgetPayload
-  onRetry?: () => void
 }
 
-export function WidgetContainer({ payload, onRetry }: WidgetContainerProps) {
+export function WidgetContainer({ payload }: WidgetContainerProps) {
   // Show loading skeleton when loading
   if (payload.loading) {
     return (
@@ -35,16 +34,6 @@ export function WidgetContainer({ payload, onRetry }: WidgetContainerProps) {
       <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 py-4 text-center">
         <AlertCircle className="h-5 w-5 text-destructive" />
         <p className="text-xs text-destructive">{payload.error}</p>
-        {onRetry && (
-          <button
-            type="button"
-            onClick={onRetry}
-            className="flex items-center gap-1 rounded-md bg-destructive/10 px-2 py-1 text-xs text-destructive hover:bg-destructive/20"
-          >
-            <RefreshCw className="h-3 w-3" />
-            Retry
-          </button>
-        )}
       </div>
     )
   }

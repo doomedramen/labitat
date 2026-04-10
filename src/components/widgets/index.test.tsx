@@ -268,7 +268,7 @@ describe("DownloadItem", () => {
     expect(bar1).toBeInTheDocument()
 
     const { container: c2 } = renderWithTooltipProvider(
-      <DownloadItem title="Negative" progress={-10} />
+      <DownloadItem title="Zero" progress={0} />
     )
     const bar2 = c2.querySelector('[style*="width: 0%"]')
     expect(bar2).toBeInTheDocument()

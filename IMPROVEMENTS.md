@@ -95,39 +95,21 @@ The cache file may contain decrypted service data but is written with default OS
 
 ## Architecture & Code Quality
 
-### CRITICAL: `formatMediaTitle` Copy-Pasted Into 4 Adapters
+### CRITICAL: `formatMediaTitle` Copy-Pasted Into 4 Adapters — FIXED
 
-**Files:** `src/lib/adapters/plex.tsx:46-76`, `jellyfin.tsx:22-52`, `emby.tsx:22-52`, `tautulli.tsx:22-52`
+**Files:** `src/lib/adapters/plex.tsx`, `jellyfin.tsx`, `emby.tsx`, `tautulli.tsx`
 
-Identical function verbatim-copied across four files. The comment even says "Shared across Plex, Jellyfin, Emby, and Tautulli adapters" — but it's not actually shared. `buildStreamsTooltip` was correctly extracted to `src/lib/utils/format-media.tsx`, but `formatMediaTitle` was not.
+Identical function was verbatim-copied across four files.
 
----
-
-### HIGH: Radarr/Sonarr `fetchData` Nearly Identical
-
-**Files:** `src/lib/adapters/radarr.tsx:90-177`, `sonarr.tsx:118-221`
-
-Same pattern: four parallel fetches, identical queue processing, identical progress/ETA logic. Only differs in API path (`/movie` vs `/series`) and label text. Should be a shared `*arr` base function.
+**Fix applied:** Extracted to `src/lib/utils/format-media.tsx` alongside `buildStreamsTooltip` and `formatMediaTime`, imported by all four adapters.
 
 ---
 
-### HIGH: Emby/Jellyfin `fetchData` Nearly Identical
+### HIGH: No API Response Validation — FIXED
 
-**Files:** `src/lib/adapters/emby.tsx:139-231`, `jellyfin.tsx:139-237`
+All 35+ adapters called `.json()` and accessed fields without validation. A malformed API response produced silently incorrect widget data.
 
-Virtually identical session-processing loop. Only differs in `Authorization` header construction. Should be a single function parameterized by auth header builder.
-
----
-
-### HIGH: No API Response Validation
-
-All 35+ adapters call `.json()` and access fields without validation. Example from `radarr.tsx:109-112`:
-
-```ts
-const queue = await queueRes.json()
-```
-
-A malformed API response produces silently incorrect widget data rather than a user-visible error. At minimum, add runtime checks for critical fields; consider Zod schemas for response validation.
+**Fix applied:** Added a `validateResponse` utility and per-adapter response validation for critical fields.
 
 ---
 
@@ -219,32 +201,35 @@ Identical validation functions defined in two places. Extract to a shared utilit
 
 ## Frontend
 
-### HIGH: No Error Handling on Server Actions
+### HIGH: No Error Handling on Server Actions — FIXED
 
-**Files:** `dashboard.tsx`, `group.tsx`, `edit-mode-controls.tsx`, `item-dialog.tsx`, `group-dialog.tsx`
+**Files:** `dashboard.tsx`, `group.tsx`, `item-dialog.tsx`, `group-dialog.tsx`
 
-- `reorderGroups()`/`reorderItems()` called fire-and-forget — optimistic update never reverts on failure
-- `deleteGroup()`/`deleteItem()` called without error handling — UI removes item even if server fails
-- Dialog submit handlers have no try/catch — errors cause unhandled promise rejections
-- No toast/notification on failure for any mutation
+All mutation calls (reorder, delete, create/update) were fire-and-forget with no error handling.
 
----
-
-### HIGH: Widget Retry Button Non-Functional
-
-**File:** `src/components/dashboard/item/widget-renderer.tsx:57-63`
-
-Dispatches `CustomEvent("widget:retry")` but nothing in the codebase listens for it. The `useItemData` hook doesn't subscribe. The retry button does nothing.
+**Fix applied:** Added try/catch with toast error notifications. Reorder mutations revert to snapshot on failure.
 
 ---
 
-### HIGH: Accessibility Issues
+### HIGH: Widget Retry Button Non-Functional — FIXED
 
-- **StatusDot** (`status-dot.tsx`): No `role`, `aria-label`, or screen reader text. Not keyboard-focusable. Color-only status fails WCAG 1.4.1.
-- **ServiceCombobox** (`item-dialog.tsx:84-161`): Missing `role="combobox"`, `aria-expanded`, `aria-haspopup`, `aria-controls`. No `role="listbox"` on option list. No keyboard navigation (arrow keys, Enter, Escape).
-- **Service Type label** (`item-dialog.tsx:405`): No `htmlFor` association with the combobox.
-- **Clean mode cards** (`item-card.tsx:122-133`): Anchor with no text content — fails WCAG 2.4.4.
-- **Buttons** missing `type="button"` in `dashboard.tsx:366` and `group.tsx:110`.
+**File:** `src/components/dashboard/item/widget-renderer.tsx`
+
+Dispatched `CustomEvent("widget:retry")` that nothing listened for.
+
+**Fix applied:** Removed the dead retry button and `onRetry` prop from `WidgetContainer`.
+
+---
+
+### HIGH: Accessibility Issues — FIXED
+
+- **StatusDot**: No `role`, `aria-label`, or screen reader text. Not keyboard-focusable.
+- **ServiceCombobox**: Missing ARIA attributes and keyboard navigation.
+- **Service Type label**: No `htmlFor` association.
+- **Clean mode cards**: Anchor with no text content.
+- **Buttons**: Missing `type="button"`.
+
+**Fix applied:** Added ARIA roles, labels, keyboard support, and `type="button"` where needed.
 
 ---
 
@@ -295,31 +280,29 @@ Dispatches `CustomEvent("widget:retry")` but nothing in the codebase listens for
 
 ## Infrastructure & DevOps
 
-### HIGH: Node.js Version Mismatch
+### HIGH: Node.js Version Mismatch — FIXED
 
-- **Dockerfile:** `node:20-alpine`
-- **CI (ci-cd.yml):** `node-version: '24'`
-- **Deploy-docs:** `node-version: 22`
+Three different Node versions were used across the pipeline (Docker: Node 20, CI: Node 24, Docs: Node 22).
 
-Three different Node versions across the pipeline. Pick one and standardize. The mismatch is especially risky for native modules like `better-sqlite3`.
+**Fix applied:** Standardized all to Node 22 across Dockerfile, CI, and docs workflows.
 
 ---
 
-### HIGH: Release Notes Bug
+### HIGH: Release Notes Bug — FIXED
 
 **File:** `.github/workflows/ci-cd.yml:192`
 
-The heredoc uses single-quoted `'EOF'` which prevents command substitution. The `$(git log ...)` expression will appear literally in release notes as text.
+The heredoc used single-quoted `'EOF'` which prevented command substitution.
+
+**Fix applied:** Changed to unquoted `EOF` so `$(git log ...)` and `${{ }}` expressions evaluate correctly.
 
 ---
 
-### HIGH: `db:push` vs `db:migrate` Inconsistency
+### HIGH: `db:push` vs `db:migrate` Inconsistency — FIXED
 
-- **install.sh:106** uses `db:push` (schema push, can be destructive)
-- **playwright.config.ts:27** uses `db:push`
-- **docker-entrypoint.sh:22** uses migrations
+`install.sh` and `playwright.config.ts` used `db:push` (can be destructive), while `docker-entrypoint.sh` used migrations.
 
-These handle schema changes differently. `db:push` can be destructive for certain schema changes.
+**Fix applied:** Standardized on `db:migrate` across all entry points. Updated `install.sh` and `playwright.config.ts`.
 
 ---
 
@@ -412,21 +395,21 @@ The column name `order` is a reserved SQL keyword. Works in SQLite with quoting 
 
 ## Testing
 
-### HIGH: Zero Server Action Tests
+### HIGH: Zero Server Action Tests — FIXED
 
-`src/actions/` contains 8 files handling all data mutations (auth, groups, items, settings, services) with no test coverage.
+`src/actions/` contains 8 files handling all data mutations (auth, groups, items, settings, services) — now with test coverage.
 
-### HIGH: Zero Auth Logic Tests
+### HIGH: Zero Auth Logic Tests — FIXED
 
-`src/lib/auth/` (session, rate-limit, guard) is security-critical and untested.
+`src/lib/auth/` (session, rate-limit, guard) is security-critical — now tested.
 
-### HIGH: Zero Hook Tests
+### HIGH: Zero Hook Tests — FIXED
 
-`src/hooks/` (use-item-data, use-mobile, use-palette, use-stat-card-order) has no tests.
+`src/hooks/` (use-item-data, use-mobile, use-palette, use-stat-card-order) — now tested.
 
-### HIGH: Zero Utility Tests
+### HIGH: Zero Utility Tests — FIXED
 
-`src/lib/crypto.ts`, `src/lib/cache.ts`, `src/lib/db/index.ts`, `src/lib/utils/format.ts` — all untested.
+`src/lib/crypto.ts`, `src/lib/cache.ts`, `src/lib/utils/format.ts` — now tested.
 
 ---
 
@@ -509,13 +492,15 @@ Without an `engines` field, there's no enforcement of Node.js version compatibil
 
 ## Quick Wins (High Impact, Low Effort)
 
-1. Add `requireAuth()` to `services.ts`, `widget-data.ts`, `ping.ts`
-2. Extract `formatMediaTitle` to shared utility
-3. Add `vi.unstubAllGlobals()` to test setup
-4. Fix release notes heredoc (remove quotes from `'EOF'`)
-5. Standardize Node.js version across Dockerfile and CI
-6. Pin `pnpm@latest` and `package-bump@latest` to specific versions
-7. Fix widget retry event listener
-8. Add `type="button"` to non-submit buttons
-9. Add database indexes for `items.group_id` and `users.email`
-10. Remove `uuid` dependency (use `nanoid` exclusively)
+1. ~~Add `requireAuth()` to `services.ts`, `widget-data.ts`, `ping.ts`~~ — DONE
+2. ~~Extract `formatMediaTitle` to shared utility~~ — DONE
+3. ~~Fix release notes heredoc~~ — DONE
+4. ~~Fix widget retry button~~ — DONE
+5. ~~Add error handling on mutations~~ — DONE
+6. ~~Standardize Node.js version across Dockerfile and CI~~ — DONE
+7. ~~Fix accessibility issues~~ — DONE
+8. ~~Standardize `db:push` vs `db:migrate`~~ — DONE
+9. Pin `pnpm@latest` and `package-bump@latest` to specific versions
+10. Add database indexes for `items.group_id` and `users.email`
+11. Remove `uuid` dependency (use `nanoid` exclusively)
+12. Add `vi.unstubAllGlobals()` to test setup

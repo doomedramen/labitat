@@ -99,12 +99,26 @@ describe("radarr definition", () => {
     })
 
     it("handles missing data with defaults", async () => {
-      vi.stubGlobal("fetch", () =>
-        Promise.resolve({
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/queue")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ totalRecords: 0, records: [] }),
+          })
+        }
+        if (url.includes("/movie")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([]),
+          })
+        }
+        // /wanted/missing and /wanted/cutoff
+        return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({}),
+          json: () => Promise.resolve({ totalRecords: 0 }),
         })
-      )
+      })
+      vi.stubGlobal("fetch", mockFetch)
 
       const result = await radarrDefinition.fetchData!({
         url: "https://radarr.example.com",
@@ -226,12 +240,24 @@ describe("radarr definition", () => {
     })
 
     it("strips trailing slash from URL", async () => {
-      const mockFetch = vi.fn(() =>
-        Promise.resolve({
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/queue")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ totalRecords: 0, records: [] }),
+          })
+        }
+        if (url.includes("/movie")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([]),
+          })
+        }
+        return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({}),
+          json: () => Promise.resolve({ totalRecords: 0 }),
         })
-      )
+      })
       vi.stubGlobal("fetch", mockFetch)
 
       await radarrDefinition.fetchData!({

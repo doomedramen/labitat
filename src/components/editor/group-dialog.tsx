@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createGroup, updateGroup } from "@/actions/groups"
+import { toast } from "sonner"
 import type { GroupWithCache } from "@/lib/types"
 
 const groupSchema = z.object({
@@ -38,14 +39,18 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
       onBlur: groupSchema,
     },
     onSubmit: async ({ value }) => {
-      const formData = new FormData()
-      formData.append("name", value.name)
-      if (group) {
-        await updateGroup(group.id, formData)
-      } else {
-        await createGroup(formData)
+      try {
+        const formData = new FormData()
+        formData.append("name", value.name)
+        if (group) {
+          await updateGroup(group.id, formData)
+        } else {
+          await createGroup(formData)
+        }
+        onOpenChange(false)
+      } catch {
+        toast.error(group ? "Failed to update group" : "Failed to create group")
       }
-      onOpenChange(false)
     },
   })
 

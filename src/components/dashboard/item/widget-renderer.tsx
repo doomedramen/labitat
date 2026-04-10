@@ -53,16 +53,6 @@ export function WidgetRenderer({
   const isVisible =
     (hasCustomWidget || hasPayload) && (effectiveData || !effectiveLoading)
 
-  // Retry handler for widget errors
-  const handleRetry = () => {
-    if (serviceDef?.id) {
-      // Trigger a re-fetch by dispatching a custom event
-      window.dispatchEvent(
-        new CustomEvent("widget:retry", { detail: serviceDef.id })
-      )
-    }
-  }
-
   return (
     <div
       className={cn(
@@ -95,10 +85,7 @@ export function WidgetRenderer({
               {...(effectiveData as Record<string, unknown>)}
             />
           ) : hasPayload && serviceDef.toPayload ? (
-            <WidgetContainer
-              payload={serviceDef.toPayload(effectiveData)}
-              onRetry={handleRetry}
-            />
+            <WidgetContainer payload={serviceDef.toPayload(effectiveData)} />
           ) : null}
         </WidgetDisplayProvider>
       )}

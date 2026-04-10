@@ -1,6 +1,42 @@
 import type { ActiveStream } from "@/components/widgets"
 
 /**
+ * Format a media title based on its type (TV episode, music track, or movie).
+ * Used by Plex, Jellyfin, Emby, and Tautulli adapters.
+ */
+export function formatMediaTitle(
+  title: string,
+  options: {
+    type?: string
+    seriesName?: string
+    season?: number | null
+    episode?: number | null
+    albumArtist?: string
+    album?: string
+  } = {}
+): { title: string; subtitle?: string } {
+  const { type, seriesName, season, episode, albumArtist, album } = options
+
+  // TV Episode: S01E05 - Episode Name
+  if (type === "episode" && seriesName) {
+    let formattedTitle = title
+    if (season != null && episode != null) {
+      formattedTitle = `S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")} - ${title}`
+    }
+    return { title: formattedTitle, subtitle: seriesName }
+  }
+
+  // Audio: Album - Song Name (subtitle = Artist)
+  if (type === "track" && albumArtist) {
+    const formattedTitle = album ? `${album} - ${title}` : title
+    return { title: formattedTitle, subtitle: albumArtist }
+  }
+
+  // Movie or other: just the title
+  return { title, subtitle: undefined }
+}
+
+/**
  * Format seconds to HH:MM:SS string (like Homepage's media widgets).
  * e.g., 3661 → "1:01:01"
  * e.g., 120 → "2:00"

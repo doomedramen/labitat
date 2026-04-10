@@ -101,7 +101,7 @@ describe("sabnzbd definition", () => {
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({}),
+          json: () => Promise.resolve({ queue: {} }),
         })
       )
 

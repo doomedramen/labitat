@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { validateResponse, validateArrayResponse } from "./validate"
 import { Search, Download, List } from "lucide-react"
 
 type ProwlarrData = {
@@ -67,8 +68,20 @@ export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
 
     if (!indexerRes.ok) throw new Error(`Prowlarr error: ${indexerRes.status}`)
 
-    const indexers = await indexerRes.json()
-    const stats = statsRes.ok ? await statsRes.json() : {}
+    const indexers = validateArrayResponse(await indexerRes.json(), {
+      adapter: "prowlarr",
+    })
+    const stats = statsRes.ok
+      ? validateResponse<{
+          indexers?: Array<{
+            numberOfQueries?: number
+            numberOfGrabs?: number
+          }>
+        }>(await statsRes.json(), [], [{ path: "indexers", type: "array" }], {
+          adapter: "prowlarr",
+          optional: true,
+        })
+      : {}
 
     // indexerstats returns { indexers: [...], userAgents: [...] }
     // each indexer has numberOfQueries and numberOfGrabs

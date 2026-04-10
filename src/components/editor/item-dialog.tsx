@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 import { createItem, updateItem, getItemConfig } from "@/actions/items"
 import { getAllServices } from "@/lib/adapters"
@@ -42,6 +43,8 @@ const itemSchema = z.object({
 
 // ── Service type combobox ─────────────────────────────────────────────────────
 
+const comboboxId = "service-type-combobox"
+
 function ServiceCombobox({
   services,
   value,
@@ -53,12 +56,18 @@ function ServiceCombobox({
 }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
+  const [activeIndex, setActiveIndex] = useState(-1)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const sorted = [...services].sort((a, b) => a.name.localeCompare(b.name))
   const filtered = query
     ? sorted.filter((s) => s.name.toLowerCase().includes(query.toLowerCase()))
     : sorted
+
+  // Build flat option list for keyboard nav (includes "None" when not searching)
+  const options = !query
+    ? [{ id: "", name: "None (link only)" }, ...filtered]
+    : filtered
 
   const selectedName =
     value === ""
@@ -79,12 +88,47 @@ function ServiceCombobox({
     onChange(id)
     setOpen(false)
     setQuery("")
+    setActiveIndex(-1)
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (!open) {
+      if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault()
+        setOpen(true)
+        setActiveIndex(0)
+      }
+      return
+    }
+    if (e.key === "Escape") {
+      setOpen(false)
+      setQuery("")
+      setActiveIndex(-1)
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault()
+      setActiveIndex((i) => (i < options.length - 1 ? i + 1 : i))
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault()
+      setActiveIndex((i) => (i > 0 ? i - 1 : 0))
+    } else if (
+      e.key === "Enter" &&
+      activeIndex >= 0 &&
+      activeIndex < options.length
+    ) {
+      e.preventDefault()
+      select(options[activeIndex].id)
+    }
   }
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative" onKeyDown={handleKeyDown}>
       <button
         type="button"
+        role="combobox"
+        id={comboboxId}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-controls={`${comboboxId}-listbox`}
         onClick={() => setOpen((o) => !o)}
         className={cn(
           "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs",
@@ -109,21 +153,32 @@ function ServiceCombobox({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md">
+        <div
+          id={`${comboboxId}-listbox`}
+          role="listbox"
+          aria-label="Service types"
+          className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
+        >
           <div className="p-1">
             <input
               autoFocus
               className="flex h-8 w-full rounded-sm bg-transparent px-2 py-1 text-sm outline-none placeholder:text-muted-foreground"
               placeholder="Search services..."
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value)
+                setActiveIndex(0)
+              }}
+              role="searchbox"
+              aria-label="Search services"
             />
           </div>
           <div className="max-h-60 overflow-y-auto">
-            {/* None is always pinned at top, hidden when searching */}
             {!query && (
               <button
                 type="button"
+                role="option"
+                aria-selected={value === ""}
                 onClick={() => select("")}
                 className={cn(
                   "w-full px-2 py-1.5 text-left text-sm",
@@ -139,20 +194,31 @@ function ServiceCombobox({
                 No results
               </p>
             ) : (
-              filtered.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => select(s.id)}
-                  className={cn(
-                    "w-full px-2 py-1.5 text-left text-sm",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    value === s.id && "bg-accent/50 font-medium"
-                  )}
-                >
-                  {s.name}
-                </button>
-              ))
+              filtered.map((s, i) => {
+                const optIndex = !query ? i + 1 : i
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    role="option"
+                    aria-selected={value === s.id}
+                    tabIndex={activeIndex === optIndex ? 0 : -1}
+                    ref={(el) => {
+                      if (activeIndex === optIndex && el)
+                        el.scrollIntoView({ block: "nearest" })
+                    }}
+                    onClick={() => select(s.id)}
+                    className={cn(
+                      "w-full px-2 py-1.5 text-left text-sm",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      value === s.id && "bg-accent/50 font-medium",
+                      activeIndex === optIndex && "bg-accent/30"
+                    )}
+                  >
+                    {s.name}
+                  </button>
+                )
+              })
             )}
           </div>
         </div>
@@ -211,28 +277,32 @@ export function ItemDialog({
       onBlur: itemSchema,
     },
     onSubmit: async ({ value }) => {
-      const formData = new FormData()
-      formData.append("label", value.label)
-      formData.append("href", value.href)
-      formData.append("iconUrl", value.iconUrl)
-      formData.append("pollingMs", String(value.pollingMs * 1000))
-      formData.append("serviceType", serviceType)
-      formData.append("displayMode", "label")
-      formData.append("cleanMode", cleanMode ? "true" : "false")
-      formData.append("statDisplayMode", statDisplayMode)
+      try {
+        const formData = new FormData()
+        formData.append("label", value.label)
+        formData.append("href", value.href)
+        formData.append("iconUrl", value.iconUrl)
+        formData.append("pollingMs", String(value.pollingMs * 1000))
+        formData.append("serviceType", serviceType)
+        formData.append("displayMode", "label")
+        formData.append("cleanMode", cleanMode ? "true" : "false")
+        formData.append("statDisplayMode", statDisplayMode)
 
-      // Add config fields
-      Object.entries(configFields).forEach(([key, val]) => {
-        formData.append(`config_${key}`, val)
-      })
+        // Add config fields
+        Object.entries(configFields).forEach(([key, val]) => {
+          formData.append(`config_${key}`, val)
+        })
 
-      if (item) {
-        await updateItem(item.id, formData)
-      } else {
-        await createItem(groupId, formData)
+        if (item) {
+          await updateItem(item.id, formData)
+        } else {
+          await createItem(groupId, formData)
+        }
+        form.reset()
+        onOpenChange(false)
+      } catch {
+        toast.error(item ? "Failed to update item" : "Failed to create item")
       }
-      form.reset()
-      onOpenChange(false)
     },
   })
 
@@ -402,7 +472,7 @@ export function ItemDialog({
 
               {/* Service type */}
               <div className="space-y-2">
-                <Label>Service Type</Label>
+                <Label htmlFor={comboboxId}>Service Type</Label>
                 <ServiceCombobox
                   services={services}
                   value={serviceType}

@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import type { DownloadItem } from "@/components/widgets"
+import { validateResponse } from "./validate"
 import { ArrowDown, Clock, List } from "lucide-react"
 
 type SABnzbdData = {
@@ -76,15 +77,27 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
     const res = await fetch(url)
     if (!res.ok) throw new Error(`SABnzbd error: ${res.status}`)
 
-    const data = await res.json()
+    type SABQueue = {
+      speed?: string
+      timeleft?: string
+      noofslots?: number
+      status?: string
+      slots?: Array<{
+        filename: string
+        percentage: string
+        timeleft: string
+        mb: string
+        mbleft: string
+      }>
+    }
+    const data = validateResponse<{ queue?: SABQueue }>(
+      await res.json(),
+      ["queue"],
+      [{ path: "queue", type: "object" }],
+      { adapter: "sabnzbd" }
+    )
     const queue = data.queue ?? {}
-    const slots: Array<{
-      filename: string
-      percentage: string
-      timeleft: string
-      mb: string
-      mbleft: string
-    }> = queue.slots ?? []
+    const slots = queue.slots ?? []
 
     const downloads: DownloadItem[] = slots.slice(0, 3).map((slot) => ({
       title: slot.filename,

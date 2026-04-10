@@ -124,6 +124,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
+          aria-label={item.label || item.href}
           className="block"
         >
           {inner}

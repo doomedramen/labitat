@@ -29,6 +29,176 @@ import {
 } from "@/components/ui/tooltip"
 import type { StatDisplayMode } from "@/lib/types"
 
+// ── Generic List Item ─────────────────────────────────────────────────────────
+
+export type ListItemTrailingItem = {
+  /** Icon component (rendered with consistent styling) */
+  icon?: React.ElementType
+  /** Visual tooltip text on the icon (title attribute) */
+  iconTitle?: string
+  /** Visible text content */
+  text?: string
+  /** Screen reader label (defaults to text, then iconTitle) */
+  label?: string
+}
+
+export type ListItemProps = {
+  /** Primary text */
+  title: string
+  /** Secondary text shown before title */
+  subtitle?: string
+  /** Progress percentage (0–100). Renders bottom bar when provided */
+  progress?: number
+  /** Icon component shown on the left */
+  leading?: React.ElementType
+  /** If provided, leading becomes a clickable button */
+  onLeadingClick?: () => void
+  /** Structured trailing content (icons + text with consistent styling) */
+  trailing?: ListItemTrailingItem[]
+  /** Separator between trailing items (default "·") */
+  divider?: string
+  /** Tooltip content */
+  tooltip?: React.ReactNode
+  /** Replaces entire inner layout (keeps container + progress bar) */
+  children?: React.ReactNode
+  /** Additional className for the container */
+  className?: string
+}
+
+/**
+ * Generic list item with consistent styling.
+ * Provides slots for leading icon, content, and trailing info.
+ * Used as the base for ActiveStreamItem, DownloadItem, etc.
+ */
+export function ListItem({
+  title,
+  subtitle,
+  progress,
+  leading: Leading,
+  onLeadingClick,
+  trailing,
+  divider = "·",
+  tooltip,
+  children,
+  className,
+}: ListItemProps) {
+  const hasProgress = progress != null && progress >= 0
+  const progressPercent = hasProgress ? Math.min(100, Math.max(0, progress)) : 0
+
+  const renderTrailing = () => {
+    if (!trailing || trailing.length === 0) return null
+
+    // Filter items that have visible content
+    const visibleItems = trailing.filter((item) => item.icon || item.text)
+
+    return (
+      <div className="flex shrink-0 items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
+        {visibleItems.map((item, i) => {
+          const accessibleLabel = item.label ?? item.text ?? item.iconTitle
+          const hasIcon = !!item.icon
+          const hasText = !!item.text
+          const Icon = item.icon
+
+          return (
+            <span
+              key={i}
+              className="flex items-center gap-1"
+              {...(accessibleLabel && !hasText
+                ? { role: "img" as const, "aria-label": accessibleLabel }
+                : {})}
+            >
+              {hasIcon && Icon && (
+                <Icon
+                  className="h-3 w-3 shrink-0 text-secondary-foreground/50"
+                  aria-hidden={hasText ? "true" : undefined}
+                  title={item.iconTitle}
+                />
+              )}
+              {hasText && <span>{item.text}</span>}
+              {i < visibleItems.length - 1 && divider && (
+                <span className="text-secondary-foreground/30">{divider}</span>
+              )}
+            </span>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const inner = children ?? (
+    <>
+      {/* Leading icon / button */}
+      {onLeadingClick && Leading ? (
+        <button
+          type="button"
+          onClick={onLeadingClick}
+          className="shrink-0 cursor-pointer text-secondary-foreground/50 hover:text-secondary-foreground/70"
+          aria-label={title}
+        >
+          <Leading className="h-3 w-3" />
+        </button>
+      ) : Leading ? (
+        <div className="shrink-0 text-secondary-foreground/50">
+          <Leading className="h-3 w-3" />
+        </div>
+      ) : null}
+
+      {/* Content (center) */}
+      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+        {subtitle && (
+          <span className="shrink-0 text-secondary-foreground/50">
+            {subtitle}
+          </span>
+        )}
+        {subtitle && (
+          <span className="shrink-0 text-secondary-foreground/30">·</span>
+        )}
+        <span className="min-w-0 truncate font-medium">{title}</span>
+      </div>
+
+      {/* Trailing info (right) */}
+      {renderTrailing()}
+    </>
+  )
+
+  const content = (
+    <div
+      className={cn(
+        "relative flex w-full items-center gap-2 overflow-hidden rounded-md bg-secondary/30 px-2 py-1 text-xs",
+        "hover:bg-secondary/50",
+        className
+      )}
+    >
+      {inner}
+      {/* Progress bar */}
+      {hasProgress && (
+        <div
+          className="absolute bottom-0 left-0 h-px bg-primary/50"
+          style={{ width: `${progressPercent}%` }}
+        />
+      )}
+    </div>
+  )
+
+  if (!tooltip) {
+    return content
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{content}</TooltipTrigger>
+      <TooltipContent
+        side="top"
+        className="max-w-xs text-xs"
+        sideOffset={8}
+        avoidCollisions
+      >
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 // ── Resource bar ──────────────────────────────────────────────────────────────
 
 export type ResourceBarProps = {
@@ -401,87 +571,31 @@ export function ActiveStreamItem({
     }
   }
 
+  // Build trailing items
+  const trailingItems: ListItemTrailingItem[] = []
+  if (transcoding) {
+    trailingItems.push({
+      icon: transcoding.isDirect ? Monitor : Cpu,
+      iconTitle: transcoding.isDirect ? "Direct play" : "Software transcoding",
+    })
+  }
+  trailingItems.push({
+    icon: Clock,
+    text: formatDuration(remaining),
+  })
+
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          className={cn(
-            "relative flex w-full items-center gap-2 overflow-hidden rounded-md bg-secondary/30 px-2 py-1 text-xs",
-            "hover:bg-secondary/50"
-          )}
-        >
-          {/* Play/Pause button with media control support */}
-          {onTogglePlayback && streamId ? (
-            <button
-              type="button"
-              onClick={handlePlayPause}
-              className="shrink-0 cursor-pointer text-secondary-foreground/50 hover:text-secondary-foreground/70"
-              aria-label={state === "paused" ? "Play" : "Pause"}
-            >
-              {state === "paused" ? (
-                <Play className="h-3 w-3" />
-              ) : (
-                <Pause className="h-3 w-3" />
-              )}
-            </button>
-          ) : state === "paused" ? (
-            <Pause className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
-          ) : (
-            <Play className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
-          )}
-          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-            {subtitle && (
-              <span className="shrink-0 text-secondary-foreground/50">
-                {subtitle}
-              </span>
-            )}
-            {subtitle && (
-              <span className="shrink-0 text-secondary-foreground/30">·</span>
-            )}
-            <span className="min-w-0 truncate font-medium">{title}</span>
-          </div>
-          {/* Transcoding info icons (like Homepage's Jellyfin widget) */}
-          <div className="flex shrink-0 items-center gap-1">
-            {transcoding && (
-              <>
-                {transcoding.isDirect ? (
-                  <span title="Direct play">
-                    <Monitor className="h-3 w-3 text-secondary-foreground/50" />
-                  </span>
-                ) : (
-                  <>
-                    {!transcoding.hardwareDecoding ||
-                    !transcoding.hardwareEncoding ? (
-                      <span title="Software transcoding">
-                        <Cpu className="h-3 w-3 text-secondary-foreground/50" />
-                      </span>
-                    ) : (
-                      <span title="Hardware transcoding">
-                        <Cpu className="h-3 w-3 text-secondary-foreground/50" />
-                      </span>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-            <div className="flex items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
-              <Clock className="h-3 w-3" />
-              {formatDuration(remaining)}
-            </div>
-          </div>
-          {/* Playback progress bar */}
-          <div
-            className="absolute bottom-0 left-0 h-px bg-primary/50"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-      </TooltipTrigger>
-      <TooltipContent
-        side="top"
-        className="max-w-xs text-xs"
-        sideOffset={8}
-        avoidCollisions
-      >
+    <ListItem
+      title={title}
+      subtitle={subtitle}
+      progress={progressPercent}
+      leading={state === "paused" ? Pause : Play}
+      onLeadingClick={
+        streamId && onTogglePlayback ? handlePlayPause : undefined
+      }
+      trailing={trailingItems}
+      divider=""
+      tooltip={
         <div className="flex flex-col gap-1">
           <div className="font-medium">{displayTitle}</div>
           <div>User: {user}</div>
@@ -500,8 +614,8 @@ export function ActiveStreamItem({
             </div>
           )}
         </div>
-      </TooltipContent>
-    </Tooltip>
+      }
+    />
   )
 }
 
@@ -556,48 +670,20 @@ export function DownloadItem({
 }: DownloadItem) {
   const tooltipText = `${title}${size ? ` - ${size}` : ""}${activity ? ` - ${activity}` : ""}${timeLeft ? ` - ${timeLeft}` : ""}`
 
+  // Build trailing items
+  const trailingItems: ListItemTrailingItem[] = []
+  if (size) trailingItems.push({ text: size })
+  if (activity) trailingItems.push({ text: activity })
+  if (timeLeft) trailingItems.push({ icon: Clock, text: timeLeft })
+
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          className={cn(
-            "relative flex w-full items-center gap-2 overflow-hidden rounded-md bg-secondary/30 px-2 py-1 text-xs",
-            "hover:bg-secondary/50"
-          )}
-        >
-          {/* Download icon */}
-          <Download className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
-          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-            <span className="min-w-0 truncate font-medium">{title}</span>
-          </div>
-          {/* Download info */}
-          <div className="flex shrink-0 items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
-            {size && (
-              <span className="text-secondary-foreground/50">{size}</span>
-            )}
-            {size && <span className="text-secondary-foreground/30">·</span>}
-            {activity && (
-              <span className="text-secondary-foreground/50">{activity}</span>
-            )}
-            {timeLeft && (
-              <>
-                <span className="text-secondary-foreground/30">·</span>
-                <Clock className="h-3 w-3" />
-                <span>{timeLeft}</span>
-              </>
-            )}
-          </div>
-          {/* Progress bar */}
-          <div
-            className="absolute bottom-0 left-0 h-px bg-primary/50"
-            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-          />
-        </div>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-xs text-xs">
-        {tooltipText}
-      </TooltipContent>
-    </Tooltip>
+    <ListItem
+      title={title}
+      progress={progress}
+      leading={Download}
+      trailing={trailingItems}
+      tooltip={tooltipText}
+    />
   )
 }
 

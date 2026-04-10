@@ -1,6 +1,7 @@
 import type { ServiceDefinition } from "./types"
 import type { DownloadItem } from "@/components/widgets"
 import { formatBytes, formatDuration } from "@/lib/utils/format"
+import { validateResponse, validateArrayResponse } from "./validate"
 import { ArrowDown, ArrowUp, Download, List } from "lucide-react"
 
 type QBittorrentData = {
@@ -117,9 +118,32 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
 
     if (!infoRes.ok) throw new Error(`qBittorrent error: ${infoRes.status}`)
 
-    const info = await infoRes.json()
-    const torrents = torrentsRes.ok ? await torrentsRes.json() : []
-    const queued = queuedRes.ok ? (await queuedRes.json()).length : 0
+    const info = validateResponse<{
+      dl_info_speed?: number
+      up_info_speed?: number
+    }>(await infoRes.json(), ["dl_info_speed", "up_info_speed"], [], {
+      adapter: "qbittorrent",
+    })
+    const torrents = torrentsRes.ok
+      ? validateArrayResponse<{
+          state: string
+          dlspeed: number
+          name: string
+          progress: number
+          eta: number
+          size: number
+        }>(await torrentsRes.json(), {
+          adapter: "qbittorrent",
+          optional: true,
+        })
+      : []
+    const queuedRaw = queuedRes.ok
+      ? validateArrayResponse(await queuedRes.json(), {
+          adapter: "qbittorrent",
+          optional: true,
+        })
+      : []
+    const queued = queuedRaw.length
 
     // Build active download list with state-priority sorting
     // State priority (like Homepage): downloading > forcedDL > metaDL > stalledDL > queuedDL > pausedDL

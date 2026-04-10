@@ -15,7 +15,7 @@ SERVICE_USER="$APP_NAME"
 SERVICE_FILE="/etc/systemd/system/$APP_NAME.service"
 PORT=3000
 GITHUB_REPO="https://github.com/DoomedRamen/labitat.git"
-NODE_MAJOR=20
+NODE_MAJOR=22
 
 # ── Colors ────────────────────────────────────────────────────────────────────
 RED='\033[0;31m'

@@ -79,12 +79,20 @@ describe("prowlarr definition", () => {
     })
 
     it("handles missing data with defaults", async () => {
-      vi.stubGlobal("fetch", () =>
-        Promise.resolve({
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/indexerstats")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ indexers: [] }),
+          })
+        }
+        // /indexer returns an array
+        return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({}),
+          json: () => Promise.resolve([]),
         })
-      )
+      })
+      vi.stubGlobal("fetch", mockFetch)
 
       const result = await prowlarrDefinition.fetchData!({
         url: "https://prowlarr.example.com",

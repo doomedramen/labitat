@@ -1,6 +1,7 @@
 import type { ServiceDefinition } from "./types"
 import type { DownloadItem } from "@/components/widgets"
 import { formatBytes, formatTimeLeft } from "@/lib/utils/format"
+import { validateResponse, validateArrayResponse } from "./validate"
 import { Film, Download, AlertTriangle, Search } from "lucide-react"
 
 type RadarrData = {
@@ -106,10 +107,41 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     if (!movieRes.ok) throw new Error(`Radarr error: ${movieRes.status}`)
     if (!missingRes.ok) throw new Error(`Radarr error: ${missingRes.status}`)
 
-    const queue = await queueRes.json()
-    const movies = await movieRes.json()
-    const missing = await missingRes.json()
-    const cutoff = cutoffRes.ok ? await cutoffRes.json() : { totalRecords: 0 }
+    type QueueRecord = {
+      size?: number
+      sizeleft?: number
+      estimatedCompletionTime?: string
+      trackedDownloadState?: string
+      status?: string
+      movie?: { title?: string }
+      title?: string
+    }
+    const queue = validateResponse<{
+      totalRecords?: number
+      records?: QueueRecord[]
+    }>(
+      await queueRes.json(),
+      ["totalRecords"],
+      [{ path: "records", type: "array" }],
+      { adapter: "radarr" }
+    )
+    const movies = validateArrayResponse(await movieRes.json(), {
+      adapter: "radarr",
+    })
+    const missing = validateResponse<{ totalRecords?: number }>(
+      await missingRes.json(),
+      ["totalRecords"],
+      [],
+      { adapter: "radarr" }
+    )
+    const cutoff = cutoffRes.ok
+      ? validateResponse<{ totalRecords?: number }>(
+          await cutoffRes.json(),
+          ["totalRecords"],
+          [],
+          { adapter: "radarr", optional: true }
+        )
+      : { totalRecords: 0 }
 
     const downloads: DownloadItem[] = []
     if (enableQueue && showActiveDownloads && queue.records) {

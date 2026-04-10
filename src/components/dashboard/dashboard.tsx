@@ -154,8 +154,12 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
       const newIndex = localGroups.findIndex((g) => g.id === overId)
       if (oldIndex !== newIndex) {
         const reordered = arrayMove(localGroups, oldIndex, newIndex)
+        const snapshot = localGroups
         setLocalGroups(reordered)
-        reorderGroups(reordered.map((g) => g.id))
+        reorderGroups(reordered.map((g) => g.id)).catch(() => {
+          setLocalGroups(snapshot)
+          toast.error("Failed to reorder groups")
+        })
       }
     } else if (type === "item") {
       // By the time drag ends, handleDragOver has already moved the item into
@@ -173,17 +177,27 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
       let finalItems = currentGroup.items
       if (overIdx !== -1 && activeIdx !== overIdx) {
         finalItems = arrayMove(currentGroup.items, activeIdx, overIdx)
+        const snapshot = localGroups
         setLocalGroups((prev) =>
           prev.map((g) =>
             g.id === currentGroupId ? { ...g, items: finalItems } : g
           )
         )
+        reorderItems(
+          currentGroupId,
+          finalItems.map((i) => i.id)
+        ).catch(() => {
+          setLocalGroups(snapshot)
+          toast.error("Failed to reorder items")
+        })
+      } else {
+        reorderItems(
+          currentGroupId,
+          finalItems.map((i) => i.id)
+        ).catch(() => {
+          toast.error("Failed to save item order")
+        })
       }
-
-      reorderItems(
-        currentGroupId,
-        finalItems.map((i) => i.id)
-      )
 
       // If cross-group, also persist the (now item-less) source group
       if (dragStartGroupId && dragStartGroupId !== currentGroupId) {
@@ -201,9 +215,12 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
   async function handleSaveTitle() {
     if (localTitle && localTitle.trim()) {
-      await updateDashboardTitle(localTitle.trim())
-      toast.success("Dashboard saved")
-      // Keep localTitle set so h1 shows the saved value immediately after exit
+      try {
+        await updateDashboardTitle(localTitle.trim())
+        toast.success("Dashboard saved")
+      } catch {
+        toast.error("Failed to save title")
+      }
     }
   }
 
@@ -364,6 +381,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
       {editMode && (
         <button
+          type="button"
           onClick={() => {
             setEditingGroup(null)
             setGroupDialogOpen(true)

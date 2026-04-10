@@ -1,7 +1,7 @@
 import type { ServiceDefinition } from "./types"
 import type { ActiveStream } from "@/components/widgets"
 import { formatBytes } from "@/lib/utils/format"
-import { buildStreamsTooltip } from "@/lib/utils/format-media"
+import { buildStreamsTooltip, formatMediaTitle } from "@/lib/utils/format-media"
 import { Activity, Cpu, Monitor, Play, Radio } from "lucide-react"
 
 type TautulliData = {
@@ -13,42 +13,6 @@ type TautulliData = {
   directPlayStreams: number
   directStreamStreams: number
   sessions?: ActiveStream[]
-}
-
-/**
- * Format media title with consistent SxxEyy formatting for TV episodes.
- * Shared across Plex, Jellyfin, Emby, and Tautulli adapters for UI consistency.
- */
-function formatMediaTitle(
-  title: string,
-  options: {
-    type?: string
-    seriesName?: string
-    season?: number | null
-    episode?: number | null
-    albumArtist?: string
-    album?: string
-  } = {}
-): { title: string; subtitle?: string } {
-  const { type, seriesName, season, episode, albumArtist, album } = options
-
-  // TV Episode: S01E05 - Episode Name
-  if (type === "episode" && seriesName) {
-    let formattedTitle = title
-    if (season != null && episode != null) {
-      formattedTitle = `S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")} - ${title}`
-    }
-    return { title: formattedTitle, subtitle: seriesName }
-  }
-
-  // Audio: Album - Song Name (subtitle = Artist)
-  if (type === "track" && albumArtist) {
-    const formattedTitle = album ? `${album} - ${title}` : title
-    return { title: formattedTitle, subtitle: albumArtist }
-  }
-
-  // Movie or other: just the title
-  return { title, subtitle: undefined }
 }
 
 function tautulliToPayload(data: TautulliData) {

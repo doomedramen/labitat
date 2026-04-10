@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { validateResponse } from "./validate"
 import { Globe, Ban, Percent, Shield, Search, Clock } from "lucide-react"
 
 type AdGuardData = {
@@ -97,7 +98,17 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
 
     if (!statsRes.ok) throw new Error(`AdGuard error: ${statsRes.status}`)
 
-    const stats = await statsRes.json()
+    const stats = validateResponse<{
+      num_dns_queries?: number
+      num_blocked_filtering?: number
+      num_blocked_parental?: number
+      num_blocked_safe_search?: number
+    }>(
+      await statsRes.json(),
+      ["num_dns_queries", "num_blocked_filtering"],
+      [],
+      { adapter: "adguard" }
+    )
 
     const totalQueries = stats.num_dns_queries ?? 0
     const totalBlocked = stats.num_blocked_filtering ?? 0
