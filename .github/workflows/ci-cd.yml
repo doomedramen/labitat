@@ -47,12 +47,15 @@ jobs:
           path: |
             ~/.pnpm-store
             node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node22-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-node22-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Rebuild native modules
+        run: pnpm rebuild better-sqlite3
 
       - name: Run ${{ matrix.task }}
         run: pnpm ${{ matrix.task }}
@@ -88,12 +91,15 @@ jobs:
           path: |
             ~/.pnpm-store
             node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node22-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-node22-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Rebuild native modules
+        run: pnpm rebuild better-sqlite3
 
       - name: Restore Playwright browsers cache
         if: matrix.test == 'e2e'
