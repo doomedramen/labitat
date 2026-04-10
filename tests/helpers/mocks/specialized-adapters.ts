@@ -16,9 +16,11 @@ export const embyMocks = {
     baseUrl = "https://emby.example.com",
     opts?: {
       streams?: number
+      albums?: number
       movies?: number
       tvShows?: number
       sessions?: Array<{
+        name: string
         seriesName?: string
         type: string
         playState: {
