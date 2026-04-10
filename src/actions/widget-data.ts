@@ -2,7 +2,7 @@
 
 import { fetchServiceData } from "./services"
 import { preloadDatapoints } from "@/lib/last-datapoints"
-import { requireAuth } from "@/lib/auth/guard"
+import { requireAuth, isAuthenticated } from "@/lib/auth/guard"
 import type { ServiceData } from "@/lib/adapters/types"
 
 export async function getWidgetData(itemId: string): Promise<ServiceData> {
@@ -31,6 +31,8 @@ export async function getBatchWidgetData(
 }
 
 export async function preloadAllDatapoints(itemIds: string[]) {
-  await requireAuth()
+  // Called during SSR — return empty data for unauthenticated users
+  // instead of throwing, so the dashboard can render the login UI
+  if (!(await isAuthenticated())) return {}
   return preloadDatapoints(itemIds)
 }
