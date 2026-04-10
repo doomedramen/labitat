@@ -1,5 +1,6 @@
 "use client"
 
+import { startTransition } from "react"
 import { Check, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logout } from "@/actions/auth"
@@ -16,7 +17,10 @@ export function EditBar({ onDone }: EditBarProps) {
           Drag to reorder. Click items to edit.
         </p>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => logout()}>
+          <Button
+            variant="outline"
+            onClick={() => startTransition(() => logout())}
+          >
             <LogOut className="mr-1.5 h-4 w-4" />
             Sign out
           </Button>
