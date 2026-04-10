@@ -12,6 +12,10 @@ pre-commit:
       glob: "*.{ts,tsx,js,jsx,md,json}"
       run: pnpm format --write {staged_files}
       stage_fixed: true
+    generate-icons:
+      glob: "logo.svg"
+      run: pnpm generate-icons
+      stage_fixed: true
     generate-migration:
       glob: "src/lib/db/schema.ts"
       run: npx drizzle-kit generate

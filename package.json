@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.282",
+  "version": "0.0.283",
   "type": "module",
   "private": true,
   "engines": {
@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit",
     "check-adapters": "node scripts/check-adapters.mjs",
     "check-doc-coverage": "node scripts/check-doc-coverage.mjs",
+    "generate-icons": "node scripts/generate-icons.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
