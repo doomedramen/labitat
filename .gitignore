@@ -35,6 +35,8 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 /data
-/docs
+/docs/.vitepress/cache
+/docs/node_modules
 /test-results
 homepage/
+/docs/.vitepress/dist
