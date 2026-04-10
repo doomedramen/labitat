@@ -1,7 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import type { ActiveStream } from "@/components/widgets"
 import { formatDuration, formatTimeAgo } from "@/lib/utils/format"
-import { Camera, Clock, Tag, AlertTriangle } from "lucide-react"
+import { Camera, Clock, Tag } from "lucide-react"
 
 type FrigateEvent = {
   id: string

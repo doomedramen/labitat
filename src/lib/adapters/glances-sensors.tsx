@@ -2,6 +2,7 @@ import type { ServiceDefinition } from "./types"
 import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { ResourceBar } from "@/components/widgets"
 import { Thermometer, Fan } from "lucide-react"
+import type { WidgetPayload } from "./widget-types"
 
 type GlancesSensorsData = {
   _status?: "ok" | "warn" | "error"
@@ -9,6 +10,47 @@ type GlancesSensorsData = {
   cpuTemp: number
   maxTemp: number
   fanSpeed: number
+}
+
+function glancesSensorsToPayload(data: GlancesSensorsData): WidgetPayload {
+  const cpu = data.cpuTemp ?? 0
+  const max = data.maxTemp ?? 0
+  const fan = data.fanSpeed ?? 0
+  const tempPct = Math.min(100, Math.round(cpu))
+
+  return {
+    stats: [
+      {
+        id: "cpu-temp",
+        value: `${cpu}°C`,
+        label: "CPU Temp",
+        icon: Thermometer,
+      },
+      {
+        id: "max-temp",
+        value: `${max}°C`,
+        label: "Max Temp",
+        icon: Thermometer,
+      },
+      {
+        id: "fan-speed",
+        value: fan > 0 ? `${fan} RPM` : "N/A",
+        label: "Fan Speed",
+        icon: Fan,
+      },
+    ],
+    customComponent: (
+      <div className="mt-2">
+        <ResourceBar
+          label="CPU Temp"
+          value={tempPct}
+          hint={`${cpu}°C`}
+          warningAt={60}
+          criticalAt={80}
+        />
+      </div>
+    ),
+  }
 }
 
 function GlancesSensorsWidget({
@@ -80,7 +122,11 @@ export const glancesSensorsDefinition: ServiceDefinition<GlancesSensorsData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
+    const baseUrl = config.url?.replace(/\/$/, "")
+    if (!baseUrl) {
+      throw new Error("Glances URL is required")
+    }
+
     const headers: Record<string, string> = {}
 
     if (config.username && config.password) {
@@ -121,5 +167,6 @@ export const glancesSensorsDefinition: ServiceDefinition<GlancesSensorsData> = {
       fanSpeed,
     }
   },
+  toPayload: glancesSensorsToPayload,
   renderWidget: GlancesSensorsWidget,
 }

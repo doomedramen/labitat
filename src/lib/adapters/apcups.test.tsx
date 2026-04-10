@@ -93,16 +93,14 @@ STATUS   : ONLINE
       mockSocket.write = vi.fn()
       mockSocket.destroy = vi.fn()
 
-      vi.mocked(net.createConnection).mockImplementation(
-        (_options, callback) => {
-          // Simulate connection error
-          setTimeout(
-            () => mockSocket.emit("error", new Error("Connection refused")),
-            5
-          )
-          return mockSocket
-        }
-      )
+      vi.mocked(net.createConnection).mockImplementation(() => {
+        // Simulate connection error
+        setTimeout(
+          () => mockSocket.emit("error", new Error("Connection refused")),
+          5
+        )
+        return mockSocket
+      })
 
       await expect(
         apcupsDefinition.fetchData!({

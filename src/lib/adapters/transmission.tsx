@@ -14,10 +14,6 @@ type TransmissionData = {
   downloads?: DownloadItem[]
 }
 
-function formatSpeed(bytesPerSec: number): string {
-  return `${formatBytes(bytesPerSec)}/s`
-}
-
 function transmissionToPayload(data: TransmissionData) {
   return {
     stats: [

@@ -506,12 +506,9 @@ export function ActiveStreamItem({
 export function ActiveStreamList({
   streams,
   onTogglePlayback,
-  expandSingleStream: _expandSingleStream = true,
 }: {
   streams: ActiveStream[]
   onTogglePlayback?: (streamId: string) => void
-  /** When true and only one stream exists, show it in expanded two-row layout (like Homepage) */
-  expandSingleStream?: boolean
 }) {
   if (streams.length === 0) return null
 

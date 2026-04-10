@@ -109,4 +109,35 @@ describe("glances-sensors definition", () => {
       expect(typeof glancesSensorsDefinition.renderWidget).toBe("function")
     })
   })
+
+  describe("toPayload", () => {
+    it("converts data to widget payload", () => {
+      const payload = glancesSensorsDefinition.toPayload!({
+        _status: "ok",
+        cpuTemp: 65,
+        maxTemp: 70,
+        fanSpeed: 1500,
+      })
+
+      expect(payload.stats).toHaveLength(3)
+      expect(payload.stats[0].id).toBe("cpu-temp")
+      expect(payload.stats[0].value).toBe("65°C")
+      expect(payload.stats[1].id).toBe("max-temp")
+      expect(payload.stats[1].value).toBe("70°C")
+      expect(payload.stats[2].id).toBe("fan-speed")
+      expect(payload.stats[2].value).toBe("1500 RPM")
+      expect(payload.customComponent).toBeDefined()
+    })
+
+    it("handles zero fan speed", () => {
+      const payload = glancesSensorsDefinition.toPayload!({
+        _status: "ok",
+        cpuTemp: 50,
+        maxTemp: 55,
+        fanSpeed: 0,
+      })
+
+      expect(payload.stats[2].value).toBe("N/A")
+    })
+  })
 })
