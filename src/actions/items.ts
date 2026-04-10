@@ -12,14 +12,14 @@ import { getService } from "@/lib/adapters"
 async function buildServiceConfig(
   serviceType: string | null,
   formData: FormData
-): Promise<{ configEnc: string | null; serviceUrl: string | null }> {
+): Promise<{ config: Record<string, string>; serviceUrl: string | null }> {
   if (!serviceType) {
-    return { configEnc: null, serviceUrl: null }
+    return { config: {}, serviceUrl: null }
   }
 
   const adapter = getService(serviceType)
   if (!adapter) {
-    return { configEnc: null, serviceUrl: null }
+    return { config: {}, serviceUrl: null }
   }
 
   const config: Record<string, string> = {}
@@ -44,12 +44,7 @@ async function buildServiceConfig(
     }
   }
 
-  const configEnc =
-    Object.keys(config).length > 0
-      ? await encrypt(JSON.stringify(config))
-      : null
-
-  return { configEnc, serviceUrl }
+  return { config, serviceUrl }
 }
 
 export async function createItem(groupId: string, formData: FormData) {
@@ -60,10 +55,12 @@ export async function createItem(groupId: string, formData: FormData) {
   const rawServiceType = (formData.get("serviceType") as string) || null
   const serviceType =
     rawServiceType && getService(rawServiceType) ? rawServiceType : null
-  const { configEnc, serviceUrl } = await buildServiceConfig(
-    serviceType,
-    formData
-  )
+  const { config, serviceUrl } = await buildServiceConfig(serviceType, formData)
+
+  const configEnc =
+    Object.keys(config).length > 0
+      ? await encrypt(JSON.stringify(config))
+      : null
 
   const [result] = await db
     .select({ maxOrder: max(items.order) })
@@ -105,10 +102,38 @@ export async function updateItem(id: string, formData: FormData) {
   const rawServiceType = (formData.get("serviceType") as string) || null
   const serviceType =
     rawServiceType && getService(rawServiceType) ? rawServiceType : null
-  const { configEnc, serviceUrl } = await buildServiceConfig(
-    serviceType,
-    formData
-  )
+
+  // Fetch existing item to preserve password fields on edit
+  const [existingItem] = await db.select().from(items).where(eq(items.id, id))
+  let oldConfig: Record<string, string> = {}
+  if (existingItem?.configEnc) {
+    try {
+      oldConfig = JSON.parse(await decrypt(existingItem.configEnc))
+    } catch {
+      // Can't decrypt old config — start fresh
+    }
+  }
+
+  const { config, serviceUrl } = await buildServiceConfig(serviceType, formData)
+
+  // Preserve existing password values when the form leaves them blank
+  const adapter = serviceType ? getService(serviceType) : null
+  if (adapter) {
+    for (const field of adapter.configFields) {
+      if (
+        field.type === "password" &&
+        !config[field.key] &&
+        oldConfig[field.key]
+      ) {
+        config[field.key] = oldConfig[field.key]
+      }
+    }
+  }
+
+  const configEnc =
+    Object.keys(config).length > 0
+      ? await encrypt(JSON.stringify(config))
+      : (existingItem?.configEnc ?? null)
 
   const pollingMsStr = formData.get("pollingMs") as string
   const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) : null

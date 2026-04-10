@@ -14,6 +14,7 @@ type EmbyData = {
   showActiveStreams?: boolean
   sessions?: ActiveStream[]
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function embyToPayload(data: EmbyData) {
   return {
@@ -106,8 +107,10 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
     const headers = { "X-Emby-Token": config.apiKey }
 
     const [sessionsRes, countsRes] = await Promise.all([
-      fetch(`${baseUrl}/Sessions?ActiveWithinSeconds=120`, { headers }),
-      fetch(`${baseUrl}/Items/Counts`, { headers }),
+      fetchWithTimeout(`${baseUrl}/Sessions?ActiveWithinSeconds=120`, {
+        headers,
+      }),
+      fetchWithTimeout(`${baseUrl}/Items/Counts`, { headers }),
     ])
 
     if (!sessionsRes.ok) {

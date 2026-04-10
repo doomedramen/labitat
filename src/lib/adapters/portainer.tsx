@@ -8,6 +8,7 @@ type PortainerData = {
   stopped: number
   total: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function portainerToPayload(data: PortainerData) {
   return {
@@ -79,7 +80,7 @@ export const portainerDefinition: ServiceDefinition<PortainerData> = {
     const endpointId = config.endpointId ?? 1
 
     // First, authenticate to get a JWT token
-    const authRes = await fetch(`${baseUrl}/api/auth`, {
+    const authRes = await fetchWithTimeout(`${baseUrl}/api/auth`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -102,7 +103,7 @@ export const portainerDefinition: ServiceDefinition<PortainerData> = {
     const headers = { Authorization: `Bearer ${token}` }
 
     // Fetch containers from configured endpoint (like Homepage)
-    const containersRes = await fetch(
+    const containersRes = await fetchWithTimeout(
       `${baseUrl}/api/endpoints/${endpointId}/docker/containers/json?all=1`,
       { headers }
     )

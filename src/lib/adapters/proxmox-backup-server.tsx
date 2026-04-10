@@ -23,6 +23,7 @@ type ProxmoxBackupServerData = {
   memoryTotal: string // human readable
   failedTasks: number // failed tasks in last 24h
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function proxmoxBackupServerToPayload(data: ProxmoxBackupServerData) {
   return {
@@ -106,14 +107,17 @@ export const proxmoxBackupServerDefinition: ServiceDefinition<ProxmoxBackupServe
       const baseUrl = config.url.replace(/\/$/, "")
 
       // Login
-      const loginRes = await fetch(`${baseUrl}/api2/json/access/ticket`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: config.username,
-          password: config.password,
-        }),
-      })
+      const loginRes = await fetchWithTimeout(
+        `${baseUrl}/api2/json/access/ticket`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: config.username,
+            password: config.password,
+          }),
+        }
+      )
 
       if (!loginRes.ok) throw new Error(`PBS login failed: ${loginRes.status}`)
 
@@ -127,9 +131,11 @@ export const proxmoxBackupServerDefinition: ServiceDefinition<ProxmoxBackupServe
 
       // Get datastores, host status, and recent tasks in parallel
       const [dsRes, statusRes, tasksRes] = await Promise.all([
-        fetch(`${baseUrl}/api2/json/admin/datastore`, { headers }),
-        fetch(`${baseUrl}/api2/json/nodes/localhost/status`, { headers }),
-        fetch(
+        fetchWithTimeout(`${baseUrl}/api2/json/admin/datastore`, { headers }),
+        fetchWithTimeout(`${baseUrl}/api2/json/nodes/localhost/status`, {
+          headers,
+        }),
+        fetchWithTimeout(
           `${baseUrl}/api2/json/nodes/localhost/tasks?errors-only=1&limit=100`,
           { headers }
         ),
@@ -151,7 +157,7 @@ export const proxmoxBackupServerDefinition: ServiceDefinition<ProxmoxBackupServe
 
         // Count snapshots for each datastore
         try {
-          const snapRes = await fetch(
+          const snapRes = await fetchWithTimeout(
             `${baseUrl}/api2/json/admin/datastore/${ds.store}/snapshots`,
             { headers }
           )

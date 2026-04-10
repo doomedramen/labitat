@@ -9,6 +9,7 @@ type GrafanaData = {
   totalAlerts: number
   alertsTriggered: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function grafanaToPayload(data: GrafanaData) {
   return {
@@ -76,8 +77,8 @@ export const grafanaDefinition: ServiceDefinition<GrafanaData> = {
 
     // Fetch stats and alerts (like Homepage)
     const [statsRes, alertsRes] = await Promise.all([
-      fetch(`${baseUrl}/api/admin/stats`, { headers }),
-      fetch(`${baseUrl}/api/alerts`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/admin/stats`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/alerts`, { headers }),
     ])
 
     if (!statsRes.ok) {

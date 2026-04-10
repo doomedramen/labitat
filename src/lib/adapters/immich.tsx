@@ -9,6 +9,7 @@ type ImmichData = {
   videos: number
   storage: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function formatStorage(bytes: number): string {
   if (bytes >= 1_000_000_000_000) {
@@ -101,9 +102,12 @@ export const immichDefinition: ServiceDefinition<ImmichData> = {
     // Get version to determine correct stats endpoint
     const versionEndpoint =
       version === "2" ? "/server/version" : "/server-info/version"
-    const versionRes = await fetch(`${baseUrl}/api${versionEndpoint}`, {
-      headers,
-    })
+    const versionRes = await fetchWithTimeout(
+      `${baseUrl}/api${versionEndpoint}`,
+      {
+        headers,
+      }
+    )
 
     let statsEndpoint = "/server-info/stats"
     if (version === "1" && versionRes.ok) {
@@ -119,7 +123,9 @@ export const immichDefinition: ServiceDefinition<ImmichData> = {
       statsEndpoint = "/server/statistics"
     }
 
-    const statsRes = await fetch(`${baseUrl}/api${statsEndpoint}`, { headers })
+    const statsRes = await fetchWithTimeout(`${baseUrl}/api${statsEndpoint}`, {
+      headers,
+    })
 
     if (!statsRes.ok) {
       if (statsRes.status === 401) throw new Error("Invalid API key")

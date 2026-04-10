@@ -14,6 +14,7 @@ type GlancesData = {
   load1: number
   uptime: string
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function GlancesWidget({
   cpuPercent,
@@ -97,8 +98,8 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
     }
 
     const [quickRes, memRes] = await Promise.all([
-      fetch(`${baseUrl}/api/4/quicklook`, { headers }),
-      fetch(`${baseUrl}/api/4/mem`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/4/quicklook`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/4/mem`, { headers }),
     ])
 
     if (!quickRes.ok) throw new Error(`Glances error: ${quickRes.status}`)

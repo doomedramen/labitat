@@ -83,7 +83,7 @@ describe("radarr definition", () => {
       expect(mockFetch).toHaveBeenCalledTimes(4)
       expect(mockFetch).toHaveBeenCalledWith(
         "https://radarr.example.com/api/v3/queue?pageSize=50&includeMovie=true",
-        { headers: { "X-Api-Key": "test-key" } }
+        expect.objectContaining({ headers: { "X-Api-Key": "test-key" } })
       )
     })
 

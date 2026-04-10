@@ -114,11 +114,11 @@ describe("traefik definition", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://traefik.example.com/api/overview",
-        {
+        expect.objectContaining({
           headers: {
             Authorization: `Basic ${Buffer.from("admin:secret").toString("base64")}`,
           },
-        }
+        })
       )
     })
   })

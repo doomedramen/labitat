@@ -26,6 +26,7 @@ type UnifiData = {
   wlanUsers?: number
   gatewayUptime?: string // human readable (e.g., "15.3 days")
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function unifiToPayload(data: UnifiData) {
   const stats: StatItem[] = [
@@ -141,7 +142,7 @@ export const unifiDefinition: ServiceDefinition<UnifiData> = {
     const siteName = config.site ?? "default"
 
     // Login
-    const loginRes = await fetch(`${baseUrl}/api/login`, {
+    const loginRes = await fetchWithTimeout(`${baseUrl}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -156,9 +157,12 @@ export const unifiDefinition: ServiceDefinition<UnifiData> = {
     const headers = { Cookie: cookie }
 
     // Get site health data (matches Homepage's approach)
-    const sitesRes = await fetch(`${baseUrl}/api/s/default/stat/sites`, {
-      headers,
-    })
+    const sitesRes = await fetchWithTimeout(
+      `${baseUrl}/api/s/default/stat/sites`,
+      {
+        headers,
+      }
+    )
 
     if (!sitesRes.ok) throw new Error(`UniFi error: ${sitesRes.status}`)
 
@@ -204,8 +208,8 @@ export const unifiDefinition: ServiceDefinition<UnifiData> = {
 
     // Also get client counts for backwards compatibility
     const [clientsRes, devicesRes] = await Promise.all([
-      fetch(`${baseUrl}/api/s/default/stat/sta/all`, { headers }),
-      fetch(`${baseUrl}/api/s/default/rest/device`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/s/default/stat/sta/all`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/s/default/rest/device`, { headers }),
     ])
 
     const clients = clientsRes.ok ? await clientsRes.json() : { data: [] }

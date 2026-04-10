@@ -13,6 +13,7 @@ type TransmissionData = {
   showDownloads?: boolean
   downloads?: DownloadItem[]
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function transmissionToPayload(data: TransmissionData) {
   return {
@@ -106,7 +107,7 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     // First request to get CSRF token (Transmission returns 409 with token)
     let csrfToken = ""
     try {
-      const initRes = await fetch(rpcEndpoint, {
+      const initRes = await fetchWithTimeout(rpcEndpoint, {
         method: "POST",
         headers: {
           Authorization: `Basic ${auth}`,
@@ -135,7 +136,7 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     }
 
     // Now make the actual request with CSRF token
-    const res = await fetch(rpcEndpoint, {
+    const res = await fetchWithTimeout(rpcEndpoint, {
       method: "POST",
       headers: {
         Authorization: `Basic ${auth}`,

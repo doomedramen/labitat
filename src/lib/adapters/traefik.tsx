@@ -8,6 +8,7 @@ type TraefikData = {
   services: number
   middlewares: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function traefikToPayload(data: TraefikData) {
   return {
@@ -80,7 +81,9 @@ export const traefikDefinition: ServiceDefinition<TraefikData> = {
     }
 
     // Fetch Traefik overview endpoint
-    const overviewRes = await fetch(`${baseUrl}/api/overview`, { headers })
+    const overviewRes = await fetchWithTimeout(`${baseUrl}/api/overview`, {
+      headers,
+    })
 
     if (!overviewRes.ok) {
       if (overviewRes.status === 401) throw new Error("Invalid credentials")

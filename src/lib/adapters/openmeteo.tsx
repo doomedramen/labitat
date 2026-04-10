@@ -10,6 +10,7 @@ type OpenMeteoData = {
   weatherCode: number
   isDay: boolean
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 // WMO weather code descriptions
 const weatherDescriptions: Record<number, string> = {
@@ -96,7 +97,7 @@ export const openmeteoDefinition: ServiceDefinition<OpenMeteoData> = {
     const lon = config.longitude
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&temperature_unit=celsius&wind_speed_unit=kmh`
 
-    const res = await fetch(url)
+    const res = await fetchWithTimeout(url)
     if (!res.ok) throw new Error(`Open-Meteo error: ${res.status}`)
 
     const data = await res.json()

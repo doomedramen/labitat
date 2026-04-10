@@ -95,11 +95,11 @@ describe("glances-percpu definition", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://glances.example.com/api/4/percpu",
-        {
+        expect.objectContaining({
           headers: {
             Authorization: `Basic ${btoa("admin:secret")}`,
           },
-        }
+        })
       )
     })
   })

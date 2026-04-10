@@ -50,7 +50,7 @@ describe("bazarr definition", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://bazarr.example.com/api/badges",
-        { headers: { "X-Api-Key": "test-key" } }
+        expect.objectContaining({ headers: { "X-Api-Key": "test-key" } })
       )
       expect(result._status).toBe("ok")
       expect(result.missingMovies).toBe(339)

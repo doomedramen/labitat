@@ -118,11 +118,11 @@ describe("glances-processes definition", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://glances.example.com/api/4/processlist",
-        {
+        expect.objectContaining({
           headers: {
             Authorization: `Basic ${btoa("admin:secret")}`,
           },
-        }
+        })
       )
     })
   })

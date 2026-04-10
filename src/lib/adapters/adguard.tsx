@@ -12,6 +12,7 @@ type AdGuardData = {
   safeSearchBlocked: number
   latency: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function adguardToPayload(data: AdGuardData) {
   return {
@@ -92,7 +93,7 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
 
     const startTime = Date.now()
     const [statsRes] = await Promise.all([
-      fetch(`${baseUrl}/control/stats`, { headers }),
+      fetchWithTimeout(`${baseUrl}/control/stats`, { headers }),
     ])
     const latency = Date.now() - startTime
 

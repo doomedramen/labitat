@@ -7,6 +7,7 @@ type JackettData = {
   configured: number
   errored: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function jackettToPayload(data: JackettData) {
   return {
@@ -68,7 +69,7 @@ export const jackettDefinition: ServiceDefinition<JackettData> = {
     // If password is set, we need to authenticate first to get cookie
     if (config.password) {
       const loginUrl = `${baseUrl}/UI/Dashboard`
-      const loginRes = await fetch(loginUrl, {
+      const loginRes = await fetchWithTimeout(loginUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -87,7 +88,7 @@ export const jackettDefinition: ServiceDefinition<JackettData> = {
     }
 
     // Fetch configured indexers
-    const indexersRes = await fetch(
+    const indexersRes = await fetchWithTimeout(
       `${baseUrl}/api/v2.0/indexers?apikey=${config.apiKey}&configured=true`,
       { headers }
     )

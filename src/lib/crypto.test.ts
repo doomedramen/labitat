@@ -20,9 +20,9 @@ describe("crypto", () => {
       const original = "hello world"
       const encrypted = await encrypt(original)
 
-      // Encrypted format: iv:authTag:ciphertext (all base64)
+      // Encrypted format: salt:iv:authTag:ciphertext (all base64)
       const parts = encrypted.split(":")
-      expect(parts).toHaveLength(3)
+      expect(parts).toHaveLength(4)
 
       const decrypted = await decrypt(encrypted)
       expect(decrypted).toBe(original)
@@ -47,12 +47,48 @@ describe("crypto", () => {
       const encrypted1 = await encrypt(original)
       const encrypted2 = await encrypt(original)
 
-      // Random IV means each encryption is unique
+      // Random IV + salt means each encryption is unique
       expect(encrypted1).not.toBe(encrypted2)
 
       // But both decrypt to the same value
       expect(await decrypt(encrypted1)).toBe(original)
       expect(await decrypt(encrypted2)).toBe(original)
+    })
+
+    it("produces different salts for each encryption", async () => {
+      const encrypted1 = await encrypt("test")
+      const encrypted2 = await encrypt("test")
+
+      const salt1 = encrypted1.split(":")[0]
+      const salt2 = encrypted2.split(":")[0]
+
+      expect(salt1).not.toBe(salt2)
+    })
+  })
+
+  describe("backwards compatibility", () => {
+    it("decrypts legacy 3-part format (deterministic salt)", async () => {
+      // This is a known-good 3-part ciphertext encrypted with the test SECRET_KEY
+      // using the old deterministic-salt algorithm.
+      // We generate it by manually doing the old encrypt logic:
+      const { createCipheriv, randomBytes, scryptSync } = await import("crypto")
+      const secret =
+        "this-is-a-test-secret-key-that-is-at-least-32-characters-long"
+      const salt = Buffer.from(secret.slice(0, 16))
+      const key = scryptSync(secret, salt, 32)
+      const iv = randomBytes(16)
+      const cipher = createCipheriv("aes-256-gcm", key, iv)
+      let ciphertext = cipher.update("legacy test", "utf8", "base64")
+      ciphertext += cipher.final("base64")
+      const authTag = cipher.getAuthTag()
+      const legacyEncrypted = `${iv.toString("base64")}:${authTag.toString("base64")}:${ciphertext}`
+
+      // Verify it's 3-part format
+      expect(legacyEncrypted.split(":")).toHaveLength(3)
+
+      // Decrypt with the updated decrypt function
+      const decrypted = await decrypt(legacyEncrypted)
+      expect(decrypted).toBe("legacy test")
     })
   })
 
@@ -75,20 +111,21 @@ describe("crypto", () => {
 
     it("throws on tampered ciphertext", async () => {
       const encrypted = await encrypt("secret data")
-      const [iv, authTag, ciphertext] = encrypted.split(":")
+      const [salt, iv, authTag, ciphertext] = encrypted.split(":")
 
       // Tamper with the ciphertext
-      const tampered = `${iv}:${authTag}:${ciphertext.slice(0, -2)}XX`
+      const tampered = `${salt}:${iv}:${authTag}:${ciphertext!.slice(0, -2)}XX`
 
       await expect(decrypt(tampered)).rejects.toThrow()
     })
 
     it("throws on tampered auth tag", async () => {
       const encrypted = await encrypt("secret data")
-      const [iv, authTag, ciphertext] = encrypted.split(":")
+      const parts = encrypted.split(":")
+      const [salt, iv, , ciphertext] = parts
 
       // Tamper with the auth tag
-      const tampered = `${iv}:${Buffer.from("tampered").toString("base64")}:${ciphertext}`
+      const tampered = `${salt}:${iv}:${Buffer.from("tampered").toString("base64")}:${ciphertext}`
 
       await expect(decrypt(tampered)).rejects.toThrow()
     })
@@ -99,8 +136,6 @@ describe("crypto", () => {
       // We test this indirectly by verifying the mock provides a valid key.
       // The source code checks: if (!secret || secret.length < 32)
       // Since our mock provides a 52-char key, encrypt succeeds.
-      // A separate test file with a short-key mock would be needed
-      // to test the rejection path (module caching prevents inline re-mock).
       const result = await encrypt("test")
       expect(result).toContain(":")
     })

@@ -15,6 +15,7 @@ type RadarrData = {
   enableQueue?: boolean
   downloads?: DownloadItem[]
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function radarrToPayload(data: RadarrData) {
   return {
@@ -95,12 +96,19 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     const enableQueue = config.enableQueue !== "false" // Default to true
 
     const [queueRes, movieRes, missingRes, cutoffRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v3/queue?pageSize=50&includeMovie=true`, {
+      fetchWithTimeout(
+        `${baseUrl}/api/v3/queue?pageSize=50&includeMovie=true`,
+        {
+          headers,
+        }
+      ),
+      fetchWithTimeout(`${baseUrl}/api/v3/movie`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v3/wanted/missing?pageSize=1`, {
         headers,
       }),
-      fetch(`${baseUrl}/api/v3/movie`, { headers }),
-      fetch(`${baseUrl}/api/v3/wanted/missing?pageSize=1`, { headers }),
-      fetch(`${baseUrl}/api/v3/wanted/cutoff?pageSize=1`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v3/wanted/cutoff?pageSize=1`, {
+        headers,
+      }),
     ])
 
     if (!queueRes.ok) throw new Error(`Radarr error: ${queueRes.status}`)

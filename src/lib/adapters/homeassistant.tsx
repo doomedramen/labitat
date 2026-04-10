@@ -9,6 +9,7 @@ type HomeAssistantData = {
   lights: number
   switches: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function homeassistantToPayload(data: HomeAssistantData) {
   return {
@@ -74,7 +75,7 @@ export const homeassistantDefinition: ServiceDefinition<HomeAssistantData> = {
       "Content-Type": "application/json",
     }
 
-    const res = await fetch(`${baseUrl}/api/states`, { headers })
+    const res = await fetchWithTimeout(`${baseUrl}/api/states`, { headers })
 
     if (!res.ok) {
       if (res.status === 401) throw new Error("Invalid access token")

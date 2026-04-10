@@ -10,6 +10,7 @@ type UnmanicData = {
   completedToday: number
   totalCompleted: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function unmanicToPayload(data: UnmanicData) {
   return {
@@ -80,8 +81,8 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
     }
 
     const [workersRes, pendingRes] = await Promise.all([
-      fetch(`${baseUrl}/unmanic/api/v2/workers/status`, { headers }),
-      fetch(`${baseUrl}/unmanic/api/v2/pending/tasks`, {
+      fetchWithTimeout(`${baseUrl}/unmanic/api/v2/workers/status`, { headers }),
+      fetchWithTimeout(`${baseUrl}/unmanic/api/v2/pending/tasks`, {
         method: "POST",
         headers,
         body: JSON.stringify({}),

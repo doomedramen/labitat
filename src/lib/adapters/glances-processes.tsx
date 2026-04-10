@@ -1,6 +1,7 @@
 import type { ServiceDefinition } from "./types"
 
 export type { GlancesProcessesData }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 type ProcessInfo = {
   name: string
@@ -78,7 +79,9 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
       const sortBy = config.sortBy ?? "cpu"
 
       // Fetch process list from Glances
-      const res = await fetch(`${baseUrl}/api/4/processlist`, { headers })
+      const res = await fetchWithTimeout(`${baseUrl}/api/4/processlist`, {
+        headers,
+      })
       if (!res.ok) throw new Error(`Glances error: ${res.status}`)
 
       const procList = await res.json()

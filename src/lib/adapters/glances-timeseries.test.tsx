@@ -126,19 +126,19 @@ describe("glances-timeseries definition", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://glances.example.com/api/4/cpu/history/20",
-        {
+        expect.objectContaining({
           headers: {
             Authorization: `Basic ${btoa("admin:secret")}`,
           },
-        }
+        })
       )
       expect(mockFetch).toHaveBeenCalledWith(
         "https://glances.example.com/api/4/mem/history/20",
-        {
+        expect.objectContaining({
           headers: {
             Authorization: `Basic ${btoa("admin:secret")}`,
           },
-        }
+        })
       )
     })
 

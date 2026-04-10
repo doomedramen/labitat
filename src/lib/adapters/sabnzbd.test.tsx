@@ -131,7 +131,8 @@ describe("sabnzbd definition", () => {
       })
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://sabnzbd.example.com/api?output=json&apikey=secret-key&mode=queue"
+        "https://sabnzbd.example.com/api?output=json&apikey=secret-key&mode=queue",
+        expect.objectContaining({})
       )
     })
   })

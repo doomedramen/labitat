@@ -9,6 +9,7 @@ type GlancesPerCpuData = {
   avgCpu: number
   coreUsages: number[]
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function CoreBar({ pct }: { pct: number }) {
   const barColor =
@@ -92,7 +93,7 @@ export const glancesPerCpuDefinition: ServiceDefinition<GlancesPerCpuData> = {
         `Basic ${btoa(`${config.username}:${config.password}`)}`
     }
 
-    const res = await fetch(`${baseUrl}/api/4/percpu`, { headers })
+    const res = await fetchWithTimeout(`${baseUrl}/api/4/percpu`, { headers })
     if (!res.ok) throw new Error(`Glances error: ${res.status}`)
 
     const percpu = await res.json()

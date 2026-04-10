@@ -122,7 +122,8 @@ describe("uptime-kuma definition", () => {
       })
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://uptime-kuma.example.com/api/status-page?slug=default"
+        "https://uptime-kuma.example.com/api/status-page?slug=default",
+        expect.objectContaining({})
       )
     })
   })

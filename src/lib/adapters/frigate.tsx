@@ -11,6 +11,7 @@ type FrigateEvent = {
   endTime?: number
   thumbnail?: string
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 type FrigateData = {
   _status?: "ok" | "warn" | "error"
@@ -108,7 +109,7 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
 
     // If credentials provided, login first
     if (config.username && config.password) {
-      const loginRes = await fetch(`${baseUrl}/api/login`, {
+      const loginRes = await fetchWithTimeout(`${baseUrl}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -131,11 +132,14 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
 
     // Fetch stats and recent events in parallel
     const [statsRes, eventsRes] = await Promise.all([
-      fetch(`${baseUrl}/api/stats`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/stats`, { headers }),
       showRecentEvents
-        ? fetch(`${baseUrl}/api/events?include_thumbnails=0&limit=5`, {
-            headers,
-          })
+        ? fetchWithTimeout(
+            `${baseUrl}/api/events?include_thumbnails=0&limit=5`,
+            {
+              headers,
+            }
+          )
         : Promise.resolve(null),
     ])
 

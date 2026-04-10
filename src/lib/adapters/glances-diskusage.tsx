@@ -12,6 +12,7 @@ type GlancesDiskUsageData = {
   total: string
   free: string
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function GlancesDiskUsageWidget({
   usedPercent,
@@ -100,7 +101,7 @@ export const glancesDiskUsageDefinition: ServiceDefinition<GlancesDiskUsageData>
       }
 
       const mountPoint = config.mountPoint || "/"
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `${baseUrl}/api/4/fs/${encodeURIComponent(mountPoint)}`,
         { headers }
       )

@@ -8,6 +8,7 @@ type ReadarrData = {
   wanted: number
   books: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function readarrToPayload(data: ReadarrData) {
   return {
@@ -65,9 +66,9 @@ export const readarrDefinition: ServiceDefinition<ReadarrData> = {
     const headers = { "X-Api-Key": config.apiKey }
 
     const [booksRes, wantedRes, queueRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/book`, { headers }),
-      fetch(`${baseUrl}/api/v1/wanted/missing`, { headers }),
-      fetch(`${baseUrl}/api/v1/queue/status`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v1/book`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v1/wanted/missing`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v1/queue/status`, { headers }),
     ])
 
     if (!booksRes.ok) {

@@ -7,6 +7,7 @@ type GenericPingData = {
   status: "up" | "down"
   responseTime: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function genericPingToPayload(data: GenericPingData) {
   const isOnline = data.status === "up"
@@ -62,16 +63,12 @@ export const genericPingDefinition: ServiceDefinition<GenericPingData> = {
     const startTime = Date.now()
 
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), timeout)
+      await fetchWithTimeout(
+        url,
+        { method: "HEAD", cache: "no-cache" },
+        timeout
+      )
 
-      await fetch(url, {
-        method: "HEAD",
-        signal: controller.signal,
-        cache: "no-cache",
-      })
-
-      clearTimeout(timeoutId)
       const responseTime = Date.now() - startTime
 
       return {

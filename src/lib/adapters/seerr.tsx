@@ -9,6 +9,7 @@ type SeerrData = {
   available: number
   processing: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function seerrToPayload(data: SeerrData) {
   return {
@@ -71,7 +72,9 @@ export const seerrDefinition: ServiceDefinition<SeerrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const res = await fetch(`${baseUrl}/api/v1/request/count`, { headers })
+    const res = await fetchWithTimeout(`${baseUrl}/api/v1/request/count`, {
+      headers,
+    })
     if (!res.ok) throw new Error(`Overseerr error: ${res.status}`)
 
     const counts = await res.json()

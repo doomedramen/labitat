@@ -24,16 +24,13 @@ The middleware only handles the `/setup` redirect. After setup, all pages are se
 
 ---
 
-### MEDIUM: Deterministic Salt in Key Derivation
+### MEDIUM: Deterministic Salt in Key Derivation — FIXED
 
-**File:** `src/lib/crypto.ts:23-25`
+**File:** `src/lib/crypto.ts`
 
-```ts
-const salt = Buffer.from(secret.slice(0, SALT_LENGTH))
-return scryptSync(secret, salt, KEY_LENGTH)
-```
+The salt was derived from the secret itself, making the derived key identical for a given `SECRET_KEY`.
 
-The salt is derived from the secret itself, making the derived key identical for a given `SECRET_KEY`. Should generate a random per-ciphertext salt and store it alongside the ciphertext (similar to how IV and authTag are already stored).
+**Fix applied:** Generate random per-ciphertext salt via `randomBytes()`, stored as 4-part format `salt:iv:authTag:ciphertext`. Backwards-compatible decrypt handles old 3-part ciphertext.
 
 ---
 
@@ -61,11 +58,13 @@ The dummy hash `"$2b$12$invalidhashpadding..."` is malformed. Depending on the b
 
 ---
 
-### LOW: Password Field Erased on Item Edit
+### LOW: Password Field Erased on Item Edit — FIXED
 
-**File:** `src/actions/items.ts:36-44, 100-136`
+**File:** `src/actions/items.ts`
 
-When editing an item, leaving a password field blank excludes it from the new config object, but `updateItem` always overwrites `configEnc` entirely. The stored password is silently erased rather than preserved.
+When editing an item, leaving a password field blank excluded it from the new config object, and `updateItem` overwrote `configEnc` entirely.
+
+**Fix applied:** Refactored `buildServiceConfig` to return raw config, added password merge logic in `updateItem` that preserves existing password values when the form leaves them blank.
 
 ---
 
@@ -129,9 +128,11 @@ Easy to confuse when copying between adapters. Should use a shared `parseBoolean
 
 ---
 
-### MEDIUM: No Request Timeout on Adapters
+### MEDIUM: No Request Timeout on Adapters — FIXED
 
-**File:** Only `generic-ping.tsx:66` uses `AbortController`. All other adapters make bare `fetch()` calls with no timeout. A hanging backend service blocks the polling loop indefinitely.
+Only `generic-ping.tsx` used `AbortController`. All other adapters made bare `fetch()` calls with no timeout.
+
+**Fix applied:** Created `fetchWithTimeout` utility with 10s default timeout. All 41 adapters updated to use it. `generic-ping` simplified to use the utility with its configurable timeout.
 
 ---
 

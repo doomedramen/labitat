@@ -14,6 +14,7 @@ type JellyfinData = {
   showActiveStreams?: boolean
   sessions?: ActiveStream[]
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function jellyfinToPayload(data: JellyfinData) {
   return {
@@ -112,8 +113,10 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
     const headers = { Authorization: authHeader }
 
     const [sessionsRes, countsRes] = await Promise.all([
-      fetch(`${baseUrl}/Sessions?ActiveWithinSeconds=120`, { headers }),
-      fetch(`${baseUrl}/Items/Counts`, { headers }),
+      fetchWithTimeout(`${baseUrl}/Sessions?ActiveWithinSeconds=120`, {
+        headers,
+      }),
+      fetchWithTimeout(`${baseUrl}/Items/Counts`, { headers }),
     ])
 
     if (!sessionsRes.ok) {

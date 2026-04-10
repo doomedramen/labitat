@@ -9,6 +9,7 @@ type ProwlarrData = {
   grabs: number
   indexers: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function prowlarrToPayload(data: ProwlarrData) {
   return {
@@ -62,8 +63,8 @@ export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
     const headers = { "X-Api-Key": config.apiKey }
 
     const [indexerRes, statsRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/indexer`, { headers }),
-      fetch(`${baseUrl}/api/v1/indexerstats`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v1/indexer`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v1/indexerstats`, { headers }),
     ])
 
     if (!indexerRes.ok) throw new Error(`Prowlarr error: ${indexerRes.status}`)

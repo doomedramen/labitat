@@ -83,7 +83,7 @@ describe("sonarr definition", () => {
       expect(mockFetch).toHaveBeenCalledTimes(4)
       expect(mockFetch).toHaveBeenCalledWith(
         "https://sonarr.example.com/api/v3/queue?pageSize=50&includeSeries=true",
-        { headers: { "X-Api-Key": "test-key" } }
+        expect.objectContaining({ headers: { "X-Api-Key": "test-key" } })
       )
     })
 

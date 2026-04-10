@@ -136,11 +136,11 @@ describe("adguard definition", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://adguard.example.com/control/stats",
-        {
+        expect.objectContaining({
           headers: {
             Authorization: `Basic ${btoa("admin:secret")}`,
           },
-        }
+        })
       )
     })
   })

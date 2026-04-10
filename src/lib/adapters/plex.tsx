@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "./types"
-import type { ActiveStream } from "@/components/widgets"
 import { Play, Music, Film, Tv } from "lucide-react"
 import { buildStreamsTooltip, formatMediaTitle } from "@/lib/utils/format-media"
 
@@ -17,6 +16,7 @@ type PlexSession = {
     hardwareEncoding?: boolean
   }
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 type PlexData = {
   _status?: "ok" | "warn" | "error"
@@ -132,8 +132,8 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
     const showActiveStreams = config.showActiveStreams === "true"
 
     const [sessionsRes, libraryRes] = await Promise.all([
-      fetch(`${baseUrl}/status/sessions`, { headers }),
-      fetch(`${baseUrl}/library/sections`, { headers }),
+      fetchWithTimeout(`${baseUrl}/status/sessions`, { headers }),
+      fetchWithTimeout(`${baseUrl}/library/sections`, { headers }),
     ])
 
     if (!sessionsRes.ok) {
@@ -171,7 +171,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
             : `${baseUrl}/library/sections/${key}/all`
 
         try {
-          const res = await fetch(endpoint, { headers })
+          const res = await fetchWithTimeout(endpoint, { headers })
           if (!res.ok) return
 
           const text = await res.text()

@@ -15,6 +15,7 @@ type ProxmoxData = {
   memoryUsed: string // human readable
   memoryTotal: string // human readable
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function proxmoxToPayload(data: ProxmoxData) {
   return {
@@ -95,14 +96,17 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
     const baseUrl = config.url.replace(/\/$/, "")
 
     // Login
-    const loginRes = await fetch(`${baseUrl}/api2/json/access/ticket`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: config.username,
-        password: config.password,
-      }),
-    })
+    const loginRes = await fetchWithTimeout(
+      `${baseUrl}/api2/json/access/ticket`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: config.username,
+          password: config.password,
+        }),
+      }
+    )
 
     if (!loginRes.ok)
       throw new Error(`Proxmox login failed: ${loginRes.status}`)
@@ -112,12 +116,15 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
     const csrfToken = loginData.data.CSRFPreventionToken
 
     // Get cluster resources
-    const res = await fetch(`${baseUrl}/api2/json/cluster/resources`, {
-      headers: {
-        Cookie: `PVEAuthCookie=${ticket}`,
-        CSRFPreventionToken: csrfToken,
-      },
-    })
+    const res = await fetchWithTimeout(
+      `${baseUrl}/api2/json/cluster/resources`,
+      {
+        headers: {
+          Cookie: `PVEAuthCookie=${ticket}`,
+          CSRFPreventionToken: csrfToken,
+        },
+      }
+    )
 
     if (!res.ok) throw new Error(`Proxmox error: ${res.status}`)
 

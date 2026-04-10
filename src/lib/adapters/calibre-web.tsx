@@ -9,6 +9,7 @@ type CalibreWebData = {
   series: number
   formats: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function calibreWebToPayload(data: CalibreWebData) {
   return {
@@ -74,7 +75,7 @@ export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
     const baseUrl = config.url.replace(/\/$/, "")
 
     // Login to get session cookie
-    const loginRes = await fetch(`${baseUrl}/login`, {
+    const loginRes = await fetchWithTimeout(`${baseUrl}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -94,7 +95,9 @@ export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
     const headers = { Cookie: cookie }
 
     // Use OPDS stats endpoint (JSON API - more reliable than HTML scraping)
-    const statsRes = await fetch(`${baseUrl}/opds/stats`, { headers })
+    const statsRes = await fetchWithTimeout(`${baseUrl}/opds/stats`, {
+      headers,
+    })
 
     if (!statsRes.ok) {
       throw new Error(`Calibre-Web stats error: ${statsRes.status}`)

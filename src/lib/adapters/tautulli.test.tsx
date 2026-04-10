@@ -199,7 +199,8 @@ describe("tautulli definition", () => {
       })
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://tautulli.example.com/api/v2?apikey=secret-key&cmd=get_activity"
+        "https://tautulli.example.com/api/v2?apikey=secret-key&cmd=get_activity",
+        expect.objectContaining({})
       )
     })
   })

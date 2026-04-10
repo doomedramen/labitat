@@ -14,6 +14,7 @@ type UptimeKumaData = {
     hoursAgo: number
   }
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function uptimeKumaToPayload(data: UptimeKumaData) {
   const stats: StatItem[] = [
@@ -83,8 +84,8 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
 
     // Uptime Kuma uses REST API (like Homepage)
     const [_statusRes, heartbeatRes] = await Promise.all([
-      fetch(`${baseUrl}/api/status-page?slug=${slug}`),
-      fetch(`${baseUrl}/api/status-page/heartbeat?slug=${slug}`),
+      fetchWithTimeout(`${baseUrl}/api/status-page?slug=${slug}`),
+      fetchWithTimeout(`${baseUrl}/api/status-page/heartbeat?slug=${slug}`),
     ])
 
     if (!_statusRes.ok || !heartbeatRes.ok) {

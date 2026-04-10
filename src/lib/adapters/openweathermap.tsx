@@ -18,6 +18,7 @@ type OpenWeatherMapData = {
   unitSymbol: string
   speedUnit: string
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function openweathermapToPayload(data: OpenWeatherMapData) {
   return {
@@ -101,7 +102,7 @@ export const openweathermapDefinition: ServiceDefinition<OpenWeatherMapData> = {
     const speedUnit = units === "imperial" ? "mph" : "m/s"
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${config.latitude}&lon=${config.longitude}&appid=${config.apiKey}&units=${units}`
 
-    const res = await fetch(url)
+    const res = await fetchWithTimeout(url)
     if (!res.ok) throw new Error(`OpenWeatherMap error: ${res.status}`)
 
     const data = await res.json()

@@ -1,6 +1,7 @@
 import type { ServiceDefinition } from "./types"
 
 export type { GlancesTimeseriesData }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 type DataPoint = {
   timestamp: number
@@ -64,8 +65,8 @@ export const glancesTimeseriesDefinition: ServiceDefinition<GlancesTimeseriesDat
 
       // Fetch CPU and memory history in parallel
       const [cpuRes, memRes] = await Promise.all([
-        fetch(`${baseUrl}/api/4/cpu/history/20`, { headers }),
-        fetch(`${baseUrl}/api/4/mem/history/20`, { headers }),
+        fetchWithTimeout(`${baseUrl}/api/4/cpu/history/20`, { headers }),
+        fetchWithTimeout(`${baseUrl}/api/4/mem/history/20`, { headers }),
       ])
 
       if (!cpuRes.ok)

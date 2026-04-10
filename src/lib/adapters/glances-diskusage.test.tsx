@@ -119,11 +119,11 @@ describe("glances-diskusage definition", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://glances.example.com/api/4/fs/%2F",
-        {
+        expect.objectContaining({
           headers: {
             Authorization: `Basic ${btoa("admin:secret")}`,
           },
-        }
+        })
       )
     })
   })

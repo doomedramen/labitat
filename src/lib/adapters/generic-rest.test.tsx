@@ -147,11 +147,14 @@ describe("generic-rest definition", () => {
         method: "POST",
       })
 
-      expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: "{}",
-      })
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.example.com/status",
+        expect.objectContaining({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        })
+      )
     })
 
     it("includes Bearer token when apiKey provided", async () => {
@@ -168,14 +171,17 @@ describe("generic-rest definition", () => {
         apiKey: "secret-token",
       })
 
-      expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/status", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer secret-token",
-        },
-        body: undefined,
-      })
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.example.com/status",
+        expect.objectContaining({
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer secret-token",
+          },
+          body: undefined,
+        })
+      )
     })
   })
 

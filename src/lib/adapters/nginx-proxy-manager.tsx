@@ -9,6 +9,7 @@ type NginxProxyManagerData = {
   streams: number
   deadHosts: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function nginxProxyManagerToPayload(data: NginxProxyManagerData) {
   return {
@@ -137,7 +138,7 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
 
       // Login if no valid cached token
       if (!token) {
-        const loginRes = await fetch(`${baseUrl}/api/tokens`, {
+        const loginRes = await fetchWithTimeout(`${baseUrl}/api/tokens`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -162,13 +163,13 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
 
       // Get counts with automatic retry on 403 (expired token)
       async function fetchWithRetry(url: string): Promise<number> {
-        const res = await fetch(url, { headers })
+        const res = await fetchWithTimeout(url, { headers })
 
         // If token expired, re-login and retry
         if (res.status === 403) {
           tokenCache.delete(cacheKey)
 
-          const loginRes = await fetch(`${baseUrl}/api/tokens`, {
+          const loginRes = await fetchWithTimeout(`${baseUrl}/api/tokens`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -188,7 +189,9 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
           setCachedToken(cacheKey, token, expiresIn)
 
           const retryHeaders = { Authorization: `Bearer ${token}` }
-          const retryRes = await fetch(url, { headers: retryHeaders })
+          const retryRes = await fetchWithTimeout(url, {
+            headers: retryHeaders,
+          })
           return retryRes.ok ? parseCount(await retryRes.json()) : 0
         }
 

@@ -13,6 +13,7 @@ type SABnzbdData = {
   showDownloads?: boolean
   downloads?: DownloadItem[]
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function sabnzbdToPayload(data: SABnzbdData) {
   return {
@@ -74,7 +75,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
     const showDownloads = config.showDownloads !== "false"
     const url = `${baseUrl}/api?output=json&apikey=${config.apiKey}&mode=queue`
 
-    const res = await fetch(url)
+    const res = await fetchWithTimeout(url)
     if (!res.ok) throw new Error(`SABnzbd error: ${res.status}`)
 
     type SABQueue = {

@@ -115,12 +115,12 @@ describe("homeassistant definition", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://hass.example.com/api/states",
-        {
+        expect.objectContaining({
           headers: {
             Authorization: "Bearer my-secret-token",
             "Content-Type": "application/json",
           },
-        }
+        })
       )
     })
   })

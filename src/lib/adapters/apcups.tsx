@@ -10,6 +10,7 @@ type APCUPSData = {
   temperature: number
   status: string
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function apcupsToPayload(data: APCUPSData) {
   const time = data.timeLeft ?? 0
@@ -131,7 +132,7 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
         throw new Error("URL is required for HTTP CGI connection")
       }
 
-      const res = await fetch(`${baseUrl}/multimon.cgi`)
+      const res = await fetchWithTimeout(`${baseUrl}/multimon.cgi`)
 
       if (!res.ok) throw new Error(`APC UPS error: ${res.status}`)
 

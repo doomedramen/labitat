@@ -107,11 +107,11 @@ describe("glances definition", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://glances.example.com/api/4/quicklook",
-        {
+        expect.objectContaining({
           headers: {
             Authorization: `Basic ${btoa("admin:secret")}`,
           },
-        }
+        })
       )
     })
 

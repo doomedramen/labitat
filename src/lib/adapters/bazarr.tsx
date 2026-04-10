@@ -7,6 +7,7 @@ type BazarrData = {
   missingMovies: number
   missingEpisodes: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function bazarrToPayload(data: BazarrData) {
   return {
@@ -55,7 +56,7 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const headers = { "X-Api-Key": config.apiKey }
 
-    const res = await fetch(`${baseUrl}/api/badges`, { headers })
+    const res = await fetchWithTimeout(`${baseUrl}/api/badges`, { headers })
 
     if (!res.ok) throw new Error(`Bazarr error: ${res.status}`)
 

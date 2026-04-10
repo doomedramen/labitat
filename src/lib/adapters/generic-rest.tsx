@@ -7,6 +7,7 @@ type GenericRestData = {
   value: string
   label: string
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function genericRestToPayload(data: GenericRestData) {
   return {
@@ -82,7 +83,7 @@ export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
     }
 
     try {
-      const res = await fetch(url, {
+      const res = await fetchWithTimeout(url, {
         method,
         headers,
         body: method === "POST" ? "{}" : undefined,

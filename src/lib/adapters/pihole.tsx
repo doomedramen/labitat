@@ -9,6 +9,7 @@ type PiholeData = {
   percentBlocked: string
   domainsBlocked: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function piholeToPayload(data: PiholeData) {
   return {
@@ -74,7 +75,7 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
     let summaryData: Record<string, unknown> = {}
 
     // Try to get session token for v6 API
-    const sessionRes = await fetch(`${baseUrl}/api/auth`, {
+    const sessionRes = await fetchWithTimeout(`${baseUrl}/api/auth`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: config.password }),
@@ -85,16 +86,19 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
       const sessionData = await sessionRes.json()
       const token = sessionData.session?.sid
 
-      const summaryRes = await fetch(`${baseUrl}/api/stats/summary`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const summaryRes = await fetchWithTimeout(
+        `${baseUrl}/api/stats/summary`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
 
       if (summaryRes.ok) {
         summaryData = await summaryRes.json()
       }
     } else {
       // Fall back to v5 API
-      const summaryRes = await fetch(
+      const summaryRes = await fetchWithTimeout(
         `${baseUrl}/admin/api.php?summaryRaw&auth=${config.password}`
       )
 

@@ -14,6 +14,7 @@ type TautulliData = {
   directStreamStreams: number
   sessions?: ActiveStream[]
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function tautulliToPayload(data: TautulliData) {
   return {
@@ -91,7 +92,7 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
     const baseUrl = config.url.replace(/\/$/, "")
     const url = `${baseUrl}/api/v2?apikey=${config.apiKey}&cmd=get_activity`
 
-    const res = await fetch(url)
+    const res = await fetchWithTimeout(url)
     if (!res.ok) throw new Error(`Tautulli error: ${res.status}`)
 
     const data = await res.json()

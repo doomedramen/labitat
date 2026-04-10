@@ -14,6 +14,7 @@ type SonarrData = {
   enableQueue?: boolean
   downloads?: DownloadItem[]
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 /**
  * Format episode title with SxxEyy format for consistency with media adapters.
@@ -122,12 +123,19 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
     const enableQueue = config.enableQueue !== "false" // Default to true
 
     const [queueRes, seriesRes, missingRes, cutoffRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v3/queue?pageSize=50&includeSeries=true`, {
+      fetchWithTimeout(
+        `${baseUrl}/api/v3/queue?pageSize=50&includeSeries=true`,
+        {
+          headers,
+        }
+      ),
+      fetchWithTimeout(`${baseUrl}/api/v3/series`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v3/wanted/missing?pageSize=1`, {
         headers,
       }),
-      fetch(`${baseUrl}/api/v3/series`, { headers }),
-      fetch(`${baseUrl}/api/v3/wanted/missing?pageSize=1`, { headers }),
-      fetch(`${baseUrl}/api/v3/wanted/cutoff?pageSize=1`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v3/wanted/cutoff?pageSize=1`, {
+        headers,
+      }),
     ])
 
     if (!queueRes.ok) throw new Error(`Sonarr error: ${queueRes.status}`)

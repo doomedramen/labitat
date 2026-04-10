@@ -8,6 +8,7 @@ type LidarrData = {
   wanted: number
   artists: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function lidarrToPayload(data: LidarrData) {
   return {
@@ -65,9 +66,9 @@ export const lidarrDefinition: ServiceDefinition<LidarrData> = {
     const headers = { "X-Api-Key": config.apiKey }
 
     const [artistsRes, wantedRes, queueRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/artist`, { headers }),
-      fetch(`${baseUrl}/api/v1/wanted/missing`, { headers }),
-      fetch(`${baseUrl}/api/v1/queue/status`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v1/artist`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v1/wanted/missing`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v1/queue/status`, { headers }),
     ])
 
     if (!artistsRes.ok) {

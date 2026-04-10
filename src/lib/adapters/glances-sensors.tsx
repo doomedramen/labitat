@@ -11,6 +11,7 @@ type GlancesSensorsData = {
   maxTemp: number
   fanSpeed: number
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function glancesSensorsToPayload(data: GlancesSensorsData): WidgetPayload {
   const cpu = data.cpuTemp ?? 0
@@ -134,7 +135,7 @@ export const glancesSensorsDefinition: ServiceDefinition<GlancesSensorsData> = {
         `Basic ${btoa(`${config.username}:${config.password}`)}`
     }
 
-    const res = await fetch(`${baseUrl}/api/4/sensors`, { headers })
+    const res = await fetchWithTimeout(`${baseUrl}/api/4/sensors`, { headers })
     if (!res.ok) throw new Error(`Glances error: ${res.status}`)
 
     const sensors = await res.json()

@@ -14,6 +14,7 @@ type QBittorrentData = {
   showDownloads?: boolean
   downloads?: DownloadItem[]
 }
+import { fetchWithTimeout } from "./fetch-with-timeout"
 
 function formatSpeed(bytesPerSec: number): string {
   return `${formatBytes(bytesPerSec)}/s`
@@ -92,7 +93,7 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
     const showDownloads = config.showDownloads !== "false"
 
     // Login
-    const loginRes = await fetch(`${baseUrl}/api/v2/auth/login`, {
+    const loginRes = await fetchWithTimeout(`${baseUrl}/api/v2/auth/login`, {
       method: "POST",
       body: new URLSearchParams({
         username: config.username,
@@ -111,9 +112,13 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
 
     // Get transfer info, torrent list, and queued count
     const [infoRes, torrentsRes, queuedRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v2/transfer/info`, { headers }),
-      fetch(`${baseUrl}/api/v2/torrents/info?filter=downloading`, { headers }),
-      fetch(`${baseUrl}/api/v2/torrents/info?filter=queuedDL`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v2/transfer/info`, { headers }),
+      fetchWithTimeout(`${baseUrl}/api/v2/torrents/info?filter=downloading`, {
+        headers,
+      }),
+      fetchWithTimeout(`${baseUrl}/api/v2/torrents/info?filter=queuedDL`, {
+        headers,
+      }),
     ])
 
     if (!infoRes.ok) throw new Error(`qBittorrent error: ${infoRes.status}`)
