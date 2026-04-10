@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Mock data for infrastructure and server adapters (Proxmox, Nginx Proxy Manager, Portainer, etc.)
  */

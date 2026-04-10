@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Mock data for networking and monitoring adapters (AdGuard, Pi-hole, Glances, OpenMeteo, etc.)
  */

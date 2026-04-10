@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Mock data for download and media adapters (SABnzbd, qBittorrent, Transmission, Plex, Tautulli, Bazarr, Jackett)
  */

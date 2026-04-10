@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Mock data for specialized and remaining adapters (Emby, Jellyfin, Immich, Frigate, Home Assistant, Grafana, Uptime Kuma, Matrix, DateTime, Search, Pipes, Generic)
  */
@@ -542,7 +543,7 @@ export const pipesMocks = {
 
 export const genericPingMocks = {
   success: (
-    _baseUrl = "https://example.com",
+    baseUrl = "https://example.com",
     _latency = 150
   ): MockResponse[] => [
     successResponse(urlPatterns.base(baseUrl), "", 200, {
@@ -552,12 +553,12 @@ export const genericPingMocks = {
 
   error: (baseUrl = "https://example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.base(_baseUrl),
+      urlPatterns.base(baseUrl),
       { error: `HTTP ${status}` },
       status
     ),
 
-  networkError: (_baseUrl = "https://example.com"): MockResponse =>
+  networkError: (baseUrl = "https://example.com"): MockResponse =>
     networkErrorResponse(urlPatterns.base(baseUrl)),
 }
 
