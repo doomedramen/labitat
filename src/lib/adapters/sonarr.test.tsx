@@ -130,6 +130,8 @@ describe("sonarr definition", () => {
                 records: [
                   {
                     title: "S01E01 Test Episode",
+                    seasonNumber: 1,
+                    episodeNumber: 1,
                     size: 1073741824,
                     sizeleft: 536870912,
                     trackedDownloadState: "downloading",
@@ -170,7 +172,7 @@ describe("sonarr definition", () => {
 
       expect(result.downloads).toHaveLength(1)
       expect(result.downloads![0].title).toBe(
-        "Test Series: S01E01 Test Episode"
+        "Test Series: S01E01 - Test Episode"
       )
       expect(result.downloads![0].progress).toBe(50)
       expect(result.downloads![0].activity).toBe("Downloading")
@@ -188,6 +190,8 @@ describe("sonarr definition", () => {
                 records: [
                   {
                     title: "S01E02 Another Episode",
+                    seasonNumber: 1,
+                    episodeNumber: 2,
                     size: 2147483648,
                     sizeleft: 0,
                     trackedDownloadState: "importing",

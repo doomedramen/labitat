@@ -23,7 +23,7 @@ describe("StatCard", () => {
 
   it("renders icon when provided", () => {
     const TestIcon = () => <span data-testid="test-icon">🔥</span>
-    render(
+    renderWithTooltipProvider(
       <StatCard
         id="test-2"
         value="Test"
@@ -39,7 +39,7 @@ describe("StatCard", () => {
 
   it("places icon below value in DOM order", () => {
     const TestIcon = () => <span data-testid="test-icon">🔥</span>
-    const { container } = render(
+    const { container } = renderWithTooltipProvider(
       <StatCard
         id="test-3"
         value="42"
@@ -229,7 +229,8 @@ describe("DownloadItem", () => {
   it("renders download item with all props", () => {
     renderWithTooltipProvider(<DownloadItem {...baseProps} />)
     expect(screen.getByText("Test Download")).toBeInTheDocument()
-    expect(screen.getByText(/downloading - 5 min/)).toBeInTheDocument()
+    expect(screen.getByText("downloading")).toBeInTheDocument()
+    expect(screen.getByText("5 min")).toBeInTheDocument()
   })
 
   it("renders without optional props", () => {
@@ -243,10 +244,13 @@ describe("DownloadItem", () => {
         title="With Size"
         progress={50}
         size="2 GB"
+        activity="downloading"
         timeLeft="10 min"
       />
     )
-    expect(screen.getByText(/2 GB - downloading - 10 min/)).toBeInTheDocument()
+    expect(screen.getByText("2 GB")).toBeInTheDocument()
+    expect(screen.getByText("downloading")).toBeInTheDocument()
+    expect(screen.getByText("10 min")).toBeInTheDocument()
   })
 
   it("shows activity without timeLeft", () => {

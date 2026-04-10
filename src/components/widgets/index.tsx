@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities"
 import type { DragEndEvent } from "@dnd-kit/core"
 import { useCallback } from "react"
 import { cn } from "@/lib/utils"
-import { Clock, Pause, Play, Monitor, Cpu } from "lucide-react"
+import { Clock, Download, Pause, Play, Monitor, Cpu } from "lucide-react"
 import {
   Tooltip,
   TooltipContent,
@@ -205,6 +205,8 @@ export function StatCard({
 
   const showIcon = displayMode === "icon" && icon
   const showLabel = displayMode === "label"
+  // When in icon mode, use label as tooltip fallback so all icons have hover explanations
+  const effectiveTooltip = tooltip ?? (showIcon ? label : undefined)
 
   // When sortable+editMode, make the whole card the drag activator
   const dragProps = sortable && editMode ? { ...attributes, ...listeners } : {}
@@ -246,18 +248,18 @@ export function StatCard({
       )}
       {showLabel ? (
         <span className="text-secondary-foreground/60">{label}</span>
-      ) : !showIcon && tooltip ? (
-        <span className="sr-only">{tooltip}</span>
+      ) : !showIcon && effectiveTooltip ? (
+        <span className="sr-only">{effectiveTooltip}</span>
       ) : null}
     </div>
   )
 
-  if (tooltip) {
+  if (effectiveTooltip) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>{inner}</TooltipTrigger>
         <TooltipContent side="top" className="text-xs">
-          {tooltip}
+          {effectiveTooltip}
         </TooltipContent>
       </Tooltip>
     )
@@ -552,27 +554,44 @@ export function DownloadItem({
   activity,
   size,
 }: DownloadItem) {
-  const tooltipText = `${title}${size ? ` - ${size}` : ""}${timeLeft ? ` - ${timeLeft}` : ""}`
+  const tooltipText = `${title}${size ? ` - ${size}` : ""}${activity ? ` - ${activity}` : ""}${timeLeft ? ` - ${timeLeft}` : ""}`
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="relative flex h-5 items-center gap-0 overflow-hidden rounded-md px-2 text-xs">
+        <div
+          className={cn(
+            "relative flex w-full items-center gap-2 overflow-hidden rounded-md bg-secondary/30 px-2 py-1 text-xs",
+            "hover:bg-secondary/50"
+          )}
+        >
+          {/* Download icon */}
+          <Download className="h-3 w-3 shrink-0 text-secondary-foreground/50" />
+          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+            <span className="min-w-0 truncate font-medium">{title}</span>
+          </div>
+          {/* Download info */}
+          <div className="flex shrink-0 items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
+            {size && (
+              <span className="text-secondary-foreground/50">{size}</span>
+            )}
+            {size && <span className="text-secondary-foreground/30">·</span>}
+            {activity && (
+              <span className="text-secondary-foreground/50">{activity}</span>
+            )}
+            {timeLeft && (
+              <>
+                <span className="text-secondary-foreground/30">·</span>
+                <Clock className="h-3 w-3" />
+                <span>{timeLeft}</span>
+              </>
+            )}
+          </div>
+          {/* Progress bar */}
           <div
-            className="absolute z-0 h-5 rounded-md bg-muted"
-            style={{
-              width: `${Math.min(100, Math.max(0, progress))}%`,
-            }}
+            className="absolute bottom-0 left-0 h-px bg-primary/50"
+            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
           />
-          <div className="relative z-10 mr-2 ml-2 h-4 grow self-center text-xs">
-            <div className="absolute w-full overflow-hidden text-left text-ellipsis whitespace-nowrap">
-              {title}
-            </div>
-          </div>
-          <div className="z-10 mr-1.5 flex justify-end self-center overflow-hidden pl-1 text-xs text-ellipsis whitespace-nowrap text-muted-foreground">
-            {size && `${size} - `}
-            {timeLeft ? `${activity ?? "downloading"} - ${timeLeft}` : activity}
-          </div>
         </div>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-xs text-xs">

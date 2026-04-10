@@ -15,6 +15,34 @@ type SonarrData = {
   downloads?: DownloadItem[]
 }
 
+/**
+ * Format episode title with SxxEyy format for consistency with media adapters.
+ */
+function formatEpisodeTitle(
+  title: string,
+  options: {
+    seriesName?: string
+    seasonNumber?: number
+    episodeNumber?: number
+  } = {}
+): string {
+  const { seriesName, seasonNumber, episodeNumber } = options
+
+  let formattedTitle = title
+
+  // Add SXXEYY prefix if we have season and episode numbers
+  if (seasonNumber != null && episodeNumber != null) {
+    formattedTitle = `S${String(seasonNumber).padStart(2, "0")}E${String(episodeNumber).padStart(2, "0")} - ${title}`
+  }
+
+  // Prepend series name if available
+  if (seriesName) {
+    return `${seriesName}: ${formattedTitle}`
+  }
+
+  return formattedTitle
+}
+
 function sonarrToPayload(data: SonarrData) {
   return {
     stats: [
@@ -150,13 +178,23 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
           activity = "Queued"
         }
 
-        // Build title with series info if available
-        // Matches Homepage's getTitle function
+        // Build title with series info and SXXEYY formatting
+        // Uses seasonNumber/episodeNumber from Sonarr API for consistent formatting
         const seriesName = record.series?.title
-        const episodeTitle = record.episode?.title ?? record.title
-        const displayTitle = seriesName
-          ? `${seriesName}: ${episodeTitle}`
-          : episodeTitle
+
+        // Extract episode title - strip SXXEYY prefix from record.title if present
+        // since we'll format it ourselves with seasonNumber/episodeNumber
+        let episodeTitle = record.episode?.title ?? record.title ?? "Unknown"
+        if (record.title && !record.episode?.title) {
+          // Remove leading SXXEYY pattern from record.title (e.g., "S01E01 Test Episode" -> "Test Episode")
+          episodeTitle = record.title.replace(/^S\d{2}E\d{2}\s+/, "").trim()
+        }
+
+        const displayTitle = formatEpisodeTitle(episodeTitle, {
+          seriesName,
+          seasonNumber: record.seasonNumber,
+          episodeNumber: record.episodeNumber,
+        })
 
         downloads.push({
           title: displayTitle ?? "Unknown",
