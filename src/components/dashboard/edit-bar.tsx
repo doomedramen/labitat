@@ -1,7 +1,8 @@
 "use client"
 
-import { Check } from "lucide-react"
+import { Check, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { logout } from "@/actions/auth"
 
 interface EditBarProps {
   onDone: () => void
@@ -14,10 +15,16 @@ export function EditBar({ onDone }: EditBarProps) {
         <p className="text-sm text-muted-foreground">
           Drag to reorder. Click items to edit.
         </p>
-        <Button onClick={onDone}>
-          <Check className="mr-1.5 h-4 w-4" />
-          Done
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => logout()}>
+            <LogOut className="mr-1.5 h-4 w-4" />
+            Sign out
+          </Button>
+          <Button onClick={onDone}>
+            <Check className="mr-1.5 h-4 w-4" />
+            Done
+          </Button>
+        </div>
       </div>
     </div>
   )
