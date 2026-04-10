@@ -1,6 +1,7 @@
 "use server"
 
 import { redirect } from "next/navigation"
+import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import bcrypt from "bcryptjs"
 import { nanoid } from "nanoid"
@@ -122,7 +123,9 @@ export async function login(
 }
 
 export async function logout() {
+  "use server"
+
   const session = await getSession()
   session.destroy()
-  redirect("/")
+  revalidatePath("/")
 }
