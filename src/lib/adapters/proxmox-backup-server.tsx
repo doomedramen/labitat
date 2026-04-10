@@ -1,5 +1,13 @@
 import type { ServiceDefinition } from "./types"
-import { Database, Camera, HardDrive, Archive } from "lucide-react"
+import { formatBytes } from "@/lib/utils/format"
+import {
+  Database,
+  Camera,
+  HardDrive,
+  AlertTriangle,
+  Cpu,
+  MemoryStick,
+} from "lucide-react"
 
 type ProxmoxBackupServerData = {
   _status?: "ok" | "warn" | "error"
@@ -8,14 +16,12 @@ type ProxmoxBackupServerData = {
   snapshots: number
   usedSpace: string
   totalSpace: string
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B"
-  const k = 1024
-  const sizes = ["B", "KB", "MB", "GB", "TB"]
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
+  usagePercent: number // datastore usage percentage
+  cpuUsage: number // percentage 0-100
+  memoryUsage: number // percentage 0-100
+  memoryUsed: string // human readable
+  memoryTotal: string // human readable
+  failedTasks: number // failed tasks in last 24h
 }
 
 function proxmoxBackupServerToPayload(data: ProxmoxBackupServerData) {
@@ -34,18 +40,35 @@ function proxmoxBackupServerToPayload(data: ProxmoxBackupServerData) {
         icon: Camera,
       },
       {
-        id: "used",
-        value: data.usedSpace ?? "—",
-        label: "Used",
+        id: "usage",
+        value: `${data.usagePercent.toFixed(1)}%`,
+        label: "Usage",
         icon: HardDrive,
+        tooltip: `${data.usedSpace} / ${data.totalSpace}`,
       },
       {
-        id: "total",
-        value: data.totalSpace ?? "—",
-        label: "Total",
-        icon: Archive,
+        id: "failed",
+        value: data.failedTasks >= 100 ? "99+" : String(data.failedTasks),
+        label: "Failed",
+        icon: AlertTriangle,
+        tooltip: "Failed tasks (24h)",
+      },
+      {
+        id: "cpu",
+        value: `${data.cpuUsage.toFixed(1)}%`,
+        label: "CPU",
+        icon: Cpu,
+      },
+      {
+        id: "memory",
+        value: `${data.memoryUsage.toFixed(1)}%`,
+        label: "Memory",
+        icon: MemoryStick,
+        tooltip: `${data.memoryUsed} / ${data.memoryTotal}`,
       },
     ],
+    // Default to 4 stats: hide CPU and Memory
+    defaultActiveIds: ["stores", "snaps", "usage", "failed"],
   }
 }
 
@@ -102,42 +125,85 @@ export const proxmoxBackupServerDefinition: ServiceDefinition<ProxmoxBackupServe
         CSRFPreventionToken: csrfToken,
       }
 
-      // Get datastores
-      const dsRes = await fetch(`${baseUrl}/api2/json/admin/datastore`, {
-        headers,
-      })
+      // Get datastores, host status, and recent tasks in parallel
+      const [dsRes, statusRes, tasksRes] = await Promise.all([
+        fetch(`${baseUrl}/api2/json/admin/datastore`, { headers }),
+        fetch(`${baseUrl}/api2/json/nodes/localhost/status`, { headers }),
+        fetch(
+          `${baseUrl}/api2/json/nodes/localhost/tasks?errors-only=1&limit=100`,
+          { headers }
+        ),
+      ])
+
       if (!dsRes.ok) throw new Error(`PBS error: ${dsRes.status}`)
 
       const datastores = await dsRes.json()
       const dsList = datastores.data ?? []
 
+      // Aggregate datastore usage
       let totalUsed = 0
       let totalSpace = 0
+      let totalSnapshots = 0
 
       for (const ds of dsList) {
         totalUsed += ds.used ?? 0
         totalSpace += ds.total ?? 0
+
+        // Count snapshots for each datastore
+        try {
+          const snapRes = await fetch(
+            `${baseUrl}/api2/json/admin/datastore/${ds.store}/snapshots`,
+            { headers }
+          )
+          if (snapRes.ok) {
+            const snapData = await snapRes.json()
+            totalSnapshots += snapData.data?.length ?? 0
+          }
+        } catch {
+          // Ignore errors for individual datastore snapshots
+        }
       }
 
-      // Get snapshot count from first datastore
-      let snapshots = 0
-      if (dsList.length > 0) {
-        const snapRes = await fetch(
-          `${baseUrl}/api2/json/admin/datastore/${dsList[0].store}/snapshots`,
-          { headers }
-        )
-        if (snapRes.ok) {
-          const snapData = await snapRes.json()
-          snapshots = snapData.data?.length ?? 0
-        }
+      const usagePercent = totalSpace > 0 ? (totalUsed / totalSpace) * 100 : 0
+
+      // Get host CPU and memory status
+      let cpuUsage = 0
+      let memoryUsage = 0
+      let memoryUsed = "0 B"
+      let memoryTotal = "0 B"
+
+      if (statusRes.ok) {
+        const statusData = await statusRes.json()
+        const status = statusData.data ?? {}
+
+        cpuUsage = (status.cpu ?? 0) * 100 // PBS returns CPU as 0-1 fraction
+        const memUsed = status.memory?.used ?? 0
+        const memTotal = status.memory?.total ?? 0
+        memoryUsage = memTotal > 0 ? (memUsed / memTotal) * 100 : 0
+        memoryUsed = formatBytes(memUsed)
+        memoryTotal = formatBytes(memTotal)
+      }
+
+      // Count failed tasks (last 24h, errors only)
+      let failedTasks = 0
+      if (tasksRes.ok) {
+        const tasksData = await tasksRes.json()
+        const tasks = tasksData.data ?? []
+        failedTasks = tasks.length
       }
 
       return {
         _status: "ok",
         datastores: dsList.length,
-        snapshots,
+        snapshots: totalSnapshots,
         usedSpace: formatBytes(totalUsed),
         totalSpace: formatBytes(totalSpace),
+        usagePercent,
+        cpuUsage,
+        memoryUsage,
+        memoryUsed,
+        memoryTotal,
+        failedTasks,
       }
     },
     toPayload: proxmoxBackupServerToPayload,

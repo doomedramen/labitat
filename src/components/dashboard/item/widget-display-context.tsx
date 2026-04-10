@@ -15,6 +15,11 @@ export interface WidgetDisplaySettings {
   itemId: string
   /** Called whenever the stat card order changes (e.g. drag in dialog) */
   onOrderChange?: (order: StatCardOrder | null) => void
+  /**
+   * Default active stat card IDs.
+   * When set and no user preference exists, only these stats are shown initially.
+   */
+  defaultActiveIds?: string[]
 }
 
 const WidgetDisplayContext = createContext<WidgetDisplaySettings | null>(null)

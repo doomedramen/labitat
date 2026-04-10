@@ -87,7 +87,7 @@ describe("glances definition", () => {
       expect(result.memPercent).toBe(0)
       expect(result.swapPercent).toBe(0)
       expect(result.load1).toBe(0)
-      expect(result.uptime).toBe("0h 0m")
+      expect(result.uptime).toBe("0m")
     })
 
     it("uses Basic auth when credentials provided", async () => {

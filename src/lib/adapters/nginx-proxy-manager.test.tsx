@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { nginxProxyManagerDefinition } from "@/lib/adapters/nginx-proxy-manager"
+import {
+  nginxProxyManagerDefinition,
+  tokenCache,
+} from "@/lib/adapters/nginx-proxy-manager"
 
 describe("nginx-proxy-manager definition", () => {
   it("has correct metadata", () => {
@@ -27,6 +30,8 @@ describe("nginx-proxy-manager definition", () => {
   describe("fetchData", () => {
     beforeEach(() => {
       vi.resetAllMocks()
+      // Clear token cache between tests
+      if (tokenCache) tokenCache.clear()
     })
 
     afterEach(() => {
@@ -38,7 +43,7 @@ describe("nginx-proxy-manager definition", () => {
         if (url.includes("/api/tokens")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ token: "jwt-token" }),
+            json: () => Promise.resolve({ token: "jwt-token", expires: 3600 }),
           })
         }
         if (url.includes("/proxy-hosts")) {
@@ -82,6 +87,63 @@ describe("nginx-proxy-manager definition", () => {
       expect(result.deadHosts).toBe(0)
     })
 
+    it("uses cached token on subsequent calls", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/api/tokens")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ token: "jwt-token", expires: 3600 }),
+          })
+        }
+        if (url.includes("/proxy-hosts")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([{ id: 1 }]),
+          })
+        }
+        if (url.includes("/redirection-hosts")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([]),
+          })
+        }
+        if (url.includes("/streams")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([]),
+          })
+        }
+        if (url.includes("/dead-hosts")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([]),
+          })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      // First call - should login
+      await nginxProxyManagerDefinition.fetchData!({
+        url: "https://npm.example.com",
+        email: "admin@example.org",
+        password: "secret",
+      })
+
+      // Second call - should use cached token
+      await nginxProxyManagerDefinition.fetchData!({
+        url: "https://npm.example.com",
+        email: "admin@example.org",
+        password: "secret",
+      })
+
+      // Login should only have been called once
+      const loginCalls = mockFetch.mock.calls.filter((call) =>
+        (call[0] as string).includes("/api/tokens")
+      ).length
+      expect(loginCalls).toBe(1)
+    })
+
     it("throws on login failure", async () => {
       vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 401 }))
 
@@ -99,7 +161,7 @@ describe("nginx-proxy-manager definition", () => {
         if (url.includes("/api/tokens")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ token: "jwt-token" }),
+            json: () => Promise.resolve({ token: "jwt-token", expires: 3600 }),
           })
         }
         if (url.includes("/proxy-hosts")) {

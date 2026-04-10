@@ -1,5 +1,17 @@
 import type { ServiceDefinition } from "./types"
-import { Camera, Clock, Tag } from "lucide-react"
+import type { ActiveStream } from "@/components/widgets"
+import { formatDuration, formatTimeAgo } from "@/lib/utils/format"
+import { Camera, Clock, Tag, AlertTriangle } from "lucide-react"
+
+type FrigateEvent = {
+  id: string
+  camera: string
+  label: string
+  score: number
+  startTime: number
+  endTime?: number
+  thumbnail?: string
+}
 
 type FrigateData = {
   _status?: "ok" | "warn" | "error"
@@ -7,16 +19,8 @@ type FrigateData = {
   cameras: number
   uptime: number
   version: string
-}
-
-function formatUptime(seconds: number): string {
-  const days = Math.floor(seconds / 86400)
-  const hours = Math.floor((seconds % 86400) / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-
-  if (days > 0) return `${days}d ${hours}h`
-  if (hours > 0) return `${hours}h ${minutes}m`
-  return `${minutes}m`
+  showRecentEvents?: boolean
+  recentEvents?: FrigateEvent[]
 }
 
 function frigateToPayload(data: FrigateData) {
@@ -30,7 +34,7 @@ function frigateToPayload(data: FrigateData) {
       },
       {
         id: "uptime",
-        value: formatUptime(data.uptime ?? 0),
+        value: formatDuration(data.uptime ?? 0),
         label: "Uptime",
         icon: Clock,
       },
@@ -41,6 +45,19 @@ function frigateToPayload(data: FrigateData) {
         icon: Tag,
       },
     ],
+    streams:
+      data.showRecentEvents && data.recentEvents?.length
+        ? data.recentEvents.map((event) => ({
+            title: `${event.camera} (${event.label} ${(event.score * 100).toFixed(0)}%)`,
+            subtitle: formatTimeAgo(Date.now() / 1000 - event.startTime),
+            user: event.label,
+            progress: 0,
+            duration: 0,
+            state: "playing" as const,
+            streamId: event.id,
+            transcoding: undefined,
+          }))
+        : undefined,
   }
 }
 
@@ -75,10 +92,17 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
       required: false,
       placeholder: "Your Frigate password or API key",
     },
+    {
+      key: "showRecentEvents",
+      label: "Show recent events",
+      type: "boolean",
+      helperText: "Display recent detection events",
+    },
   ],
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
+    const showRecentEvents = config.showRecentEvents === "true"
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     }
@@ -106,8 +130,15 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
       }
     }
 
-    // Fetch stats
-    const statsRes = await fetch(`${baseUrl}/api/stats`, { headers })
+    // Fetch stats and recent events in parallel
+    const [statsRes, eventsRes] = await Promise.all([
+      fetch(`${baseUrl}/api/stats`, { headers }),
+      showRecentEvents
+        ? fetch(`${baseUrl}/api/events?include_thumbnails=0&limit=5`, {
+            headers,
+          })
+        : Promise.resolve(null),
+    ])
 
     if (!statsRes.ok) {
       if (statsRes.status === 401) throw new Error("Invalid credentials")
@@ -118,6 +149,25 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
 
     const statsData = await statsRes.json()
 
+    // Parse recent events
+    const recentEvents: FrigateEvent[] = []
+    if (eventsRes && eventsRes.ok) {
+      const eventsData = await eventsRes.json()
+      if (Array.isArray(eventsData)) {
+        for (const event of eventsData) {
+          recentEvents.push({
+            id: event.id ?? "",
+            camera: event.camera ?? "Unknown",
+            label: event.label ?? "unknown",
+            score: event.score ?? 0,
+            startTime: event.start_time ?? 0,
+            endTime: event.end_time,
+            thumbnail: event.thumbnail,
+          })
+        }
+      }
+    }
+
     return {
       _status: "ok" as const,
       cameras:
@@ -126,6 +176,8 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
           : 0,
       uptime: statsData?.service?.uptime ?? 0,
       version: statsData?.service?.version ?? "unknown",
+      showRecentEvents,
+      recentEvents,
     }
   },
 

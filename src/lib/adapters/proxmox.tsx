@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { Server, Monitor, Container } from "lucide-react"
+import { formatBytes } from "@/lib/utils/format"
+import { Server, Monitor, Container, Cpu, MemoryStick } from "lucide-react"
 
 type ProxmoxData = {
   _status?: "ok" | "warn" | "error"
@@ -9,6 +10,10 @@ type ProxmoxData = {
   containers: number
   runningVMs: number
   runningContainers: number
+  cpuUsage: number // percentage 0-100
+  memoryUsage: number // percentage 0-100
+  memoryUsed: string // human readable
+  memoryTotal: string // human readable
 }
 
 function proxmoxToPayload(data: ProxmoxData) {
@@ -31,6 +36,19 @@ function proxmoxToPayload(data: ProxmoxData) {
         value: `${data.runningContainers ?? 0}/${data.containers ?? 0}`,
         label: "LXCs",
         icon: Container,
+      },
+      {
+        id: "cpu",
+        value: `${data.cpuUsage.toFixed(1)}%`,
+        label: "CPU",
+        icon: Cpu,
+      },
+      {
+        id: "memory",
+        value: `${data.memoryUsage.toFixed(1)}%`,
+        label: "Memory",
+        icon: MemoryStick,
+        tooltip: `${data.memoryUsed} / ${data.memoryTotal}`,
       },
     ],
   }
@@ -116,6 +134,33 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
         r.type === "lxc" && r.status === "running"
     ).length
 
+    // Calculate CPU and memory utilization across all resources
+    // Matches Homepage's approach: aggregate from cluster resources
+    let totalCpu = 0
+    let totalCpuMax = 0
+    let totalMem = 0
+    let totalMemMax = 0
+
+    resources.forEach(
+      (r: {
+        type: string
+        cpu?: number
+        maxcpu?: number
+        mem?: number
+        maxmem?: number
+      }) => {
+        if (r.type === "qemu" || r.type === "lxc" || r.type === "node") {
+          totalCpu += r.cpu ?? 0
+          totalCpuMax += r.maxcpu ?? 0
+          totalMem += r.mem ?? 0
+          totalMemMax += r.maxmem ?? 0
+        }
+      }
+    )
+
+    const cpuUsage = totalCpuMax > 0 ? (totalCpu / totalCpuMax) * 100 : 0
+    const memoryUsage = totalMemMax > 0 ? (totalMem / totalMemMax) * 100 : 0
+
     return {
       _status: "ok",
       nodes,
@@ -123,6 +168,10 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
       containers,
       runningVMs,
       runningContainers,
+      cpuUsage,
+      memoryUsage,
+      memoryUsed: formatBytes(totalMem),
+      memoryTotal: formatBytes(totalMemMax),
     }
   },
   toPayload: proxmoxToPayload,

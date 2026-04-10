@@ -12,7 +12,7 @@ describe("unifi definition", () => {
 
   it("has configFields defined", () => {
     expect(unifiDefinition.configFields).toBeDefined()
-    expect(unifiDefinition.configFields).toHaveLength(3)
+    expect(unifiDefinition.configFields).toHaveLength(4)
     expect(unifiDefinition.configFields[0].key).toBe("url")
     expect(unifiDefinition.configFields[0].type).toBe("url")
     expect(unifiDefinition.configFields[0].required).toBe(true)
@@ -22,6 +22,9 @@ describe("unifi definition", () => {
     expect(unifiDefinition.configFields[2].key).toBe("password")
     expect(unifiDefinition.configFields[2].type).toBe("password")
     expect(unifiDefinition.configFields[2].required).toBe(true)
+    expect(unifiDefinition.configFields[3].key).toBe("site")
+    expect(unifiDefinition.configFields[3].type).toBe("text")
+    expect(unifiDefinition.configFields[3].required).toBe(false)
   })
 
   describe("fetchData", () => {
@@ -39,6 +42,36 @@ describe("unifi definition", () => {
           return Promise.resolve({
             ok: true,
             headers: { getSetCookie: () => ["TOKEN=abc123"] },
+          })
+        }
+        if (url.includes("/stat/sites")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                data: [
+                  {
+                    name: "default",
+                    health: [
+                      {
+                        subsystem: "wan",
+                        status: "ok",
+                        "gw_system-stats": { uptime: 1296000 }, // 15 days
+                      },
+                      {
+                        subsystem: "lan",
+                        status: "ok",
+                        num_user: 8,
+                      },
+                      {
+                        subsystem: "wlan",
+                        status: "ok",
+                        num_user: 12,
+                      },
+                    ],
+                  },
+                ],
+              }),
           })
         }
         if (url.includes("/stat/sta/all")) {
@@ -80,6 +113,10 @@ describe("unifi definition", () => {
       expect(result.guests).toBe(3)
       expect(result.devices).toBe(3)
       expect(result.sites).toBe(1)
+      expect(result.wanStatus).toBe("up")
+      expect(result.lanUsers).toBe(8)
+      expect(result.wlanUsers).toBe(12)
+      expect(result.gatewayUptime).toBe("15d 0h")
     })
 
     it("throws on login failure", async () => {
@@ -123,6 +160,12 @@ describe("unifi definition", () => {
             headers: { getSetCookie: () => ["TOKEN=abc123"] },
           })
         }
+        if (url.includes("/stat/sites")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ data: [] }),
+          })
+        }
         if (url.includes("/stat/sta/all")) {
           return Promise.resolve({
             ok: true,
@@ -148,6 +191,10 @@ describe("unifi definition", () => {
       expect(result.users).toBe(0)
       expect(result.guests).toBe(0)
       expect(result.devices).toBe(0)
+      expect(result.wanStatus).toBeNull()
+      expect(result.lanUsers).toBeUndefined()
+      expect(result.wlanUsers).toBeUndefined()
+      expect(result.gatewayUptime).toBeUndefined()
     })
   })
 
@@ -159,8 +206,12 @@ describe("unifi definition", () => {
         guests: 5,
         devices: 3,
         sites: 1,
+        wanStatus: "up",
+        lanUsers: 8,
+        wlanUsers: 12,
+        gatewayUptime: "15.0 days",
       })
-      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats).toHaveLength(8)
       expect(payload.stats[0].value).toBe(10)
       expect(payload.stats[0].label).toBe("Users")
       expect(payload.stats[1].value).toBe(5)
@@ -169,6 +220,14 @@ describe("unifi definition", () => {
       expect(payload.stats[2].label).toBe("Devices")
       expect(payload.stats[3].value).toBe(1)
       expect(payload.stats[3].label).toBe("Sites")
+      expect(payload.stats[4].value).toBe("15.0 days")
+      expect(payload.stats[4].label).toBe("Uptime")
+      expect(payload.stats[5].value).toBe("Up")
+      expect(payload.stats[5].label).toBe("WAN")
+      expect(payload.stats[6].value).toBe(8)
+      expect(payload.stats[6].label).toBe("LAN")
+      expect(payload.stats[7].value).toBe(12)
+      expect(payload.stats[7].label).toBe("WLAN")
     })
 
     it("handles zero values", () => {
@@ -179,7 +238,21 @@ describe("unifi definition", () => {
         devices: 0,
         sites: 0,
       })
-      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
+      expect(payload.stats[0].value).toBe(0)
+      expect(payload.stats[1].value).toBe(0)
+      expect(payload.stats[2].value).toBe(0)
+      expect(payload.stats[3].value).toBe(0)
+    })
+
+    it("only includes network health stats when available", () => {
+      const payload = unifiDefinition.toPayload!({
+        _status: "ok",
+        users: 10,
+        guests: 5,
+        devices: 3,
+        sites: 1,
+      })
+      expect(payload.stats).toHaveLength(4)
     })
   })
 })

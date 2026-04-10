@@ -97,6 +97,8 @@ function jellyfinToPayload(data: JellyfinData) {
             transcoding: session.transcoding,
           }))
         : undefined,
+    // Default to 4 stats: hide Active Streams
+    defaultActiveIds: ["movies", "shows", "episodes", "songs"],
   }
 }
 

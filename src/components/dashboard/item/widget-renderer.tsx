@@ -86,6 +86,8 @@ export function WidgetRenderer({
             statCardOrder: parseStatCardOrder(item.statCardOrder),
             editMode,
             itemId: item.id,
+            defaultActiveIds:
+              serviceDef.toPayload?.(effectiveData).defaultActiveIds,
           }}
         >
           {hasCustomWidget && serviceDef.renderWidget ? (

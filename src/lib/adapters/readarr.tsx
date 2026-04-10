@@ -83,11 +83,20 @@ export const readarrDefinition: ServiceDefinition<ReadarrData> = {
       : { totalRecords: 0 }
     const queueData = queueRes.ok ? await queueRes.json() : { totalCount: 0 }
 
+    // Compute "have" count by filtering books with files
+    // Matches Homepage's implementation: filter where statistics.bookFileCount > 0
+    const booksWithFiles = Array.isArray(booksData)
+      ? booksData.filter(
+          (book: { statistics?: { bookFileCount?: number } }) =>
+            book?.statistics?.bookFileCount && book.statistics.bookFileCount > 0
+        ).length
+      : 0
+
     return {
       _status: "ok" as const,
       queued: queueData.totalCount ?? 0,
       wanted: wantedData.totalRecords ?? 0,
-      books: booksData.have ?? 0,
+      books: booksWithFiles,
     }
   },
 

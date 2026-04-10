@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import type { ActiveStream } from "@/components/widgets"
+import { formatBytes } from "@/lib/utils/format"
 import { Activity, Cpu, Monitor, Play, Radio } from "lucide-react"
 
 type TautulliData = {
@@ -11,14 +12,6 @@ type TautulliData = {
   directPlayStreams: number
   directStreamStreams: number
   sessions?: ActiveStream[]
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B"
-  const k = 1024
-  const sizes = ["B", "KB", "MB", "GB", "TB"]
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
 }
 
 /**
@@ -97,6 +90,13 @@ function tautulliToPayload(data: TautulliData) {
       },
     ],
     streams: data.sessions?.length ? data.sessions : undefined,
+    // Default to 4 stats: hide "streams" count, show bandwidth/transcoding/direct-play/direct-stream
+    defaultActiveIds: [
+      "bandwidth",
+      "transcoding",
+      "direct-play",
+      "direct-stream",
+    ],
   }
 }
 
@@ -156,6 +156,7 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
         bandwidth: number
         stream_container_direct_play?: number
         stream_container_video_decision?: string
+        session_key?: string
       }) => {
         totalBandwidth += s.bandwidth ?? 0
 

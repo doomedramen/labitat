@@ -97,6 +97,8 @@ function embyToPayload(data: EmbyData) {
             transcoding: session.transcoding,
           }))
         : undefined,
+    // Default to 4 stats: hide Active Streams
+    defaultActiveIds: ["movies", "shows", "episodes", "songs"],
   }
 }
 

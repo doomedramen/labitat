@@ -31,9 +31,21 @@ describe("uptime-kuma definition", () => {
     })
 
     it("fetches data successfully", async () => {
+      const twoHoursAgo = new Date(
+        Date.now() - 2 * 60 * 60 * 1000
+      ).toISOString()
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/api/status-page?")) {
-          return Promise.resolve({ ok: true })
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                incident: {
+                  title: "Network Outage",
+                  createdDate: twoHoursAgo,
+                },
+              }),
+          })
         }
         if (url.includes("/api/status-page/heartbeat?")) {
           return Promise.resolve({
@@ -62,6 +74,9 @@ describe("uptime-kuma definition", () => {
       expect(result.up).toBe(2)
       expect(result.down).toBe(1)
       expect(result.uptime).toBe("98.4%")
+      expect(result.incident).toBeDefined()
+      expect(result.incident?.title).toBe("Network Outage")
+      expect(result.incident?.hoursAgo).toBeCloseTo(2, 0)
     })
 
     it("throws on API error", async () => {
@@ -90,6 +105,7 @@ describe("uptime-kuma definition", () => {
       expect(result.up).toBe(0)
       expect(result.down).toBe(0)
       expect(result.uptime).toBe("0%")
+      expect(result.incident).toBeUndefined()
     })
 
     it("uses default slug when not provided", async () => {
@@ -126,6 +142,24 @@ describe("uptime-kuma definition", () => {
       expect(payload.stats[1].label).toBe("Down")
       expect(payload.stats[2].value).toBe("98.5%")
       expect(payload.stats[2].label).toBe("Uptime")
+    })
+
+    it("includes incident stat when present", () => {
+      const payload = uptimeKumaDefinition.toPayload!({
+        _status: "ok",
+        up: 10,
+        down: 2,
+        uptime: "98.5%",
+        incident: {
+          title: "Network Outage",
+          createdDate: "2024-01-15T10:00:00Z",
+          hoursAgo: 2.5,
+        },
+      })
+      expect(payload.stats).toHaveLength(4)
+      expect(payload.stats[3].value).toBe("3h ago") // Math.round(2.5) = 3
+      expect(payload.stats[3].label).toBe("Incident")
+      expect(payload.stats[3].tooltip).toBe("Network Outage")
     })
 
     it("handles zero values", () => {

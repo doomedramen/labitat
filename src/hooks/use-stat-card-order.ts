@@ -17,14 +17,27 @@ export type StatCardOrder = {
 export function useStatCardOrder(
   itemId: string,
   allItems: StatItem[],
-  storedOrder: StatCardOrder | null
+  storedOrder: StatCardOrder | null,
+  defaultActiveIds?: string[]
 ) {
   // Build active and unused item lists
   const { activeItems, unusedItems } = useMemo(() => {
     const itemMap = new Map(allItems.map((item) => [item.id, item]))
 
-    // If no stored order, all items are active in default order
+    // If no stored order, use default active IDs if provided
     if (!storedOrder) {
+      if (defaultActiveIds && defaultActiveIds.length > 0) {
+        const active = defaultActiveIds
+          .map((id) => itemMap.get(id))
+          .filter((item): item is StatItem => item !== undefined)
+
+        const unused = allItems.filter(
+          (item) => !defaultActiveIds.includes(item.id)
+        )
+
+        return { activeItems: active, unusedItems: unused }
+      }
+      // No defaults - all items active
       return { activeItems: allItems, unusedItems: [] as StatItem[] }
     }
 
@@ -41,7 +54,7 @@ export function useStatCardOrder(
     const newItems = allItems.filter((item) => !storedIds.has(item.id))
 
     return { activeItems: [...active, ...newItems], unusedItems: unused }
-  }, [allItems, storedOrder])
+  }, [allItems, storedOrder, defaultActiveIds])
 
   const persist = useCallback(
     async (active: string[], unused: string[]) => {

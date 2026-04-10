@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import type { DownloadItem } from "@/components/widgets"
+import { formatBytes, formatTimeLeft } from "@/lib/utils/format"
 import { Tv, Download, AlertTriangle, Search } from "lucide-react"
 
 type SonarrData = {
@@ -12,22 +13,6 @@ type SonarrData = {
   showActiveDownloads?: boolean
   enableQueue?: boolean
   downloads?: DownloadItem[]
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B"
-  const k = 1024
-  const sizes = ["B", "KB", "MB", "GB", "TB"]
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
-}
-
-function formatTimeLeft(minutes: number): string {
-  if (minutes <= 0) return ""
-  if (minutes < 60) return `${Math.round(minutes)}m`
-  const hours = Math.floor(minutes / 60)
-  const mins = Math.round(minutes % 60)
-  return `${hours}h ${mins}m`
 }
 
 function sonarrToPayload(data: SonarrData) {

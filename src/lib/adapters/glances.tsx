@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "./types"
+import { formatBytes, formatDuration } from "@/lib/utils/format"
 import { ResourceBar } from "@/components/widgets"
 import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
 import { ArrowDownUp, Activity, Clock } from "lucide-react"
@@ -12,22 +13,6 @@ type GlancesData = {
   swapPercent: number
   load1: number
   uptime: string
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B"
-  const k = 1024
-  const sizes = ["B", "KB", "MB", "GB", "TB"]
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
-}
-
-function formatUptime(seconds: number): string {
-  const days = Math.floor(seconds / 86400)
-  const hours = Math.floor((seconds % 86400) / 3600)
-  if (days > 0) return `${days}d ${hours}h`
-  const mins = Math.floor((seconds % 3600) / 60)
-  return `${hours}h ${mins}m`
 }
 
 function GlancesWidget({
@@ -137,7 +122,7 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
     const uptime =
       typeof uptimeRaw === "string"
         ? uptimeRaw.replace(/^"|"$/g, "").trim() || "—"
-        : formatUptime(uptimeRaw)
+        : formatDuration(uptimeRaw)
 
     return {
       _status: "ok",

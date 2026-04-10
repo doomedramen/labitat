@@ -19,6 +19,12 @@ export type WidgetPayload = {
   error?: string | null
   /** Loading state - when true, shows skeleton loader */
   loading?: boolean
+  /**
+   * Default active stat card IDs.
+   * When set and no user preference exists, only these stats are shown initially.
+   * Users can customize via drag-and-drop in edit mode.
+   */
+  defaultActiveIds?: string[]
 }
 
 // Re-export for convenience

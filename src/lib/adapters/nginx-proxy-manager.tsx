@@ -55,6 +55,49 @@ function parseCount(data: unknown): number {
   return 0
 }
 
+// ── Token caching ─────────────────────────────────────────────────────────────
+// NPM tokens expire after 1 hour. We cache and refresh 5 minutes before expiry.
+
+interface CachedToken {
+  token: string
+  expiresAt: number // timestamp in ms
+}
+
+export const tokenCache = new Map<string, CachedToken>()
+
+/**
+ * Get a cached token if it's still valid (with 5-minute pre-expiry buffer).
+ */
+function getCachedToken(cacheKey: string): string | null {
+  const cached = tokenCache.get(cacheKey)
+  if (!cached) return null
+
+  // Refresh 5 minutes before expiry
+  const refreshAt = cached.expiresAt - 5 * 60 * 1000
+  if (Date.now() > refreshAt) {
+    tokenCache.delete(cacheKey)
+    return null
+  }
+
+  return cached.token
+}
+
+/**
+ * Cache a token with its expiry time.
+ */
+function setCachedToken(
+  cacheKey: string,
+  token: string,
+  expiresIn: number
+): void {
+  tokenCache.set(cacheKey, {
+    token,
+    expiresAt: Date.now() + expiresIn * 1000, // convert seconds to ms
+  })
+}
+
+// ── Adapter definition ────────────────────────────────────────────────────────
+
 export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerData> =
   {
     id: "nginx-proxy-manager",
@@ -87,37 +130,78 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
     ],
     async fetchData(config) {
       const baseUrl = config.url.replace(/\/$/, "")
+      const cacheKey = `${baseUrl}:${config.email}`
 
-      // Login
-      const loginRes = await fetch(`${baseUrl}/api/tokens`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          identity: config.email,
-          secret: config.password,
-        }),
-      })
+      // Try to get a cached token first
+      let token = getCachedToken(cacheKey)
 
-      if (!loginRes.ok) throw new Error(`NPM login failed: ${loginRes.status}`)
+      // Login if no valid cached token
+      if (!token) {
+        const loginRes = await fetch(`${baseUrl}/api/tokens`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            identity: config.email,
+            secret: config.password,
+          }),
+        })
 
-      const tokenData = await loginRes.json()
-      const token = tokenData.token
-      if (!token) throw new Error("NPM login failed: no token in response")
+        if (!loginRes.ok)
+          throw new Error(`NPM login failed: ${loginRes.status}`)
+
+        const tokenData = await loginRes.json()
+        token = tokenData.token
+        if (!token) throw new Error("NPM login failed: no token in response")
+
+        // Cache token with its expiry time (NPM tokens expire in 1 hour)
+        const expiresIn = tokenData.expires ?? 3600 // default 1 hour if not specified
+        setCachedToken(cacheKey, token, expiresIn)
+      }
 
       const headers = { Authorization: `Bearer ${token}` }
 
-      // Get counts
-      const [hostsRes, redirRes, streamsRes, deadRes] = await Promise.all([
-        fetch(`${baseUrl}/api/nginx/proxy-hosts`, { headers }),
-        fetch(`${baseUrl}/api/nginx/redirection-hosts`, { headers }),
-        fetch(`${baseUrl}/api/nginx/streams`, { headers }),
-        fetch(`${baseUrl}/api/nginx/dead-hosts`, { headers }),
-      ])
+      // Get counts with automatic retry on 403 (expired token)
+      async function fetchWithRetry(url: string): Promise<number> {
+        const res = await fetch(url, { headers })
 
-      const hosts = hostsRes.ok ? parseCount(await hostsRes.json()) : 0
-      const redirHosts = redirRes.ok ? parseCount(await redirRes.json()) : 0
-      const streams = streamsRes.ok ? parseCount(await streamsRes.json()) : 0
-      const deadHosts = deadRes.ok ? parseCount(await deadRes.json()) : 0
+        // If token expired, re-login and retry
+        if (res.status === 403) {
+          tokenCache.delete(cacheKey)
+
+          const loginRes = await fetch(`${baseUrl}/api/tokens`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              identity: config.email,
+              secret: config.password,
+            }),
+          })
+
+          if (!loginRes.ok)
+            throw new Error(`NPM login failed: ${loginRes.status}`)
+
+          const tokenData = await loginRes.json()
+          token = tokenData.token
+          if (!token) throw new Error("NPM login failed: no token in response")
+
+          const expiresIn = tokenData.expires ?? 3600
+          setCachedToken(cacheKey, token, expiresIn)
+
+          const retryHeaders = { Authorization: `Bearer ${token}` }
+          const retryRes = await fetch(url, { headers: retryHeaders })
+          return retryRes.ok ? parseCount(await retryRes.json()) : 0
+        }
+
+        return res.ok ? parseCount(await res.json()) : 0
+      }
+
+      // Fetch all counts in parallel
+      const [hosts, redirHosts, streams, deadHosts] = await Promise.all([
+        fetchWithRetry(`${baseUrl}/api/nginx/proxy-hosts`),
+        fetchWithRetry(`${baseUrl}/api/nginx/redirection-hosts`),
+        fetchWithRetry(`${baseUrl}/api/nginx/streams`),
+        fetchWithRetry(`${baseUrl}/api/nginx/dead-hosts`),
+      ])
 
       return {
         _status: "ok",

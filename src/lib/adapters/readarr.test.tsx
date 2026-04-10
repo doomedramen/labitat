@@ -35,7 +35,13 @@ describe("readarr definition", () => {
         if (url.includes("/book")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ have: 50 }),
+            json: () =>
+              Promise.resolve([
+                { id: 1, statistics: { bookFileCount: 1 } },
+                { id: 2, statistics: { bookFileCount: 2 } },
+                { id: 3, statistics: { bookFileCount: 0 } },
+                { id: 4, statistics: { bookFileCount: 1 } },
+              ]),
           })
         }
         if (url.includes("/wanted/missing")) {
@@ -60,7 +66,7 @@ describe("readarr definition", () => {
       })
 
       expect(result._status).toBe("ok")
-      expect(result.books).toBe(50)
+      expect(result.books).toBe(3) // 3 books with bookFileCount > 0
       expect(result.wanted).toBe(15)
       expect(result.queued).toBe(3)
     })
@@ -92,7 +98,11 @@ describe("readarr definition", () => {
         if (url.includes("/book")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ have: 20 }),
+            json: () =>
+              Promise.resolve([
+                { id: 1, statistics: { bookFileCount: 1 } },
+                { id: 2, statistics: { bookFileCount: 0 } },
+              ]),
           })
         }
         if (url.includes("/wanted/missing") || url.includes("/queue/status")) {
@@ -107,7 +117,7 @@ describe("readarr definition", () => {
         apiKey: "test-key",
       })
 
-      expect(result.books).toBe(20)
+      expect(result.books).toBe(1) // 1 book with bookFileCount > 0
       expect(result.wanted).toBe(0)
       expect(result.queued).toBe(0)
     })

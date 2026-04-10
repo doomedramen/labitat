@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
-import { Check, X, Clock } from "lucide-react"
+import type { StatItem } from "@/components/widgets"
+import { Check, X, Clock, AlertTriangle } from "lucide-react"
 
 type UptimeKumaData = {
   _status?: "ok" | "warn" | "error"
@@ -7,31 +8,47 @@ type UptimeKumaData = {
   up: number
   down: number
   uptime: string
+  incident?: {
+    title: string
+    createdDate: string
+    hoursAgo: number
+  }
 }
 
 function uptimeKumaToPayload(data: UptimeKumaData) {
-  return {
-    stats: [
-      {
-        id: "up",
-        value: String(data.up),
-        label: "Up",
-        icon: Check,
-      },
-      {
-        id: "down",
-        value: String(data.down),
-        label: "Down",
-        icon: X,
-      },
-      {
-        id: "uptime",
-        value: String(data.uptime),
-        label: "Uptime",
-        icon: Clock,
-      },
-    ],
+  const stats: StatItem[] = [
+    {
+      id: "up",
+      value: String(data.up),
+      label: "Up",
+      icon: Check,
+    },
+    {
+      id: "down",
+      value: String(data.down),
+      label: "Down",
+      icon: X,
+    },
+    {
+      id: "uptime",
+      value: String(data.uptime),
+      label: "Uptime",
+      icon: Clock,
+    },
+  ]
+
+  // Add incident stat if there's an active incident
+  if (data.incident) {
+    stats.push({
+      id: "incident",
+      value: `${Math.round(data.incident.hoursAgo)}h ago`,
+      label: "Incident",
+      icon: AlertTriangle,
+      tooltip: data.incident.title,
+    })
   }
+
+  return { stats }
 }
 
 export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
@@ -74,6 +91,7 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
       throw new Error("Failed to fetch Uptime Kuma data")
     }
 
+    const statusData = await _statusRes.json()
     const heartbeatData = await heartbeatRes.json()
 
     // Count sites up/down from heartbeat list
@@ -104,11 +122,26 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
           ).toFixed(1)
         : "0"
 
+    // Check for active incidents (matches Homepage's implementation)
+    const incident = statusData.incident
+      ? {
+          title: statusData.incident.title ?? "Unknown Incident",
+          createdDate: statusData.incident.createdDate,
+          hoursAgo:
+            Math.abs(
+              new Date(statusData.incident.createdDate).getTime() - Date.now()
+            ) /
+            1000 /
+            (60 * 60),
+        }
+      : undefined
+
     return {
       _status: "ok" as const,
       up: sitesUp,
       down: sitesDown,
       uptime: `${avgUptime}%`,
+      incident,
     }
   },
 

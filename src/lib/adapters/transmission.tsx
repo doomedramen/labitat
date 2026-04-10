@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import type { DownloadItem } from "@/components/widgets"
+import { formatBytes, formatDuration } from "@/lib/utils/format"
 import { ArrowDown, ArrowUp, Download, Upload } from "lucide-react"
 
 type TransmissionData = {
@@ -12,27 +13,8 @@ type TransmissionData = {
   downloads?: DownloadItem[]
 }
 
-function formatBytes(bytes: number): string {
-  if (bytes >= 1_000_000_000) {
-    return `${(bytes / 1_000_000_000).toFixed(1)} GB`
-  }
-  if (bytes >= 1_000_000) {
-    return `${(bytes / 1_000_000).toFixed(1)} MB`
-  }
-  if (bytes >= 1_000) {
-    return `${(bytes / 1_000).toFixed(1)} KB`
-  }
-  return `${bytes.toFixed(0)} B`
-}
-
-function formatTime(seconds: number): string {
-  if (seconds < 0 || !isFinite(seconds)) return "∞"
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = Math.floor(seconds % 60)
-  if (h > 0)
-    return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
-  return `${m}:${s.toString().padStart(2, "0")}`
+function formatSpeed(bytesPerSec: number): string {
+  return `${formatBytes(bytesPerSec)}/s`
 }
 
 function transmissionToPayload(data: TransmissionData) {
@@ -208,7 +190,7 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       .map((t: Record<string, unknown>) => ({
         title: (t.name as string) ?? "Unknown",
         progress: ((t.percentDone as number) ?? 0) * 100,
-        timeLeft: formatTime((t.eta as number) ?? -1),
+        timeLeft: formatDuration((t.eta as number) ?? -1),
         activity: "downloading",
         size: formatBytes((t.sizeWhenDone as number) ?? 0),
       }))

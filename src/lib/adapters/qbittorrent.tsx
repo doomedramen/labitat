@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "./types"
 import type { DownloadItem } from "@/components/widgets"
+import { formatBytes, formatDuration } from "@/lib/utils/format"
 import { ArrowDown, ArrowUp, Download, List } from "lucide-react"
 
 type QBittorrentData = {
@@ -12,24 +13,8 @@ type QBittorrentData = {
   downloads?: DownloadItem[]
 }
 
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B"
-  const k = 1024
-  const sizes = ["B", "KB", "MB", "GB", "TB"]
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
-}
-
 function formatSpeed(bytesPerSec: number): string {
   return `${formatBytes(bytesPerSec)}/s`
-}
-
-function formatTime(seconds: number): string {
-  if (seconds < 0 || !isFinite(seconds)) return "∞"
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  if (h > 0) return `${h}:${m.toString().padStart(2, "0")}h`
-  return `${m} min`
 }
 
 function qbittorrentToPayload(data: QBittorrentData) {
@@ -173,7 +158,7 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
           return {
             title: t.name,
             progress: Math.round(t.progress * 100),
-            timeLeft: formatTime(t.eta),
+            timeLeft: formatDuration(t.eta),
             activity,
             size: formatBytes(t.size),
           }

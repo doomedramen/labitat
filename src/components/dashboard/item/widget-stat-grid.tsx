@@ -124,7 +124,8 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
     useStatCardOrder(
       displaySettings?.itemId ?? "",
       items,
-      displaySettings?.statCardOrder ?? null
+      displaySettings?.statCardOrder ?? null,
+      displaySettings?.defaultActiveIds
     )
 
   const sensor = useSensor(PointerSensor, {
