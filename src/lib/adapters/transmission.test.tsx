@@ -12,7 +12,7 @@ describe("transmission definition", () => {
 
   it("has configFields defined", () => {
     expect(transmissionDefinition.configFields).toBeDefined()
-    expect(transmissionDefinition.configFields).toHaveLength(4)
+    expect(transmissionDefinition.configFields).toHaveLength(5)
     expect(transmissionDefinition.configFields[0].key).toBe("url")
     expect(transmissionDefinition.configFields[0].type).toBe("url")
     expect(transmissionDefinition.configFields[0].required).toBe(true)
@@ -153,6 +153,7 @@ describe("transmission definition", () => {
         url: "https://transmission.example.com",
         username: "admin",
         password: "secret",
+        showDownloads: "true",
       })
 
       expect(result.downloads).toHaveLength(1)
@@ -187,6 +188,7 @@ describe("transmission definition", () => {
         seed: 0,
         upload: 0,
         downloads: [{ title: "Test", progress: 50 }],
+        showDownloads: true,
       })
       expect(payload.downloads).toHaveLength(1)
     })

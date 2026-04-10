@@ -10,6 +10,7 @@ type TransmissionData = {
   download: number
   seed: number
   upload: number
+  showDownloads?: boolean
   downloads?: DownloadItem[]
 }
 
@@ -45,7 +46,8 @@ function transmissionToPayload(data: TransmissionData) {
         icon: ArrowUp,
       },
     ],
-    downloads: data.downloads?.length ? data.downloads : undefined,
+    downloads:
+      data.showDownloads && data.downloads?.length ? data.downloads : undefined,
   }
 }
 
@@ -87,12 +89,19 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       placeholder: "/transmission/",
       helperText: "Default: /transmission/",
     },
+    {
+      key: "showDownloads",
+      label: "Show active downloads",
+      type: "boolean",
+      helperText: "Display currently downloading items",
+    },
   ],
 
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
     const rpcUrl = config.rpcUrl ?? "/transmission/"
     const rpcEndpoint = `${baseUrl}${rpcUrl}rpc`
+    const showDownloads = config.showDownloads !== "false"
 
     const auth = Buffer.from(`${config.username}:${config.password}`).toString(
       "base64"
@@ -201,7 +210,8 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       download: rateDl,
       seed: completed,
       upload: rateUl,
-      downloads,
+      showDownloads,
+      downloads: showDownloads ? downloads : [],
     }
   },
 

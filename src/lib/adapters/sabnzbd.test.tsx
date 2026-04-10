@@ -12,7 +12,7 @@ describe("sabnzbd definition", () => {
 
   it("has configFields defined", () => {
     expect(sabnzbdDefinition.configFields).toBeDefined()
-    expect(sabnzbdDefinition.configFields).toHaveLength(2)
+    expect(sabnzbdDefinition.configFields).toHaveLength(3)
     expect(sabnzbdDefinition.configFields[0].key).toBe("url")
     expect(sabnzbdDefinition.configFields[0].type).toBe("url")
     expect(sabnzbdDefinition.configFields[0].required).toBe(true)
@@ -175,6 +175,7 @@ describe("sabnzbd definition", () => {
         queueSize: 1,
         downloading: true,
         downloads: [{ title: "Test.nzb", progress: 50 }],
+        showDownloads: true,
       })
       expect(payload.downloads).toHaveLength(1)
     })

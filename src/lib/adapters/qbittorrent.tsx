@@ -10,6 +10,7 @@ type QBittorrentData = {
   upSpeed: string
   activeDownloads: number
   queued: number
+  showDownloads?: boolean
   downloads?: DownloadItem[]
 }
 
@@ -45,7 +46,8 @@ function qbittorrentToPayload(data: QBittorrentData) {
         icon: List,
       },
     ],
-    downloads: data.downloads?.length ? data.downloads : undefined,
+    downloads:
+      data.showDownloads && data.downloads?.length ? data.downloads : undefined,
   }
 }
 
@@ -77,9 +79,16 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       required: true,
       placeholder: "Your qBittorrent password",
     },
+    {
+      key: "showDownloads",
+      label: "Show active downloads",
+      type: "boolean",
+      helperText: "Display currently downloading items",
+    },
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
+    const showDownloads = config.showDownloads !== "false"
 
     // Login
     const loginRes = await fetch(`${baseUrl}/api/v2/auth/login`, {
@@ -171,7 +180,8 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       upSpeed: formatSpeed(info.up_info_speed ?? 0),
       activeDownloads: torrents.length,
       queued,
-      downloads,
+      showDownloads,
+      downloads: showDownloads ? downloads : [],
     }
   },
   toPayload: qbittorrentToPayload,

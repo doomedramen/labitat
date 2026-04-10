@@ -9,6 +9,7 @@ type SABnzbdData = {
   remaining: string
   queueSize: number
   downloading: boolean
+  showDownloads?: boolean
   downloads?: DownloadItem[]
 }
 
@@ -34,7 +35,8 @@ function sabnzbdToPayload(data: SABnzbdData) {
         icon: List,
       },
     ],
-    downloads: data.downloads?.length ? data.downloads : undefined,
+    downloads:
+      data.showDownloads && data.downloads?.length ? data.downloads : undefined,
   }
 }
 
@@ -59,9 +61,16 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
       required: true,
       placeholder: "Your SABnzbd API key",
     },
+    {
+      key: "showDownloads",
+      label: "Show active downloads",
+      type: "boolean",
+      helperText: "Display currently downloading items",
+    },
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "")
+    const showDownloads = config.showDownloads !== "false"
     const url = `${baseUrl}/api?output=json&apikey=${config.apiKey}&mode=queue`
 
     const res = await fetch(url)
@@ -91,7 +100,8 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
       remaining: queue.timeleft ?? "—",
       queueSize: queue.noofslots ?? 0,
       downloading: queue.status === "Downloading",
-      downloads,
+      showDownloads,
+      downloads: showDownloads ? downloads : [],
     }
   },
   toPayload: sabnzbdToPayload,

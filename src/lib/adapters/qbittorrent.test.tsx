@@ -12,7 +12,7 @@ describe("qbittorrent definition", () => {
 
   it("has configFields defined", () => {
     expect(qbittorrentDefinition.configFields).toBeDefined()
-    expect(qbittorrentDefinition.configFields).toHaveLength(3)
+    expect(qbittorrentDefinition.configFields).toHaveLength(4)
     expect(qbittorrentDefinition.configFields[0].key).toBe("url")
     expect(qbittorrentDefinition.configFields[0].type).toBe("url")
     expect(qbittorrentDefinition.configFields[0].required).toBe(true)
@@ -155,6 +155,7 @@ describe("qbittorrent definition", () => {
         url: "https://qb.example.com",
         username: "admin",
         password: "secret",
+        showDownloads: "true",
       })
 
       // Should be sorted: downloading (priority 0) > stalledDL (priority 3) > queuedDL (priority 4)
@@ -281,6 +282,7 @@ describe("qbittorrent definition", () => {
         activeDownloads: 1,
         queued: 0,
         downloads: [{ title: "Movie.mkv", progress: 50 }],
+        showDownloads: true,
       })
       expect(payload.downloads).toHaveLength(1)
     })
