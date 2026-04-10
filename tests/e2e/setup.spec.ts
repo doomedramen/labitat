@@ -68,7 +68,7 @@ test.describe("First-time Setup", () => {
     await pw.blur()
     await page.getByRole("button", { name: "Create Admin Account" }).click()
     await expect(
-      page.getByText("Password must be at least 6 characters").first()
+      page.getByText("Password must be at least 8 characters").first()
     ).toBeVisible()
   })
 

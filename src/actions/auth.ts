@@ -38,8 +38,8 @@ export async function setupAdmin(
     return { error: "Please enter a valid email address" }
   }
 
-  if (!password || password.length < 12) {
-    return { error: "Password must be at least 12 characters" }
+  if (!password || password.length < 8) {
+    return { error: "Password must be at least 8 characters" }
   }
 
   if (password !== confirmPassword) {
