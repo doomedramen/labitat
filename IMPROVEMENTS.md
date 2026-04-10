@@ -438,9 +438,11 @@ The column name `order` is a reserved SQL keyword. Works in SQLite with quoting 
 
 ---
 
-### MEDIUM: Tests Don't Use Shared Mock Infrastructure
+### MEDIUM: Tests Don't Use Shared Mock Infrastructure — NO CHANGE NEEDED
 
 All adapter tests manually construct `vi.fn()` mocks while `tests/helpers/adapter-mocks.ts` provides `withMockAdapter()`. The mock system even includes a migration guide that hasn't been followed.
+
+**Decision:** Shared mock infrastructure exists for E2E tests and new adapters. Migrating 40+ existing unit tests is mechanical churn with no coverage benefit. Manual mocks give fine-grained control per test case.
 
 ---
 
@@ -452,13 +454,13 @@ All adapter tests manually construct `vi.fn()` mocks while `tests/helpers/adapte
 
 ---
 
-### MEDIUM: No E2E Tests for Widget Rendering
+### MEDIUM: No E2E Tests for Widget Rendering — IN PROGRESS
 
 The Playwright mock adapter infrastructure exists but is unused. No E2E tests verify that service widgets render, poll, or display errors correctly — the core feature of the app.
 
 ---
 
-### MEDIUM: Missing Edge Case Coverage in Adapter Tests
+### MEDIUM: Missing Edge Case Coverage in Adapter Tests — IN PROGRESS
 
 - Network errors / timeouts (fetch throws TypeError)
 - Malformed JSON responses
@@ -503,11 +505,13 @@ Both packages serve the same purpose (unique ID generation). `nanoid` is already
 
 Without an `engines` field, there's no enforcement of Node.js version compatibility.
 
-### MEDIUM: Next.js Pinned to Exact Version
+### MEDIUM: Next.js Pinned to Exact Version — FIXED
 
 **File:** `package.json:57`
 
 `next: "16.1.7"` (no caret) means `pnpm update` never picks up patches. May be intentional but worth noting.
+
+**Fix applied:** Changed to `^16.1.7` to allow patch updates.
 
 ### LOW: Version at `0.0.261`
 

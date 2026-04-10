@@ -1,7 +1,6 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { Skeleton } from "@/components/ui/skeleton"
 import { WidgetContainer } from "@/components/widgets"
 import type { ServiceData } from "@/lib/adapters/types"
 import type { ServiceDefinition } from "@/lib/adapters/types"
@@ -12,7 +11,6 @@ import { parseStatCardOrder } from "@/hooks/use-stat-card-order"
 interface WidgetRendererProps {
   serviceDef: ServiceDefinition | null
   effectiveData: ServiceData | null
-  effectiveLoading: boolean
   isClientSide: boolean
   editMode: boolean
   cleanMode?: boolean
@@ -22,7 +20,6 @@ interface WidgetRendererProps {
 export function WidgetRenderer({
   serviceDef,
   effectiveData,
-  effectiveLoading,
   isClientSide,
   editMode,
   cleanMode,
@@ -33,30 +30,9 @@ export function WidgetRenderer({
     serviceDef?.renderWidget && (isClientSide || effectiveData)
   const hasPayload = serviceDef?.toPayload && effectiveData && !hasCustomWidget
 
-  const showWidgetSkeleton =
-    !editMode && effectiveLoading && !isClientSide && !effectiveData
-
-  const isVisible =
-    (hasCustomWidget || hasPayload) && (effectiveData || !effectiveLoading)
-
   return (
-    <div
-      className={cn(
-        "transition-all duration-300 ease-in-out",
-        cleanMode ? "" : "mt-2",
-        isVisible
-          ? "max-h-[500px] overflow-visible opacity-100"
-          : "max-h-0 overflow-hidden opacity-0"
-      )}
-    >
-      {showWidgetSkeleton && (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-[52px] rounded-md" />
-          ))}
-        </div>
-      )}
-      {isVisible && effectiveData && serviceDef && (
+    <div className={cn(cleanMode ? "" : "mt-2")}>
+      {(hasCustomWidget || hasPayload) && effectiveData && serviceDef && (
         <WidgetDisplayProvider
           value={{
             statDisplayMode:

@@ -99,7 +99,6 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       <WidgetRenderer
         serviceDef={serviceDef ?? null}
         effectiveData={effectiveData}
-        effectiveLoading={effectiveLoading}
         isClientSide={isClientSide}
         editMode={editMode}
         cleanMode={item.cleanMode ?? undefined}

@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.273",
+  "version": "0.0.274",
   "type": "module",
   "private": true,
   "engines": {
@@ -57,7 +57,7 @@
     "js-yaml": "^4.1.0",
     "lucide-react": "^1.7.0",
     "nanoid": "^5.1.7",
-    "next": "16.1.7",
+    "next": "^16.1.7",
     "next-themes": "^0.4.6",
     "openmeteo": "^1.2.0",
     "radix-ui": "^1.4.3",
