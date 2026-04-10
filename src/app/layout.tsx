@@ -95,7 +95,7 @@ export default async function RootLayout({
     >
       <body>
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
-          <TooltipProvider delayDuration={0} skipDelayDuration={300}>
+          <TooltipProvider delayDuration={0} disableHoverableContent>
             <ThemeColorUpdater />
             {children}
             <Toaster richColors position="top-right" />
