@@ -42,9 +42,11 @@ export function WidgetRenderer({
   return (
     <div
       className={cn(
-        "overflow-hidden transition-all duration-300 ease-in-out",
+        "transition-all duration-300 ease-in-out",
         cleanMode ? "" : "mt-2",
-        isVisible ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        isVisible
+          ? "max-h-[500px] overflow-visible opacity-100"
+          : "max-h-0 overflow-hidden opacity-0"
       )}
     >
       {showWidgetSkeleton && (

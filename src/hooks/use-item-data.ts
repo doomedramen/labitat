@@ -82,7 +82,6 @@ export function useItemData({
     {
       fallbackData: item.cachedWidgetData ?? undefined,
       refreshInterval: isOnline ? pollingMs : 0,
-      dedupingInterval: pollingMs,
       revalidateOnFocus: false,
       revalidateIfStale: true,
       shouldRetryOnError: isOnline,
@@ -100,7 +99,6 @@ export function useItemData({
     {
       fallbackData: item.cachedPingStatus ?? undefined,
       refreshInterval: isOnline ? pollingMs : 0,
-      dedupingInterval: pollingMs,
       revalidateOnFocus: false,
       revalidateIfStale: true,
       shouldRetryOnError: isOnline,

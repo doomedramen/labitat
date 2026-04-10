@@ -375,8 +375,8 @@ export function StatCard({
 
   const showIcon = displayMode === "icon" && icon
   const showLabel = displayMode === "label"
-  // When in icon mode, use label as tooltip fallback so all icons have hover explanations
-  const effectiveTooltip = tooltip ?? (showIcon ? label : undefined)
+  // Tooltips only appear in icon mode — the label is already visible in label mode
+  const effectiveTooltip = showIcon ? (tooltip ?? label) : undefined
 
   // When sortable+editMode, make the whole card the drag activator
   const dragProps = sortable && editMode ? { ...attributes, ...listeners } : {}

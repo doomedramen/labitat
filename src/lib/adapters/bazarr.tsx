@@ -17,14 +17,12 @@ function bazarrToPayload(data: BazarrData) {
         value: data.missingMovies,
         label: "Missing Movies",
         icon: Film,
-        tooltip: "Missing Movies",
       },
       {
         id: "missing-episodes",
         value: data.missingEpisodes,
         label: "Missing Episodes",
         icon: Tv,
-        tooltip: "Missing Episodes",
       },
     ],
   }

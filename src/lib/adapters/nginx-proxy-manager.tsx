@@ -19,28 +19,24 @@ function nginxProxyManagerToPayload(data: NginxProxyManagerData) {
         value: data.hosts,
         label: "Proxy Hosts",
         icon: Globe,
-        tooltip: "Proxy Hosts",
       },
       {
         id: "redirections",
         value: data.redirHosts,
         label: "Redirections",
         icon: ArrowRight,
-        tooltip: "Redirections",
       },
       {
         id: "streams",
         value: data.streams,
         label: "Streams",
         icon: Wifi,
-        tooltip: "Streams",
       },
       {
         id: "disabled",
         value: data.deadHosts,
         label: "Disabled",
         icon: Ban,
-        tooltip: "Disabled",
       },
     ],
   }

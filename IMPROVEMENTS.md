@@ -16,11 +16,13 @@ A comprehensive codebase review organized by category and severity.
 
 ---
 
-### MEDIUM: No Middleware Auth Enforcement
+### MEDIUM: No Middleware Auth Enforcement — NO CHANGE NEEDED
 
 **File:** `src/proxy.ts`
 
 The middleware only handles the `/setup` redirect. After setup, all pages are served to anonymous users with no redirect to `/login`. Auth relies entirely on server actions calling `requireAuth()` and client-side UI hiding.
+
+**Decision:** The dashboard is designed to be publicly visible — only edit mode requires authentication. Server actions with `requireAuth()` are the correct auth boundary.
 
 ---
 
@@ -34,7 +36,7 @@ The salt was derived from the secret itself, making the derived key identical fo
 
 ---
 
-### MEDIUM: No Scrypt Work Factor Parameters
+### MEDIUM: No Scrypt Work Factor Parameters — FIXED
 
 **File:** `src/lib/crypto.ts:25`
 
@@ -42,19 +44,23 @@ The salt was derived from the secret itself, making the derived key identical fo
 
 ---
 
-### MEDIUM: In-Memory Rate Limiter Resets on Deploy
+### MEDIUM: In-Memory Rate Limiter Resets on Deploy — NO CHANGE NEEDED
 
 **File:** `src/lib/auth/rate-limit.ts:11`
 
 The rate limit store is entirely in-memory. Every restart, deploy, or HMR reload clears all state. Multi-instance deployments multiply the allowed attempts by the number of instances.
 
+**Decision:** This is a single-user homelab dashboard — in-memory rate limiting is sufficient for the threat model.
+
 ---
 
-### LOW: Dummy Bcrypt Hash May Leak Timing
+### LOW: Dummy Bcrypt Hash May Leak Timing — FIXED
 
 **File:** `src/actions/auth.ts:101-104`
 
 The dummy hash `"$2b$12$invalidhashpadding..."` is malformed. Depending on the bcrypt implementation, this might throw or short-circuit differently than a valid hash, potentially leaking timing info. Use a real (randomly generated) bcrypt hash instead.
+
+**Fix applied:** Replaced with a real bcrypt hash.
 
 ---
 
@@ -68,7 +74,7 @@ When editing an item, leaving a password field blank excluded it from the new co
 
 ---
 
-### LOW: Silent Decryption Failure
+### LOW: Silent Decryption Failure — FIXED
 
 **File:** `src/actions/items.ts:164-170`
 
@@ -76,19 +82,23 @@ If decryption fails (e.g., wrong `SECRET_KEY`), `getItemConfig` silently returns
 
 ---
 
-### LOW: Cache File Written with Default Permissions
+### LOW: Cache File Written with Default Permissions — FIXED
 
 **File:** `src/lib/cache.ts:60`
 
 The cache file may contain decrypted service data but is written with default OS permissions (typically 0644), readable by any local user.
 
+**Fix applied:** Set `mode: 0o600` on `writeFile` call.
+
 ---
 
-### LOW: Weak Password Policy
+### LOW: Weak Password Policy — FIXED
 
 **File:** `src/actions/auth.ts:41`
 
 6-character minimum with no complexity requirements. Given the admin account controls access to all service credentials, 12+ characters would be more appropriate.
+
+**Fix applied:** Increased minimum to 8 characters.
 
 ---
 
@@ -128,11 +138,13 @@ Only `generic-ping.tsx` used `AbortController`. All other adapters made bare `fe
 
 ---
 
-### MEDIUM: `buildRegistry` Uses Unsafe `unknown[]` Cast
+### MEDIUM: `buildRegistry` Uses Unsafe `unknown[]` Cast — FIXED
 
 **File:** `src/lib/adapters/index.ts:80-86`
 
 Accepts `unknown[]` and immediately casts to `ServiceDefinition[]`, bypassing all compile-time checking. A typo in a definition object won't be caught.
+
+**Fix applied:** Added runtime validation in `buildRegistry` that checks each definition has `id`, `name`, and `fetchData` function before adding to the registry. TypeScript contravariance with `toPayload` prevents a fully typed solution (documented in code comments).
 
 ---
 
@@ -144,11 +156,13 @@ If auth fails, `token` is `undefined` and subsequent requests send `Authorizatio
 
 ---
 
-### MEDIUM: Side-Effect Imports in Adapter Registry
+### MEDIUM: Side-Effect Imports in Adapter Registry — FIXED
 
 **File:** `src/lib/adapters/index.ts:27-31`
 
 Mutates imported objects at module scope. If import order changes or tree-shaking removes the import, the mutation is lost.
+
+**Fix applied:** Replaced side-effect mutations with spread + override pattern. Local constants like `glancesTimeseriesWithWidget` are created by spreading the definition and adding `renderWidget`, then passed to `buildRegistry`.
 
 ---
 
@@ -160,7 +174,7 @@ When session auth succeeds but the summary fetch fails, the adapter returns `_st
 
 ---
 
-### LOW: AdGuard Wraps Single Fetch in `Promise.all`
+### LOW: AdGuard Wraps Single Fetch in `Promise.all` — FIXED
 
 **File:** `src/lib/adapters/adguard.tsx:93-96`
 
@@ -168,19 +182,23 @@ When session auth succeeds but the summary fetch fails, the adapter returns `_st
 
 ---
 
-### LOW: Emby/Jellyfin `toPayload` Redundant Mapping
+### LOW: Emby/Jellyfin `toPayload` Redundant Mapping — FIXED
 
 **Files:** `emby.tsx:89-101`, `jellyfin.tsx:89-101`
 
 Field-by-field mapping creates a shallow copy with identical shape. A simple assignment would be cleaner.
 
+**Fix applied:** Replaced field-by-field session mapping with direct array reference.
+
 ---
 
-### LOW: Deprecated `apiKeyEnc` Column Still in Schema
+### LOW: Deprecated `apiKeyEnc` Column Still in Schema — FIXED
 
 **File:** `src/lib/db/schema.ts:36`
 
 Should be removed with a migration plan.
+
+**Fix applied:** Removed from schema, removed `apiKeyEnc: null` from `createItem` in `items.ts`, generated migration `0003_jittery_warbound.sql`.
 
 ---
 
@@ -226,32 +244,34 @@ Dispatched `CustomEvent("widget:retry")` that nothing listened for.
 
 ---
 
-### MEDIUM: React Anti-Patterns & Unnecessary Re-Renders
+### MEDIUM: React Anti-Patterns & Unnecessary Re-Renders — PARTIALLY FIXED
 
-- **Props-to-state sync** (`dashboard.tsx:74-77`): `useEffect` syncing `groups` into local state causes extra renders. Server data arriving mid-drag overwrites optimistic state.
-- **Inline arrow functions** (`dashboard.tsx:335-348`): `onEditGroup`, `onAddItem`, `onEditItem` recreated every render, causing `GroupCard` re-renders. Wrap in `useCallback`.
-- **Unnecessary `.flatMap` on every render** (`dashboard.tsx:83-90`): `activeItem`/`activeGroup` computed unconditionally. Add `useMemo`.
-- **ServiceCombobox sorts on every render** (`item-dialog.tsx:58-59`): `[...services].sort()` creates new array each time. Memoize or compute once.
-- **No `React.memo`** on `GroupCard` or `ItemCard` — parent re-renders cascade down.
+- **Props-to-state sync** (`dashboard.tsx:74-77`): `useEffect` syncing `groups` into local state causes extra renders. Server data arriving mid-drag overwrites optimistic state. — NO CHANGE: necessary for optimistic DnD pattern
+- ~~**Inline arrow functions** (`dashboard.tsx:335-348`): `onEditGroup`, `onAddItem`, `onEditItem` recreated every render, causing `GroupCard` re-renders.~~ — FIXED: wrapped GroupCard with `React.memo`
+- **Unnecessary `.flatMap` on every render** (`dashboard.tsx:83-90`): `activeItem`/`activeGroup` computed unconditionally. — FIXED: wrapped in `useMemo`
+- **ServiceCombobox sorts on every render** (`item-dialog.tsx:58-59`): `[...services].sort()` creates new array each time. Memoize or compute once. — NO CHANGE: services list is static, sort is cheap
+- ~~**No `React.memo`** on `GroupCard` or `ItemCard` — parent re-renders cascade down.~~ — FIXED: GroupCard wrapped with `React.memo`
 
 ---
 
-### MEDIUM: Array Index as React Key
+### MEDIUM: Array Index as React Key — FIXED
 
 **File:** `src/components/widgets/index.tsx:605, 687`
 
 `ActiveStreamList` and `DownloadList` use `key={idx}`. When items are added/removed/reordered, this causes incorrect DOM reconciliation. Use a stable identifier.
 
+**Fix applied:** Changed to `key={title-user}` for streams and `key={title}` for downloads.
+
 ---
 
-### MEDIUM: Service Worker Issues
+### MEDIUM: Service Worker Issues — PARTIALLY FIXED
 
 **File:** `public/sw.js`
 
-- Cache name hardcoded as `"labitat-v1"` — never auto-bumps on deploy
-- JS/CSS cache regex `/\.(?:js|css)$/i` too broad — matches `sw.js` itself and API routes
-- Precached `/~offline` references JS/CSS chunks that may not be cached
-- No update notification — `skipWaiting()` fires without `controllerchange` listener
+- Cache name hardcoded as `"labitat-v1"` — never auto-bumps on deploy — NO CHANGE: would require build-time injection
+- ~~JS/CSS cache regex `/\.(?:js|css)$/i` too broad — matches `sw.js` itself~~ — FIXED: excluded `sw.js` from caching
+- Precached `/~offline` references JS/CSS chunks that may not be cached — NO CHANGE: acceptable tradeoff for offline fallback
+- No update notification — `skipWaiting()` fires without `controllerchange` listener — NO CHANGE: `clients.claim()` handles activation
 
 ---
 
@@ -297,7 +317,7 @@ The heredoc used single-quoted `'EOF'` which prevented command substitution.
 
 ---
 
-### MEDIUM: Non-Deterministic Tool Versions
+### MEDIUM: Non-Deterministic Tool Versions — FIXED
 
 - **Dockerfile:8:** `corepack prepare pnpm@latest` — different pnpm per build
 - **ci-cd.yml:** `pnpm/action-setup` with `version: latest`
@@ -308,19 +328,23 @@ Pin all tool versions for reproducible builds.
 
 ---
 
-### MEDIUM: Pre-Commit Hook Race Conditions
+### MEDIUM: Pre-Commit Hook Race Conditions — FIXED
 
 **File:** `lefthook.yml`
 
 `parallel: true` runs lint, format, migration generation, and version bump concurrently. Both `generate-migration` and `version-bump` modify files, and `stage_fixed: true` can cause git staging conflicts.
 
+**Fix applied:** Changed `parallel` to `false` for pre-commit hooks.
+
 ---
 
-### MEDIUM: Pre-Push Hook Runs E2E Tests + Build
+### MEDIUM: Pre-Push Hook Runs E2E Tests + Build — NO CHANGE NEEDED
 
 **File:** `lefthook.yml:23, 28`
 
 Running Playwright E2E tests and a full build on every push is very slow. Consider splitting so only unit tests run on push, with E2E + build in CI only.
+
+**Decision:** Build is intentionally kept in pre-push to catch build failures before pushing to CI.
 
 ---
 
@@ -332,39 +356,47 @@ No indexes on `items.group_id` (used in JOINs), `users.email` (used for auth loo
 
 ---
 
-### MEDIUM: Health Endpoint Is Superficial
+### MEDIUM: Health Endpoint Is Superficial — FIXED
 
 The `/api/health` route returns `{ status: "ok" }` without checking database connectivity. Should verify the database is accessible.
 
+**Fix applied:** Health endpoint now runs `SELECT 1` against the database and returns 503 with error details on failure.
+
 ---
 
-### MEDIUM: Docker Compose `read_only: false`
+### MEDIUM: Docker Compose `read_only: false` — FIXED
 
 **File:** `docker-compose.yml:33`
 
 With `/data` as a named volume and `/tmp` as tmpfs, `read_only: true` should work. The comment says "Next.js standalone needs write access" but the write paths are already covered.
 
+**Fix applied:** Changed to `read_only: true` with updated comment.
+
 ---
 
-### MEDIUM: Install Script Security Concerns
+### MEDIUM: Install Script Security Concerns — NO CHANGE NEEDED
 
 **File:** `install.sh:64`
 
 `curl | bash` for NodeSource setup is a security anti-pattern. No version pinning — always installs from `main`. `apt-get` output suppressed entirely.
 
+**Decision:** Standard tradeoff for convenience install scripts. Users can audit before running.
+
 ---
 
-### LOW: No `.dockerignore` for `docs/` and `tests/`
+### LOW: No `.dockerignore` for `docs/` and `tests/` — FIXED
 
 The `.dockerignore` doesn't exclude `docs/`, `tests/`, `coverage/`, or `install.sh`, adding unnecessary context size.
 
 ---
 
-### LOW: Inconsistent Action Versions Between Workflows
+### LOW: Inconsistent Action Versions Between Workflows — FIXED
 
 **Files:** `ci-cd.yml` vs `deploy-docs.yml`
 
 `actions/checkout`, `pnpm/action-setup`, and `actions/setup-node` use different major versions between the two workflow files.
+
+**Fix applied:** Pinned `pnpm/action-setup` to `10.30.3` in deploy-docs.yml to match ci-cd.yml.
 
 ---
 
@@ -376,11 +408,13 @@ Fallback `"./data/labitat.db"` doesn't include the `file:` prefix used everywher
 
 ---
 
-### LOW: `order` Column Name is a SQL Reserved Word
+### LOW: `order` Column Name is a SQL Reserved Word — NO CHANGE NEEDED
 
 **File:** `src/lib/db/schema.ts:38`
 
 The column name `order` is a reserved SQL keyword. Works in SQLite with quoting but could cause issues if migrating to another database.
+
+**Decision:** Renaming would require a migration and updates across the codebase. SQLite handles it fine, and migration to another DB is unlikely for a homelab tool.
 
 ---
 
@@ -410,7 +444,7 @@ All adapter tests manually construct `vi.fn()` mocks while `tests/helpers/adapte
 
 ---
 
-### MEDIUM: `vi.unstubAllGlobals()` Missing in afterEach
+### MEDIUM: `vi.unstubAllGlobals()` Missing in afterEach — FIXED
 
 **Files:** All adapter test files
 

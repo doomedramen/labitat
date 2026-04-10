@@ -19,28 +19,24 @@ function seerrToPayload(data: SeerrData) {
         value: data.pending,
         label: "Pending",
         icon: Clock,
-        tooltip: "Pending",
       },
       {
         id: "approved",
         value: data.approved,
         label: "Approved",
         icon: Check,
-        tooltip: "Approved",
       },
       {
         id: "available",
         value: data.available,
         label: "Available",
         icon: Package,
-        tooltip: "Available",
       },
       {
         id: "processing",
         value: data.processing,
         label: "Processing",
         icon: RefreshCw,
-        tooltip: "Processing",
       },
     ],
   }
