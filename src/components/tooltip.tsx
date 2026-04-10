@@ -27,7 +27,9 @@ const tooltipStore = {
   },
   subscribe(fn: () => void) {
     this.listeners.add(fn)
-    return () => this.listeners.delete(fn)
+    return () => {
+      void this.listeners.delete(fn)
+    }
   },
 }
 
@@ -116,7 +118,7 @@ export function TooltipTrigger({
   delayMs = 0,
 }: TooltipTriggerProps) {
   const ref = React.useRef<HTMLDivElement>(null)
-  const timerRef = React.useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const show = () => {
     timerRef.current = setTimeout(() => {
@@ -133,7 +135,7 @@ export function TooltipTrigger({
   }
 
   const hide = () => {
-    clearTimeout(timerRef.current)
+    if (timerRef.current) clearTimeout(timerRef.current)
     tooltipStore.set({ open: false })
   }
 
