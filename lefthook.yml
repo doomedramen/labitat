@@ -23,7 +23,7 @@ pre-commit:
       run: npx -y package-bump@1.1.7 patch --stage
       stage_fixed: true
     changelog:
-      run: npx auto-changelog -p
+      run: npx auto-changelog -p && git add CHANGELOG.md
       stage_fixed: true
 pre-push:
   parallel: false
