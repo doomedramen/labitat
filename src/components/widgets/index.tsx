@@ -128,13 +128,13 @@ export function ListItem({
         <button
           type="button"
           onClick={onLeadingClick}
-          className="shrink-0 cursor-pointer text-secondary-foreground/50 hover:text-secondary-foreground/70"
+          className="shrink-0 cursor-pointer text-secondary-foreground/50 transition-all duration-200 hover:scale-110 hover:text-secondary-foreground/70 active:scale-95"
           aria-label={title}
         >
           <Leading className="h-3 w-3" />
         </button>
       ) : Leading ? (
-        <div className="shrink-0 text-secondary-foreground/50">
+        <div className="shrink-0 text-secondary-foreground/50 transition-transform duration-200 hover:scale-110">
           <Leading className="h-3 w-3" />
         </div>
       ) : null}
@@ -161,7 +161,7 @@ export function ListItem({
     <div
       className={cn(
         "relative flex w-full items-center gap-2 overflow-hidden rounded-md bg-secondary/30 px-2 py-1 text-xs",
-        "hover:bg-secondary/50",
+        "transition-all duration-200 hover:scale-[1.01] hover:bg-secondary/50 active:scale-[0.99]",
         className
       )}
     >
@@ -169,9 +169,11 @@ export function ListItem({
       {/* Progress bar */}
       {hasProgress && (
         <div
-          className="absolute bottom-0 left-0 h-px bg-primary/50"
+          className="absolute bottom-0 left-0 h-px bg-primary/50 transition-all duration-500 ease-out"
           style={{ width: `${progressPercent}%` }}
-        />
+        >
+          <div className="absolute inset-0 animate-pulse bg-primary/30" />
+        </div>
       )}
     </div>
   )
@@ -385,7 +387,11 @@ export function StatCard({
       {...dragProps}
       className={cn(
         "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground select-none",
-        sortable && editMode && "cursor-grab active:cursor-grabbing"
+        "transition-all duration-200 hover:scale-105 hover:bg-secondary/80 active:scale-95",
+        sortable &&
+          editMode &&
+          "cursor-grab hover:shadow-md active:cursor-grabbing",
+        isDragging && "scale-110 rotate-3 opacity-50 shadow-lg"
       )}
     >
       <span

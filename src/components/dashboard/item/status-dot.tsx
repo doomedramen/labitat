@@ -37,8 +37,10 @@ export function StatusDot({ status }: StatusDotProps) {
         reason ? `${labels[status.state]}: ${reason}` : labels[status.state]
       }
       className={cn(
-        "h-2.5 w-2.5 rounded-full transition-colors",
-        colors[status.state]
+        "h-2.5 w-2.5 rounded-full transition-all duration-300",
+        colors[status.state],
+        (status.state === "unreachable" || status.state === "error") &&
+          "animate-pulse"
       )}
     />
   )

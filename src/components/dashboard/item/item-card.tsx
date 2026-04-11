@@ -44,6 +44,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.35 : undefined,
+    zIndex: isDragging ? 999 : undefined,
   }
 
   const inner = (
@@ -56,18 +57,20 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       data-item-id={item.id}
     >
       {!editMode && hasStatus && !item.cleanMode && (
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 transition-all duration-300 group-hover/item:scale-110">
           <StatusDot status={serviceStatus} />
         </div>
       )}
 
       {(!item.cleanMode || editMode) && (
         <div className="flex items-center gap-3">
-          <ItemIcon
-            iconUrl={item.iconUrl}
-            label={item.label}
-            serviceIcon={serviceDef?.icon ?? null}
-          />
+          <div className="transition-transform duration-300 group-hover/item:scale-105">
+            <ItemIcon
+              iconUrl={item.iconUrl}
+              label={item.label}
+              serviceIcon={serviceDef?.icon ?? null}
+            />
+          </div>
           <div className="min-w-0 flex-1 pr-4">
             <p className="truncate text-sm leading-snug font-medium">
               {editMode
@@ -103,8 +106,10 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       className={cn(
         "group/item relative overflow-hidden rounded-xl bg-card transition-all duration-300 ease-in-out",
         editMode ? "border border-ring/50" : "border border-border/50",
-        !editMode && "transform hover:scale-[1.02] hover:shadow-md",
-        !editMode && item.href && "cursor-pointer"
+        !editMode &&
+          "transform hover:scale-[1.02] hover:border-border/80 hover:shadow-lg active:scale-[0.98]",
+        !editMode && item.href && "cursor-pointer",
+        isDragging && "rotate-2 shadow-2xl ring-2 ring-ring/20"
       )}
     >
       {!editMode && item.href ? (

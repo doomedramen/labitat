@@ -39,13 +39,20 @@ function ActiveZone({
   statDisplayMode: "icon" | "label"
   gridStyle: React.CSSProperties
 }) {
-  const { setNodeRef } = useDroppable({ id: "active-zone" })
+  const { setNodeRef, isOver } = useDroppable({ id: "active-zone" })
   return (
     <SortableContext
       items={items.map((i) => i.id)}
       strategy={rectSortingStrategy}
     >
-      <div ref={setNodeRef} className="grid gap-1.5 text-xs" style={gridStyle}>
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "grid gap-1.5 text-xs transition-all duration-300",
+          isOver && "-m-2 rounded-lg bg-primary/5 p-2"
+        )}
+        style={gridStyle}
+      >
         {items.map((item) => (
           <StatCard
             key={item.id}
@@ -72,19 +79,26 @@ function UnusedZone({
     <div
       ref={setNodeRef}
       className={cn(
-        "rounded-lg border-2 border-dashed p-3 transition-colors",
+        "rounded-lg border-2 border-dashed p-3 transition-all duration-300",
         isOver
-          ? "border-primary/50 bg-primary/5"
+          ? "scale-[1.02] border-primary/70 bg-primary/10 shadow-md"
           : items.length > 0
-            ? "border-muted-foreground/30"
-            : "border-muted-foreground/15"
+            ? "border-muted-foreground/30 hover:border-muted-foreground/50"
+            : "border-muted-foreground/15 hover:border-muted-foreground/30"
       )}
     >
       <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Trash2 className="h-3 w-3" />
+        <Trash2
+          className={cn(
+            "h-3 w-3 transition-transform duration-300",
+            isOver && "scale-110 rotate-12"
+          )}
+        />
         <span>Unused stat cards</span>
         {items.length > 0 && (
-          <span className="ml-auto text-[10px]">Drag back to restore</span>
+          <span className="ml-auto text-[10px] opacity-60 transition-opacity duration-200 hover:opacity-100">
+            Drag back to restore
+          </span>
         )}
       </div>
       {items.length > 0 ? (
@@ -94,7 +108,10 @@ function UnusedZone({
         >
           <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
             {items.map((item) => (
-              <div key={item.id} className="opacity-50">
+              <div
+                key={item.id}
+                className="opacity-50 transition-all duration-200 hover:scale-105 hover:opacity-75"
+              >
                 <StatCard
                   {...item}
                   displayMode={statDisplayMode}
@@ -106,7 +123,7 @@ function UnusedZone({
           </div>
         </SortableContext>
       ) : (
-        <p className="text-center text-[11px] text-muted-foreground/50">
+        <p className="text-center text-[11px] text-muted-foreground/50 transition-all duration-200">
           Drag stat cards here to hide them
         </p>
       )}
