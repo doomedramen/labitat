@@ -36,7 +36,8 @@ export function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
           width={20}
           height={20}
           className="h-5 w-5 object-contain"
-          loading="eager"
+          loading="lazy"
+          decoding="async"
           onError={(e) => {
             // Fallback to first letter
             const target = e.target as HTMLImageElement

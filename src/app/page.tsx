@@ -7,6 +7,9 @@ import { pingAndCache } from "@/actions/ping"
 import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache"
 import type { GroupWithCache, ItemWithCache } from "@/lib/types"
 
+// This page is always dynamic due to session auth, database queries, and cookie usage
+export const dynamic = "force-dynamic"
+
 async function DashboardContent() {
   let session, groupsWithItems, titleSetting
   try {

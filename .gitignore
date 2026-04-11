@@ -40,3 +40,4 @@ next-env.d.ts
 /test-results
 homepage/
 /docs/.vitepress/dist
+/.unlighthouse
