@@ -557,7 +557,8 @@ export function ItemDialog({
                             </Select>
                           ) : field.type === "url" ? (
                             <form.Field
-                              name={`config_${field.key}` as `config_${string}`}
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic config fields are not in the form schema
+                              name={`config_${field.key}` as any}
                               defaultValue={fieldValue ?? ""}
                               validators={{
                                 onChange: ({ value }) =>

@@ -548,8 +548,8 @@ export const pipesMocks = {
 
 export const genericPingMocks = {
   success: (
-    baseUrl = "https://example.com",
-    _latency = 150 as number
+    baseUrl = "https://example.com"
+    // latency parameter reserved for future use
   ): MockResponse[] => [
     successResponse(urlPatterns.base(baseUrl), "", 200, {
       "Content-Type": "text/html",
