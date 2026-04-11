@@ -75,7 +75,7 @@ pnpm db:studio
 ```bash
 # Docker
 docker compose down
-docker run --rm -v labitat_data:/data -v $(pwd):/backup alpine tar czf /backup/labitat-backup.tar.gz -C /data .
+docker run --rm -v labitat_data:/app/data -v $(pwd):/backup alpine tar czf /backup/labitat-backup.tar.gz -C /app/data .
 
 # Native
 systemctl stop labitat
@@ -90,7 +90,7 @@ systemctl start labitat
 ```bash
 # Docker
 docker compose down
-docker run --rm -v labitat_data:/data -v $(pwd):/backup alpine tar xzf /backup/labitat-backup.tar.gz -C /data
+docker run --rm -v labitat_data:/app/data -v $(pwd):/backup alpine tar xzf /backup/labitat-backup.tar.gz -C /app/data
 docker compose up -d
 
 # Native
@@ -139,5 +139,5 @@ If you lose your `SECRET_KEY`, stored service credentials cannot be decrypted. Y
 
 1. Check logs: `docker compose logs labitat`
 2. Verify environment variables are set correctly
-3. Ensure the data volume is mounted at `/data`
+3. Ensure the data volume is mounted at `/app/data`
 4. Try rolling back: `docker compose pull <previous-tag>` and `docker compose up -d`

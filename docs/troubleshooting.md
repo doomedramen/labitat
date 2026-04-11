@@ -77,7 +77,7 @@ For production environments, consider installing a proper SSL certificate on you
 ### Timeseries widget not working
 
 - Requires cache directory to be writable
-- Ensure `CACHE_DIR` is set and persists across restarts (Docker: `/data/cache`)
+- Ensure `CACHE_DIR` is set and persists across restarts (Docker: `/app/data/cache`)
 
 ## Proxmox / Proxmox Backup Server
 

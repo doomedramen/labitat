@@ -4,7 +4,7 @@ set -e
 # Auto-generate and persist SECRET_KEY if not explicitly provided
 DEFAULT_PLACEHOLDER="change_me_to_a_random_32_char_string_minimum"
 if [ -z "$SECRET_KEY" ] || [ "$SECRET_KEY" = "$DEFAULT_PLACEHOLDER" ]; then
-  KEY_FILE="/data/.secret_key"
+  KEY_FILE="/app/data/.secret_key"
   if [ -f "$KEY_FILE" ]; then
     SECRET_KEY=$(cat "$KEY_FILE")
     export SECRET_KEY

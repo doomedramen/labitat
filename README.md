@@ -28,7 +28,7 @@ docker run -d \
   --name labitat \
   --restart unless-stopped \
   -p 3000:3000 \
-  -v labitat_data:/data \
+  -v labitat_data:/app/data \
   ghcr.io/doomedramen/labitat:latest
 ```
 
@@ -41,7 +41,7 @@ curl -fsSL https://raw.githubusercontent.com/DoomedRamen/labitat/main/docker-com
 docker compose up -d
 ```
 
-> **Secret key:** Auto-generated on first run and saved to `/data/.secret_key` inside the volume. Back up your `labitat_data` volume to preserve it. To set your own key: `export SECRET_KEY=$(openssl rand -base64 32)` before running.
+> **Secret key:** Auto-generated on first run and saved to `/app/data/.secret_key` inside the volume. Back up your `labitat_data` volume to preserve it. To set your own key: `export SECRET_KEY=$(openssl rand -base64 32)` before running.
 
 ### Native Install (Debian/Proxmox)
 
@@ -109,7 +109,7 @@ On your first visit, you'll be redirected to a setup page to create your admin a
 
 ### Secret Key
 
-In Docker, `SECRET_KEY` is auto-generated on first run and saved to `/data/.secret_key` inside the volume. Back up your volume to preserve it.
+In Docker, `SECRET_KEY` is auto-generated on first run and saved to `/app/data/.secret_key` inside the volume. Back up your volume to preserve it.
 
 To set your own key instead: `export SECRET_KEY=$(openssl rand -base64 32)` before starting.
 
@@ -123,7 +123,7 @@ This key encrypts stored service credentials using AES-256-GCM. Lose it and you 
 | `DATABASE_URL`                    | No       | SQLite path (default: `file:./data/labitat.db`)                            |
 | `NODE_ENV`                        | No       | Set to `production` for deployment                                         |
 | `PORT`                            | No       | Override default port (3000)                                               |
-| `CACHE_DIR`                       | No       | Cache directory for widget cache (default: `/data/cache` in Docker)        |
+| `CACHE_DIR`                       | No       | Cache directory for widget cache (default: `/app/data/cache` in Docker)    |
 | `NEXT_PUBLIC_ALLOWED_DEV_ORIGINS` | No       | Allowed origins for development (e.g., `http://localhost:3000`)            |
 
 ## Development

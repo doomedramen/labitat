@@ -13,7 +13,7 @@ Labitat is configured through environment variables and the built-in setup wizar
 
 ## Secret Key
 
-In Docker, `SECRET_KEY` is auto-generated on first run and saved to `/data/.secret_key`. No action required.
+In Docker, `SECRET_KEY` is auto-generated on first run and saved to `/app/data/.secret_key`. No action required.
 
 To set your own key:
 

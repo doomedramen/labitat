@@ -8,6 +8,11 @@ const nextConfig = {
         hostname: "cdn.jsdelivr.net",
       },
     ],
+    localPatterns: [
+      {
+        pathname: "/api/icon",
+      },
+    ],
   },
 }
 

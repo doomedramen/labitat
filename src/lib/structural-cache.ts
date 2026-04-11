@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
-import { getCachedAny, setCached, flushCache } from "@/lib/cache"
+import { setCached, flushCache } from "@/lib/cache"
 import type { GroupWithItems } from "@/lib/types"
 
 const GROUPS_KEY = "structural:groups"
@@ -45,20 +45,18 @@ interface SettingRow {
   value: string
 }
 
-/** Get a setting from cache, seed from DB on cold start. */
+/** Get a setting directly from DB — caching causes stale-data races in dev mode.
+ *
+ * Same issue as getOrSeedGroups: separate module contexts in Next.js dev mode
+ * each hold their own memoryCache, so a reset + re-seed in one test can leave
+ * stale setting values visible to the SSR worker.
+ */
 export async function getOrSeedSetting(
   key: string
 ): Promise<SettingRow | null> {
-  const cacheKey = settingsKey(key)
-  const cached = await getCachedAny<SettingRow>(cacheKey)
-  if (cached) return cached
-
   const row = await db.query.settings.findFirst({
     where: eq(settings.key, key),
   })
-  if (row) {
-    await setCached(cacheKey, row)
-  }
   return row ?? null
 }
 

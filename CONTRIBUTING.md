@@ -219,7 +219,7 @@ Build and test locally:
 
 ```bash
 docker build -t labitat:test .
-docker run -p 3000:3000 -v $(pwd)/data:/data labitat:test
+docker run -p 3000:3000 -v $(pwd)/data:/app/data labitat:test
 ```
 
 ## Questions?

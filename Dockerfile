@@ -35,7 +35,7 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_URL=file:/data/labitat.db
+ENV DATABASE_URL=file:/app/data/labitat.db
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
@@ -56,7 +56,7 @@ COPY --from=builder --chown=labitat:nodejs /app/node_modules/drizzle-orm ./node_
 COPY --from=builder --chown=labitat:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
 
 # Create data directory for SQLite database and cache
-RUN mkdir -p /data/cache && chown -R labitat:nodejs /data
+RUN mkdir -p /app/data/cache && chown -R labitat:nodejs /app/data
 
 # Copy and set up entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/

@@ -11,7 +11,7 @@ docker run -d \
   --name labitat \
   --restart unless-stopped \
   -p 3000:3000 \
-  -v labitat_data:/data \
+  -v labitat_data:/app/data \
   ghcr.io/doomedramen/labitat:latest
 ```
 

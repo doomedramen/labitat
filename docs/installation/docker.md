@@ -9,7 +9,7 @@ docker run -d \
   --name labitat \
   --restart unless-stopped \
   -p 3000:3000 \
-  -v labitat_data:/data \
+  -v labitat_data:/app/data \
   ghcr.io/doomedramen/labitat:latest
 ```
 
@@ -26,7 +26,7 @@ docker compose up -d
 
 ## Secret Key
 
-Labitat needs a `SECRET_KEY` (32+ chars) to encrypt stored credentials. By default, one is generated automatically on first run and saved to `/data/.secret_key` inside the volume.
+Labitat needs a `SECRET_KEY` (32+ chars) to encrypt stored credentials. By default, one is generated automatically on first run and saved to `/app/data/.secret_key` inside the volume.
 
 To set your own key instead:
 

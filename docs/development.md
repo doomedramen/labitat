@@ -21,18 +21,18 @@ The development server starts at `http://localhost:3000`.
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server (Turbopack) |
-| `pnpm build` | Production build |
-| `pnpm start` | Start production server |
-| `pnpm lint` | Run ESLint |
-| `pnpm format` | Format with Prettier |
-| `pnpm typecheck` | TypeScript type checking |
-| `pnpm db:push` | Push database schema changes |
-| `pnpm db:studio` | Open Drizzle Studio |
-| `pnpm test` | Run E2E tests (Playwright) |
-| `pnpm test:ui` | Run tests with UI |
+| Command          | Description                          |
+| ---------------- | ------------------------------------ |
+| `pnpm dev`       | Start development server (Turbopack) |
+| `pnpm build`     | Production build                     |
+| `pnpm start`     | Start production server              |
+| `pnpm lint`      | Run ESLint                           |
+| `pnpm format`    | Format with Prettier                 |
+| `pnpm typecheck` | TypeScript type checking             |
+| `pnpm db:push`   | Push database schema changes         |
+| `pnpm db:studio` | Open Drizzle Studio                  |
+| `pnpm test`      | Run E2E tests (Playwright)           |
+| `pnpm test:ui`   | Run tests with UI                    |
 
 ## Pre-commit Hooks
 
@@ -67,5 +67,5 @@ Hooks are installed automatically with `pnpm install`.
 
 ```bash
 docker build -t labitat:test .
-docker run -p 3000:3000 -v $(pwd)/data:/data labitat:test
+docker run -p 3000:3000 -v $(pwd)/data:/app/data labitat:test
 ```

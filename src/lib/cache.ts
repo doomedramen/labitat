@@ -14,7 +14,7 @@ const memoryCache = new Map<string, CacheEntry<unknown>>()
 const CACHE_DIR =
   env.CACHE_DIR ??
   (env.NODE_ENV === "production"
-    ? "/data/cache"
+    ? "/app/data/cache"
     : join(process.cwd(), "data", "cache"))
 const CACHE_FILE = join(CACHE_DIR, "widget-cache.json")
 
