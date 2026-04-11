@@ -141,9 +141,9 @@ export function GlancesTimeseriesWidget({
                 dot={false}
                 activeDot={{ r: 3, strokeWidth: 0 }}
                 isAnimationActive="auto"
-                animationDuration={500}
-                animationEasing="ease-out"
-                animationBegin={index * 100}
+                animationDuration={700}
+                animationEasing="cubic-bezier(0.4, 0, 0.2, 1)"
+                animationBegin={index * 150}
                 animateNewValues
               />
             ))}
