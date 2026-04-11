@@ -28,6 +28,9 @@ test.describe("Theme Switching", () => {
     await page.getByRole("menuitemradio", { name: "Dark", exact: true }).click()
     await expect(page.locator("html")).toHaveClass(/dark/)
 
+    // Close the dropdown (it no longer auto-closes on selection)
+    await page.keyboard.press("Escape")
+
     await page.getByRole("button", { name: "Theme settings" }).click()
     await page
       .getByRole("menuitemradio", { name: "Light", exact: true })
