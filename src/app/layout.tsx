@@ -8,6 +8,7 @@ import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { TooltipRoot } from "@/components/tooltip"
+import { SplashScreenLinks } from "@/components/splash-screen-links"
 
 import "./globals.css"
 
@@ -93,6 +94,9 @@ export default async function RootLayout({
       data-palette={palette}
       className={cn("font-sans antialiased", inter.variable, fontMono.variable)}
     >
+      <head>
+        <SplashScreenLinks />
+      </head>
       <body>
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
           <ThemeColorUpdater />
