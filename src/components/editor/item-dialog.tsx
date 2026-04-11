@@ -27,6 +27,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
+import { useWebHaptics } from "web-haptics/react"
 
 import { createItem, updateItem, getItemConfig } from "@/actions/items"
 import { getAllServices } from "@/lib/adapters"
@@ -247,6 +248,7 @@ export function ItemDialog({
   groupId,
   onGroupsChanged,
 }: ItemDialogProps) {
+  const haptic = useWebHaptics()
   const services = getAllServices()
   const [serviceType, setServiceType] = useState(item?.serviceType ?? "")
   const [configFields, setConfigFields] = useState<Record<string, string>>({})
@@ -304,9 +306,11 @@ export function ItemDialog({
           const updated = await createItem(groupId, formData)
           onGroupsChanged(updated)
         }
+        haptic.trigger("success")
         onOpenChange(false)
       } catch {
         toast.error(item ? "Failed to update item" : "Failed to create item")
+        haptic.trigger("error")
       }
     },
   })

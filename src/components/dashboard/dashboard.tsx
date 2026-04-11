@@ -23,6 +23,7 @@ import {
 } from "@dnd-kit/sortable"
 import { Palette, LogIn, Plus, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { useWebHaptics } from "web-haptics/react"
 
 import { cn } from "@/lib/utils"
 import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types"
@@ -61,6 +62,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
+  const haptic = useWebHaptics()
   const [editMode, setEditMode] = useState(false)
   const [localTitle, setLocalTitle] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
@@ -181,6 +183,9 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
       return
     }
 
+    // Haptic feedback on successful drop
+    haptic.trigger("medium")
+
     const activeId = active.id as string
     const overId = over.id as string
     const type = active.data.current?.type
@@ -257,8 +262,10 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
       try {
         await updateDashboardTitle(localTitle.trim())
         toast.success("Dashboard saved")
+        haptic.trigger("success")
       } catch {
         toast.error("Failed to save title")
+        haptic.trigger("error")
       } finally {
         setSavingTitle(false)
       }
@@ -360,7 +367,10 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setEditMode(true)}
+                onClick={() => {
+                  setEditMode(true)
+                  haptic.trigger("light")
+                }}
               >
                 Edit
               </Button>
@@ -446,6 +456,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           onDone={async () => {
             await handleSaveTitle()
             setEditMode(false)
+            haptic.trigger("light")
           }}
         />
       )}

@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createGroup, updateGroup } from "@/actions/groups"
 import { toast } from "sonner"
+import { useWebHaptics } from "web-haptics/react"
 import type { GroupWithCache, GroupWithItems } from "@/lib/types"
 
 const groupSchema = z.object({
@@ -36,6 +37,7 @@ export function GroupDialog({
   group,
   onGroupsChanged,
 }: GroupDialogProps) {
+  const haptic = useWebHaptics()
   const form = useForm({
     defaultValues: {
       name: group?.name ?? "",
@@ -55,9 +57,11 @@ export function GroupDialog({
           const updated = await createGroup(formData)
           onGroupsChanged(updated)
         }
+        haptic.trigger("success")
         onOpenChange(false)
       } catch {
         toast.error(group ? "Failed to update group" : "Failed to create group")
+        haptic.trigger("error")
       }
     },
   })

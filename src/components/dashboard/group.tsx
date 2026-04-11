@@ -12,6 +12,7 @@ import { deleteItem } from "@/actions/items"
 import { toast } from "sonner"
 import { Pencil, Trash2, Plus, GripVertical } from "lucide-react"
 import { ConfirmDialog } from "@/components/confirm-dialog"
+import { useWebHaptics } from "web-haptics/react"
 
 interface GroupCardProps {
   group: GroupWithCache
@@ -30,6 +31,7 @@ export const GroupCard = memo(function GroupCard({
   onEditItem,
   onGroupsChanged,
 }: GroupCardProps) {
+  const haptic = useWebHaptics()
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   const {
@@ -110,8 +112,10 @@ export const GroupCard = memo(function GroupCard({
                   try {
                     const updated = await deleteItem(id)
                     onGroupsChanged(updated)
+                    haptic.trigger("warning")
                   } catch {
                     toast.error("Failed to delete item")
+                    haptic.trigger("error")
                   }
                 }}
               />
@@ -139,8 +143,10 @@ export const GroupCard = memo(function GroupCard({
           try {
             const updated = await deleteGroup(group.id)
             onGroupsChanged(updated)
+            haptic.trigger("warning")
           } catch {
             toast.error("Failed to delete group")
+            haptic.trigger("error")
           }
           setDeleteConfirmOpen(false)
         }}

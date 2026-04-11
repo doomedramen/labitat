@@ -21,6 +21,7 @@ import { useWidgetDisplay } from "@/components/dashboard/item/widget-display-con
 import { useStatCardOrder } from "@/hooks/use-stat-card-order"
 import { cn } from "@/lib/utils"
 import { Trash2 } from "lucide-react"
+import { useWebHaptics } from "web-haptics/react"
 
 interface WidgetStatGridProps {
   items: StatItem[]
@@ -134,6 +135,7 @@ function UnusedZone({
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
+  const haptic = useWebHaptics()
   const displaySettings = useWidgetDisplay()
 
   // Hooks must be called unconditionally
@@ -180,6 +182,7 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
       const newActive = activeItems.filter((i) => i.id !== activeId)
       const newUnused = [...unusedItems, activeInActive]
       moveBetweenLists(activeId, "active", activeItems, unusedItems)
+      haptic.trigger("medium")
       displaySettings.onOrderChange?.({
         active: newActive.map((i) => i.id),
         unused: newUnused.map((i) => i.id),
@@ -189,6 +192,7 @@ export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
       const newUnused = unusedItems.filter((i) => i.id !== activeId)
       const newActive = [...activeItems, activeInUnused]
       moveBetweenLists(activeId, "unused", activeItems, unusedItems)
+      haptic.trigger("medium")
       displaySettings.onOrderChange?.({
         active: newActive.map((i) => i.id),
         unused: newUnused.map((i) => i.id),

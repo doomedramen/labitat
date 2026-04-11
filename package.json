@@ -1,6 +1,6 @@
 {
   "name": "labitat",
-  "version": "0.0.313",
+  "version": "0.0.314",
   "type": "module",
   "private": true,
   "engines": {
@@ -74,6 +74,7 @@
     "tailwind-merge": "^3.5.0",
     "tw-animate-css": "^1.4.0",
     "vaul": "^1.1.2",
+    "web-haptics": "^0.0.6",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
   },
