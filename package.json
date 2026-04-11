@@ -1,12 +1,11 @@
 {
   "name": "labitat",
-  "version": "0.0.295",
+  "version": "0.0.296",
   "type": "module",
   "private": true,
   "engines": {
     "node": ">=22"
   },
-  "packageManager": "pnpm@10.30.3",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
