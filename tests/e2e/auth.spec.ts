@@ -72,6 +72,23 @@ test.describe("Authentication", () => {
   })
 
   test.describe("Logout", () => {
+    test("clicking Sign out button shows Sign in button", async ({ page }) => {
+      await seedAndAuth(page)
+
+      await page.goto("/")
+      await expect(page.getByRole("button", { name: "Edit" })).toBeVisible()
+
+      // Enter edit mode to reveal the edit bar with Sign out button
+      await page.getByRole("button", { name: "Edit" }).click()
+      await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible()
+
+      await page.getByRole("button", { name: "Sign out" }).click()
+
+      // After logout, should redirect to home and show Sign in
+      await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible()
+      await expect(page.getByRole("button", { name: "Edit" })).not.toBeVisible()
+    })
+
     test("clearing session shows Sign in button", async ({ page }) => {
       await seedAndAuth(page)
 
