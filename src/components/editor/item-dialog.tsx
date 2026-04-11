@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 import { formatErrors } from "@/lib/utils"
+import { urlSchema, isValidUrl } from "@/lib/url-utils"
 import {
   Dialog,
   DialogContent,
@@ -40,8 +41,8 @@ import {
 
 const itemSchema = z.object({
   label: z.string().min(1, "Label is required."),
-  href: z.string().url("Must be a valid URL.").or(z.literal("")),
-  iconUrl: z.string(),
+  href: urlSchema,
+  iconUrl: urlSchema,
   pollingMs: z.number().min(1, "Must be at least 1 second."),
 })
 
@@ -265,6 +266,16 @@ export function ItemDialog({
     },
     validators: {
       onChange: itemSchema,
+      onChangeAsync: async ({ value }) => {
+        const result = itemSchema.safeParse(value)
+        if (!result.success) {
+          return {
+            fields: result.error.flatten().fieldErrors,
+          }
+        }
+        return undefined
+      },
+      onChangeAsyncDebounceMs: 300,
       onBlur: itemSchema,
     },
     onSubmit: async ({ value }) => {
@@ -289,7 +300,6 @@ export function ItemDialog({
         } else {
           await createItem(groupId, formData)
         }
-        form.reset()
         onOpenChange(false)
       } catch {
         toast.error(item ? "Failed to update item" : "Failed to create item")
@@ -297,7 +307,7 @@ export function ItemDialog({
     },
   })
 
-  // Sync state when item changes
+  // Sync state when item changes (including when switching from edit to new)
   useEffect(() => {
     setServiceType(item?.serviceType ?? "")
     setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label")
@@ -310,7 +320,25 @@ export function ItemDialog({
       pollingMs: item?.pollingMs ? item.pollingMs / 1000 : 10,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
-  }, [item?.id])
+  }, [item?.id, item])
+
+  // Reset form and local state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setServiceType("")
+      setConfigFields({})
+      setStatDisplayMode("label")
+      setCleanMode(false)
+      setLocalStatCardOrder(null)
+      form.reset({
+        label: "",
+        href: "",
+        iconUrl: "",
+        pollingMs: 10,
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
+  }, [open])
 
   // Auto-set label based on service type when creating a new item
   useEffect(() => {
@@ -527,25 +555,75 @@ export function ItemDialog({
                                 ))}
                               </SelectContent>
                             </Select>
+                          ) : field.type === "url" ? (
+                            <form.Field
+                              name={`config_${field.key}` as `config_${string}`}
+                              defaultValue={fieldValue ?? ""}
+                              validators={{
+                                onChange: ({ value }) =>
+                                  value && !isValidUrl(value)
+                                    ? "Must be a valid URL (e.g., example.com or https://example.com)"
+                                    : undefined,
+                                onChangeAsyncDebounceMs: 300,
+                                onBlur: ({ value }) =>
+                                  value && !isValidUrl(value)
+                                    ? "Must be a valid URL (e.g., example.com or https://example.com)"
+                                    : undefined,
+                              }}
+                            >
+                              {(configField) => {
+                                const isInvalid =
+                                  configField.state.meta.isTouched &&
+                                  !configField.state.meta.isValid
+                                return (
+                                  <div className="space-y-1">
+                                    <Input
+                                      id={`config_${field.key}`}
+                                      type="text"
+                                      value={configField.state.value}
+                                      onChange={(e) => {
+                                        configField.handleChange(e.target.value)
+                                        setConfigFields((prev) => ({
+                                          ...prev,
+                                          [field.key]: e.target.value,
+                                        }))
+                                      }}
+                                      onBlur={configField.handleBlur}
+                                      placeholder={field.placeholder}
+                                      aria-invalid={isInvalid || undefined}
+                                    />
+                                    {isInvalid && (
+                                      <p className="text-xs text-destructive">
+                                        {formatErrors(
+                                          configField.state.meta.errors
+                                        )}
+                                      </p>
+                                    )}
+                                  </div>
+                                )
+                              }}
+                            </form.Field>
                           ) : (
-                            <Input
-                              id={`config_${field.key}`}
-                              type={
-                                field.type === "password"
-                                  ? "password"
-                                  : field.type === "number"
-                                    ? "number"
-                                    : "text"
-                              }
-                              value={fieldValue ?? ""}
-                              onChange={(e) =>
-                                setConfigFields((prev) => ({
-                                  ...prev,
-                                  [field.key]: e.target.value,
-                                }))
-                              }
-                              placeholder={field.placeholder}
-                            />
+                            <div className="space-y-1">
+                              <Input
+                                id={`config_${field.key}`}
+                                type={
+                                  field.type === "password"
+                                    ? "password"
+                                    : field.type === "number"
+                                      ? "number"
+                                      : "text"
+                                }
+                                value={fieldValue ?? ""}
+                                onChange={(e) =>
+                                  setConfigFields((prev) => ({
+                                    ...prev,
+                                    [field.key]: e.target.value,
+                                  }))
+                                }
+                                placeholder={field.placeholder}
+                              />
+                            </div>
                           )}
                           {field.helperText && (
                             <p className="text-xs text-muted-foreground">

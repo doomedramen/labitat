@@ -29,13 +29,9 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
 
-  const {
-    effectiveData,
-    effectiveLoading,
-    serviceStatus,
-    hasStatus,
-    isClientSide,
-  } = useItemData({ editMode, item })
+  const { effectiveData, serviceStatus, hasStatus, isClientSide } = useItemData(
+    { editMode, item }
+  )
 
   const {
     attributes,

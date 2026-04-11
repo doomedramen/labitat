@@ -549,7 +549,7 @@ export const pipesMocks = {
 export const genericPingMocks = {
   success: (
     baseUrl = "https://example.com",
-    _latency = 150
+    _latency = 150 as number
   ): MockResponse[] => [
     successResponse(urlPatterns.base(baseUrl), "", 200, {
       "Content-Type": "text/html",
