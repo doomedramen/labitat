@@ -12,20 +12,15 @@ export function ThemeToggle() {
 
   return (
     <DropdownMenuRadioGroup value={theme ?? "system"} onValueChange={setTheme}>
-      <DropdownMenuRadioItem value="light" onSelect={(e) => e.preventDefault()}>
+      <DropdownMenuRadioItem value="light">
         <Sun className="mr-2 h-3.5 w-3.5" />
         Light
       </DropdownMenuRadioItem>
-      <DropdownMenuRadioItem value="dark" onSelect={(e) => e.preventDefault()}>
+      <DropdownMenuRadioItem value="dark">
         <Moon className="mr-2 h-3.5 w-3.5" />
         Dark
       </DropdownMenuRadioItem>
-      <DropdownMenuRadioItem
-        value="system"
-        onSelect={(e) => e.preventDefault()}
-      >
-        System
-      </DropdownMenuRadioItem>
+      <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
     </DropdownMenuRadioGroup>
   )
 }
