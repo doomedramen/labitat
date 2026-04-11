@@ -1,6 +1,5 @@
 "use client"
 
-import { useSyncExternalStore } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { cn } from "@/lib/utils"
@@ -20,12 +19,6 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  )
-
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
 
@@ -62,7 +55,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       data-testid="item-card"
       data-item-id={item.id}
     >
-      {mounted && !editMode && hasStatus && !item.cleanMode && (
+      {!editMode && hasStatus && !item.cleanMode && (
         <div className="absolute top-3 right-3">
           <StatusDot status={serviceStatus} />
         </div>

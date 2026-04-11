@@ -10,10 +10,16 @@ interface ItemIconProps {
   serviceIcon?: string | null // Service definition icon (fallback)
 }
 
+function toProxyUrl(src: string): string {
+  if (!src) return src
+  if (!src.startsWith("http://") && !src.startsWith("https://")) return src
+  return `/api/icon?url=${encodeURIComponent(src)}`
+}
+
 export function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
   // Use custom iconUrl if provided, otherwise fall back to service icon
   const rawIcon = iconUrl || serviceIcon || null
-  const iconSrc = resolveIconUrl(rawIcon)
+  const iconSrc = toProxyUrl(resolveIconUrl(rawIcon))
 
   return (
     <div
@@ -29,8 +35,7 @@ export function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
           width={20}
           height={20}
           className="h-5 w-5 object-contain"
-          loading="lazy"
-          unoptimized={iconSrc.startsWith("http")}
+          loading="eager"
           onError={(e) => {
             // Fallback to first letter
             const target = e.target as HTMLImageElement
