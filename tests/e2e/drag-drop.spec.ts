@@ -27,39 +27,43 @@ test.describe("Drag and Drop Reordering", () => {
   })
 
   test("reorders items within a group", async ({ page }) => {
-    // Get the drag handles for items (grip vertical icons)
     const itemCards = page.getByTestId("item-card")
     await expect(itemCards).toHaveCount(5)
 
-    // Drag Item 3 below Item 1 (swap positions with Item 2)
-    // We'll verify by checking the text order
-    const firstItem = itemCards.nth(0)
-    const thirdItem = itemCards.nth(2)
-    await expect(firstItem).toContainText("Item 1")
-    await expect(thirdItem).toContainText("Item 3")
+    await expect(itemCards.nth(0)).toContainText("Item 1")
+    await expect(itemCards.nth(2)).toContainText("Item 3")
 
-    // Perform the drag and wait for the reorder server action to complete
+    // The drag handle is a sibling of the item-card div, so locate from the parent
+    const handles = page.locator('[aria-label="Drag to reorder"]')
+    const firstHandle = handles.nth(0)
+    const thirdHandle = handles.nth(2)
+
     const responsePromise = page.waitForResponse(
       (resp) => resp.request().method() === "POST" && resp.status() === 200
     )
-    await dragAndDrop(page, thirdItem, firstItem)
+    await dragAndDrop(page, thirdHandle, firstHandle)
     await responsePromise
   })
 
   test("reorders groups", async ({ page }) => {
-    // Group A should appear first
     const groups = page.locator("h2")
     await expect(groups.nth(0)).toContainText("Group A")
     await expect(groups.nth(1)).toContainText("Group B")
 
-    // Drag Group B above Group A
-    const groupAHeader = page.locator("h2", { hasText: "Group A" })
-    const groupBHeader = page.locator("h2", { hasText: "Group B" })
-    // Drag and wait for the reorder server action to complete
+    // Target the group drag handles — @dnd-kit only activates from the handle
+    const groupAHandle = page
+      .locator("h2", { hasText: "Group A" })
+      .locator("..")
+      .locator('[aria-label="Drag to reorder group"]')
+    const groupBHandle = page
+      .locator("h2", { hasText: "Group B" })
+      .locator("..")
+      .locator('[aria-label="Drag to reorder group"]')
+
     const responsePromise = page.waitForResponse(
       (resp) => resp.request().method() === "POST" && resp.status() === 200
     )
-    await dragAndDrop(page, groupBHeader, groupAHeader)
+    await dragAndDrop(page, groupBHandle, groupAHandle)
     await responsePromise
   })
 
