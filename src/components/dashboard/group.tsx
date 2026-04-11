@@ -68,7 +68,7 @@ export const GroupCard = memo(function GroupCard({
               <GripVertical className="h-4 w-4" />
             </button>
           )}
-          <h2 className="flex-1 text-sm font-medium text-muted-foreground transition-colors duration-200 group-hover/group:text-foreground">
+          <h2 className="flex-1 text-sm font-medium text-muted-foreground transition-colors duration-200 select-none group-hover/group:text-foreground">
             {group.name}
           </h2>
           {editMode && (
