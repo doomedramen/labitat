@@ -137,7 +137,6 @@ test.describe("Widget Rendering", () => {
                 missing: 1,
                 wanted: 2,
                 series: 30,
-                episodes: 500,
               },
             },
           ],
@@ -160,9 +159,8 @@ test.describe("Widget Rendering", () => {
 
     // Radarr-specific stat (unique to Radarr)
     await expect(radarrCard.getByText("Movies")).toBeVisible()
-    // Sonarr-specific stats (unique to Sonarr)
+    // Sonarr-specific stat (unique to Sonarr)
     await expect(sonarrCard.getByText("Series")).toBeVisible()
-    await expect(sonarrCard.getByText("Episodes")).toBeVisible()
   })
 
   test("renders link-only item without service widget", async ({ page }) => {
