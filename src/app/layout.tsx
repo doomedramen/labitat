@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { TooltipRoot } from "@/components/tooltip"
 import { SplashScreenLinks } from "@/components/splash-screen-links"
+import { ConnectivityProvider } from "@/components/connectivity-provider"
 
 import "./globals.css"
 
@@ -106,6 +107,7 @@ export default async function RootLayout({
           <TooltipRoot />
           <Toaster richColors position="top-right" />
           <ServiceWorkerRegistrar />
+          <ConnectivityProvider />
         </ThemeProvider>
       </body>
     </html>

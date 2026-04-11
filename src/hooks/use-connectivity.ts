@@ -1,0 +1,152 @@
+"use client"
+
+import { useEffect, useRef, useState, useCallback } from "react"
+import { toast } from "sonner"
+
+export type ConnectivityState =
+  | { status: "online" }
+  | { status: "offline" } // browser has no network
+  | { status: "backend-down" } // network exists but backend is unreachable
+
+const HEALTH_ENDPOINT = "/api/health"
+const POLL_INTERVAL = 5_000
+const RETRY_DELAY = 3_000
+
+let toastId: string | number | null = null
+
+function dismissToast() {
+  if (toastId != null) {
+    toast.dismiss(toastId)
+    toastId = null
+  }
+}
+
+async function isBackendReachable(): Promise<boolean> {
+  try {
+    const res = await fetch(HEALTH_ENDPOINT, {
+      method: "HEAD",
+      cache: "no-store",
+      signal: AbortSignal.timeout(5_000),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
+export function useConnectivity() {
+  const [state, setState] = useState<ConnectivityState>({ status: "online" })
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const recoveringRef = useRef(false)
+
+  const clearPoll = useCallback(() => {
+    if (intervalRef.current != null) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+  }, [])
+
+  const startPolling = useCallback(
+    (onRecovery: () => void) => {
+      clearPoll()
+      intervalRef.current = setInterval(async () => {
+        if (recoveringRef.current) return
+        const reachable = await isBackendReachable()
+        if (reachable) {
+          recoveringRef.current = true
+          onRecovery()
+        }
+      }, POLL_INTERVAL)
+    },
+    [clearPoll]
+  )
+
+  useEffect(() => {
+    // Initial check
+    let cancelled = false
+
+    const check = async () => {
+      if (!navigator.onLine) {
+        setState({ status: "offline" })
+        return
+      }
+      const reachable = await isBackendReachable()
+      if (!cancelled) {
+        setState(reachable ? { status: "online" } : { status: "backend-down" })
+      }
+    }
+
+    check()
+
+    const onOnline = async () => {
+      // Network came back — verify backend is up too
+      const reachable = await isBackendReachable()
+      if (!cancelled) {
+        setState(reachable ? { status: "online" } : { status: "backend-down" })
+      }
+    }
+
+    const onOffline = () => {
+      if (!cancelled) {
+        setState({ status: "offline" })
+      }
+    }
+
+    window.addEventListener("online", onOnline)
+    window.addEventListener("offline", onOffline)
+
+    return () => {
+      cancelled = true
+      clearPoll()
+      window.removeEventListener("online", onOnline)
+      window.removeEventListener("offline", onOffline)
+    }
+  }, [clearPoll])
+
+  // Show / dismiss toasts based on state changes
+  useEffect(() => {
+    dismissToast()
+
+    if (state.status === "offline") {
+      toastId = toast.error("No internet connection", {
+        description:
+          "Your device is offline. Some features may not work until you reconnect.",
+        duration: Infinity,
+      })
+      startPolling(() => {
+        // recovery handled by online event
+      })
+    } else if (state.status === "backend-down") {
+      toastId = toast.error("Server unreachable", {
+        description:
+          "The backend server is not responding. It may be restarting or experiencing issues.",
+        duration: Infinity,
+        action: {
+          label: "Retry now",
+          onClick: async () => {
+            const ok = await isBackendReachable()
+            if (ok) {
+              window.location.reload()
+            } else {
+              toast.error("Still unreachable", {
+                description:
+                  "The server is still not responding. Trying again…",
+              })
+            }
+          },
+        },
+      })
+      startPolling(() => {
+        recoveringRef.current = false
+        dismissToast()
+        toast.success("Server is back online", {
+          description: "Everything is running normally.",
+          duration: 4000,
+        })
+        setState({ status: "online" })
+      })
+    }
+  }, [state.status, startPolling])
+
+  return state
+}
