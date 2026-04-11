@@ -8,6 +8,8 @@ import { db } from "@/lib/db"
 import { users, groups, items, settings } from "@/lib/db/schema"
 import { resetAllRateLimits } from "@/lib/auth/rate-limit"
 import { getSessionOptions, type SessionData } from "@/lib/auth"
+import { cacheWidgetData } from "@/lib/last-datapoints"
+import type { ServiceData } from "@/lib/adapters/types"
 
 interface SeedRequest {
   admin?: { email: string; password: string }
@@ -20,6 +22,8 @@ interface SeedRequest {
       iconUrl?: string
       serviceType?: string
       serviceUrl?: string
+      /** Pre-seed cached widget data for E2E tests */
+      cachedWidgetData?: Record<string, unknown>
     }>
   }>
 }

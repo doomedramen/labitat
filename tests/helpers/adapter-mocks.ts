@@ -38,7 +38,6 @@
  */
 
 import type { Page } from "@playwright/test"
-import { vi } from "vitest"
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -166,51 +165,49 @@ export function createMockAdapter(): MockAdapter {
       responses.push(...newResponses)
       originalFetch = global.fetch
 
-      global.fetch = vi.fn(
-        async (input: RequestInfo | URL, init?: RequestInit) => {
-          const url =
-            typeof input === "string"
-              ? input
-              : input instanceof URL
-                ? input.toString()
-                : input.url
-          const method = init?.method || "GET"
-          const headers = init?.headers as Record<string, string> | undefined
+      global.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url
+        const method = init?.method || "GET"
+        const headers = init?.headers as Record<string, string> | undefined
 
-          requests.push({
-            url,
-            method,
-            headers,
-            timestamp: Date.now(),
-          })
+        requests.push({
+          url,
+          method,
+          headers,
+          timestamp: Date.now(),
+        })
 
-          // Find matching response
-          const match = responses.find((r) => {
-            if (typeof r.urlPattern === "string") {
-              return url.includes(r.urlPattern)
-            }
-            return r.urlPattern.test(url)
-          })
-
-          if (!match) {
-            throw new Error(`No mock response found for URL: ${url}`)
+        // Find matching response
+        const match = responses.find((r) => {
+          if (typeof r.urlPattern === "string") {
+            return url.includes(r.urlPattern)
           }
+          return r.urlPattern.test(url)
+        })
 
-          if (match.networkError) {
-            throw new TypeError("Network request failed")
-          }
-
-          return new Response(
-            typeof match.body === "string"
-              ? match.body
-              : JSON.stringify(match.body),
-            {
-              status: match.status || 200,
-              headers: match.headers,
-            }
-          )
+        if (!match) {
+          throw new Error(`No mock response found for URL: ${url}`)
         }
-      )
+
+        if (match.networkError) {
+          throw new TypeError("Network request failed")
+        }
+
+        return new Response(
+          typeof match.body === "string"
+            ? match.body
+            : JSON.stringify(match.body),
+          {
+            status: match.status || 200,
+            headers: match.headers,
+          }
+        )
+      }
     },
 
     teardown() {

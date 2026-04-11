@@ -165,6 +165,38 @@ describe("plex definition", () => {
       expect(result.sessions![0].user).toBe("TestUser")
     })
 
+    it("handles network errors", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(new TypeError("Network request failed"))
+      )
+      await expect(
+        plexDefinition.fetchData!({ url: "https://example.com", token: "test" })
+      ).rejects.toThrow()
+    })
+
+    it("handles timeout errors", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(
+          new DOMException("The operation was aborted", "AbortError")
+        )
+      )
+      await expect(
+        plexDefinition.fetchData!({ url: "https://example.com", token: "test" })
+      ).rejects.toThrow()
+    })
+
+    it("handles malformed response body", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          text: () => Promise.reject(new SyntaxError("Unexpected token")),
+        })
+      )
+      await expect(
+        plexDefinition.fetchData!({ url: "https://example.com", token: "test" })
+      ).rejects.toThrow()
+    })
+
     it("handles empty library", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/status/sessions")) {

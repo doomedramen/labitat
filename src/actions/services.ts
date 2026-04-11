@@ -7,11 +7,9 @@ import { decrypt } from "@/lib/crypto"
 import { getCachedWithFallback, setCached } from "@/lib/cache"
 import { cacheWidgetData } from "@/lib/last-datapoints"
 import { getService } from "@/lib/adapters"
-import { requireAuth } from "@/lib/auth/guard"
 import type { ServiceData } from "@/lib/adapters/types"
 
 export async function fetchServiceData(itemId: string): Promise<ServiceData> {
-  await requireAuth()
   const [item] = await db.select().from(items).where(eq(items.id, itemId))
   if (!item) {
     return { _status: "error", _statusText: "Item not found" }

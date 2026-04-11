@@ -9,7 +9,7 @@
  * - StaleWhileRevalidate: everything else
  */
 
-const CACHE_NAME = "labitat-v1"
+const CACHE_NAME = "labitat-v2"
 const PRECACHE_URLS = ["/", "/~offline", "/manifest.webmanifest"]
 
 // ── Install: precache static assets ──────────────────────────────────────────
@@ -61,6 +61,15 @@ self.addEventListener("fetch", (event) => {
     return
   }
 
+  // Selfhst icons from CDN → CacheFirst (must come before generic image check)
+  if (
+    url.hostname === "cdn.jsdelivr.net" &&
+    url.pathname.startsWith("/gh/selfhst/icons")
+  ) {
+    event.respondWith(cacheFirst(request, "icon-cache"))
+    return
+  }
+
   // Static JS/CSS (immutable filenames) → CacheFirst
   // Exclude the service worker itself from caching
   if (/\.(?:js|css)$/i.test(url.pathname) && !url.pathname.endsWith("/sw.js")) {
@@ -77,15 +86,6 @@ self.addEventListener("fetch", (event) => {
   // Fonts → CacheFirst
   if (/\.(?:eot|otf|ttc|ttf|woff|woff2)$/i.test(url.pathname)) {
     event.respondWith(cacheFirst(request, "font-cache"))
-    return
-  }
-
-  // Selfhst icons from CDN → CacheFirst
-  if (
-    url.hostname === "cdn.jsdelivr.net" &&
-    url.pathname.startsWith("/gh/selfhst/icons")
-  ) {
-    event.respondWith(cacheFirst(request, "icon-cache"))
     return
   }
 
@@ -109,7 +109,9 @@ async function cacheFirst(request, cacheName) {
 
   try {
     const response = await fetch(request)
-    if (response.ok) {
+    // Cache successful responses and opaque responses (cross-origin no-cors)
+    // Opaque responses have status 0 / ok:false, but are valid for <img> etc.
+    if (response.ok || response.type === "opaque") {
       cache.put(request, response.clone())
     }
     return response
@@ -121,7 +123,7 @@ async function cacheFirst(request, cacheName) {
 async function networkFirst(request, fallbackUrl) {
   try {
     const response = await fetch(request)
-    if (response.ok) {
+    if (response.ok || response.type === "opaque") {
       const cache = await caches.open(CACHE_NAME)
       cache.put(request, response.clone())
     }
