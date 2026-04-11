@@ -103,6 +103,22 @@ describe("adguard definition", () => {
       expect(result.blockedPercent).toBe(0)
     })
 
+    it("handles malformed JSON response", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.reject(new SyntaxError("Unexpected token")),
+        })
+      )
+      await expect(
+        adguardDefinition.fetchData!({
+          url: "https://example.com",
+          username: "admin",
+          password: "secret",
+        })
+      ).rejects.toThrow()
+    })
+
     it("throws on error response", async () => {
       vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 401 }))
 

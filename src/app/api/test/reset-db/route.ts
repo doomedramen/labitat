@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { resetAllRateLimits } from "@/lib/auth/rate-limit"
+import { clearCache } from "@/lib/cache"
 
 export async function POST(request: Request) {
   const secret = request.headers.get("x-test-secret")
@@ -16,6 +17,9 @@ export async function POST(request: Request) {
   await db.run(sql`DELETE FROM users`)
 
   resetAllRateLimits()
+
+  // Clear widget/ping cache to prevent stale data leaking between tests
+  await clearCache()
 
   return NextResponse.json({ ok: true })
 }

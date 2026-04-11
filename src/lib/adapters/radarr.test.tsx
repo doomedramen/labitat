@@ -239,6 +239,53 @@ describe("radarr definition", () => {
       expect(result.downloads![0].progress).toBe(100)
     })
 
+    it("handles network errors", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(new TypeError("Network request failed"))
+      )
+      await expect(
+        radarrDefinition.fetchData!({
+          url: "https://example.com",
+          apiKey: "test",
+        })
+      ).rejects.toThrow()
+    })
+
+    it("handles timeout errors", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(
+          new DOMException("The operation was aborted", "AbortError")
+        )
+      )
+      await expect(
+        radarrDefinition.fetchData!({
+          url: "https://example.com",
+          apiKey: "test",
+        })
+      ).rejects.toThrow()
+    })
+
+    it("handles malformed JSON response", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.reject(new SyntaxError("Unexpected token")),
+        })
+      )
+      await expect(
+        radarrDefinition.fetchData!({
+          url: "https://example.com",
+          apiKey: "test",
+        })
+      ).rejects.toThrow()
+    })
+
+    it("throws when URL is missing", async () => {
+      await expect(
+        radarrDefinition.fetchData!({ url: "", apiKey: "test" })
+      ).rejects.toThrow()
+    })
+
     it("strips trailing slash from URL", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/queue")) {

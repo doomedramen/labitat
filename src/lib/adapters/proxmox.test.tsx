@@ -36,6 +36,44 @@ describe("proxmox definition", () => {
       vi.restoreAllMocks()
     })
 
+    it("handles network errors", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(new TypeError("Network request failed"))
+      )
+      await expect(
+        proxmoxDefinition.fetchData!({
+          url: "https://example.com",
+          username: "root@pam",
+          password: "test",
+        })
+      ).rejects.toThrow()
+    })
+
+    it("handles timeout errors", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(
+          new DOMException("The operation was aborted", "AbortError")
+        )
+      )
+      await expect(
+        proxmoxDefinition.fetchData!({
+          url: "https://example.com",
+          username: "root@pam",
+          password: "test",
+        })
+      ).rejects.toThrow()
+    })
+
+    it("throws when URL is missing", async () => {
+      await expect(
+        proxmoxDefinition.fetchData!({
+          url: "",
+          username: "root@pam",
+          password: "test",
+        })
+      ).rejects.toThrow()
+    })
+
     it("fetches data successfully", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/access/ticket")) {

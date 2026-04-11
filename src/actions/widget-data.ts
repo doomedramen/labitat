@@ -16,6 +16,7 @@ export async function getBatchWidgetData(
 ): Promise<Record<string, ServiceData>> {
   // Auth not required for viewing — only editing requires authentication
   await isAuthenticated() // session check but no throw
+
   const results = await Promise.all(
     itemIds.map(async (id) => {
       try {
