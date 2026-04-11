@@ -140,7 +140,9 @@ export function GlancesTimeseriesWidget({
                 strokeWidth={1.5}
                 dot={false}
                 activeDot={{ r: 3, strokeWidth: 0 }}
-                isAnimationActive={false}
+                isAnimationActive
+                animationDuration={300}
+                animationEasing="ease-out"
               />
             ))}
           </AreaChart>
