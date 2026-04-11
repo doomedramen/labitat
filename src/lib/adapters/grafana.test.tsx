@@ -151,6 +151,51 @@ describe("grafana definition", () => {
       expect(result.totalAlerts).toBe(0)
       expect(result.alertsTriggered).toBe(0)
     })
+
+    it("rejects on network error", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(new TypeError("Network request failed"))
+      )
+
+      await expect(
+        grafanaDefinition.fetchData!({
+          url: "https://grafana.example.com",
+          apiKey: "test-key",
+        })
+      ).rejects.toThrow("Network request failed")
+    })
+
+    it("rejects on timeout", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(
+          new DOMException("The operation was aborted", "AbortError")
+        )
+      )
+
+      await expect(
+        grafanaDefinition.fetchData!({
+          url: "https://grafana.example.com",
+          apiKey: "test-key",
+        })
+      ).rejects.toThrow("The operation was aborted")
+    })
+
+    it("rejects on malformed JSON", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.reject(new SyntaxError("Unexpected token")),
+        })
+      )
+
+      await expect(
+        grafanaDefinition.fetchData!({
+          url: "https://grafana.example.com",
+          apiKey: "test-key",
+        })
+      ).rejects.toThrow("Unexpected token")
+    })
   })
 
   describe("toPayload", () => {

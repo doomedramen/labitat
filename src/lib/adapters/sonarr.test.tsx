@@ -252,6 +252,50 @@ describe("sonarr definition", () => {
         expect(call[0]).not.toMatch(/\/\/api/)
       }
     })
+
+    it("rejects on network error", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(new TypeError("Network request failed"))
+      )
+
+      await expect(
+        sonarrDefinition.fetchData!({
+          url: "https://sonarr.example.com",
+          apiKey: "test-key",
+        })
+      ).rejects.toThrow("Network request failed")
+    })
+
+    it("rejects on timeout (abort error)", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(
+          new DOMException("The operation was aborted", "AbortError")
+        )
+      )
+
+      await expect(
+        sonarrDefinition.fetchData!({
+          url: "https://sonarr.example.com",
+          apiKey: "test-key",
+        })
+      ).rejects.toThrow("The operation was aborted")
+    })
+
+    it("rejects on malformed JSON response", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.reject(new SyntaxError("Unexpected token")),
+        })
+      )
+
+      await expect(
+        sonarrDefinition.fetchData!({
+          url: "https://sonarr.example.com",
+          apiKey: "test-key",
+        })
+      ).rejects.toThrow("Unexpected token")
+    })
   })
 
   describe("toPayload", () => {

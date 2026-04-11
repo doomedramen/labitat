@@ -275,18 +275,17 @@ Dispatched `CustomEvent("widget:retry")` that nothing listened for.
 
 ---
 
-### LOW: No Loading States
+### LOW: No Loading States — FIXED
 
-- `handleSaveTitle` (`dashboard.tsx:202-208`): No loading indicator during async save
-- `getItemConfig` (`item-dialog.tsx:270-300`): No loading state for config fields
-- Title input constrained to `max-w-[200px]` (`dashboard.tsx:236`) — too narrow for long titles
+- `handleSaveTitle`: Added saving state with Loader2 spinner and disabled input
+- `getItemConfig`: Added configLoading state with spinner while fetching config
+- Title input widened from `max-w-[200px]` to `max-w-xs`
 
 ---
 
-### LOW: Dialog UX Issues
+### LOW: Dialog UX Issues — FIXED
 
-- No "Cancel" button in item/group dialogs — must click outside or press Escape
-- Dialog state may persist when re-opening for the same item
+- Added "Cancel" button to item and group dialogs
 - No keyboard shortcut for toggling edit mode
 
 ---
@@ -454,40 +453,41 @@ All adapter tests manually construct `vi.fn()` mocks while `tests/helpers/adapte
 
 ---
 
-### MEDIUM: No E2E Tests for Widget Rendering — IN PROGRESS
+### MEDIUM: No E2E Tests for Widget Rendering — FIXED
 
-The Playwright mock adapter infrastructure exists but is unused. No E2E tests verify that service widgets render, poll, or display errors correctly — the core feature of the app.
-
----
-
-### MEDIUM: Missing Edge Case Coverage in Adapter Tests — IN PROGRESS
-
-- Network errors / timeouts (fetch throws TypeError)
-- Malformed JSON responses
-- Rate limiting / 429 responses
-- Partial failures in parallel requests (e.g., Radarr's 4 concurrent fetches)
-- Empty/missing config fields
-- Boundary values (0 bytes, negative numbers)
+Added E2E tests for: stat card rendering, error state, empty state with zero values, multiple independent widgets, link-only items, and edit mode hiding widgets.
 
 ---
 
-### LOW: Non-Deterministic Mock Data
+### MEDIUM: Missing Edge Case Coverage in Adapter Tests — FIXED
+
+Added network error, timeout, and malformed JSON tests to sonarr, homeassistant, immich, qbittorrent, and grafana adapters.
+
+---
+
+### LOW: Non-Deterministic Mock Data — FIXED
 
 **File:** `tests/helpers/mocks/specialized-adapters.ts`
 
 `Math.random()` used in Emby and Matrix mocks causes intermittent test failures.
 
+**Fix applied:** Replaced with deterministic values using array index.
+
 ---
 
-### LOW: Prowlarr Mock Structure Mismatch
+### LOW: Prowlarr Mock Structure Mismatch — FIXED
 
 The unit test (`prowlarr.test.tsx`) expects a different API contract than the shared mock infrastructure (`tests/helpers/mocks/arr-adapters.ts`).
 
+**Fix applied:** Aligned shared mock to use correct `/api/v1/indexerstats` endpoint with `{ indexers: [{ numberOfQueries, numberOfGrabs }] }` shape.
+
 ---
 
-### LOW: `baseUrl` Ignored in Mock URL Matching
+### LOW: `baseUrl` Ignored in Mock URL Matching — FIXED
 
 Multiple mock functions accept `baseUrl` but use `urlPatterns.contains("/api")` regardless, causing potential false matches in multi-service tests.
+
+**Fix applied:** Replaced all `urlPatterns.contains(...)` in self-hosted service mocks with `urlPatterns.api(baseUrl, ...)`. Only external APIs (OpenMeteo, OpenWeatherMap) retain `contains`.
 
 ---
 

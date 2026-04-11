@@ -109,6 +109,51 @@ describe("immich definition", () => {
       expect(result.users).toBe(0)
       expect(result.storage).toBe(0)
     })
+
+    it("rejects on network error", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(new TypeError("Network request failed"))
+      )
+
+      await expect(
+        immichDefinition.fetchData!({
+          url: "https://immich.example.com",
+          apiKey: "test-key",
+        })
+      ).rejects.toThrow("Network request failed")
+    })
+
+    it("rejects on timeout (abort)", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(
+          new DOMException("The operation was aborted", "AbortError")
+        )
+      )
+
+      await expect(
+        immichDefinition.fetchData!({
+          url: "https://immich.example.com",
+          apiKey: "test-key",
+        })
+      ).rejects.toThrow("The operation was aborted")
+    })
+
+    it("rejects on malformed JSON", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.reject(new SyntaxError("Unexpected token")),
+        })
+      )
+
+      await expect(
+        immichDefinition.fetchData!({
+          url: "https://immich.example.com",
+          apiKey: "test-key",
+        })
+      ).rejects.toThrow("Unexpected token")
+    })
   })
 
   describe("toPayload", () => {

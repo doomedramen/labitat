@@ -123,6 +123,51 @@ describe("homeassistant definition", () => {
         })
       )
     })
+
+    it("rejects on network error", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(new TypeError("Network request failed"))
+      )
+
+      await expect(
+        homeassistantDefinition.fetchData!({
+          url: "https://hass.example.com",
+          token: "test-token",
+        })
+      ).rejects.toThrow("Network request failed")
+    })
+
+    it("rejects on timeout", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(
+          new DOMException("The operation was aborted", "AbortError")
+        )
+      )
+
+      await expect(
+        homeassistantDefinition.fetchData!({
+          url: "https://hass.example.com",
+          token: "test-token",
+        })
+      ).rejects.toThrow("The operation was aborted")
+    })
+
+    it("rejects on malformed JSON", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.reject(new SyntaxError("Unexpected token")),
+        })
+      )
+
+      await expect(
+        homeassistantDefinition.fetchData!({
+          url: "https://hass.example.com",
+          token: "test-token",
+        })
+      ).rejects.toThrow("Unexpected token")
+    })
   })
 
   describe("toPayload", () => {

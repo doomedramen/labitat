@@ -252,6 +252,71 @@ describe("qbittorrent definition", () => {
       expect(result.queued).toBe(0)
       expect(result.downloads).toEqual([])
     })
+
+    it("rejects on network error", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(new TypeError("Network request failed"))
+      )
+
+      await expect(
+        qbittorrentDefinition.fetchData!({
+          url: "https://qb.example.com",
+          username: "admin",
+          password: "secret",
+        })
+      ).rejects.toThrow("Network request failed")
+    })
+
+    it("rejects on timeout (abort error)", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.reject(
+          new DOMException("The operation was aborted", "AbortError")
+        )
+      )
+
+      await expect(
+        qbittorrentDefinition.fetchData!({
+          url: "https://qb.example.com",
+          username: "admin",
+          password: "secret",
+        })
+      ).rejects.toThrow("The operation was aborted")
+    })
+
+    it("rejects on malformed JSON response", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/auth/login")) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve("Ok."),
+            headers: { getSetCookie: () => ["SID=abc123"] },
+          })
+        }
+        if (url.includes("/transfer/info")) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.reject(new SyntaxError("Unexpected token")),
+          })
+        }
+        if (url.includes("/torrents/info")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([]),
+          })
+        }
+        return Promise.reject(new Error("Unexpected URL"))
+      })
+      vi.stubGlobal("fetch", mockFetch)
+
+      await expect(
+        qbittorrentDefinition.fetchData!({
+          url: "https://qb.example.com",
+          username: "admin",
+          password: "secret",
+        })
+      ).rejects.toThrow("Unexpected token")
+    })
   })
 
   describe("toPayload", () => {
