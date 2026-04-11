@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Mock data for networking and monitoring adapters (AdGuard, Pi-hole, Glances, OpenMeteo, etc.)
  */
@@ -18,7 +17,7 @@ export const adguardMocks = {
       safeSearchBlocked?: number
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/control/stats"), {
+    successResponse(urlPatterns.api(baseUrl, "/control/stats"), {
       num_dns_queries: opts?.queries ?? 15234,
       num_blocked_filtering: opts?.blocked ?? 2345,
       num_blocked_parental: opts?.parentalBlocked ?? 120,
@@ -27,7 +26,7 @@ export const adguardMocks = {
   ],
 
   empty: (baseUrl = "https://adguard.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/control/stats"), {
+    successResponse(urlPatterns.api(baseUrl, "/control/stats"), {
       num_dns_queries: 0,
       num_blocked_filtering: 0,
       num_blocked_parental: 0,
@@ -40,14 +39,14 @@ export const adguardMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/control/stats"),
+      urlPatterns.api(baseUrl, "/control/stats"),
       { error: `AdGuard error: ${status}` },
       status
     ),
 
   unauthorized: (baseUrl = "https://adguard.example.com"): MockResponse =>
     successResponse(
-      urlPatterns.contains("/control/stats"),
+      urlPatterns.api(baseUrl, "/control/stats"),
       { error: "Unauthorized" },
       401
     ),
@@ -118,7 +117,7 @@ export const glancesMocks = {
       networkTx?: number
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/4/quicklook"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/4/quicklook"), {
       cpu: opts?.cpuPercent ?? 45.2,
       mem: opts?.memPercent ?? 62.5,
       load: opts?.load ?? [1.2, 0.8, 0.5],
@@ -127,12 +126,12 @@ export const glancesMocks = {
         { cpu_number: 1, total: 40.0 },
       ],
     }),
-    successResponse(urlPatterns.contains("/api/4/mem"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/4/mem"), {
       percent: opts?.memPercent ?? 62.5,
       used: opts?.memUsed ?? 8589934592,
       total: opts?.memTotal ?? 17179869184,
     }),
-    successResponse(urlPatterns.contains("/api/4/diskio"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/4/diskio"), {
       diskio: [
         {
           disk_name: "sda",
@@ -141,7 +140,7 @@ export const glancesMocks = {
         },
       ],
     }),
-    successResponse(urlPatterns.contains("/api/4/network"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/4/network"), {
       network: [
         {
           interface_name: "eth0",
@@ -153,12 +152,12 @@ export const glancesMocks = {
   ],
 
   empty: (baseUrl = "https://glances.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/4/quicklook"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/4/quicklook"), {
       cpu: 0,
       mem: 0,
       load: [0, 0, 0],
     }),
-    successResponse(urlPatterns.contains("/api/4/mem"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/4/mem"), {
       percent: 0,
       used: 0,
       total: 0,
@@ -170,7 +169,7 @@ export const glancesMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/4/quicklook"),
+      urlPatterns.api(baseUrl, "/api/4/quicklook"),
       { error: `Glances error: ${status}` },
       status
     ),
@@ -291,9 +290,11 @@ export const unifiMocks = {
     }
   ): MockResponse[] => [
     // Login
-    successResponse(urlPatterns.contains("/api/login"), { meta: { rc: "ok" } }),
+    successResponse(urlPatterns.api(baseUrl, "/api/login"), {
+      meta: { rc: "ok" },
+    }),
     // Dashboard
-    successResponse(urlPatterns.contains("/api/s/default/stat/dashboard"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/s/default/stat/dashboard"), {
       meta: { rc: "ok" },
       data: [
         {
@@ -308,8 +309,10 @@ export const unifiMocks = {
   ],
 
   empty: (baseUrl = "https://unifi.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/login"), { meta: { rc: "ok" } }),
-    successResponse(urlPatterns.contains("/api/s/default/stat/dashboard"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/login"), {
+      meta: { rc: "ok" },
+    }),
+    successResponse(urlPatterns.api(baseUrl, "/api/s/default/stat/dashboard"), {
       meta: { rc: "ok" },
       data: [
         {
@@ -325,7 +328,7 @@ export const unifiMocks = {
 
   error: (baseUrl = "https://unifi.example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/login"),
+      urlPatterns.api(baseUrl, "/api/login"),
       { meta: { rc: "error", msg: "Authentication failed" } },
       status
     ),
@@ -344,7 +347,7 @@ export const apcupsMocks = {
       temperature?: number
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/status"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/status"), {
       loadpercent: opts?.loadPercent ?? 35.0,
       battery_charge: opts?.batteryCharge ?? 95.0,
       time_left: opts?.timeLeft ?? 1800,
@@ -355,7 +358,7 @@ export const apcupsMocks = {
   ],
 
   empty: (baseUrl = "https://apcups.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/status"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/status"), {
       loadpercent: 0,
       battery_charge: 100,
       time_left: 3600,
@@ -367,7 +370,7 @@ export const apcupsMocks = {
 
   error: (baseUrl = "https://apcups.example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/status"),
+      urlPatterns.api(baseUrl, "/api/status"),
       { error: `APC UPS error: ${status}` },
       status
     ),

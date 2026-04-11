@@ -130,7 +130,7 @@ export function GlancesTimeseriesWidget({
               content={<ChartTooltip />}
               cursor={{ stroke: "var(--border)", strokeWidth: 1 }}
             />
-            {activeMetrics.map((metric, index) => (
+            {activeMetrics.map((metric) => (
               <Area
                 key={metric.key}
                 type="monotone"
@@ -140,11 +140,9 @@ export function GlancesTimeseriesWidget({
                 strokeWidth={1.5}
                 dot={false}
                 activeDot={{ r: 3, strokeWidth: 0 }}
-                isAnimationActive="auto"
-                animationDuration={700}
-                animationEasing="cubic-bezier(0.4, 0, 0.2, 1)"
-                animationBegin={index * 150}
-                animateNewValues
+                isAnimationActive
+                animationDuration={300}
+                animationEasing="ease-out"
               />
             ))}
           </AreaChart>

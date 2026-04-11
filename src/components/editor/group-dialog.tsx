@@ -108,6 +108,13 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
               </form.Field>
             </div>
             <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
               <Button type="submit">{group ? "Update" : "Create"}</Button>
             </DialogFooter>
           </form>

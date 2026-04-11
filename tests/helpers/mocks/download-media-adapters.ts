@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Mock data for download and media adapters (SABnzbd, qBittorrent, Transmission, Plex, Tautulli, Bazarr, Jackett)
  */
@@ -40,7 +39,7 @@ export const sabnzbdMocks = {
     ]
 
     return [
-      successResponse(urlPatterns.contains("/api"), {
+      successResponse(urlPatterns.api(baseUrl, "/api"), {
         queue: {
           status: opts?.downloading !== false ? "Downloading" : "Idle",
           speed: opts?.speed || "25.5 MB/s",
@@ -59,7 +58,7 @@ export const sabnzbdMocks = {
   },
 
   empty: (baseUrl = "https://sabnzbd.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api"), {
+    successResponse(urlPatterns.api(baseUrl, "/api"), {
       queue: {
         status: "Idle",
         speed: "0 B/s",
@@ -75,7 +74,7 @@ export const sabnzbdMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api"),
+      urlPatterns.api(baseUrl, "/api"),
       { error: `SABnzbd error: ${status}` },
       status
     ),
@@ -112,10 +111,10 @@ export const qbittorrentMocks = {
 
     return [
       // Login
-      successResponse(urlPatterns.contains("/api/v2/auth/login"), "Ok."),
+      successResponse(urlPatterns.api(baseUrl, "/api/v2/auth/login"), "Ok."),
       // Torrent list
       successResponse(
-        urlPatterns.contains("/api/v2/torrents/info"),
+        urlPatterns.api(baseUrl, "/api/v2/torrents/info"),
         downloads.map((d) => ({
           name: d.name,
           progress: d.progress,
@@ -126,7 +125,7 @@ export const qbittorrentMocks = {
         }))
       ),
       // Global transfer info
-      successResponse(urlPatterns.contains("/api/v2/transfer/info"), {
+      successResponse(urlPatterns.api(baseUrl, "/api/v2/transfer/info"), {
         dl_info_speed: opts?.globalDlSpeed ?? 5242880,
         up_info_speed: 1048576,
       }),
@@ -134,9 +133,9 @@ export const qbittorrentMocks = {
   },
 
   empty: (baseUrl = "https://qbittorrent.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/v2/auth/login"), "Ok."),
-    successResponse(urlPatterns.contains("/api/v2/torrents/info"), []),
-    successResponse(urlPatterns.contains("/api/v2/transfer/info"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/v2/auth/login"), "Ok."),
+    successResponse(urlPatterns.api(baseUrl, "/api/v2/torrents/info"), []),
+    successResponse(urlPatterns.api(baseUrl, "/api/v2/transfer/info"), {
       dl_info_speed: 0,
       up_info_speed: 0,
     }),
@@ -147,7 +146,7 @@ export const qbittorrentMocks = {
     status = 403
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/v2/auth/login"),
+      urlPatterns.api(baseUrl, "/api/v2/auth/login"),
       "Fails.",
       status
     ),
@@ -183,14 +182,14 @@ export const transmissionMocks = {
     return [
       // Session ID request (returns 409 with session ID in header)
       successResponse(
-        urlPatterns.contains("/transmission/rpc"),
+        urlPatterns.api(baseUrl, "/transmission/rpc"),
         "<html><p>409: Conflict</p></html>",
         409,
         { "X-Transmission-Session-Id": "test-session-id-12345" }
       ),
       // Actual API call
       successResponse(
-        urlPatterns.contains("/transmission/rpc"),
+        urlPatterns.api(baseUrl, "/transmission/rpc"),
         {
           result: "success",
           arguments: {
@@ -212,13 +211,13 @@ export const transmissionMocks = {
 
   empty: (baseUrl = "https://transmission.example.com"): MockResponse[] => [
     successResponse(
-      urlPatterns.contains("/transmission/rpc"),
+      urlPatterns.api(baseUrl, "/transmission/rpc"),
       "<html><p>409: Conflict</p></html>",
       409,
       { "X-Transmission-Session-Id": "test-session-id-12345" }
     ),
     successResponse(
-      urlPatterns.contains("/transmission/rpc"),
+      urlPatterns.api(baseUrl, "/transmission/rpc"),
       { result: "success", arguments: { torrents: [] } },
       200,
       { "Content-Type": "application/json" }
@@ -230,7 +229,7 @@ export const transmissionMocks = {
     status = 401
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/transmission/rpc"),
+      urlPatterns.api(baseUrl, "/transmission/rpc"),
       { error: "Unauthorized" },
       status
     ),
@@ -284,13 +283,13 @@ export const plexMocks = {
 
     return [
       successResponse(
-        urlPatterns.contains("/status/sessions"),
+        urlPatterns.api(baseUrl, "/status/sessions"),
         sessionsXml,
         200,
         { "Content-Type": "text/xml" }
       ),
       successResponse(
-        urlPatterns.contains("/library/sections"),
+        urlPatterns.api(baseUrl, "/library/sections"),
         `<?xml version="1.0" encoding="UTF-8"?>
 <MediaContainer>
   <Directory key="1" type="movie" title="Movies" />
@@ -301,19 +300,19 @@ export const plexMocks = {
         { "Content-Type": "text/xml" }
       ),
       successResponse(
-        urlPatterns.contains("/library/sections/1/all"),
+        urlPatterns.api(baseUrl, "/library/sections/1/all"),
         `<MediaContainer totalSize="${opts?.movies ?? 50}"></MediaContainer>`,
         200,
         { "Content-Type": "text/xml" }
       ),
       successResponse(
-        urlPatterns.contains("/library/sections/2/all"),
+        urlPatterns.api(baseUrl, "/library/sections/2/all"),
         `<MediaContainer totalSize="${opts?.tvShows ?? 20}"></MediaContainer>`,
         200,
         { "Content-Type": "text/xml" }
       ),
       successResponse(
-        urlPatterns.contains("/library/sections/3/albums"),
+        urlPatterns.api(baseUrl, "/library/sections/3/albums"),
         `<MediaContainer totalSize="${opts?.albums ?? 30}"></MediaContainer>`,
         200,
         { "Content-Type": "text/xml" }
@@ -323,13 +322,13 @@ export const plexMocks = {
 
   empty: (baseUrl = "https://plex.example.com"): MockResponse[] => [
     successResponse(
-      urlPatterns.contains("/status/sessions"),
+      urlPatterns.api(baseUrl, "/status/sessions"),
       '<MediaContainer size="0"></MediaContainer>',
       200,
       { "Content-Type": "text/xml" }
     ),
     successResponse(
-      urlPatterns.contains("/library/sections"),
+      urlPatterns.api(baseUrl, "/library/sections"),
       "<MediaContainer></MediaContainer>",
       200,
       { "Content-Type": "text/xml" }
@@ -338,7 +337,7 @@ export const plexMocks = {
 
   unauthorized: (baseUrl = "https://plex.example.com"): MockResponse =>
     successResponse(
-      urlPatterns.contains("/status/sessions"),
+      urlPatterns.api(baseUrl, "/status/sessions"),
       { error: "Unauthorized" },
       401
     ),
@@ -502,19 +501,19 @@ export const bazarrMocks = {
   ],
 
   empty: (baseUrl = "https://bazarr.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/episodes"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/episodes"), {
       data: [],
       recordsTotal: 0,
       recordsFiltered: 0,
       draw: 1,
     }),
-    successResponse(urlPatterns.contains("/api/movies"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/movies"), {
       data: [],
       recordsTotal: 0,
       recordsFiltered: 0,
       draw: 1,
     }),
-    successResponse(urlPatterns.contains("/api/series"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/series"), {
       data: [],
       recordsTotal: 0,
       recordsFiltered: 0,
@@ -524,7 +523,7 @@ export const bazarrMocks = {
 
   error: (baseUrl = "https://bazarr.example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/episodes"),
+      urlPatterns.api(baseUrl, "/api/episodes"),
       { error: `Bazarr error: ${status}` },
       status
     ),
@@ -552,7 +551,7 @@ export const jackettMocks = {
       }))
     ),
     successResponse(
-      urlPatterns.contains("/api/v2.0/indexers"),
+      urlPatterns.api(baseUrl, "/api/v2.0/indexers"),
       Array.from({ length: opts?.indexers ?? 8 }, (_, i) => ({
         id: `indexer-${i}`,
         name: `Indexer ${i}`,
@@ -563,7 +562,7 @@ export const jackettMocks = {
   ],
 
   empty: (baseUrl = "https://jackett.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/v2.0/indexers"), []),
+    successResponse(urlPatterns.api(baseUrl, "/api/v2.0/indexers"), []),
   ],
 
   error: (
@@ -571,7 +570,7 @@ export const jackettMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/v2.0/indexers"),
+      urlPatterns.api(baseUrl, "/api/v2.0/indexers"),
       { error: `Jackett error: ${status}` },
       status
     ),

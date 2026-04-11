@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Mock data for specialized and remaining adapters (Emby, Jellyfin, Immich, Frigate, Home Assistant, Grafana, Uptime Kuma, Matrix, DateTime, Search, Pipes, Generic)
  */
@@ -38,8 +37,8 @@ export const embyMocks = {
     return [
       successResponse(
         urlPatterns.withQuery(baseUrl, "/Sessions", {}),
-        sessions.map((s) => ({
-          Id: `session-${Math.random()}`,
+        sessions.map((s, i) => ({
+          Id: `session-${i}`,
           NowPlayingItem: {
             Name: s.name,
             SeriesName: s.seriesName,
@@ -139,9 +138,9 @@ export const jellyfinMocks = {
 
     return [
       successResponse(
-        urlPatterns.contains("/Sessions"),
-        sessions.map((s) => ({
-          Id: `session-${Math.random()}`,
+        urlPatterns.withQuery(baseUrl, "/Sessions", {}),
+        sessions.map((s, i) => ({
+          Id: `session-${i}`,
           NowPlayingItem: {
             Name: s.name,
             SeriesName: s.seriesName,
@@ -179,7 +178,7 @@ export const jellyfinMocks = {
   },
 
   empty: (baseUrl = "https://jellyfin.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/Sessions"), []),
+    successResponse(urlPatterns.withQuery(baseUrl, "/Sessions", {}), []),
     successResponse(
       urlPatterns.withQuery(baseUrl, "/Items", {
         IncludeItemTypes: "Movie",
@@ -211,7 +210,7 @@ export const jellyfinMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/Sessions"),
+      urlPatterns.withQuery(baseUrl, "/Sessions", {}),
       { error: `Jellyfin error: ${status}` },
       status
     ),
@@ -244,7 +243,7 @@ export const immichMocks = {
     ]
 
     return [
-      successResponse(urlPatterns.contains("/api/server-info/statistics"), {
+      successResponse(urlPatterns.api(baseUrl, "/api/server-info/statistics"), {
         photos: opts?.photos ?? 5000,
         videos: opts?.videos ?? 200,
         usage: opts?.usage ?? 53687091200,
@@ -254,7 +253,7 @@ export const immichMocks = {
   },
 
   empty: (baseUrl = "https://immich.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/server-info/statistics"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/server-info/statistics"), {
       photos: 0,
       videos: 0,
       usage: 0,
@@ -264,7 +263,7 @@ export const immichMocks = {
 
   error: (baseUrl = "https://immich.example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/server-info/statistics"),
+      urlPatterns.api(baseUrl, "/api/server-info/statistics"),
       { error: `Immich error: ${status}` },
       status
     ),
@@ -291,7 +290,7 @@ export const frigateMocks = {
     const cameras = opts?.cameraStats || []
 
     return [
-      successResponse(urlPatterns.contains("/api/stats"), {
+      successResponse(urlPatterns.api(baseUrl, "/api/stats"), {
         cameras: cameras.map((c) => ({
           camera: c.camera,
           fps: c.fps,
@@ -309,7 +308,7 @@ export const frigateMocks = {
         },
         detection_fps: opts?.detections ?? 15.5,
       }),
-      successResponse(urlPatterns.contains("/api/config"), {
+      successResponse(urlPatterns.api(baseUrl, "/api/config"), {
         cameras: Array.from({ length: opts?.cameras ?? 4 }, (_, i) => ({
           name: `camera-${i}`,
           detect: { enabled: true },
@@ -319,12 +318,12 @@ export const frigateMocks = {
   },
 
   empty: (baseUrl = "https://frigate.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/stats"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/stats"), {
       cameras: [],
       service: { cpus: [], mem: { home: 0 } },
       detection_fps: 0,
     }),
-    successResponse(urlPatterns.contains("/api/config"), { cameras: [] }),
+    successResponse(urlPatterns.api(baseUrl, "/api/config"), { cameras: [] }),
   ],
 
   error: (
@@ -332,7 +331,7 @@ export const frigateMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/stats"),
+      urlPatterns.api(baseUrl, "/api/stats"),
       { error: `Frigate error: ${status}` },
       status
     ),
@@ -351,7 +350,7 @@ export const homeassistantMocks = {
       motionDetected?: boolean
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/states"), [
+    successResponse(urlPatterns.api(baseUrl, "/api/states"), [
       {
         entity_id: "sensor.temperature",
         state: String(opts?.temperature ?? 22.5),
@@ -376,19 +375,19 @@ export const homeassistantMocks = {
   ],
 
   empty: (baseUrl = "https://hass.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/states"), []),
+    successResponse(urlPatterns.api(baseUrl, "/api/states"), []),
   ],
 
   error: (baseUrl = "https://hass.example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/states"),
+      urlPatterns.api(baseUrl, "/api/states"),
       { error: `Home Assistant error: ${status}` },
       status
     ),
 
   unauthorized: (baseUrl = "https://hass.example.com"): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/states"),
+      urlPatterns.api(baseUrl, "/api/states"),
       { error: "Unauthorized" },
       401
     ),
@@ -406,7 +405,7 @@ export const grafanaMocks = {
     }
   ): MockResponse[] => [
     successResponse(
-      urlPatterns.contains("/api/search"),
+      urlPatterns.api(baseUrl, "/api/search"),
       Array.from({ length: opts?.dashboards ?? 15 }, (_, i) => ({
         id: i + 1,
         uid: `dashboard-${i}`,
@@ -415,7 +414,7 @@ export const grafanaMocks = {
       }))
     ),
     successResponse(
-      urlPatterns.contains("/api/alerts"),
+      urlPatterns.api(baseUrl, "/api/alerts"),
       Array.from({ length: opts?.alerts ?? 5 }, (_, i) => ({
         id: i + 1,
         name: `Alert ${i + 1}`,
@@ -425,8 +424,8 @@ export const grafanaMocks = {
   ],
 
   empty: (baseUrl = "https://grafana.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/search"), []),
-    successResponse(urlPatterns.contains("/api/alerts"), []),
+    successResponse(urlPatterns.api(baseUrl, "/api/search"), []),
+    successResponse(urlPatterns.api(baseUrl, "/api/alerts"), []),
   ],
 
   error: (
@@ -434,7 +433,7 @@ export const grafanaMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/search"),
+      urlPatterns.api(baseUrl, "/api/search"),
       { error: `Grafana error: ${status}` },
       status
     ),
@@ -452,7 +451,7 @@ export const uptimeKumaMocks = {
       pausedMonitors?: number
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/status-page"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/status-page"), {
       monitorList: Array.from({ length: opts?.monitors ?? 10 }, (_, i) => ({
         id: i + 1,
         name: `Monitor ${i + 1}`,
@@ -467,7 +466,7 @@ export const uptimeKumaMocks = {
   ],
 
   empty: (baseUrl = "https://uptime-kuma.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/status-page"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/status-page"), {
       monitorList: [],
     }),
   ],
@@ -477,7 +476,7 @@ export const uptimeKumaMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/status-page"),
+      urlPatterns.api(baseUrl, "/api/status-page"),
       { error: `Uptime Kuma error: ${status}` },
       status
     ),
@@ -493,26 +492,32 @@ export const matrixMocks = {
       rooms?: number
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/_matrix/client/r0/publicRooms"), {
-      chunk: Array.from({ length: opts?.rooms ?? 5 }, (_, i) => ({
-        room_id: `!room${i}:example.com`,
-        name: `Room ${i + 1}`,
-        num_joined_members: Math.floor(Math.random() * 100),
-      })),
-      total_room_count_estimate: opts?.rooms ?? 5,
-    }),
+    successResponse(
+      urlPatterns.api(baseUrl, "/_matrix/client/r0/publicRooms"),
+      {
+        chunk: Array.from({ length: opts?.rooms ?? 5 }, (_, i) => ({
+          room_id: `!room${i}:example.com`,
+          name: `Room ${i + 1}`,
+          num_joined_members: (i + 1) * 10,
+        })),
+        total_room_count_estimate: opts?.rooms ?? 5,
+      }
+    ),
   ],
 
   empty: (baseUrl = "https://matrix.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/_matrix/client/r0/publicRooms"), {
-      chunk: [],
-      total_room_count_estimate: 0,
-    }),
+    successResponse(
+      urlPatterns.api(baseUrl, "/_matrix/client/r0/publicRooms"),
+      {
+        chunk: [],
+        total_room_count_estimate: 0,
+      }
+    ),
   ],
 
   error: (baseUrl = "https://matrix.example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.contains("/_matrix/client/r0/publicRooms"),
+      urlPatterns.api(baseUrl, "/_matrix/client/r0/publicRooms"),
       { error: `Matrix error: ${status}` },
       status
     ),

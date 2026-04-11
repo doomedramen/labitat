@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 
 import { createItem, updateItem, getItemConfig } from "@/actions/items"
 import { getAllServices } from "@/lib/adapters"
@@ -246,6 +247,7 @@ export function ItemDialog({
   const services = getAllServices()
   const [serviceType, setServiceType] = useState(item?.serviceType ?? "")
   const [configFields, setConfigFields] = useState<Record<string, string>>({})
+  const [configLoading, setConfigLoading] = useState(false)
   const [statDisplayMode, setStatDisplayMode] = useState<"icon" | "label">(
     (item?.statDisplayMode as "icon" | "label") ?? "label"
   )
@@ -328,19 +330,22 @@ export function ItemDialog({
   // Load config when editing an existing item
   useEffect(() => {
     if (item?.id) {
-      getItemConfig(item.id).then((stored) => {
-        if (selectedService) {
-          const merged = { ...stored }
-          for (const field of selectedService.configFields) {
-            if (field.type === "boolean" && merged[field.key] === undefined) {
-              merged[field.key] = field.defaultChecked ? "true" : "false"
+      setConfigLoading(true)
+      getItemConfig(item.id)
+        .then((stored) => {
+          if (selectedService) {
+            const merged = { ...stored }
+            for (const field of selectedService.configFields) {
+              if (field.type === "boolean" && merged[field.key] === undefined) {
+                merged[field.key] = field.defaultChecked ? "true" : "false"
+              }
             }
+            setConfigFields(merged)
+          } else {
+            setConfigFields(stored)
           }
-          setConfigFields(merged)
-        } else {
-          setConfigFields(stored)
-        }
-      })
+        })
+        .finally(() => setConfigLoading(false))
     } else {
       // New item — apply defaults for the selected service
       if (selectedService) {
@@ -475,75 +480,82 @@ export function ItemDialog({
                   <p className="text-sm font-medium">
                     {selectedService.name} Config
                   </p>
-                  {selectedService.configFields.map((field) => {
-                    const fieldValue = configFields[field.key]
-                    return (
-                      <div key={field.key} className="space-y-1">
-                        <Label htmlFor={`config_${field.key}`}>
-                          {field.label}
-                        </Label>
-                        {field.type === "boolean" ? (
-                          <div className="flex items-center gap-2">
-                            <Switch
-                              id={`config_${field.key}`}
-                              checked={fieldValue === "true"}
-                              onCheckedChange={(checked) =>
+                  {configLoading ? (
+                    <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+                      <Loader2 className="size-4 animate-spin" />
+                      Loading config...
+                    </div>
+                  ) : (
+                    selectedService.configFields.map((field) => {
+                      const fieldValue = configFields[field.key]
+                      return (
+                        <div key={field.key} className="space-y-1">
+                          <Label htmlFor={`config_${field.key}`}>
+                            {field.label}
+                          </Label>
+                          {field.type === "boolean" ? (
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                id={`config_${field.key}`}
+                                checked={fieldValue === "true"}
+                                onCheckedChange={(checked) =>
+                                  setConfigFields((prev) => ({
+                                    ...prev,
+                                    [field.key]: checked ? "true" : "false",
+                                  }))
+                                }
+                              />
+                            </div>
+                          ) : field.type === "select" && field.options ? (
+                            <Select
+                              value={fieldValue ?? ""}
+                              onValueChange={(v) =>
                                 setConfigFields((prev) => ({
                                   ...prev,
-                                  [field.key]: checked ? "true" : "false",
+                                  [field.key]: v,
                                 }))
                               }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder={field.placeholder} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {field.options.map((opt) => (
+                                  <SelectItem key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              id={`config_${field.key}`}
+                              type={
+                                field.type === "password"
+                                  ? "password"
+                                  : field.type === "number"
+                                    ? "number"
+                                    : "text"
+                              }
+                              value={fieldValue ?? ""}
+                              onChange={(e) =>
+                                setConfigFields((prev) => ({
+                                  ...prev,
+                                  [field.key]: e.target.value,
+                                }))
+                              }
+                              placeholder={field.placeholder}
                             />
-                          </div>
-                        ) : field.type === "select" && field.options ? (
-                          <Select
-                            value={fieldValue ?? ""}
-                            onValueChange={(v) =>
-                              setConfigFields((prev) => ({
-                                ...prev,
-                                [field.key]: v,
-                              }))
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder={field.placeholder} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {field.options.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Input
-                            id={`config_${field.key}`}
-                            type={
-                              field.type === "password"
-                                ? "password"
-                                : field.type === "number"
-                                  ? "number"
-                                  : "text"
-                            }
-                            value={fieldValue ?? ""}
-                            onChange={(e) =>
-                              setConfigFields((prev) => ({
-                                ...prev,
-                                [field.key]: e.target.value,
-                              }))
-                            }
-                            placeholder={field.placeholder}
-                          />
-                        )}
-                        {field.helperText && (
-                          <p className="text-xs text-muted-foreground">
-                            {field.helperText}
-                          </p>
-                        )}
-                      </div>
-                    )
-                  })}
+                          )}
+                          {field.helperText && (
+                            <p className="text-xs text-muted-foreground">
+                              {field.helperText}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
                 </div>
               )}
 
@@ -642,6 +654,13 @@ export function ItemDialog({
                 )}
             </div>
             <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
               <Button type="submit">{item ? "Update" : "Create"}</Button>
             </DialogFooter>
           </form>

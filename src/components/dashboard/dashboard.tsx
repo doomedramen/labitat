@@ -21,7 +21,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
-import { Palette, LogIn, Plus } from "lucide-react"
+import { Palette, LogIn, Plus, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
@@ -214,13 +214,18 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     setDragStartGroupId(null)
   }
 
+  const [savingTitle, setSavingTitle] = useState(false)
+
   async function handleSaveTitle() {
     if (localTitle && localTitle.trim()) {
+      setSavingTitle(true)
       try {
         await updateDashboardTitle(localTitle.trim())
         toast.success("Dashboard saved")
       } catch {
         toast.error("Failed to save title")
+      } finally {
+        setSavingTitle(false)
       }
     }
   }
@@ -251,7 +256,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
               e.preventDefault()
               titleForm.handleSubmit()
             }}
-            className="w-full max-w-[200px]"
+            className="w-full max-w-xs"
           >
             <titleForm.Field name="title">
               {(field) => {
@@ -259,27 +264,33 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                   field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0
                 return (
-                  <Input
-                    value={field.state.value}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value)
-                      setLocalTitle(e.target.value)
-                    }}
-                    onBlur={field.handleBlur}
-                    className="h-8"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        titleForm.handleSubmit()
-                      }
-                      if (e.key === "Escape") {
-                        setLocalTitle(null)
-                        setEditMode(false)
-                      }
-                    }}
-                    aria-invalid={isInvalid || undefined}
-                    autoFocus
-                  />
+                  <div className="relative">
+                    <Input
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value)
+                        setLocalTitle(e.target.value)
+                      }}
+                      onBlur={field.handleBlur}
+                      className={cn("h-8", savingTitle && "pr-8")}
+                      disabled={savingTitle}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          titleForm.handleSubmit()
+                        }
+                        if (e.key === "Escape") {
+                          setLocalTitle(null)
+                          setEditMode(false)
+                        }
+                      }}
+                      aria-invalid={isInvalid || undefined}
+                      autoFocus
+                    />
+                    {savingTitle && (
+                      <Loader2 className="absolute top-1/2 right-2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
                 )
               }}
             </titleForm.Field>

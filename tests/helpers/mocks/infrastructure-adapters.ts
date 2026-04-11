@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Mock data for infrastructure and server adapters (Proxmox, Nginx Proxy Manager, Portainer, etc.)
  */
@@ -57,14 +56,14 @@ export const proxmoxMocks = {
 
     return [
       // Login
-      successResponse(urlPatterns.contains("/api2/json/access/ticket"), {
+      successResponse(urlPatterns.api(baseUrl, "/api2/json/access/ticket"), {
         data: {
           ticket: "test-ticket-12345",
           CSRFPreventionToken: "csrf-token-12345",
         },
       }),
       // Nodes
-      successResponse(urlPatterns.contains("/api2/json/nodes"), {
+      successResponse(urlPatterns.api(baseUrl, "/api2/json/nodes"), {
         data: Array.from({ length: opts?.nodes ?? 1 }, (_, i) => ({
           node: `node-${i}`,
           status: "online",
@@ -75,41 +74,44 @@ export const proxmoxMocks = {
         })),
       }),
       // QEMU VMs
-      successResponse(urlPatterns.contains("/api2/json/cluster/resources"), {
-        data: [
-          ...vms.map((vm) => ({
-            vmid: vm.vmid,
-            name: vm.name,
-            status: vm.status,
-            type: "qemu",
-            cpu: vm.cpu ?? 0,
-            mem: vm.mem ?? 0,
-            maxmem: vm.maxmem ?? 0,
-            disk: vm.disk ?? 0,
-            maxdisk: vm.maxdisk ?? 0,
-          })),
-          ...containers.map((ct) => ({
-            vmid: ct.vmid,
-            name: ct.name,
-            status: ct.status,
-            type: "lxc",
-            cpu: ct.cpu ?? 0,
-            mem: ct.mem ?? 0,
-            maxmem: ct.maxmem ?? 0,
-            disk: ct.disk ?? 0,
-            maxdisk: ct.maxdisk ?? 0,
-          })),
-        ],
-      }),
+      successResponse(
+        urlPatterns.api(baseUrl, "/api2/json/cluster/resources"),
+        {
+          data: [
+            ...vms.map((vm) => ({
+              vmid: vm.vmid,
+              name: vm.name,
+              status: vm.status,
+              type: "qemu",
+              cpu: vm.cpu ?? 0,
+              mem: vm.mem ?? 0,
+              maxmem: vm.maxmem ?? 0,
+              disk: vm.disk ?? 0,
+              maxdisk: vm.maxdisk ?? 0,
+            })),
+            ...containers.map((ct) => ({
+              vmid: ct.vmid,
+              name: ct.name,
+              status: ct.status,
+              type: "lxc",
+              cpu: ct.cpu ?? 0,
+              mem: ct.mem ?? 0,
+              maxmem: ct.maxmem ?? 0,
+              disk: ct.disk ?? 0,
+              maxdisk: ct.maxdisk ?? 0,
+            })),
+          ],
+        }
+      ),
     ]
   },
 
   empty: (baseUrl = "https://proxmox.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api2/json/access/ticket"), {
+    successResponse(urlPatterns.api(baseUrl, "/api2/json/access/ticket"), {
       data: { ticket: "test-ticket", CSRFPreventionToken: "csrf-token" },
     }),
-    successResponse(urlPatterns.contains("/api2/json/nodes"), { data: [] }),
-    successResponse(urlPatterns.contains("/api2/json/cluster/resources"), {
+    successResponse(urlPatterns.api(baseUrl, "/api2/json/nodes"), { data: [] }),
+    successResponse(urlPatterns.api(baseUrl, "/api2/json/cluster/resources"), {
       data: [],
     }),
   ],
@@ -119,14 +121,14 @@ export const proxmoxMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api2/json/access/ticket"),
+      urlPatterns.api(baseUrl, "/api2/json/access/ticket"),
       { error: `Proxmox error: ${status}` },
       status
     ),
 
   unauthorized: (baseUrl = "https://proxmox.example.com"): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api2/json/access/ticket"),
+      urlPatterns.api(baseUrl, "/api2/json/access/ticket"),
       { error: "Authentication failed" },
       401
     ),
@@ -143,13 +145,13 @@ export const proxmoxBackupServerMocks = {
       totalBytes?: number
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api2/json/access/ticket"), {
+    successResponse(urlPatterns.api(baseUrl, "/api2/json/access/ticket"), {
       data: {
         ticket: "test-ticket-12345",
         CSRFPreventionToken: "csrf-token-12345",
       },
     }),
-    successResponse(urlPatterns.contains("/api2/json/datastores"), {
+    successResponse(urlPatterns.api(baseUrl, "/api2/json/datastores"), {
       data: Array.from({ length: opts?.datastores ?? 2 }, (_, i) => ({
         store: `datastore-${i}`,
         used: opts?.usedBytes ?? 536870912000,
@@ -159,17 +161,17 @@ export const proxmoxBackupServerMocks = {
   ],
 
   empty: (baseUrl = "https://pbs.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api2/json/access/ticket"), {
+    successResponse(urlPatterns.api(baseUrl, "/api2/json/access/ticket"), {
       data: { ticket: "test-ticket", CSRFPreventionToken: "csrf-token" },
     }),
-    successResponse(urlPatterns.contains("/api2/json/datastores"), {
+    successResponse(urlPatterns.api(baseUrl, "/api2/json/datastores"), {
       data: [],
     }),
   ],
 
   error: (baseUrl = "https://pbs.example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api2/json/access/ticket"),
+      urlPatterns.api(baseUrl, "/api2/json/access/ticket"),
       { error: `PBS error: ${status}` },
       status
     ),
@@ -188,13 +190,13 @@ export const nginxProxyManagerMocks = {
     }
   ): MockResponse[] => [
     // Login
-    successResponse(urlPatterns.contains("/api/tokens"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/tokens"), {
       token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test",
       expires: "2026-12-31T23:59:59Z",
     }),
     // Proxy hosts
     successResponse(
-      urlPatterns.contains("/api/nginx/proxy-hosts"),
+      urlPatterns.api(baseUrl, "/api/nginx/proxy-hosts"),
       Array.from({ length: opts?.proxyHosts ?? 5 }, (_, i) => ({
         id: i + 1,
         domain_names: [`service-${i}.example.com`],
@@ -203,7 +205,7 @@ export const nginxProxyManagerMocks = {
     ),
     // Redirection hosts
     successResponse(
-      urlPatterns.contains("/api/nginx/redirection-hosts"),
+      urlPatterns.api(baseUrl, "/api/nginx/redirection-hosts"),
       Array.from({ length: opts?.redirectionHosts ?? 2 }, (_, i) => ({
         id: i + 1,
         domain_names: [`redirect-${i}.example.com`],
@@ -212,7 +214,7 @@ export const nginxProxyManagerMocks = {
     ),
     // Streams
     successResponse(
-      urlPatterns.contains("/api/nginx/streams"),
+      urlPatterns.api(baseUrl, "/api/nginx/streams"),
       Array.from({ length: opts?.streams ?? 3 }, (_, i) => ({
         id: i + 1,
         incoming_port: 8000 + i,
@@ -221,7 +223,7 @@ export const nginxProxyManagerMocks = {
     ),
     // Dead hosts
     successResponse(
-      urlPatterns.contains("/api/nginx/dead-hosts"),
+      urlPatterns.api(baseUrl, "/api/nginx/dead-hosts"),
       Array.from({ length: opts?.deadHosts ?? 1 }, (_, i) => ({
         id: i + 1,
         domain_names: [`dead-${i}.example.com`],
@@ -231,19 +233,22 @@ export const nginxProxyManagerMocks = {
   ],
 
   empty: (baseUrl = "https://npm.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/tokens"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/tokens"), {
       token: "test-token",
       expires: "2026-12-31T23:59:59Z",
     }),
-    successResponse(urlPatterns.contains("/api/nginx/proxy-hosts"), []),
-    successResponse(urlPatterns.contains("/api/nginx/redirection-hosts"), []),
-    successResponse(urlPatterns.contains("/api/nginx/streams"), []),
-    successResponse(urlPatterns.contains("/api/nginx/dead-hosts"), []),
+    successResponse(urlPatterns.api(baseUrl, "/api/nginx/proxy-hosts"), []),
+    successResponse(
+      urlPatterns.api(baseUrl, "/api/nginx/redirection-hosts"),
+      []
+    ),
+    successResponse(urlPatterns.api(baseUrl, "/api/nginx/streams"), []),
+    successResponse(urlPatterns.api(baseUrl, "/api/nginx/dead-hosts"), []),
   ],
 
   error: (baseUrl = "https://npm.example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/tokens"),
+      urlPatterns.api(baseUrl, "/api/tokens"),
       { error: `NPM error: ${status}` },
       status
     ),
@@ -262,12 +267,12 @@ export const portainerMocks = {
     }
   ): MockResponse[] => [
     // Login
-    successResponse(urlPatterns.contains("/api/auth"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/auth"), {
       jwt: "test-jwt-token-12345",
     }),
     // Endpoints
     successResponse(
-      urlPatterns.contains("/api/endpoints"),
+      urlPatterns.api(baseUrl, "/api/endpoints"),
       Array.from({ length: opts?.endpoints ?? 2 }, (_, i) => ({
         Id: i + 1,
         Name: `endpoint-${i}`,
@@ -277,7 +282,7 @@ export const portainerMocks = {
     ),
     // Stacks
     successResponse(
-      urlPatterns.contains("/api/stacks"),
+      urlPatterns.api(baseUrl, "/api/stacks"),
       Array.from({ length: opts?.stacks ?? 3 }, (_, i) => ({
         Id: i + 1,
         Name: `stack-${i}`,
@@ -286,7 +291,7 @@ export const portainerMocks = {
     ),
     // Containers
     successResponse(
-      urlPatterns.contains("/api/endpoints/1/docker/containers/json"),
+      urlPatterns.api(baseUrl, "/api/endpoints/1/docker/containers/json"),
       Array.from({ length: opts?.containers ?? 10 }, (_, i) => ({
         Id: `container-${i}`,
         Names: [`/container-${i}`],
@@ -300,11 +305,13 @@ export const portainerMocks = {
   ],
 
   empty: (baseUrl = "https://portainer.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/auth"), { jwt: "test-token" }),
-    successResponse(urlPatterns.contains("/api/endpoints"), []),
-    successResponse(urlPatterns.contains("/api/stacks"), []),
+    successResponse(urlPatterns.api(baseUrl, "/api/auth"), {
+      jwt: "test-token",
+    }),
+    successResponse(urlPatterns.api(baseUrl, "/api/endpoints"), []),
+    successResponse(urlPatterns.api(baseUrl, "/api/stacks"), []),
     successResponse(
-      urlPatterns.contains("/api/endpoints/1/docker/containers/json"),
+      urlPatterns.api(baseUrl, "/api/endpoints/1/docker/containers/json"),
       []
     ),
   ],
@@ -314,7 +321,7 @@ export const portainerMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/auth"),
+      urlPatterns.api(baseUrl, "/api/auth"),
       { error: `Portainer error: ${status}` },
       status
     ),
@@ -331,7 +338,7 @@ export const traefikMocks = {
       middlewares?: number
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/rawdata"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/rawdata"), {
       routers: Array.from({ length: opts?.routers ?? 8 }, (_, i) => ({
         entryPoints: ["web", "websecure"],
         service: `service-${i}`,
@@ -351,7 +358,7 @@ export const traefikMocks = {
   ],
 
   empty: (baseUrl = "https://traefik.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/rawdata"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/rawdata"), {
       routers: {},
       services: {},
       middlewares: {},
@@ -363,7 +370,7 @@ export const traefikMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/rawdata"),
+      urlPatterns.api(baseUrl, "/api/rawdata"),
       { error: `Traefik error: ${status}` },
       status
     ),
@@ -381,7 +388,7 @@ export const seerrMocks = {
       totalRequests?: number
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/v1/request"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/v1/request"), {
       pageInfo: {
         results: opts?.totalRequests ?? 25,
       },
@@ -393,7 +400,7 @@ export const seerrMocks = {
         },
       })),
     }),
-    successResponse(urlPatterns.contains("/api/v1/service/plex"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/v1/service/plex"), {
       id: 1,
       name: "Plex",
       enabled: true,
@@ -401,11 +408,11 @@ export const seerrMocks = {
   ],
 
   empty: (baseUrl = "https://seerr.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/api/v1/request"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/v1/request"), {
       pageInfo: { results: 0 },
       results: [],
     }),
-    successResponse(urlPatterns.contains("/api/v1/service/plex"), {
+    successResponse(urlPatterns.api(baseUrl, "/api/v1/service/plex"), {
       id: 1,
       name: "Plex",
       enabled: true,
@@ -414,7 +421,7 @@ export const seerrMocks = {
 
   error: (baseUrl = "https://seerr.example.com", status = 500): MockResponse =>
     successResponse(
-      urlPatterns.contains("/api/v1/request"),
+      urlPatterns.api(baseUrl, "/api/v1/request"),
       { error: `Seerr error: ${status}` },
       status
     ),
@@ -432,12 +439,12 @@ export const calibreWebMocks = {
     }
   ): MockResponse[] => [
     successResponse(
-      urlPatterns.contains("/admin"),
+      urlPatterns.api(baseUrl, "/admin"),
       "<html><body></body></html>",
       200,
       { "Content-Type": "text/html" }
     ),
-    successResponse(urlPatterns.contains("/stats"), {
+    successResponse(urlPatterns.api(baseUrl, "/stats"), {
       books: opts?.books ?? 1234,
       authors: opts?.authors ?? 456,
       series: opts?.series ?? 78,
@@ -446,12 +453,12 @@ export const calibreWebMocks = {
 
   empty: (baseUrl = "https://calibre-web.example.com"): MockResponse[] => [
     successResponse(
-      urlPatterns.contains("/admin"),
+      urlPatterns.api(baseUrl, "/admin"),
       "<html><body></body></html>",
       200,
       { "Content-Type": "text/html" }
     ),
-    successResponse(urlPatterns.contains("/stats"), {
+    successResponse(urlPatterns.api(baseUrl, "/stats"), {
       books: 0,
       authors: 0,
       series: 0,
@@ -463,7 +470,7 @@ export const calibreWebMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/admin"),
+      urlPatterns.api(baseUrl, "/admin"),
       { error: `Calibre-Web error: ${status}` },
       status
     ),
@@ -481,7 +488,7 @@ export const unmanicMocks = {
       queueLength?: number
     }
   ): MockResponse[] => [
-    successResponse(urlPatterns.contains("/unmanic/api/v1/status"), {
+    successResponse(urlPatterns.api(baseUrl, "/unmanic/api/v1/status"), {
       active: opts?.activeTasks ?? 2,
       completed: opts?.completedTasks ?? 150,
       workers: opts?.workerCount ?? 4,
@@ -489,7 +496,7 @@ export const unmanicMocks = {
         count: opts?.queueLength ?? 5,
       },
     }),
-    successResponse(urlPatterns.contains("/unmanic/api/v1/workers"), {
+    successResponse(urlPatterns.api(baseUrl, "/unmanic/api/v1/workers"), {
       workers: Array.from({ length: opts?.workerCount ?? 4 }, (_, i) => ({
         id: i,
         status: i < (opts?.activeTasks ?? 2) ? "busy" : "idle",
@@ -498,13 +505,13 @@ export const unmanicMocks = {
   ],
 
   empty: (baseUrl = "https://unmanic.example.com"): MockResponse[] => [
-    successResponse(urlPatterns.contains("/unmanic/api/v1/status"), {
+    successResponse(urlPatterns.api(baseUrl, "/unmanic/api/v1/status"), {
       active: 0,
       completed: 0,
       workers: 0,
       queue: { count: 0 },
     }),
-    successResponse(urlPatterns.contains("/unmanic/api/v1/workers"), {
+    successResponse(urlPatterns.api(baseUrl, "/unmanic/api/v1/workers"), {
       workers: [],
     }),
   ],
@@ -514,7 +521,7 @@ export const unmanicMocks = {
     status = 500
   ): MockResponse =>
     successResponse(
-      urlPatterns.contains("/unmanic/api/v1/status"),
+      urlPatterns.api(baseUrl, "/unmanic/api/v1/status"),
       { error: `Unmanic error: ${status}` },
       status
     ),

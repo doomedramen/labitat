@@ -394,7 +394,6 @@ export const prowlarrMocks = {
       indexers?: number
       grabs?: number
       queries?: number
-      failedQueries?: number
     }
   ): MockResponse[] => [
     successResponse(
@@ -404,29 +403,20 @@ export const prowlarrMocks = {
         name: `Indexer ${i + 1}`,
       }))
     ),
-    successResponse(
-      api(baseUrl, "/api/v1/indexerstatus"),
-      Array.from({ length: opts?.indexers ?? 8 }, (_, i) => ({
-        indexerId: i + 1,
-        indexerName: `Indexer ${i + 1}`,
-        disabledTill: null,
-        disabledReason: null,
-      }))
-    ),
-    successResponse(api(baseUrl, "/api/v1/statistics"), {
-      grabs: opts?.grabs ?? 1234,
-      successfulQueries: (opts?.queries ?? 500) - (opts?.failedQueries ?? 20),
-      failedQueries: opts?.failedQueries ?? 20,
+    successResponse(api(baseUrl, "/api/v1/indexerstats"), {
+      indexers: [
+        {
+          numberOfQueries: opts?.queries ?? 500,
+          numberOfGrabs: opts?.grabs ?? 1234,
+        },
+      ],
     }),
   ],
 
   empty: (baseUrl = "https://prowlarr.example.com"): MockResponse[] => [
     successResponse(api(baseUrl, "/api/v1/indexer"), []),
-    successResponse(api(baseUrl, "/api/v1/indexerstatus"), []),
-    successResponse(api(baseUrl, "/api/v1/statistics"), {
-      grabs: 0,
-      successfulQueries: 0,
-      failedQueries: 0,
+    successResponse(api(baseUrl, "/api/v1/indexerstats"), {
+      indexers: [],
     }),
   ],
 
@@ -440,12 +430,7 @@ export const prowlarrMocks = {
       status
     ),
     successResponse(
-      api(baseUrl, "/api/v1/indexerstatus"),
-      { error: `Prowlarr error: ${status}` },
-      status
-    ),
-    successResponse(
-      api(baseUrl, "/api/v1/statistics"),
+      api(baseUrl, "/api/v1/indexerstats"),
       { error: `Prowlarr error: ${status}` },
       status
     ),
