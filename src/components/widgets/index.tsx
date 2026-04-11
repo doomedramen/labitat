@@ -185,7 +185,7 @@ export function ListItem({
 
   return (
     <BlockLinkPropagation className="w-full">
-      <TooltipTrigger content={tooltip} side="top">
+      <TooltipTrigger content={tooltip} side="top" className="w-full">
         {content}
       </TooltipTrigger>
     </BlockLinkPropagation>

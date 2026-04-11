@@ -122,6 +122,7 @@ interface TooltipTriggerProps {
   content: React.ReactNode
   side?: "top" | "bottom" | "left" | "right"
   delayMs?: number
+  className?: string
 }
 
 export function TooltipTrigger({
@@ -129,6 +130,7 @@ export function TooltipTrigger({
   content,
   side = "top",
   delayMs = 0,
+  className = "inline-flex",
 }: TooltipTriggerProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -159,7 +161,7 @@ export function TooltipTrigger({
       onMouseLeave={hide}
       onFocus={show}
       onBlur={hide}
-      className="inline-flex"
+      className={className}
       data-slot="tooltip-trigger"
     >
       {children}
