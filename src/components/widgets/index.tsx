@@ -23,6 +23,7 @@ import { useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { Clock, Download, Pause, Play, Monitor, Cpu } from "lucide-react"
 import { TooltipTrigger } from "@/components/tooltip"
+import { BlockLinkPropagation } from "@/components/dashboard/item/block-link-propagation"
 import type { StatDisplayMode } from "@/lib/types"
 
 // ── Generic List Item ─────────────────────────────────────────────────────────
@@ -183,9 +184,11 @@ export function ListItem({
   }
 
   return (
-    <TooltipTrigger content={tooltip} side="top">
-      {content}
-    </TooltipTrigger>
+    <BlockLinkPropagation>
+      <TooltipTrigger content={tooltip} side="top">
+        {content}
+      </TooltipTrigger>
+    </BlockLinkPropagation>
   )
 }
 
@@ -420,9 +423,11 @@ export function StatCard({
 
   if (effectiveTooltip) {
     return (
-      <TooltipTrigger content={effectiveTooltip} side="top">
-        {inner}
-      </TooltipTrigger>
+      <BlockLinkPropagation>
+        <TooltipTrigger content={effectiveTooltip} side="top">
+          {inner}
+        </TooltipTrigger>
+      </BlockLinkPropagation>
     )
   }
   return inner

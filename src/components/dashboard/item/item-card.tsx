@@ -9,6 +9,7 @@ import { ItemIcon } from "./item-icon"
 import { StatusDot } from "./status-dot"
 import { WidgetRenderer } from "./widget-renderer"
 import { EditModeControls } from "./edit-mode-controls"
+import { BlockLinkPropagation } from "./block-link-propagation"
 import { useItemData } from "@/hooks/use-item-data"
 
 interface ItemCardProps {
@@ -57,9 +58,9 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       data-item-id={item.id}
     >
       {!editMode && hasStatus && !item.cleanMode && (
-        <div className="absolute top-3 right-3 transition-all duration-300 group-hover/item:scale-110">
+        <BlockLinkPropagation className="absolute top-3 right-3 transition-all duration-300 group-hover/item:scale-110">
           <StatusDot status={serviceStatus} />
-        </div>
+        </BlockLinkPropagation>
       )}
 
       {(!item.cleanMode || editMode) && (
