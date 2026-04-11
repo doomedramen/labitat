@@ -23,19 +23,14 @@ export function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
   const iconSrc = resolvedUrl ? toProxyUrl(resolvedUrl) : null
 
   return (
-    <div
-      className={cn(
-        "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md",
-        "bg-secondary"
-      )}
-    >
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center">
       {iconSrc ? (
         <Image
           src={iconSrc}
           alt={label}
-          width={20}
-          height={20}
-          className="h-5 w-5 object-contain"
+          width={32}
+          height={32}
+          className="h-8 w-8 object-contain"
           loading="lazy"
           decoding="async"
           onError={(e) => {
