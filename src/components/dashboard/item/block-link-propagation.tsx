@@ -5,6 +5,8 @@
  * pointer events (hover, tap → tooltip) without triggering navigation.
  */
 
+import { cn } from "@/lib/utils"
+
 export function BlockLinkPropagation({
   children,
   className,
@@ -13,7 +15,10 @@ export function BlockLinkPropagation({
   className?: string
 }) {
   return (
-    <div className={className} onClick={(e) => e.preventDefault()}>
+    <div
+      className={cn("w-full", className)}
+      onClick={(e) => e.preventDefault()}
+    >
       {children}
     </div>
   )
