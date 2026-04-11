@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createGroup, updateGroup } from "@/actions/groups"
 import { toast } from "sonner"
-import type { GroupWithCache } from "@/lib/types"
+import type { GroupWithCache, GroupWithItems } from "@/lib/types"
 
 const groupSchema = z.object({
   name: z.string().min(1, "Group name is required."),
@@ -27,9 +27,15 @@ interface GroupDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   group: GroupWithCache | null
+  onGroupsChanged: (groups: GroupWithItems[]) => void
 }
 
-export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
+export function GroupDialog({
+  open,
+  onOpenChange,
+  group,
+  onGroupsChanged,
+}: GroupDialogProps) {
   const form = useForm({
     defaultValues: {
       name: group?.name ?? "",
@@ -43,9 +49,11 @@ export function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
         const formData = new FormData()
         formData.append("name", value.name)
         if (group) {
-          await updateGroup(group.id, formData)
+          const updated = await updateGroup(group.id, formData)
+          onGroupsChanged(updated)
         } else {
-          await createGroup(formData)
+          const updated = await createGroup(formData)
+          onGroupsChanged(updated)
         }
         onOpenChange(false)
       } catch {

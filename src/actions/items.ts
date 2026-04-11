@@ -8,6 +8,7 @@ import { items } from "@/lib/db/schema"
 import { encrypt, decrypt } from "@/lib/crypto"
 import { getService } from "@/lib/adapters"
 import { refreshGroupsCache } from "@/lib/structural-cache"
+import type { GroupWithItems } from "@/lib/types"
 
 async function buildServiceConfig(
   serviceType: string | null,
@@ -47,7 +48,10 @@ async function buildServiceConfig(
   return { config, serviceUrl }
 }
 
-export async function createItem(groupId: string, formData: FormData) {
+export async function createItem(
+  groupId: string,
+  formData: FormData
+): Promise<GroupWithItems[]> {
   await requireAuth()
 
   const label = (formData.get("label") as string | null)?.trim() ?? ""
@@ -90,10 +94,13 @@ export async function createItem(groupId: string, formData: FormData) {
     statDisplayMode,
     order: nextOrder,
   })
-  await refreshGroupsCache()
+  return refreshGroupsCache()
 }
 
-export async function updateItem(id: string, formData: FormData) {
+export async function updateItem(
+  id: string,
+  formData: FormData
+): Promise<GroupWithItems[]> {
   await requireAuth()
 
   const label = (formData.get("label") as string | null)?.trim() ?? ""
@@ -156,23 +163,26 @@ export async function updateItem(id: string, formData: FormData) {
       statDisplayMode,
     })
     .where(eq(items.id, id))
-  await refreshGroupsCache()
+  return refreshGroupsCache()
 }
 
-export async function deleteItem(id: string) {
+export async function deleteItem(id: string): Promise<GroupWithItems[]> {
   await requireAuth()
   await db.delete(items).where(eq(items.id, id))
-  await refreshGroupsCache()
+  return refreshGroupsCache()
 }
 
-export async function reorderItems(groupId: string, orderedIds: string[]) {
+export async function reorderItems(
+  groupId: string,
+  orderedIds: string[]
+): Promise<GroupWithItems[]> {
   await requireAuth()
   await Promise.all(
     orderedIds.map((id, index) =>
       db.update(items).set({ order: index, groupId }).where(eq(items.id, id))
     )
   )
-  await refreshGroupsCache()
+  return refreshGroupsCache()
 }
 
 export async function getItemConfig(

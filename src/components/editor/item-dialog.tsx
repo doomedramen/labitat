@@ -31,7 +31,7 @@ import { Loader2 } from "lucide-react"
 import { createItem, updateItem, getItemConfig } from "@/actions/items"
 import { getAllServices } from "@/lib/adapters"
 import type { ServiceDefinition } from "@/lib/adapters"
-import type { ItemWithCache } from "@/lib/types"
+import type { ItemWithCache, GroupWithItems } from "@/lib/types"
 import { WidgetDisplayProvider } from "@/components/dashboard/item/widget-display-context"
 import { WidgetContainer } from "@/components/widgets"
 import {
@@ -237,6 +237,7 @@ interface ItemDialogProps {
   onOpenChange: (open: boolean) => void
   item: ItemWithCache | null
   groupId: string
+  onGroupsChanged: (groups: GroupWithItems[]) => void
 }
 
 export function ItemDialog({
@@ -244,6 +245,7 @@ export function ItemDialog({
   onOpenChange,
   item,
   groupId,
+  onGroupsChanged,
 }: ItemDialogProps) {
   const services = getAllServices()
   const [serviceType, setServiceType] = useState(item?.serviceType ?? "")
@@ -296,9 +298,11 @@ export function ItemDialog({
         })
 
         if (item) {
-          await updateItem(item.id, formData)
+          const updated = await updateItem(item.id, formData)
+          onGroupsChanged(updated)
         } else {
-          await createItem(groupId, formData)
+          const updated = await createItem(groupId, formData)
+          onGroupsChanged(updated)
         }
         onOpenChange(false)
       } catch {

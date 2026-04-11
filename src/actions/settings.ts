@@ -1,5 +1,6 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { getSession } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
@@ -21,4 +22,5 @@ export async function updateDashboardTitle(title: string) {
     .onConflictDoUpdate({ target: settings.key, set: { value: title } })
 
   await refreshSettingCache("dashboardTitle", title)
+  revalidatePath("/")
 }

@@ -25,7 +25,7 @@ import { Palette, LogIn, Plus, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
-import type { GroupWithCache, ItemWithCache } from "@/lib/types"
+import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -75,6 +75,41 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   useEffect(() => {
     setLocalGroups(groups)
   }, [groups])
+
+  // Enrich server-returned groups with cached widget data from current state
+  function handleGroupsUpdated(newGroups: GroupWithItems[]) {
+    console.log(
+      "[handleGroupsUpdated] called with",
+      newGroups.map((g) => g.name)
+    )
+    const cacheMap = new Map<
+      string,
+      {
+        widgetData: ItemWithCache["cachedWidgetData"]
+        pingStatus: ItemWithCache["cachedPingStatus"]
+      }
+    >()
+    for (const g of localGroups) {
+      for (const item of g.items) {
+        cacheMap.set(item.id, {
+          widgetData: item.cachedWidgetData,
+          pingStatus: item.cachedPingStatus,
+        })
+      }
+    }
+    const enriched: GroupWithCache[] = newGroups.map((group) => ({
+      ...group,
+      items: group.items.map((item) => {
+        const cached = cacheMap.get(item.id)
+        return {
+          ...item,
+          cachedWidgetData: cached?.widgetData ?? null,
+          cachedPingStatus: cached?.pingStatus ?? null,
+        } as ItemWithCache
+      }),
+    }))
+    setLocalGroups(enriched)
+  }
 
   // Track the active drag item/group for DragOverlay and cross-group logic
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -370,6 +405,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                   setTargetGroupId(group.id)
                   setItemDialogOpen(true)
                 }}
+                onGroupsChanged={handleGroupsUpdated}
                 onEditItem={(item) => {
                   setEditingItem(item)
                   setTargetGroupId(group.id)
@@ -418,12 +454,14 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         open={groupDialogOpen}
         onOpenChange={setGroupDialogOpen}
         group={editingGroup}
+        onGroupsChanged={handleGroupsUpdated}
       />
       <ItemDialog
         open={itemDialogOpen}
         onOpenChange={setItemDialogOpen}
         item={editingItem}
         groupId={targetGroupId ?? ""}
+        onGroupsChanged={handleGroupsUpdated}
       />
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="max-w-sm">

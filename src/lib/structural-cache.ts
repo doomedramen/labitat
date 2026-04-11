@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
-import { getCachedAny, setCached } from "@/lib/cache"
+import { getCachedAny, setCached, flushCache } from "@/lib/cache"
 import type { GroupWithItems } from "@/lib/types"
 
 const GROUPS_KEY = "structural:groups"
@@ -18,20 +18,26 @@ async function queryGroupsWithItems(): Promise<GroupWithItems[]> {
   })
 }
 
-/** Get groups from cache, seed from DB on cold start. */
+/** Get groups directly from DB — caching causes stale-data races in dev mode.
+ *
+ * Next.js dev server actions and SSR run in separate module contexts, each
+ * with their own memoryCache. After a mutation, the server action refreshes
+ * the file cache and returns fresh data, but the subsequent router.refresh()
+ * re-render hits getCachedAny() which returns stale in-memory data from the
+ * SSR worker's own memoryCache, overwriting the correct client state.
+ *
+ * The groups table is tiny (a handful of rows) so a direct query is cheap.
+ */
 export async function getOrSeedGroups(): Promise<GroupWithItems[]> {
-  const cached = await getCachedAny<GroupWithItems[]>(GROUPS_KEY)
-  if (cached) return cached
-
-  const groups = await queryGroupsWithItems()
-  await setCached(GROUPS_KEY, groups)
-  return groups
+  return queryGroupsWithItems()
 }
 
-/** Re-query DB and overwrite groups cache. Call after mutations. */
-export async function refreshGroupsCache(): Promise<void> {
+/** Re-query DB and overwrite groups cache. Returns updated groups. */
+export async function refreshGroupsCache(): Promise<GroupWithItems[]> {
   const groups = await queryGroupsWithItems()
   await setCached(GROUPS_KEY, groups)
+  await flushCache()
+  return groups
 }
 
 interface SettingRow {
@@ -62,4 +68,5 @@ export async function refreshSettingCache(
   value: string
 ): Promise<void> {
   await setCached(settingsKey(key), { key, value })
+  await flushCache()
 }

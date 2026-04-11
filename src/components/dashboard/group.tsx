@@ -5,7 +5,7 @@ import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable"
 import { cn } from "@/lib/utils"
-import type { GroupWithCache, ItemWithCache } from "@/lib/types"
+import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types"
 import { ItemCard } from "./item/item-card"
 import { deleteGroup } from "@/actions/groups"
 import { deleteItem } from "@/actions/items"
@@ -19,6 +19,7 @@ interface GroupCardProps {
   onEditGroup: () => void
   onAddItem: () => void
   onEditItem: (item: ItemWithCache) => void
+  onGroupsChanged: (groups: GroupWithItems[]) => void
 }
 
 export const GroupCard = memo(function GroupCard({
@@ -27,6 +28,7 @@ export const GroupCard = memo(function GroupCard({
   onEditGroup,
   onAddItem,
   onEditItem,
+  onGroupsChanged,
 }: GroupCardProps) {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
@@ -104,11 +106,14 @@ export const GroupCard = memo(function GroupCard({
                 item={item}
                 editMode={editMode}
                 onEdit={onEditItem}
-                onDeleted={(id) =>
-                  deleteItem(id).catch(() =>
+                onDeleted={async (id) => {
+                  try {
+                    const updated = await deleteItem(id)
+                    onGroupsChanged(updated)
+                  } catch {
                     toast.error("Failed to delete item")
-                  )
-                }
+                  }
+                }}
               />
             ))}
             {editMode && (
@@ -130,10 +135,13 @@ export const GroupCard = memo(function GroupCard({
         onOpenChange={setDeleteConfirmOpen}
         title="Delete group"
         description={`Are you sure you want to delete "${group.name}"? All items inside will also be deleted. This cannot be undone.`}
-        onConfirm={() => {
-          deleteGroup(group.id).catch(() =>
+        onConfirm={async () => {
+          try {
+            const updated = await deleteGroup(group.id)
+            onGroupsChanged(updated)
+          } catch {
             toast.error("Failed to delete group")
-          )
+          }
           setDeleteConfirmOpen(false)
         }}
       />
