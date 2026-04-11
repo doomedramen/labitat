@@ -1,6 +1,5 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
 import { eq, max } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { requireAuth } from "@/lib/auth/guard"
@@ -8,6 +7,7 @@ import { db } from "@/lib/db"
 import { items } from "@/lib/db/schema"
 import { encrypt, decrypt } from "@/lib/crypto"
 import { getService } from "@/lib/adapters"
+import { refreshGroupsCache } from "@/lib/structural-cache"
 
 async function buildServiceConfig(
   serviceType: string | null,
@@ -90,7 +90,7 @@ export async function createItem(groupId: string, formData: FormData) {
     statDisplayMode,
     order: nextOrder,
   })
-  revalidatePath("/")
+  await refreshGroupsCache()
 }
 
 export async function updateItem(id: string, formData: FormData) {
@@ -156,13 +156,13 @@ export async function updateItem(id: string, formData: FormData) {
       statDisplayMode,
     })
     .where(eq(items.id, id))
-  revalidatePath("/")
+  await refreshGroupsCache()
 }
 
 export async function deleteItem(id: string) {
   await requireAuth()
   await db.delete(items).where(eq(items.id, id))
-  revalidatePath("/")
+  await refreshGroupsCache()
 }
 
 export async function reorderItems(groupId: string, orderedIds: string[]) {
@@ -172,7 +172,7 @@ export async function reorderItems(groupId: string, orderedIds: string[]) {
       db.update(items).set({ order: index, groupId }).where(eq(items.id, id))
     )
   )
-  revalidatePath("/")
+  await refreshGroupsCache()
 }
 
 export async function getItemConfig(

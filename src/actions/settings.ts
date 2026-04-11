@@ -3,7 +3,7 @@
 import { getSession } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
-import { revalidatePath } from "next/cache"
+import { refreshSettingCache } from "@/lib/structural-cache"
 
 export async function updateDashboardTitle(title: string) {
   const session = await getSession()
@@ -20,5 +20,5 @@ export async function updateDashboardTitle(title: string) {
     .values({ key: "dashboardTitle", value: title })
     .onConflictDoUpdate({ target: settings.key, set: { value: title } })
 
-  revalidatePath("/")
+  await refreshSettingCache("dashboardTitle", title)
 }

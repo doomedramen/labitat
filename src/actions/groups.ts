@@ -1,11 +1,11 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
 import { eq, max } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { requireAuth } from "@/lib/auth/guard"
 import { db } from "@/lib/db"
 import { groups } from "@/lib/db/schema"
+import { refreshGroupsCache } from "@/lib/structural-cache"
 
 export async function createGroup(formData: FormData) {
   await requireAuth()
@@ -16,7 +16,7 @@ export async function createGroup(formData: FormData) {
   const nextOrder = (result?.maxOrder ?? -1) + 1
 
   await db.insert(groups).values({ id: nanoid(), name, order: nextOrder })
-  revalidatePath("/")
+  await refreshGroupsCache()
 }
 
 export async function updateGroup(id: string, formData: FormData) {
@@ -25,13 +25,13 @@ export async function updateGroup(id: string, formData: FormData) {
   const name = (formData.get("name") as string | null)?.trim() ?? ""
 
   await db.update(groups).set({ name }).where(eq(groups.id, id))
-  revalidatePath("/")
+  await refreshGroupsCache()
 }
 
 export async function deleteGroup(id: string) {
   await requireAuth()
   await db.delete(groups).where(eq(groups.id, id))
-  revalidatePath("/")
+  await refreshGroupsCache()
 }
 
 export async function reorderGroups(orderedIds: string[]) {
@@ -41,5 +41,5 @@ export async function reorderGroups(orderedIds: string[]) {
       db.update(groups).set({ order: index }).where(eq(groups.id, id))
     )
   )
-  revalidatePath("/")
+  await refreshGroupsCache()
 }
