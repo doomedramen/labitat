@@ -33,6 +33,7 @@ export async function seedAndAuth(
         iconUrl?: string
         serviceType?: string
         serviceUrl?: string
+        cachedWidgetData?: Record<string, unknown>
       }>
     }>
   }

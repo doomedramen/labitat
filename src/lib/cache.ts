@@ -84,13 +84,33 @@ export async function getCached<T>(
   return entry.data as T
 }
 
-// Get cached data without TTL check - useful for offline fallback
+// Get cached data without TTL check - useful for offline fallback.
+// If the key is missing from memory, re-reads the file once — this handles
+// the case where another module instance (e.g. a seed API route) wrote data
+// to disk that this instance hasn't seen yet (Next.js dev mode can give each
+// route its own copy of the module).
+let reReadAttempted = false
+
 export async function getCachedAny<T>(key: string): Promise<T | null> {
   await loadCacheFromFile()
 
   const entry = memoryCache.get(key)
-  if (!entry) return null
-  return entry.data as T
+  if (entry) {
+    reReadAttempted = false
+    return entry.data as T
+  }
+
+  // Key not in memory — the file may have been updated by another process or
+  // a different module instance. Try re-reading once per miss cycle.
+  if (!reReadAttempted) {
+    reReadAttempted = true
+    cacheLoadPromise = null
+    await loadCacheFromFile()
+    const reloaded = memoryCache.get(key)
+    if (reloaded) return reloaded.data as T
+  }
+
+  return null
 }
 
 // Get both fresh and expired cache in a single lookup
@@ -121,6 +141,25 @@ export async function deleteCached(key: string): Promise<void> {
 
   memoryCache.delete(key)
   saveCacheToFile()
+}
+
+// Flush pending file writes immediately (needed when cache must survive
+// across different module instances, e.g. E2E test seed → SSR)
+export async function flushCache(): Promise<void> {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout)
+    saveTimeout = null
+  }
+  await writeChain
+  try {
+    const obj = Object.fromEntries(memoryCache.entries())
+    await fs.writeFile(CACHE_FILE, JSON.stringify(obj), {
+      encoding: "utf-8",
+      mode: 0o600,
+    })
+  } catch (err) {
+    console.error("[cache] Failed to flush cache:", err)
+  }
 }
 
 // Clear all cache

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { sql } from "drizzle-orm"
 import { getIronSession } from "iron-session"
 import { cookies } from "next/headers"
@@ -8,7 +8,8 @@ import { db } from "@/lib/db"
 import { users, groups, items, settings } from "@/lib/db/schema"
 import { resetAllRateLimits } from "@/lib/auth/rate-limit"
 import { getSessionOptions, type SessionData } from "@/lib/auth"
-import { cacheWidgetData } from "@/lib/last-datapoints"
+import { cacheWidgetData, getLastDatapoint } from "@/lib/last-datapoints"
+import { getCachedAny, flushCache } from "@/lib/cache"
 import type { ServiceData } from "@/lib/adapters/types"
 
 interface SeedRequest {
@@ -85,8 +86,9 @@ export async function POST(request: Request) {
       if (groupData.items) {
         for (let ii = 0; ii < groupData.items.length; ii++) {
           const itemData = groupData.items[ii]
+          const itemId = nanoid()
           await db.insert(items).values({
-            id: nanoid(),
+            id: itemId,
             groupId,
             label: itemData.label,
             href: itemData.href ?? null,
@@ -95,10 +97,39 @@ export async function POST(request: Request) {
             serviceUrl: itemData.serviceUrl ?? null,
             order: ii,
           })
+
+          // Pre-seed cached widget data for E2E tests
+          if (itemData.cachedWidgetData) {
+            await cacheWidgetData(itemId, {
+              _status: "ok",
+              ...itemData.cachedWidgetData,
+            } as ServiceData)
+          }
         }
       }
     }
   }
 
+  // Flush cache to disk so SSR (which may run in a different module instance
+  // in Next.js dev mode) can read the pre-seeded widget data from file
+  await flushCache()
+
   return NextResponse.json({ ok: true })
+}
+
+// GET handler for debugging cache state in E2E tests
+export async function GET(request: NextRequest) {
+  const secret = request.headers.get("x-test-secret")
+  if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
+
+  const itemId = request.nextUrl.searchParams.get("itemId")
+  if (itemId) {
+    const cached = await getCachedAny(`last:widget:${itemId}`)
+    const datapoint = await getLastDatapoint(itemId)
+    return NextResponse.json({ itemId, cached, datapoint })
+  }
+
+  return NextResponse.json({ error: "Provide ?itemId=..." }, { status: 400 })
 }

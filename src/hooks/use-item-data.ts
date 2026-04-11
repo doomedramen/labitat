@@ -1,6 +1,6 @@
 "use client"
 
-import { useSyncExternalStore } from "react"
+import { useState, useSyncExternalStore } from "react"
 import useSWR, { type SWRConfiguration } from "swr"
 import { getWidgetData } from "@/actions/widget-data"
 import { pingUrl } from "@/actions/ping"
@@ -106,7 +106,25 @@ export function useItemData({
     }
   )
 
-  const effectiveData = editMode ? null : (serviceData ?? null)
+  // Preserve initial cached data so we can fall back to it when the server
+  // returns an error status (service unreachable). Without this, the widget
+  // loses all stat values the moment the server reports an error.
+  const [initialCached] = useState(() => item.cachedWidgetData)
+
+  const effectiveData = (() => {
+    if (editMode) return null
+    if (!serviceData) return null
+    // When the server returns an error (no stat values), fall back to the
+    // initial cached data so the widget still shows the last known values.
+    if (
+      serviceData._status === "error" &&
+      initialCached &&
+      initialCached._status !== "error"
+    ) {
+      return initialCached
+    }
+    return serviceData
+  })()
 
   const effectiveLoading = editMode
     ? false
@@ -120,6 +138,9 @@ export function useItemData({
 
   const hasStatus = !!item.href && !isClientSide
 
+  // Use serviceData (not effectiveData) for status so the indicator still
+  // reflects the actual server response — e.g. a red dot when unreachable —
+  // even though effectiveData shows the last known values.
   const serviceStatus: ServiceStatus = editMode
     ? { state: "unknown" }
     : !isOnline
@@ -136,8 +157,8 @@ export function useItemData({
             }
           : pingData
             ? pingData
-            : effectiveData
-              ? dataToStatus(effectiveData)
+            : serviceData
+              ? dataToStatus(serviceData)
               : { state: "unknown" }
 
   return {
