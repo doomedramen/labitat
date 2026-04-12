@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import { toast } from "sonner"
+import { useOnAppResume } from "@/hooks/use-on-app-resume"
 
 export type ConnectivityState =
   | { status: "online" }
@@ -102,6 +103,16 @@ export function useConnectivity() {
       window.removeEventListener("offline", onOffline)
     }
   }, [clearPoll])
+
+  // Re-check connectivity on app resume (PWA background → foreground)
+  useOnAppResume(async () => {
+    if (navigator.onLine) {
+      const reachable = await isBackendReachable()
+      setState(reachable ? { status: "online" } : { status: "backend-down" })
+    } else {
+      setState({ status: "offline" })
+    }
+  })
 
   // Show / dismiss toasts based on state changes
   useEffect(() => {

@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useSyncExternalStore } from "react"
-import useSWR, { type SWRConfiguration } from "swr"
+import useSWR, { type SWRConfiguration, mutate } from "swr"
 import { getWidgetData } from "@/actions/widget-data"
 import { pingUrl } from "@/actions/ping"
 import type { ItemWithCache } from "@/lib/types"
 import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
 import { dataToStatus } from "@/lib/adapters/types"
 import { getService } from "@/lib/adapters"
+import { useOnAppResume } from "@/hooks/use-on-app-resume"
 
 interface UseItemDataOptions {
   editMode: boolean
@@ -69,6 +70,18 @@ export function useItemData({
       Math.min(1000 * 2 ** retryCount, pollingMs)
     )
   }
+
+  // Revalidate on app resume (PWA background → foreground)
+  useOnAppResume(() => {
+    if (isOnline) {
+      mutate((key) => {
+        if (typeof key !== "string") return false
+        return (
+          key === `widget:${item.id}` || key === `ping:${item.id}:${item.href}`
+        )
+      })
+    }
+  })
 
   const {
     data: serviceData,
