@@ -1,14 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { sql } from "drizzle-orm"
-import { getIronSession } from "iron-session"
-import { cookies } from "next/headers"
-import bcrypt from "bcryptjs"
-import { nanoid } from "nanoid"
-import { db } from "@/lib/db"
-import { users, groups, items, settings } from "@/lib/db/schema"
-import { resetAllRateLimits } from "@/lib/auth/rate-limit"
-import { getSessionOptions, type SessionData } from "@/lib/auth"
-import { serverCache } from "@/lib/server-cache"
 import type { ServiceData } from "@/lib/adapters/types"
 
 interface SeedRequest {
@@ -37,6 +27,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
+  // Dynamic imports to avoid loading env-dependent modules during build
+  const { sql } = await import("drizzle-orm")
+  const { getIronSession } = await import("iron-session")
+  const { cookies } = await import("next/headers")
+  const bcrypt = await import("bcryptjs")
+  const { nanoid } = await import("nanoid")
+  const { db } = await import("@/lib/db")
+  const { users, groups, items, settings } = await import("@/lib/db/schema")
+  const { resetAllRateLimits } = await import("@/lib/auth/rate-limit")
+  const { getSessionOptions } = await import("@/lib/auth")
+  const { serverCache } = await import("@/lib/server-cache")
+
   // Reset first
   await db.run(sql`DELETE FROM items`)
   await db.run(sql`DELETE FROM groups`)
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
   // Seed admin user
   if (body.admin) {
     const userId = nanoid()
-    const passwordHash = await bcrypt.hash(body.admin.password, 4)
+    const passwordHash = await bcrypt.default.hash(body.admin.password, 4)
     await db.insert(users).values({
       id: userId,
       email: body.admin.email,
@@ -61,10 +63,7 @@ export async function POST(request: Request) {
     })
 
     // Set session cookie
-    const session = await getIronSession<SessionData>(
-      await cookies(),
-      getSessionOptions()
-    )
+    const session = await getIronSession(await cookies(), getSessionOptions())
     session.loggedIn = true
     session.userId = userId
     await session.save()
@@ -120,11 +119,15 @@ export async function POST(request: Request) {
 
 // GET handler for debugging cache state in E2E tests
 export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
   const secret = request.headers.get("x-test-secret")
   if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
+  const { serverCache } = await import("@/lib/server-cache")
   const itemId = request.nextUrl.searchParams.get("itemId")
   if (itemId) {
     const cached = serverCache.get(itemId)
