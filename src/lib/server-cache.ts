@@ -29,11 +29,11 @@ class ServerCache {
   private listeners = new Set<UpdateCallback>()
   private loaded = false
 
-  /** Load all cached items from DB into memory. Call once at startup. */
-  async loadFromDb(): Promise<void> {
+  /** Load all cached items from DB into memory. Called lazily on first read. */
+  loadFromDb(): void {
     if (this.loaded) return
     try {
-      const rows = await db.select().from(widgetCache)
+      const rows = db.select().from(widgetCache)
       for (const row of rows) {
         this.cache.set(row.itemId, {
           widgetData: (row.widgetData as ServiceData) ?? null,
