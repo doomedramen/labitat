@@ -11,13 +11,9 @@ const WIDGET_KEY = (itemId: string) => `last:widget:${itemId}`
 const PING_KEY = (itemId: string) => `last:ping:${itemId}`
 
 /** Get the last cached datapoint for an item. */
-export async function getLastDatapoint(
-  itemId: string
-): Promise<ItemDatapoint | null> {
-  const [widgetData, pingStatus] = await Promise.all([
-    getCachedAny<ServiceData>(WIDGET_KEY(itemId)),
-    getCachedAny<ServiceStatus>(PING_KEY(itemId)),
-  ])
+export function getLastDatapoint(itemId: string): ItemDatapoint | null {
+  const widgetData = getCachedAny<ServiceData>(WIDGET_KEY(itemId))
+  const pingStatus = getCachedAny<ServiceStatus>(PING_KEY(itemId))
 
   if (!widgetData && !pingStatus) return null
 
@@ -29,38 +25,30 @@ export async function getLastDatapoint(
 }
 
 /** Cache widget data for an item. */
-export async function cacheWidgetData(
-  itemId: string,
-  data: ServiceData
-): Promise<void> {
-  await setCached(WIDGET_KEY(itemId), data)
+export function cacheWidgetData(itemId: string, data: ServiceData): void {
+  setCached(WIDGET_KEY(itemId), data)
 }
 
 /** Cache ping status for an item. */
-export async function cachePingStatus(
-  itemId: string,
-  status: ServiceStatus
-): Promise<void> {
-  await setCached(PING_KEY(itemId), status)
+export function cachePingStatus(itemId: string, status: ServiceStatus): void {
+  setCached(PING_KEY(itemId), status)
 }
 
 /**
  * Batch preload datapoints for multiple items.
  * Returns a map of itemId -> ItemDatapoint (only for items with cached data).
  */
-export async function preloadDatapoints(
+export function preloadDatapoints(
   itemIds: string[]
-): Promise<Record<string, ItemDatapoint>> {
+): Record<string, ItemDatapoint> {
   const results: Record<string, ItemDatapoint> = {}
 
-  await Promise.all(
-    itemIds.map(async (itemId) => {
-      const datapoint = await getLastDatapoint(itemId)
-      if (datapoint) {
-        results[itemId] = datapoint
-      }
-    })
-  )
+  for (const itemId of itemIds) {
+    const datapoint = getLastDatapoint(itemId)
+    if (datapoint) {
+      results[itemId] = datapoint
+    }
+  }
 
   return results
 }

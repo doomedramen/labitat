@@ -9,7 +9,7 @@ import { users, groups, items, settings } from "@/lib/db/schema"
 import { resetAllRateLimits } from "@/lib/auth/rate-limit"
 import { getSessionOptions, type SessionData } from "@/lib/auth"
 import { cacheWidgetData, getLastDatapoint } from "@/lib/last-datapoints"
-import { getCachedAny, flushCache } from "@/lib/cache"
+import { getCachedAny } from "@/lib/cache"
 import type { ServiceData } from "@/lib/adapters/types"
 
 interface SeedRequest {
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
 
           // Pre-seed cached widget data for E2E tests
           if (itemData.cachedWidgetData) {
-            await cacheWidgetData(itemId, {
+            cacheWidgetData(itemId, {
               _status: "ok",
               ...itemData.cachedWidgetData,
             } as ServiceData)
@@ -109,10 +109,6 @@ export async function POST(request: Request) {
       }
     }
   }
-
-  // Flush cache to disk so SSR (which may run in a different module instance
-  // in Next.js dev mode) can read the pre-seeded widget data from file
-  await flushCache()
 
   return NextResponse.json({ ok: true })
 }
@@ -126,8 +122,8 @@ export async function GET(request: NextRequest) {
 
   const itemId = request.nextUrl.searchParams.get("itemId")
   if (itemId) {
-    const cached = await getCachedAny(`last:widget:${itemId}`)
-    const datapoint = await getLastDatapoint(itemId)
+    const cached = getCachedAny(`last:widget:${itemId}`)
+    const datapoint = getLastDatapoint(itemId)
     return NextResponse.json({ itemId, cached, datapoint })
   }
 

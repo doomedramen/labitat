@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   resetAllRateLimits()
 
   // Clear widget/ping cache to prevent stale data leaking between tests
-  await clearCache()
+  clearCache()
 
   return NextResponse.json({ ok: true })
 }

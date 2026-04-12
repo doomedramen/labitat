@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
-import { setCached, flushCache } from "@/lib/cache"
+import { setCached } from "@/lib/cache"
 import type { GroupWithItems } from "@/lib/types"
 
 const GROUPS_KEY = "structural:groups"
@@ -35,8 +35,7 @@ export async function getOrSeedGroups(): Promise<GroupWithItems[]> {
 /** Re-query DB and overwrite groups cache. Returns updated groups. */
 export async function refreshGroupsCache(): Promise<GroupWithItems[]> {
   const groups = await queryGroupsWithItems()
-  await setCached(GROUPS_KEY, groups)
-  await flushCache()
+  setCached(GROUPS_KEY, groups)
   return groups
 }
 
@@ -65,6 +64,5 @@ export async function refreshSettingCache(
   key: string,
   value: string
 ): Promise<void> {
-  await setCached(settingsKey(key), { key, value })
-  await flushCache()
+  setCached(settingsKey(key), { key, value })
 }

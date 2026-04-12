@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import * as fs from "fs"
 
 // Mock env before anything imports it
 vi.mock("@/lib/env", () => ({
@@ -8,16 +7,6 @@ vi.mock("@/lib/env", () => ({
     CACHE_DIR: "/tmp/labitat-test-cache",
   },
 }))
-
-// Spy on fs.promises methods before importing cache
-const spies = {
-  mkdir: vi.spyOn(fs.promises, "mkdir").mockResolvedValue(undefined),
-  readFile: vi
-    .spyOn(fs.promises, "readFile")
-    .mockRejectedValue(new Error("ENOENT")),
-  writeFile: vi.spyOn(fs.promises, "writeFile").mockResolvedValue(undefined),
-  unlink: vi.spyOn(fs.promises, "unlink").mockResolvedValue(undefined),
-}
 
 import {
   getCached,
@@ -32,11 +21,7 @@ describe("cache", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2024-01-01T00:00:00.000Z"))
-
-    spies.mkdir.mockResolvedValue(undefined)
-    spies.readFile.mockRejectedValue(new Error("ENOENT"))
-    spies.writeFile.mockResolvedValue(undefined)
-    spies.unlink.mockResolvedValue(undefined)
+    clearCache()
   })
 
   afterEach(() => {
@@ -50,26 +35,26 @@ describe("cache", () => {
     })
 
     it("stores and retrieves a value", async () => {
-      await setCached("test-key", { name: "test" })
+      setCached("test-key", { name: "test" })
       const result = await getCached<{ name: string }>("test-key", 60_000)
 
       expect(result).toEqual({ name: "test" })
     })
 
     it("stores and retrieves primitive values", async () => {
-      await setCached("number", 42)
+      setCached("number", 42)
       const result = await getCached<number>("number", 60_000)
       expect(result).toBe(42)
     })
 
     it("stores and retrieves string values", async () => {
-      await setCached("string", "hello")
+      setCached("string", "hello")
       const result = await getCached<string>("string", 60_000)
       expect(result).toBe("hello")
     })
 
     it("returns null after TTL expires", async () => {
-      await setCached("ttl-key", "data")
+      setCached("ttl-key", "data")
       vi.advanceTimersByTime(61_000)
 
       const result = await getCached("ttl-key", 60_000)
@@ -77,7 +62,7 @@ describe("cache", () => {
     })
 
     it("returns value just before TTL expires", async () => {
-      await setCached("ttl-key", "data")
+      setCached("ttl-key", "data")
       vi.advanceTimersByTime(59_000)
 
       const result = await getCached("ttl-key", 60_000)
@@ -85,8 +70,8 @@ describe("cache", () => {
     })
 
     it("handles different keys independently", async () => {
-      await setCached("key-a", "value-a")
-      await setCached("key-b", "value-b")
+      setCached("key-a", "value-a")
+      setCached("key-b", "value-b")
 
       expect(await getCached("key-a", 60_000)).toBe("value-a")
       expect(await getCached("key-b", 60_000)).toBe("value-b")
@@ -95,7 +80,7 @@ describe("cache", () => {
 
   describe("getCachedAny", () => {
     it("returns cached value regardless of TTL", async () => {
-      await setCached("any-key", "data")
+      setCached("any-key", "data")
       vi.advanceTimersByTime(999_999) // Well past any TTL
 
       const result = await getCachedAny("any-key")
@@ -110,7 +95,7 @@ describe("cache", () => {
 
   describe("getCachedWithFallback", () => {
     it("returns fresh data when within TTL", async () => {
-      await setCached("fb-key", "fresh-data")
+      setCached("fb-key", "fresh-data")
 
       const result = await getCachedWithFallback<string>("fb-key", 60_000)
       expect(result.fresh).toBe("fresh-data")
@@ -118,7 +103,7 @@ describe("cache", () => {
     })
 
     it("returns expired data as fallback when TTL exceeded", async () => {
-      await setCached("fb-key", "stale-data")
+      setCached("fb-key", "stale-data")
       vi.advanceTimersByTime(61_000)
 
       const result = await getCachedWithFallback<string>("fb-key", 60_000)
@@ -135,10 +120,10 @@ describe("cache", () => {
 
   describe("deleteCached", () => {
     it("removes a cached key", async () => {
-      await setCached("del-key", "data")
+      setCached("del-key", "data")
       expect(await getCached("del-key", 60_000)).toBe("data")
 
-      await deleteCached("del-key")
+      deleteCached("del-key")
       expect(await getCached("del-key", 60_000)).toBeNull()
     })
 
@@ -149,39 +134,36 @@ describe("cache", () => {
 
   describe("clearCache", () => {
     it("clears all cached entries", async () => {
-      await setCached("key-1", "data-1")
-      await setCached("key-2", "data-2")
+      setCached("key-1", "data-1")
+      setCached("key-2", "data-2")
 
-      await clearCache()
+      clearCache()
 
       expect(await getCached("key-1", 60_000)).toBeNull()
       expect(await getCached("key-2", 60_000)).toBeNull()
     })
 
-    it("deletes the cache file", async () => {
-      await clearCache()
-      expect(spies.unlink).toHaveBeenCalled()
-    })
-
-    it("does not throw if cache file does not exist", async () => {
-      spies.unlink.mockRejectedValueOnce(new Error("ENOENT"))
-      await clearCache() // Should not throw
+    it("clears the in-memory cache map", async () => {
+      setCached("key-1", "data-1")
+      clearCache()
+      expect(await getCachedAny("key-1")).toBeNull()
     })
   })
 
-  describe("file persistence", () => {
-    it("writes to file on setCached", async () => {
-      spies.writeFile.mockClear()
+  describe("memory persistence", () => {
+    it("stores data in memory immediately", async () => {
+      setCached("persist-key", "data")
+      const result = await getCachedAny("persist-key")
+      expect(result).toBe("data")
+    })
 
-      await setCached("persist-key", "data")
+    it("retains data across TTL when accessed via getCachedAny", async () => {
+      setCached("persist-key", "data")
+      vi.advanceTimersByTime(999_999) // Well past any TTL
 
-      // The write is debounced (100ms timeout), so advance timers
-      vi.advanceTimersByTime(200)
-
-      // Allow the write chain to resolve
-      await vi.runAllTimersAsync()
-
-      expect(spies.writeFile).toHaveBeenCalled()
+      // getCachedAny ignores TTL, so data should still be there
+      const result = await getCachedAny("persist-key")
+      expect(result).toBe("data")
     })
   })
 })

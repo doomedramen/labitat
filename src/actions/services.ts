@@ -70,8 +70,8 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       ...data,
       _status: data._status ?? "ok",
     }
-    await setCached(`service:${itemId}`, responseData)
-    await cacheWidgetData(itemId, responseData)
+    setCached(`service:${itemId}`, responseData)
+    cacheWidgetData(itemId, responseData)
     return responseData
   } catch (err) {
     if (hasExpiredCache) {
@@ -80,7 +80,7 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
         _status: "warn" as const,
         _statusText: "Showing cached data - unable to reach service",
       }
-      await cacheWidgetData(itemId, fallbackResponse)
+      cacheWidgetData(itemId, fallbackResponse)
       return fallbackResponse
     }
 
@@ -98,8 +98,8 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
           ? err.message
           : "Failed to fetch data",
     }
-    await setCached(`service:${itemId}`, errorResponse)
-    await cacheWidgetData(itemId, errorResponse)
+    setCached(`service:${itemId}`, errorResponse)
+    cacheWidgetData(itemId, errorResponse)
     return errorResponse
   }
 }
