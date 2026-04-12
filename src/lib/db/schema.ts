@@ -56,6 +56,15 @@ export const settings = sqliteTable("settings", {
   value: text("value").notNull(),
 })
 
+// ── Widget Cache ──────────────────────────────────────────────────────────────
+
+export const widgetCache = sqliteTable("widget_cache", {
+  itemId: text("item_id").primaryKey(),
+  widgetData: text("widget_data", { mode: "json" }),
+  pingStatus: text("ping_status", { mode: "json" }),
+  updatedAt: text("updated_at").default(sql`(current_timestamp)`),
+})
+
 // ── Relations ─────────────────────────────────────────────────────────────────
 
 export const groupsRelations = relations(groups, ({ many }) => ({
