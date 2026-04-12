@@ -80,10 +80,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
   // Enrich server-returned groups with cached widget data from current state
   function handleGroupsUpdated(newGroups: GroupWithItems[]) {
-    console.log(
-      "[handleGroupsUpdated] called with",
-      newGroups.map((g) => g.name)
-    )
     const cacheMap = new Map<
       string,
       {

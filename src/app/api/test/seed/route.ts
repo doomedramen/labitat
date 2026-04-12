@@ -29,6 +29,9 @@ interface SeedRequest {
 }
 
 export async function POST(request: Request) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
   const secret = request.headers.get("x-test-secret")
   if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })

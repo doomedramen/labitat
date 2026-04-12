@@ -6,7 +6,10 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),
-    SECRET_KEY: z.string().min(32).optional(),
+    SECRET_KEY:
+      process.env.NODE_ENV === "production"
+        ? z.string().min(32)
+        : z.string().min(32).optional(),
     DATABASE_URL: z.string().default("file:./data/labitat.db"),
     CACHE_DIR: z.string().optional(),
   },
