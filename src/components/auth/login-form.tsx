@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, startTransition } from "react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 import { login } from "@/actions/auth"
@@ -30,7 +30,9 @@ export function LoginForm() {
       const formData = new FormData()
       formData.append("email", value.email)
       formData.append("password", value.password)
-      await formAction(formData)
+      startTransition(() => {
+        formAction(formData)
+      })
     },
   })
 
@@ -44,8 +46,7 @@ export function LoginForm() {
     >
       <form.Field name="email">
         {(field) => {
-          const isInvalid =
-            field.state.meta.isTouched && field.state.meta.errors.length > 0
+          const isInvalid = field.state.meta.errors.length > 0
           return (
             <div className="space-y-2">
               <Label htmlFor={field.name}>Email</Label>
@@ -70,8 +71,7 @@ export function LoginForm() {
       </form.Field>
       <form.Field name="password">
         {(field) => {
-          const isInvalid =
-            field.state.meta.isTouched && field.state.meta.errors.length > 0
+          const isInvalid = field.state.meta.errors.length > 0
           return (
             <div className="space-y-2">
               <Label htmlFor={field.name}>Password</Label>

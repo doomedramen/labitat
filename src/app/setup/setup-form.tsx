@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, startTransition } from "react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 import { setupAdmin } from "@/actions/auth"
@@ -40,7 +40,9 @@ export function SetupForm() {
       formData.append("email", value.email)
       formData.append("password", value.password)
       formData.append("confirmPassword", value.confirmPassword)
-      await formAction(formData)
+      startTransition(() => {
+        formAction(formData)
+      })
     },
   })
 
@@ -54,8 +56,7 @@ export function SetupForm() {
     >
       <form.Field name="email">
         {(field) => {
-          const isInvalid =
-            field.state.meta.isTouched && field.state.meta.errors.length > 0
+          const isInvalid = field.state.meta.errors.length > 0
           return (
             <div className="space-y-2">
               <Label htmlFor={field.name}>Email</Label>
@@ -80,8 +81,7 @@ export function SetupForm() {
       </form.Field>
       <form.Field name="password">
         {(field) => {
-          const isInvalid =
-            field.state.meta.isTouched && field.state.meta.errors.length > 0
+          const isInvalid = field.state.meta.errors.length > 0
           return (
             <div className="space-y-2">
               <Label htmlFor={field.name}>Password</Label>
@@ -106,8 +106,7 @@ export function SetupForm() {
       </form.Field>
       <form.Field name="confirmPassword">
         {(field) => {
-          const isInvalid =
-            field.state.meta.isTouched && field.state.meta.errors.length > 0
+          const isInvalid = field.state.meta.errors.length > 0
           return (
             <div className="space-y-2">
               <Label htmlFor={field.name}>Confirm Password</Label>

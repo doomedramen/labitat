@@ -4,6 +4,7 @@ import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SORTED_BACKGROUNDS } from "@/lib/backgrounds"
 import { useBackground } from "@/hooks/use-background"
+import { useThemeCookie } from "@/components/theme-provider"
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 interface BackgroundSwitcherProps {
@@ -12,11 +13,14 @@ interface BackgroundSwitcherProps {
 
 export function BackgroundSwitcher({ onSelect }: BackgroundSwitcherProps) {
   const { background, setBackground } = useBackground()
+  const { resolvedTheme } = useThemeCookie()
 
   function handleChange(id: string) {
     setBackground(id)
     onSelect?.()
   }
+
+  const isDark = resolvedTheme === "dark"
 
   return (
     <div className="flex flex-col gap-1.5 p-1">
@@ -36,7 +40,7 @@ export function BackgroundSwitcher({ onSelect }: BackgroundSwitcherProps) {
           <div
             className="h-[90px] w-[256px] shrink-0 overflow-hidden rounded-md border border-border/50"
             style={{
-              background: bg.preview,
+              background: isDark ? bg.previewDark : bg.previewLight,
             }}
           />
           {/* Label with checkmark */}

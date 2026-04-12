@@ -1,7 +1,5 @@
 /* Dashboard Backgrounds */
 
-html[data-background="subtle-gradient"] body,
-html[data-background="subtle-gradient"] .bg-subtle-gradient,
 .bg-subtle-gradient {
   background-image: linear-gradient(
     135deg,
@@ -10,8 +8,30 @@ html[data-background="subtle-gradient"] .bg-subtle-gradient,
   );
 }
 
-html[data-background="diagonal-stripes"] body,
-html[data-background="diagonal-stripes"] .bg-diagonal-stripes,
+.dark .bg-subtle-gradient {
+  background-image: linear-gradient(
+    135deg,
+    oklch(0.18 0.01 240) 0%,
+    oklch(0.22 0.02 180) 100%
+  );
+}
+
+html[data-background="subtle-gradient"] body {
+  background-image: linear-gradient(
+    135deg,
+    oklch(0.96 0.01 240) 0%,
+    oklch(0.92 0.02 180) 100%
+  );
+}
+
+html[data-background="subtle-gradient"].dark body {
+  background-image: linear-gradient(
+    135deg,
+    oklch(0.18 0.01 240) 0%,
+    oklch(0.22 0.02 180) 100%
+  );
+}
+
 .bg-diagonal-stripes {
   background-image: repeating-linear-gradient(
     45deg,
@@ -22,8 +42,36 @@ html[data-background="diagonal-stripes"] .bg-diagonal-stripes,
   );
 }
 
-html[data-background="dots"] body,
-html[data-background="dots"] .bg-dots,
+.dark .bg-diagonal-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    oklch(0.22 0.01 240) 0px,
+    oklch(0.22 0.01 240) 10px,
+    oklch(0.18 0.015 240) 10px,
+    oklch(0.18 0.015 240) 20px
+  );
+}
+
+html[data-background="diagonal-stripes"] body {
+  background-image: repeating-linear-gradient(
+    45deg,
+    oklch(0.95 0.01 240) 0px,
+    oklch(0.95 0.01 240) 10px,
+    oklch(0.90 0.015 240) 10px,
+    oklch(0.90 0.015 240) 20px
+  );
+}
+
+html[data-background="diagonal-stripes"].dark body {
+  background-image: repeating-linear-gradient(
+    45deg,
+    oklch(0.22 0.01 240) 0px,
+    oklch(0.22 0.01 240) 10px,
+    oklch(0.18 0.015 240) 10px,
+    oklch(0.18 0.015 240) 20px
+  );
+}
+
 .bg-dots {
   background-image: radial-gradient(
       circle,
@@ -34,8 +82,36 @@ html[data-background="dots"] .bg-dots,
   background-size: 16px 16px;
 }
 
-html[data-background="mesh-gradient"] body,
-html[data-background="mesh-gradient"] .bg-mesh-gradient,
+.dark .bg-dots {
+  background-image: radial-gradient(
+      circle,
+      oklch(0.55 0.05 240) 1px,
+      transparent 1px
+    ),
+    oklch(0.20 0.005 240);
+  background-size: 16px 16px;
+}
+
+html[data-background="dots"] body {
+  background-image: radial-gradient(
+      circle,
+      oklch(0.70 0.05 240) 1px,
+      transparent 1px
+    ),
+    oklch(0.96 0.005 240);
+  background-size: 16px 16px;
+}
+
+html[data-background="dots"].dark body {
+  background-image: radial-gradient(
+      circle,
+      oklch(0.55 0.05 240) 1px,
+      transparent 1px
+    ),
+    oklch(0.20 0.005 240);
+  background-size: 16px 16px;
+}
+
 .bg-mesh-gradient {
   background-image: radial-gradient(
       at 20% 30%,
@@ -55,8 +131,63 @@ html[data-background="mesh-gradient"] .bg-mesh-gradient,
     oklch(0.95 0.005 240);
 }
 
-html[data-background="aurora"] body,
-html[data-background="aurora"] .bg-aurora,
+.dark .bg-mesh-gradient {
+  background-image: radial-gradient(
+      at 20% 30%,
+      oklch(0.35 0.08 200) 0px,
+      transparent 50%
+    ),
+    radial-gradient(
+      at 80% 70%,
+      oklch(0.35 0.08 320) 0px,
+      transparent 50%
+    ),
+    radial-gradient(
+      at 50% 50%,
+      oklch(0.30 0.06 160) 0px,
+      transparent 50%
+    ),
+    oklch(0.20 0.005 240);
+}
+
+html[data-background="mesh-gradient"] body {
+  background-image: radial-gradient(
+      at 20% 30%,
+      oklch(0.85 0.08 200) 0px,
+      transparent 50%
+    ),
+    radial-gradient(
+      at 80% 70%,
+      oklch(0.85 0.08 320) 0px,
+      transparent 50%
+    ),
+    radial-gradient(
+      at 50% 50%,
+      oklch(0.90 0.06 160) 0px,
+      transparent 50%
+    ),
+    oklch(0.95 0.005 240);
+}
+
+html[data-background="mesh-gradient"].dark body {
+  background-image: radial-gradient(
+      at 20% 30%,
+      oklch(0.35 0.08 200) 0px,
+      transparent 50%
+    ),
+    radial-gradient(
+      at 80% 70%,
+      oklch(0.35 0.08 320) 0px,
+      transparent 50%
+    ),
+    radial-gradient(
+      at 50% 50%,
+      oklch(0.30 0.06 160) 0px,
+      transparent 50%
+    ),
+    oklch(0.20 0.005 240);
+}
+
 .bg-aurora {
   background-image: linear-gradient(
     120deg,
@@ -68,8 +199,39 @@ html[data-background="aurora"] .bg-aurora,
   );
 }
 
-html[data-background="grid"] body,
-html[data-background="grid"] .bg-grid,
+.dark .bg-aurora {
+  background-image: linear-gradient(
+    120deg,
+    oklch(0.30 0.06 180) 0%,
+    oklch(0.28 0.08 140) 25%,
+    oklch(0.30 0.06 280) 50%,
+    oklch(0.28 0.08 320) 75%,
+    oklch(0.30 0.06 180) 100%
+  );
+}
+
+html[data-background="aurora"] body {
+  background-image: linear-gradient(
+    120deg,
+    oklch(0.90 0.06 180) 0%,
+    oklch(0.88 0.08 140) 25%,
+    oklch(0.90 0.06 280) 50%,
+    oklch(0.88 0.08 320) 75%,
+    oklch(0.90 0.06 180) 100%
+  );
+}
+
+html[data-background="aurora"].dark body {
+  background-image: linear-gradient(
+    120deg,
+    oklch(0.30 0.06 180) 0%,
+    oklch(0.28 0.08 140) 25%,
+    oklch(0.30 0.06 280) 50%,
+    oklch(0.28 0.08 320) 75%,
+    oklch(0.30 0.06 180) 100%
+  );
+}
+
 .bg-grid {
   background-image: linear-gradient(
       oklch(0.85 0.02 240) 1px,
@@ -84,8 +246,48 @@ html[data-background="grid"] .bg-grid,
   background-size: 20px 20px;
 }
 
-html[data-background="waves"] body,
-html[data-background="waves"] .bg-waves,
+.dark .bg-grid {
+  background-image: linear-gradient(
+      oklch(0.35 0.02 240) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      oklch(0.35 0.02 240) 1px,
+      transparent 1px
+    ),
+    oklch(0.18 0.005 240);
+  background-size: 20px 20px;
+}
+
+html[data-background="grid"] body {
+  background-image: linear-gradient(
+      oklch(0.85 0.02 240) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      oklch(0.85 0.02 240) 1px,
+      transparent 1px
+    ),
+    oklch(0.97 0.005 240);
+  background-size: 20px 20px;
+}
+
+html[data-background="grid"].dark body {
+  background-image: linear-gradient(
+      oklch(0.35 0.02 240) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      oklch(0.35 0.02 240) 1px,
+      transparent 1px
+    ),
+    oklch(0.18 0.005 240);
+  background-size: 20px 20px;
+}
+
 .bg-waves {
   background-image: repeating-radial-gradient(
     circle at 50% 100%,
@@ -96,8 +298,36 @@ html[data-background="waves"] .bg-waves,
   );
 }
 
-html[data-background="noise"] body,
-html[data-background="noise"] .bg-noise,
+.dark .bg-waves {
+  background-image: repeating-radial-gradient(
+    circle at 50% 100%,
+    oklch(0.28 0.03 220) 0px,
+    oklch(0.28 0.03 220) 10px,
+    oklch(0.22 0.01 220) 10px,
+    oklch(0.22 0.01 220) 20px
+  );
+}
+
+html[data-background="waves"] body {
+  background-image: repeating-radial-gradient(
+    circle at 50% 100%,
+    oklch(0.92 0.03 220) 0px,
+    oklch(0.92 0.03 220) 10px,
+    oklch(0.96 0.01 220) 10px,
+    oklch(0.96 0.01 220) 20px
+  );
+}
+
+html[data-background="waves"].dark body {
+  background-image: repeating-radial-gradient(
+    circle at 50% 100%,
+    oklch(0.28 0.03 220) 0px,
+    oklch(0.28 0.03 220) 10px,
+    oklch(0.22 0.01 220) 10px,
+    oklch(0.22 0.01 220) 20px
+  );
+}
+
 .bg-noise {
   background-color: oklch(0.94 0.01 240);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
@@ -105,8 +335,27 @@ html[data-background="noise"] .bg-noise,
   background-size: 256px 256px;
 }
 
-html[data-background="crosshatch"] body,
-html[data-background="crosshatch"] .bg-crosshatch,
+.dark .bg-noise {
+  background-color: oklch(0.22 0.01 240);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+html[data-background="noise"] body {
+  background-color: oklch(0.94 0.01 240);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+html[data-background="noise"].dark body {
+  background-color: oklch(0.22 0.01 240);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
 .bg-crosshatch {
   background-image: linear-gradient(
       45deg,
@@ -123,5 +372,62 @@ html[data-background="crosshatch"] .bg-crosshatch,
       oklch(0.88 0.02 240) 75%
     ),
     oklch(0.96 0.005 240);
+  background-size: 16px 16px;
+}
+
+.dark .bg-crosshatch {
+  background-image: linear-gradient(
+      45deg,
+      oklch(0.32 0.02 240) 25%,
+      transparent 25%,
+      transparent 75%,
+      oklch(0.32 0.02 240) 75%
+    ),
+    linear-gradient(
+      -45deg,
+      oklch(0.32 0.02 240) 25%,
+      transparent 25%,
+      transparent 75%,
+      oklch(0.32 0.02 240) 75%
+    ),
+    oklch(0.20 0.005 240);
+  background-size: 16px 16px;
+}
+
+html[data-background="crosshatch"] body {
+  background-image: linear-gradient(
+      45deg,
+      oklch(0.88 0.02 240) 25%,
+      transparent 25%,
+      transparent 75%,
+      oklch(0.88 0.02 240) 75%
+    ),
+    linear-gradient(
+      -45deg,
+      oklch(0.88 0.02 240) 25%,
+      transparent 25%,
+      transparent 75%,
+      oklch(0.88 0.02 240) 75%
+    ),
+    oklch(0.96 0.005 240);
+  background-size: 16px 16px;
+}
+
+html[data-background="crosshatch"].dark body {
+  background-image: linear-gradient(
+      45deg,
+      oklch(0.32 0.02 240) 25%,
+      transparent 25%,
+      transparent 75%,
+      oklch(0.32 0.02 240) 75%
+    ),
+    linear-gradient(
+      -45deg,
+      oklch(0.32 0.02 240) 25%,
+      transparent 25%,
+      transparent 75%,
+      oklch(0.32 0.02 240) 75%
+    ),
+    oklch(0.20 0.005 240);
   background-size: 16px 16px;
 }

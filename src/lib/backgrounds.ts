@@ -3,8 +3,10 @@ export interface BackgroundDefinition {
   label: string
   /** CSS class applied to the container */
   className: string
-  /** Preview gradient/colors for the 256x90 swatch */
-  preview: string
+  /** Preview gradient/colors for the 256x90 swatch in light mode */
+  previewLight: string
+  /** Preview gradient/colors for the 256x90 swatch in dark mode */
+  previewDark: string
 }
 
 export const BACKGROUNDS: BackgroundDefinition[] = [
@@ -12,69 +14,87 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
     id: "none",
     label: "None",
     className: "",
-    preview: "var(--background)",
+    previewLight: "var(--background)",
+    previewDark: "var(--background)",
   },
   {
     id: "subtle-gradient",
     label: "Subtle Gradient",
     className: "bg-subtle-gradient",
-    preview:
+    previewLight:
       "linear-gradient(135deg, oklch(0.96 0.01 240) 0%, oklch(0.92 0.02 180) 100%)",
+    previewDark:
+      "linear-gradient(135deg, oklch(0.18 0.01 240) 0%, oklch(0.22 0.02 180) 100%)",
   },
   {
     id: "diagonal-stripes",
     label: "Diagonal Stripes",
     className: "bg-diagonal-stripes",
-    preview:
+    previewLight:
       "repeating-linear-gradient(45deg, oklch(0.95 0.01 240) 0px, oklch(0.95 0.01 240) 10px, oklch(0.90 0.015 240) 10px, oklch(0.90 0.015 240) 20px)",
+    previewDark:
+      "repeating-linear-gradient(45deg, oklch(0.22 0.01 240) 0px, oklch(0.22 0.01 240) 10px, oklch(0.18 0.015 240) 10px, oklch(0.18 0.015 240) 20px)",
   },
   {
     id: "dots",
     label: "Dots",
     className: "bg-dots",
-    preview:
+    previewLight:
       "radial-gradient(circle, oklch(0.70 0.05 240) 1px, transparent 1px) 0 0 / 16px 16px, oklch(0.96 0.005 240)",
+    previewDark:
+      "radial-gradient(circle, oklch(0.55 0.05 240) 1px, transparent 1px) 0 0 / 16px 16px, oklch(0.20 0.005 240)",
   },
   {
     id: "mesh-gradient",
     label: "Mesh Gradient",
     className: "bg-mesh-gradient",
-    preview:
+    previewLight:
       "radial-gradient(at 20% 30%, oklch(0.85 0.08 200) 0px, transparent 50%), radial-gradient(at 80% 70%, oklch(0.85 0.08 320) 0px, transparent 50%), radial-gradient(at 50% 50%, oklch(0.90 0.06 160) 0px, transparent 50%), oklch(0.95 0.005 240)",
+    previewDark:
+      "radial-gradient(at 20% 30%, oklch(0.35 0.08 200) 0px, transparent 50%), radial-gradient(at 80% 70%, oklch(0.35 0.08 320) 0px, transparent 50%), radial-gradient(at 50% 50%, oklch(0.30 0.06 160) 0px, transparent 50%), oklch(0.20 0.005 240)",
   },
   {
     id: "aurora",
     label: "Aurora",
     className: "bg-aurora",
-    preview:
+    previewLight:
       "linear-gradient(120deg, oklch(0.90 0.06 180) 0%, oklch(0.88 0.08 140) 25%, oklch(0.90 0.06 280) 50%, oklch(0.88 0.08 320) 75%, oklch(0.90 0.06 180) 100%)",
+    previewDark:
+      "linear-gradient(120deg, oklch(0.30 0.06 180) 0%, oklch(0.28 0.08 140) 25%, oklch(0.30 0.06 280) 50%, oklch(0.28 0.08 320) 75%, oklch(0.30 0.06 180) 100%)",
   },
   {
     id: "grid",
     label: "Grid",
     className: "bg-grid",
-    preview:
+    previewLight:
       "linear-gradient(oklch(0.85 0.02 240) 1px, transparent 1px) 0 0 / 20px 20px, linear-gradient(90deg, oklch(0.85 0.02 240) 1px, transparent 1px) 0 0 / 20px 20px, oklch(0.97 0.005 240)",
+    previewDark:
+      "linear-gradient(oklch(0.35 0.02 240) 1px, transparent 1px) 0 0 / 20px 20px, linear-gradient(90deg, oklch(0.35 0.02 240) 1px, transparent 1px) 0 0 / 20px 20px, oklch(0.18 0.005 240)",
   },
   {
     id: "waves",
     label: "Waves",
     className: "bg-waves",
-    preview:
+    previewLight:
       "repeating-radial-gradient(circle at 50% 100%, oklch(0.92 0.03 220) 0px, oklch(0.92 0.03 220) 10px, oklch(0.96 0.01 220) 10px, oklch(0.96 0.01 220) 20px)",
+    previewDark:
+      "repeating-radial-gradient(circle at 50% 100%, oklch(0.28 0.03 220) 0px, oklch(0.28 0.03 220) 10px, oklch(0.22 0.01 220) 10px, oklch(0.22 0.01 220) 20px)",
   },
   {
     id: "noise",
     label: "Noise",
     className: "bg-noise",
-    preview: "oklch(0.94 0.01 240)",
+    previewLight: "oklch(0.94 0.01 240)",
+    previewDark: "oklch(0.22 0.01 240)",
   },
   {
     id: "crosshatch",
     label: "Crosshatch",
     className: "bg-crosshatch",
-    preview:
+    previewLight:
       "linear-gradient(45deg, oklch(0.88 0.02 240) 25%, transparent 25%, transparent 75%, oklch(0.88 0.02 240) 75%), linear-gradient(-45deg, oklch(0.88 0.02 240) 25%, transparent 25%, transparent 75%, oklch(0.88 0.02 240) 75%), oklch(0.96 0.005 240)",
+    previewDark:
+      "linear-gradient(45deg, oklch(0.32 0.02 240) 25%, transparent 25%, transparent 75%, oklch(0.32 0.02 240) 75%), linear-gradient(-45deg, oklch(0.32 0.02 240) 25%, transparent 25%, transparent 75%, oklch(0.32 0.02 240) 75%), oklch(0.20 0.005 240)",
   },
 ]
 

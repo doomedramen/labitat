@@ -293,7 +293,8 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   return (
     <div
       className={cn(
-        "min-h-svh bg-background p-6",
+        "min-h-svh p-6",
+        background === "none" && "bg-background",
         SORTED_BACKGROUNDS.find((b) => b.id === background)?.className,
         editMode && "pb-24"
       )}
