@@ -33,7 +33,7 @@ class ServerCache {
   loadFromDb(): void {
     if (this.loaded) return
     try {
-      const rows = db.select().from(widgetCache)
+      const rows = db.select().from(widgetCache).all()
       for (const row of rows) {
         this.cache.set(row.itemId, {
           widgetData: (row.widgetData as ServiceData) ?? null,
