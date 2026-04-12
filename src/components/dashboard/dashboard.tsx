@@ -488,12 +488,13 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
 function SseReconnectBanner() {
   const sseState = useSseState()
+  const [hydrated, setHydrated] = React.useState(false)
 
-  if (
-    sseState !== "disconnected" ||
-    typeof window === "undefined" ||
-    !navigator.onLine
-  ) {
+  React.useEffect(() => {
+    setHydrated(true)
+  }, [])
+
+  if (!hydrated || sseState !== "disconnected" || !navigator.onLine) {
     return null
   }
 
