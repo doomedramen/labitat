@@ -55,7 +55,11 @@ import { ItemCardDragPreview } from "./item/item-card"
 import { reorderGroups } from "@/actions/groups"
 import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
-import { LiveDataProvider, useSseState } from "@/hooks/use-live-data"
+import {
+  LiveDataProvider,
+  useHasConnectedOnce,
+  useSseState,
+} from "@/hooks/use-live-data"
 
 interface DashboardProps {
   groups: GroupWithCache[]
@@ -489,13 +493,19 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
 function SseReconnectBanner() {
   const sseState = useSseState()
+  const hasConnected = useHasConnectedOnce()
   const [hydrated, setHydrated] = React.useState(false)
 
   React.useEffect(() => {
     setHydrated(true)
   }, [])
 
-  if (!hydrated || sseState !== "disconnected" || !navigator.onLine) {
+  if (
+    !hydrated ||
+    !hasConnected ||
+    sseState !== "disconnected" ||
+    !navigator.onLine
+  ) {
     return null
   }
 
