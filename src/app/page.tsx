@@ -22,13 +22,14 @@ async function DashboardContent() {
     throw err
   }
 
-  // Read from server cache — populated by background polling.
-  // Each item's data is sent via SSE as soon as its poll completes
-  // (not batched — items stream in independently).
+  // Read from server cache — only use data fresh enough for SSR.
+  // Stale cache (server was down) is ignored; SSE will populate it.
+  const freshCache = new Map(serverCache.getAllFresh())
+
   const enrichedGroups: GroupWithCache[] = groupsWithItems.map((group) => ({
     ...group,
     items: group.items.map((item) => {
-      const cached = serverCache.get(item.id)
+      const cached = freshCache.get(item.id) ?? null
       return {
         ...item,
         cachedWidgetData: cached?.widgetData ?? null,
