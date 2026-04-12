@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import type { ServiceData } from "@/lib/adapters/types"
+import type { SessionData } from "@/lib/auth"
 
 interface SeedRequest {
   admin?: { email: string; password: string }
@@ -63,7 +64,10 @@ export async function POST(request: Request) {
     })
 
     // Set session cookie
-    const session = await getIronSession(await cookies(), getSessionOptions())
+    const session = await getIronSession<SessionData>(
+      await cookies(),
+      getSessionOptions()
+    )
     session.loggedIn = true
     session.userId = userId
     await session.save()
