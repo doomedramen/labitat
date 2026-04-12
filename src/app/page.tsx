@@ -22,7 +22,7 @@ async function DashboardContent() {
     throw err
   }
 
-  // Read from server cache — always instant, no external fetches
+  // Read from server cache — populated by background polling started at boot
   const enrichedGroups: GroupWithCache[] = groupsWithItems.map((group) => ({
     ...group,
     items: group.items.map((item) => {

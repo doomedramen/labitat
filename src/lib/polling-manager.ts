@@ -6,7 +6,7 @@ import { fetchWithTimeout } from "@/lib/adapters/fetch-with-timeout"
 import { serverCache } from "./server-cache"
 
 const GRACE_PERIOD_MS = 5 * 60 * 1000 // 5 minutes
-const PING_TIMEOUT_MS = 10_000 // Same as fetchWithTimeout default
+const PING_TIMEOUT_MS = 10_000
 
 type PollJob = {
   itemId: string
@@ -18,24 +18,21 @@ class PollingManager {
   private jobs = new Map<string, PollJob>()
   private activeConnections = 0
   private graceTimer: ReturnType<typeof setTimeout> | null = null
-  private firstPollReady: Promise<void>
-  private resolveFirstPoll: (() => void) | null = null
+  private started = false
 
-  constructor() {
-    this.firstPollReady = new Promise((resolve) => {
-      this.resolveFirstPoll = resolve
-    })
+  /** Start polling on server boot. Called once at startup. */
+  async start(): Promise<void> {
+    if (this.started) return
+    this.started = true
+    await this.startAllPolling()
   }
 
-  /** A client connected — start polling if needed */
+  /** A client connected — cancel any grace-period shutdown */
   connect(): void {
     this.activeConnections++
     if (this.graceTimer) {
       clearTimeout(this.graceTimer)
       this.graceTimer = null
-    }
-    if (this.activeConnections === 1) {
-      this.startAllPolling()
     }
   }
 
@@ -53,38 +50,26 @@ class PollingManager {
   private async startAllPolling(): Promise<void> {
     try {
       const allItems = await db.select().from(items)
-      const pendingFirstPolls: Promise<void>[] = []
-
       for (const item of allItems) {
         if (item.serviceType || item.href) {
-          const firstPoll = this.startPollingItem(item)
-          pendingFirstPolls.push(firstPoll)
+          this.startPollingItem(item)
         }
       }
-
-      // Wait for all first polls to complete before resolving
-      Promise.allSettled(pendingFirstPolls).then(() => {
-        this.resolveFirstPoll?.()
-        this.resolveFirstPoll = null
-      })
     } catch (err) {
       console.error("[polling] Failed to start polling:", err)
-      // Resolve anyway so SSE doesn't block forever
-      this.resolveFirstPoll?.()
-      this.resolveFirstPoll = null
     }
   }
 
   /** Stop all polling jobs */
   private stopAllPolling(): void {
-    for (const [id, job] of this.jobs) {
+    for (const [, job] of this.jobs) {
       clearTimeout(job.timer)
-      this.jobs.delete(id)
     }
+    this.jobs.clear()
     console.log("[polling] All polling stopped (no active connections)")
   }
 
-  /** Start polling for a single item. Returns a promise that resolves after the first poll completes. */
+  /** Start polling for a single item */
   private startPollingItem(item: {
     id: string
     serviceType: string | null
@@ -92,7 +77,7 @@ class PollingManager {
     serviceUrl: string | null
     configEnc: string | null
     pollingMs: number | null
-  }): Promise<void> {
+  }): void {
     const adapter = item.serviceType ? getService(item.serviceType) : null
     const pollingMs = item.pollingMs ?? adapter?.defaultPollingMs ?? 30_000
 
@@ -118,7 +103,6 @@ class PollingManager {
           const data = await adapter.fetchData(config)
           serverCache.set(item.id, { widgetData: data })
         } else if (item.href) {
-          // Ping URL — follow redirects to verify the final destination
           try {
             const res = await fetchWithTimeout(
               item.href!,
@@ -160,8 +144,6 @@ class PollingManager {
             ? err.message
             : "Failed to fetch"
 
-        // Graceful degradation: show stale cached data with a warning
-        // instead of a hard error (matches SSR behavior in actions/services.ts)
         const cached = serverCache.get(item.id)
         if (
           cached?.widgetData &&
@@ -185,31 +167,17 @@ class PollingManager {
         }
       }
 
-      // Schedule next poll
       if (this.jobs.has(item.id)) {
-        const job = this.jobs.get(item.id)!
-        job.timer = setTimeout(poll, pollingMs)
+        this.jobs.get(item.id)!.timer = setTimeout(poll, pollingMs)
       }
     }
 
-    // Register the job immediately so polling can be stopped at any time
-    const timer = setTimeout(() => {}, 0) // placeholder, replaced by poll() after first run
+    const timer = setTimeout(poll, 0)
     this.jobs.set(item.id, { itemId: item.id, pollingMs, timer })
-
-    // Run the first poll immediately — populates the cache before any
-    // SSE client receives the initial snapshot, preventing a flash of
-    // empty data on page load.
-    return poll()
   }
 
-  /** Get current connection count */
   getConnectionCount(): number {
     return this.activeConnections
-  }
-
-  /** Returns a promise that resolves once the first poll cycle has completed. */
-  waitForFirstPoll(): Promise<void> {
-    return this.firstPollReady
   }
 }
 

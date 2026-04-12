@@ -5,14 +5,13 @@ import { serverCache } from "@/lib/server-cache"
 export const dynamic = "force-dynamic"
 
 const HEARTBEAT_INTERVAL_MS = 15_000
-const MAX_CONNECTION_AGE_MS = 5 * 60 * 1000 // 5 minutes — forces client reconnect to pick up any code changes
+const MAX_CONNECTION_AGE_MS = 5 * 60 * 1000 // 5 minutes — forces client reconnect
 
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder()
 
-  // Create a readable stream for SSE
   const stream = new ReadableStream({
-    async start(controller) {
+    start(controller) {
       pollingManager.connect()
 
       let closed = false
@@ -27,10 +26,8 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Periodic heartbeat to keep the connection alive through proxies
       const heartbeat = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS)
 
-      // Max connection age — forces a clean reconnect periodically
       const maxAgeTimer = setTimeout(() => {
         try {
           controller.enqueue(
@@ -55,8 +52,7 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // 1. Subscribe to cache updates FIRST — prevents the TOCTOU race where
-      //    an update fires between the snapshot and the subscription.
+      // Subscribe to cache updates
       const sentIds = new Set<string>()
       const unsubscribe = serverCache.onUpdate(
         (itemId, widgetData, pingStatus) => {
@@ -70,7 +66,8 @@ export async function GET(request: NextRequest) {
         }
       )
 
-      // 2. Register cleanup BEFORE the await so early disconnect is handled
+      // Cleanup on disconnect — registered before sending snapshot
+      // so early disconnect is handled correctly
       request.signal.addEventListener("abort", () => {
         closed = true
         clearInterval(heartbeat)
@@ -80,17 +77,8 @@ export async function GET(request: NextRequest) {
         controller.close()
       })
 
-      // 3. Wait for the first poll cycle to complete so the cache is
-      //    populated before we send the snapshot. This prevents a flash
-      //    of empty data on page load. Cap the wait at 5 s so a single
-      //    slow service doesn't block the entire stream.
-      await Promise.race([
-        pollingManager.waitForFirstPoll(),
-        new Promise((resolve) => setTimeout(resolve, 5_000)),
-      ])
-
-      // 4. Then send the current cache snapshot. Any item that already fired
-      //    via the listener above will be skipped (sentIds guard).
+      // Send current cache snapshot. Items that update between
+      // subscription and here are deduplicated via sentIds.
       for (const [id, data] of serverCache.getAll()) {
         if (!sentIds.has(id)) {
           send({
