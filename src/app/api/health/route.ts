@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
-import { sql } from "drizzle-orm"
 
 export async function GET() {
   try {
+    // Dynamic imports to avoid loading env-dependent modules during build
+    const { db } = await import("@/lib/db")
+    const { sql } = await import("drizzle-orm")
     await db.get<{ result: number }>(sql`SELECT 1 AS result`)
     return NextResponse.json({ status: "ok", db: "connected" })
   } catch (err) {
