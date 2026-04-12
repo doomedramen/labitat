@@ -43,8 +43,8 @@ class ServerCache {
     }
   }
 
-  getAll(): Map<string, CachedItem> {
-    return this.cache
+  getAll(): [string, CachedItem][] {
+    return [...this.cache.entries()]
   }
 
   /** Subscribe to cache updates. Returns unsubscribe function. */

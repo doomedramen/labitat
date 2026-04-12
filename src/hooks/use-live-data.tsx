@@ -40,6 +40,8 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
   const esRef = useRef<EventSource | null>(null)
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const connectRef = useRef<(() => void) | null>(null)
+  const backoffRef = useRef(1000)
+  const MAX_BACKOFF = 30_000
 
   const doConnect = useCallback(() => {
     if (typeof window === "undefined") return
@@ -48,7 +50,10 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
     const es = new EventSource("/api/events")
     esRef.current = es
 
-    es.onopen = () => setConnected(true)
+    es.onopen = () => {
+      backoffRef.current = 1000
+      setConnected(true)
+    }
 
     es.onmessage = (event) => {
       try {
@@ -71,10 +76,11 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
     es.onerror = () => {
       setConnected(false)
       es.close()
-      // Reconnect after 3 seconds
+      const delay = backoffRef.current
+      backoffRef.current = Math.min(delay * 2, MAX_BACKOFF)
       reconnectTimerRef.current = setTimeout(() => {
         connectRef.current?.()
-      }, 3000)
+      }, delay)
     }
   }, [])
 

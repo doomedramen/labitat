@@ -12,6 +12,7 @@ export function StatusDot({ status }: StatusDotProps) {
   const colors = {
     unknown: "bg-muted-foreground/30",
     healthy: "bg-green-500",
+    degraded: "bg-amber-500",
     reachable: "bg-green-500",
     unreachable: "bg-red-500",
     error: "bg-red-500",
@@ -20,6 +21,7 @@ export function StatusDot({ status }: StatusDotProps) {
   const labels = {
     unknown: "Status unknown",
     healthy: "Healthy",
+    degraded: "Degraded",
     reachable: "Reachable",
     unreachable: "Unreachable",
     error: "Error",
@@ -39,7 +41,9 @@ export function StatusDot({ status }: StatusDotProps) {
       className={cn(
         "h-2.5 w-2.5 rounded-full transition-all duration-300",
         colors[status.state],
-        (status.state === "unreachable" || status.state === "error") &&
+        (status.state === "unreachable" ||
+          status.state === "error" ||
+          status.state === "degraded") &&
           "animate-pulse"
       )}
     />

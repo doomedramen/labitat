@@ -3,7 +3,6 @@ import { getSession } from "@/lib/auth"
 import { Dashboard } from "@/components/dashboard/dashboard"
 import { DashboardSkeleton } from "@/components/dashboard/skeleton"
 import { serverCache } from "@/lib/server-cache"
-import { pollingManager } from "@/lib/polling-manager"
 import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache"
 import type { GroupWithCache, ItemWithCache } from "@/lib/types"
 
@@ -35,9 +34,6 @@ async function DashboardContent() {
       } as ItemWithCache
     }),
   }))
-
-  // Signal that a client is viewing the dashboard
-  pollingManager.connect()
 
   return (
     <Dashboard

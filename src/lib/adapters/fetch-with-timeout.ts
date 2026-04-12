@@ -12,11 +12,20 @@ export async function fetchWithTimeout(
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
-  const signal = init?.signal
-    ? AbortSignal.any
-      ? AbortSignal.any([init.signal, controller.signal])
-      : controller.signal
-    : controller.signal
+  let signal: AbortSignal
+  if (init?.signal) {
+    if (AbortSignal.any) {
+      signal = AbortSignal.any([init.signal, controller.signal])
+    } else {
+      // Fallback: forward abort from the caller's signal to our controller
+      init.signal.addEventListener("abort", () => controller.abort(), {
+        once: true,
+      })
+      signal = controller.signal
+    }
+  } else {
+    signal = controller.signal
+  }
 
   try {
     return await globalThis.fetch(input, { ...init, signal })

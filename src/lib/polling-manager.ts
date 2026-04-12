@@ -116,9 +116,14 @@ class PollingManager {
                       httpStatus: res.status,
                     },
             })
-          } catch {
+          } catch (err) {
+            const isTimeout =
+              err instanceof DOMException && err.name === "AbortError"
             serverCache.set(item.id, {
-              pingStatus: { state: "unreachable", reason: "Request failed" },
+              pingStatus: {
+                state: "unreachable",
+                reason: isTimeout ? "Request timed out" : "Request failed",
+              },
             })
           }
         }
