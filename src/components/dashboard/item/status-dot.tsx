@@ -2,7 +2,11 @@
 
 import { cn } from "@/lib/utils"
 import type { ServiceStatus } from "@/lib/adapters/types"
-import { TooltipTrigger } from "@/components/tooltip"
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card"
 
 interface StatusDotProps {
   status: ServiceStatus
@@ -56,9 +60,12 @@ export function StatusDot({ status }: StatusDotProps) {
 
   if (reason) {
     return (
-      <TooltipTrigger content={reason} side="top">
-        {dot}
-      </TooltipTrigger>
+      <HoverCard>
+        <HoverCardTrigger asChild>{dot}</HoverCardTrigger>
+        <HoverCardContent side="top" align="center" className="w-auto">
+          {reason}
+        </HoverCardContent>
+      </HoverCard>
     )
   }
 

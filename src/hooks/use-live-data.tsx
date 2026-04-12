@@ -26,7 +26,6 @@ class LiveDataStore {
   private cache = new Map<string, LiveDataEntry>()
   private listeners = new Set<() => void>()
   private _sseState: SseState = "disconnected"
-  private _connectedOnce = false
   private sseListeners = new Set<() => void>()
 
   get(itemId: string): LiveDataEntry {
@@ -48,13 +47,8 @@ class LiveDataStore {
     return this._sseState
   }
 
-  get connectedOnce(): boolean {
-    return this._connectedOnce
-  }
-
   setSseState(state: SseState): void {
     if (this._sseState === state) return
-    if (state === "connected") this._connectedOnce = true
     this._sseState = state
     for (const l of this.sseListeners) {
       try {
@@ -104,17 +98,6 @@ export function useSseState(): SseState {
     liveDataStore.subscribeSse,
     () => liveDataStore.sseState,
     () => "disconnected" as SseState // server snapshot — SSE is client-only
-  )
-}
-
-/**
- * Whether SSE has connected at least once since page load.
- */
-export function useHasConnectedOnce(): boolean {
-  return useSyncExternalStore(
-    liveDataStore.subscribeSse,
-    () => liveDataStore.connectedOnce,
-    () => false
   )
 }
 

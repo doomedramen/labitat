@@ -7,7 +7,6 @@ import { ThemeColorUpdater } from "@/components/theme-color-updater"
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar"
 import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
-import { TooltipRoot } from "@/components/tooltip"
 import { SplashScreenLinks } from "@/components/splash-screen-links"
 import { ConnectivityProvider } from "@/components/connectivity-provider"
 
@@ -21,8 +20,10 @@ const fontMono = Geist_Mono({
 
 const PALETTE_COOKIE = "labitat-palette"
 const THEME_COOKIE = "labitat-theme"
+const BACKGROUND_COOKIE = "labitat-background"
 const DEFAULT_PALETTE = "default"
 const DEFAULT_THEME = "system"
+const DEFAULT_BACKGROUND = "none"
 
 async function getPalette(): Promise<string> {
   try {
@@ -39,6 +40,15 @@ async function getTheme(): Promise<string> {
     return cookieStore.get(THEME_COOKIE)?.value ?? DEFAULT_THEME
   } catch {
     return DEFAULT_THEME
+  }
+}
+
+async function getBackground(): Promise<string> {
+  try {
+    const cookieStore = await cookies()
+    return cookieStore.get(BACKGROUND_COOKIE)?.value ?? DEFAULT_BACKGROUND
+  } catch {
+    return DEFAULT_BACKGROUND
   }
 }
 
@@ -91,13 +101,18 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const [palette, theme] = await Promise.all([getPalette(), getTheme()])
+  const [palette, theme, background] = await Promise.all([
+    getPalette(),
+    getTheme(),
+    getBackground(),
+  ])
 
   return (
     <html
       lang="en"
       suppressHydrationWarning
       data-palette={palette}
+      data-background={background}
       className={cn("font-sans antialiased", inter.variable, fontMono.variable)}
     >
       <head>
@@ -107,7 +122,6 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
           <ThemeColorUpdater />
           {children}
-          <TooltipRoot />
           <Toaster richColors position="top-right" />
           <ServiceWorkerRegistrar />
           <ConnectivityProvider />

@@ -22,7 +22,11 @@ import type { DragEndEvent } from "@dnd-kit/core"
 import { useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { Clock, Download, Pause, Play, Monitor, Cpu } from "lucide-react"
-import { TooltipTrigger } from "@/components/tooltip"
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card"
 import { BlockLinkPropagation } from "@/components/dashboard/item/block-link-propagation"
 import type { StatDisplayMode } from "@/lib/types"
 
@@ -185,9 +189,12 @@ export function ListItem({
 
   return (
     <BlockLinkPropagation className="w-full">
-      <TooltipTrigger content={tooltip} side="top" className="w-full">
-        {content}
-      </TooltipTrigger>
+      <HoverCard>
+        <HoverCardTrigger asChild>{content}</HoverCardTrigger>
+        <HoverCardContent side="top" align="center" className="w-auto">
+          {tooltip}
+        </HoverCardContent>
+      </HoverCard>
     </BlockLinkPropagation>
   )
 }
@@ -424,9 +431,12 @@ export function StatCard({
   if (effectiveTooltip) {
     return (
       <BlockLinkPropagation>
-        <TooltipTrigger content={effectiveTooltip} side="top">
-          {inner}
-        </TooltipTrigger>
+        <HoverCard>
+          <HoverCardTrigger asChild>{inner}</HoverCardTrigger>
+          <HoverCardContent side="top" align="center" className="w-auto">
+            {effectiveTooltip}
+          </HoverCardContent>
+        </HoverCard>
       </BlockLinkPropagation>
     )
   }

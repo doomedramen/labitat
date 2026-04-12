@@ -9,7 +9,7 @@ import {
   DownloadList,
 } from "@/components/widgets"
 
-// Custom tooltip doesn't need a provider — renders at root level via TooltipRoot
+// HoverCard (shadcn) doesn't need a provider — uses Radix UI internally
 function renderWithTooltip(ui: React.ReactElement) {
   return render(ui)
 }
@@ -157,8 +157,8 @@ describe("ActiveStreamItem", () => {
 
   it("shows tooltip on hover", () => {
     const { container } = renderWithTooltip(<ActiveStreamItem {...baseProps} />)
-    // Tooltip trigger element should exist
-    const trigger = container.querySelector('[data-slot="tooltip-trigger"]')
+    // HoverCard trigger element should exist
+    const trigger = container.querySelector('[data-slot="hover-card-trigger"]')
     expect(trigger).toBeInTheDocument()
   })
 

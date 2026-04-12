@@ -47,7 +47,7 @@ export const ItemIcon = memo(function ItemIcon({
         width={32}
         height={32}
         className="h-8 w-8 object-contain"
-        loading="lazy"
+        loading="eager"
         decoding="async"
         onError={() => setHasError(true)}
       />

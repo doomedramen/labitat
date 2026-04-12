@@ -22,7 +22,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
-import { Palette, LogIn, Plus, Loader2 } from "lucide-react"
+import { Palette, LogIn, Plus, Loader2, Image } from "lucide-react"
 import { toast } from "sonner"
 import { useWebHaptics } from "web-haptics/react"
 
@@ -46,6 +46,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PaletteSwitcher } from "@/components/palette-switcher"
+import { BackgroundSwitcher } from "@/components/background-switcher"
+import { useBackground } from "@/hooks/use-background"
+import { SORTED_BACKGROUNDS } from "@/lib/backgrounds"
 import { LoginForm } from "@/components/auth/login-form"
 import { GroupCard } from "./group"
 import { EditBar } from "./edit-bar"
@@ -55,11 +58,7 @@ import { ItemCardDragPreview } from "./item/item-card"
 import { reorderGroups } from "@/actions/groups"
 import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
-import {
-  LiveDataProvider,
-  useHasConnectedOnce,
-  useSseState,
-} from "@/hooks/use-live-data"
+import { LiveDataProvider, useSseState } from "@/hooks/use-live-data"
 
 interface DashboardProps {
   groups: GroupWithCache[]
@@ -69,6 +68,7 @@ interface DashboardProps {
 
 export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   const haptic = useWebHaptics()
+  const { background } = useBackground()
   const [editMode, setEditMode] = useState(false)
   const [localTitle, setLocalTitle] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
@@ -291,7 +291,13 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   }, [localTitle, title])
 
   return (
-    <div className={cn("min-h-svh bg-background p-6", editMode && "pb-24")}>
+    <div
+      className={cn(
+        "min-h-svh bg-background p-6",
+        SORTED_BACKGROUNDS.find((b) => b.id === background)?.className,
+        editMode && "pb-24"
+      )}
+    >
       <LiveDataProvider>
         <SseReconnectBanner />
         {/* Header */}
@@ -363,6 +369,18 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                   <DropdownMenuLabel>Palette</DropdownMenuLabel>
                   <PaletteSwitcher />
                 </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Image className="h-4 w-4" />
+                  <span className="sr-only">Background settings</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[288px]">
+                <BackgroundSwitcher />
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -493,21 +511,24 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
 function SseReconnectBanner() {
   const sseState = useSseState()
-  const hasConnected = useHasConnectedOnce()
-  const [hydrated, setHydrated] = React.useState(false)
+  const [visible, setVisible] = React.useState(false)
+  const hasConnectedRef = React.useRef(false)
 
   React.useEffect(() => {
-    setHydrated(true)
-  }, [])
+    if (sseState === "connected") {
+      hasConnectedRef.current = true
+      setVisible(false)
+      return
+    }
 
-  if (
-    !hydrated ||
-    !hasConnected ||
-    sseState !== "disconnected" ||
-    !navigator.onLine
-  ) {
-    return null
-  }
+    // Don't show banner until SSE has connected at least once
+    if (!hasConnectedRef.current) return
+
+    const timer = setTimeout(() => setVisible(true), 3000)
+    return () => clearTimeout(timer)
+  }, [sseState])
+
+  if (!visible) return null
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center">
