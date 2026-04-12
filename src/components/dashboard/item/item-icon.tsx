@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { resolveIconUrl } from "@/lib/icons"
 
@@ -16,42 +17,36 @@ function toProxyUrl(src: string): string | null {
 }
 
 export function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
+  const [hasError, setHasError] = useState(false)
+
   // Use custom iconUrl if provided, otherwise fall back to service icon
   const rawIcon = iconUrl || serviceIcon || null
   const resolvedUrl = resolveIconUrl(rawIcon)
   const iconSrc = resolvedUrl ? toProxyUrl(resolvedUrl) : null
 
-  return (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center">
-      {iconSrc ? (
-        <Image
-          src={iconSrc}
-          alt={label}
-          width={32}
-          height={32}
-          className="h-8 w-8 object-contain"
-          loading="lazy"
-          decoding="async"
-          onError={(e) => {
-            // Fallback to first letter
-            const target = e.target as HTMLImageElement
-            target.style.display = "none"
-            const parent = target.parentElement
-            if (parent) {
-              parent.textContent = label.charAt(0).toUpperCase()
-              parent.classList.add(
-                "text-xs",
-                "font-medium",
-                "text-muted-foreground"
-              )
-            }
-          }}
-        />
-      ) : (
+  // Show fallback if image failed to load or no icon available
+  if (hasError || !iconSrc) {
+    return (
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center">
         <span className="text-xs font-medium text-muted-foreground">
           {label.charAt(0).toUpperCase()}
         </span>
-      )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+      <Image
+        src={iconSrc}
+        alt={label}
+        width={32}
+        height={32}
+        className="h-8 w-8 object-contain"
+        loading="lazy"
+        decoding="async"
+        onError={() => setHasError(true)}
+      />
     </div>
   )
 }
