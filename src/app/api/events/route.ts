@@ -70,7 +70,17 @@ export async function GET(request: NextRequest) {
         }
       )
 
-      // 2. Wait for the first poll cycle to complete so the cache is
+      // 2. Register cleanup BEFORE the await so early disconnect is handled
+      request.signal.addEventListener("abort", () => {
+        closed = true
+        clearInterval(heartbeat)
+        clearTimeout(maxAgeTimer)
+        unsubscribe()
+        pollingManager.disconnect()
+        controller.close()
+      })
+
+      // 3. Wait for the first poll cycle to complete so the cache is
       //    populated before we send the snapshot. This prevents a flash
       //    of empty data on page load. Cap the wait at 5 s so a single
       //    slow service doesn't block the entire stream.
@@ -79,7 +89,7 @@ export async function GET(request: NextRequest) {
         new Promise((resolve) => setTimeout(resolve, 5_000)),
       ])
 
-      // 3. Then send the current cache snapshot. Any item that already fired
+      // 4. Then send the current cache snapshot. Any item that already fired
       //    via the listener above will be skipped (sentIds guard).
       for (const [id, data] of serverCache.getAll()) {
         if (!sentIds.has(id)) {
@@ -91,15 +101,6 @@ export async function GET(request: NextRequest) {
           })
         }
       }
-
-      // Cleanup on disconnect
-      request.signal.addEventListener("abort", () => {
-        clearInterval(heartbeat)
-        clearTimeout(maxAgeTimer)
-        unsubscribe()
-        pollingManager.disconnect()
-        controller.close()
-      })
     },
   })
 
