@@ -54,7 +54,7 @@ import { ItemCardDragPreview } from "./item/item-card"
 import { reorderGroups } from "@/actions/groups"
 import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
-import { LiveDataProvider } from "@/hooks/use-live-data"
+import { LiveDataProvider, useSseState } from "@/hooks/use-live-data"
 
 interface DashboardProps {
   groups: GroupWithCache[]
@@ -288,6 +288,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   return (
     <div className={cn("min-h-svh bg-background p-6", editMode && "pb-24")}>
       <LiveDataProvider>
+        <SseReconnectBanner />
         {/* Header */}
         <header className="mb-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
           {editMode ? (
@@ -481,6 +482,26 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           </DialogContent>
         </Dialog>
       </LiveDataProvider>
+    </div>
+  )
+}
+
+function SseReconnectBanner() {
+  const sseState = useSseState()
+
+  if (
+    sseState !== "disconnected" ||
+    typeof window === "undefined" ||
+    !navigator.onLine
+  ) {
+    return null
+  }
+
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center">
+      <div className="pointer-events-auto mt-2 rounded-full bg-amber-500/90 px-3 py-1 text-xs font-medium text-white shadow-lg">
+        Reconnecting...
+      </div>
     </div>
   )
 }

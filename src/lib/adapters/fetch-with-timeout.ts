@@ -3,6 +3,7 @@ const DEFAULT_TIMEOUT_MS = 10_000
 /**
  * Wrapper around global fetch with a request timeout.
  * Aborts the request if it doesn't complete within the specified time.
+ * Throws DOMException with name "TimeoutError" on timeout (vs "AbortError" for manual aborts).
  */
 export async function fetchWithTimeout(
   input: RequestInfo | URL,
@@ -10,7 +11,11 @@ export async function fetchWithTimeout(
   timeoutMs: number = DEFAULT_TIMEOUT_MS
 ): Promise<Response> {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  let timedOut = false
+  const timeoutId = setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, timeoutMs)
 
   let signal: AbortSignal
   if (init?.signal) {
@@ -29,6 +34,11 @@ export async function fetchWithTimeout(
 
   try {
     return await globalThis.fetch(input, { ...init, signal })
+  } catch (err) {
+    if (timedOut && err instanceof DOMException && err.name === "AbortError") {
+      throw new DOMException("Request timed out", "TimeoutError")
+    }
+    throw err
   } finally {
     clearTimeout(timeoutId)
   }

@@ -35,7 +35,7 @@ describe("fetchWithTimeout", () => {
     // Use a short timeout so the test runs fast
     await expect(
       fetchWithTimeout("https://example.com", undefined, 50)
-    ).rejects.toThrow("aborted")
+    ).rejects.toThrow("Request timed out")
   })
 
   it("respects custom timeout", async () => {

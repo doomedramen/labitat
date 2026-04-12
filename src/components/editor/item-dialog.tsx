@@ -39,6 +39,7 @@ import {
   parseStatCardOrder,
   type StatCardOrder,
 } from "@/hooks/use-stat-card-order"
+import { useLiveDataEntry } from "@/hooks/use-live-data"
 
 const itemSchema = z.object({
   label: z.string().min(1, "Label is required."),
@@ -249,6 +250,7 @@ export function ItemDialog({
   onGroupsChanged,
 }: ItemDialogProps) {
   const haptic = useWebHaptics()
+  const liveData = useLiveDataEntry(item?.id ?? "")
   const services = getAllServices()
   const [serviceType, setServiceType] = useState(item?.serviceType ?? "")
   const [configFields, setConfigFields] = useState<Record<string, string>>({})
@@ -260,6 +262,9 @@ export function ItemDialog({
   const [localStatCardOrder, setLocalStatCardOrder] =
     useState<StatCardOrder | null>(parseStatCardOrder(item?.statCardOrder))
   const selectedService = services.find((s) => s.id === serviceType)
+
+  // Get live widget data (from SSE) with fallback to SSR cache
+  const widgetData = liveData.widgetData ?? item?.cachedWidgetData
 
   const form = useForm({
     defaultValues: {
@@ -714,7 +719,7 @@ export function ItemDialog({
                 !selectedService.renderWidget &&
                 item &&
                 serviceType === item.serviceType &&
-                item.cachedWidgetData && (
+                widgetData && (
                   <div className="space-y-2">
                     <Label>Stat Card Layout</Label>
                     <p className="text-xs text-muted-foreground">
@@ -729,11 +734,9 @@ export function ItemDialog({
                         onOrderChange: setLocalStatCardOrder,
                       }}
                     >
-                      {selectedService.toPayload && item.cachedWidgetData ? (
+                      {selectedService.toPayload && widgetData ? (
                         <WidgetContainer
-                          payload={selectedService.toPayload(
-                            item.cachedWidgetData
-                          )}
+                          payload={selectedService.toPayload(widgetData)}
                         />
                       ) : null}
                     </WidgetDisplayProvider>

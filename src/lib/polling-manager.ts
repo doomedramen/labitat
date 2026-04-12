@@ -98,26 +98,25 @@ class PollingManager {
           const data = await adapter.fetchData(config)
           serverCache.set(item.id, { widgetData: data })
         } else if (item.href) {
-          // Ping URL
+          // Ping URL — follow redirects to verify the final destination
           try {
             const res = await fetchWithTimeout(
               item.href!,
-              { method: "GET", redirect: "manual" },
+              { method: "GET" },
               PING_TIMEOUT_MS
             )
             serverCache.set(item.id, {
-              pingStatus:
-                res.status > 0
-                  ? { state: "reachable" }
-                  : {
-                      state: "error" as const,
-                      reason: `HTTP ${res.status}`,
-                      httpStatus: res.status,
-                    },
+              pingStatus: res.ok
+                ? { state: "reachable" }
+                : {
+                    state: "error" as const,
+                    reason: `HTTP ${res.status}`,
+                    httpStatus: res.status,
+                  },
             })
           } catch (err) {
             const isTimeout =
-              err instanceof DOMException && err.name === "AbortError"
+              err instanceof DOMException && err.name === "TimeoutError"
             serverCache.set(item.id, {
               pingStatus: {
                 state: "unreachable",
@@ -128,17 +127,36 @@ class PollingManager {
         }
       } catch (err) {
         const isTimeout =
-          err instanceof DOMException && err.name === "AbortError"
-        serverCache.set(item.id, {
-          widgetData: {
-            _status: "error",
-            _statusText: isTimeout
-              ? "Request timed out"
-              : err instanceof Error
-                ? err.message
-                : "Failed to fetch",
-          },
-        })
+          err instanceof DOMException && err.name === "TimeoutError"
+        const errorText = isTimeout
+          ? "Request timed out"
+          : err instanceof Error
+            ? err.message
+            : "Failed to fetch"
+
+        // Graceful degradation: show stale cached data with a warning
+        // instead of a hard error (matches SSR behavior in actions/services.ts)
+        const cached = serverCache.get(item.id)
+        if (
+          cached?.widgetData &&
+          (cached.widgetData._status === "ok" ||
+            cached.widgetData._status === "warn")
+        ) {
+          serverCache.set(item.id, {
+            widgetData: {
+              ...cached.widgetData,
+              _status: "warn",
+              _statusText: `${errorText} — showing cached data`,
+            },
+          })
+        } else {
+          serverCache.set(item.id, {
+            widgetData: {
+              _status: "error",
+              _statusText: errorText,
+            },
+          })
+        }
       }
 
       // Schedule next poll

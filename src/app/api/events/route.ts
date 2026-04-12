@@ -14,21 +14,30 @@ export async function GET(request: NextRequest) {
     start(controller) {
       pollingManager.connect()
 
+      let closed = false
+
+      const sendHeartbeat = () => {
+        if (closed) return
+        try {
+          controller.enqueue(encoder.encode(`: heartbeat\n\n`))
+        } catch {
+          closed = true
+          clearInterval(heartbeat)
+        }
+      }
+
+      // Periodic heartbeat to keep the connection alive through proxies
+      const heartbeat = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS)
+
       const send = (data: unknown) => {
+        if (closed) return
         try {
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
           )
         } catch {
-          // Stream closed
-        }
-      }
-
-      const sendHeartbeat = () => {
-        try {
-          controller.enqueue(encoder.encode(`: heartbeat\n\n`))
-        } catch {
-          // Stream closed
+          closed = true
+          clearInterval(heartbeat)
         }
       }
 
@@ -59,9 +68,6 @@ export async function GET(request: NextRequest) {
           })
         }
       }
-
-      // 3. Periodic heartbeat to keep the connection alive through proxies
-      const heartbeat = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS)
 
       // Cleanup on disconnect
       request.signal.addEventListener("abort", () => {
