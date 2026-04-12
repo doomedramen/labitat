@@ -35,7 +35,12 @@ export async function fetchWithTimeout(
   try {
     return await globalThis.fetch(input, { ...init, signal })
   } catch (err) {
+    // Handle timeout from our own AbortController
     if (timedOut && err instanceof DOMException && err.name === "AbortError") {
+      throw new DOMException("Request timed out", "TimeoutError")
+    }
+    // Handle native TimeoutError (some runtimes throw this directly)
+    if (err instanceof DOMException && err.name === "TimeoutError") {
       throw new DOMException("Request timed out", "TimeoutError")
     }
     throw err

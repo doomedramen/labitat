@@ -18,6 +18,14 @@ class PollingManager {
   private jobs = new Map<string, PollJob>()
   private activeConnections = 0
   private graceTimer: ReturnType<typeof setTimeout> | null = null
+  private firstPollReady: Promise<void>
+  private resolveFirstPoll: (() => void) | null = null
+
+  constructor() {
+    this.firstPollReady = new Promise((resolve) => {
+      this.resolveFirstPoll = resolve
+    })
+  }
 
   /** A client connected — start polling if needed */
   connect(): void {
@@ -45,13 +53,25 @@ class PollingManager {
   private async startAllPolling(): Promise<void> {
     try {
       const allItems = await db.select().from(items)
+      const pendingFirstPolls: Promise<void>[] = []
+
       for (const item of allItems) {
         if (item.serviceType || item.href) {
-          this.startPollingItem(item)
+          const firstPoll = this.startPollingItem(item)
+          pendingFirstPolls.push(firstPoll)
         }
       }
+
+      // Wait for all first polls to complete before resolving
+      Promise.allSettled(pendingFirstPolls).then(() => {
+        this.resolveFirstPoll?.()
+        this.resolveFirstPoll = null
+      })
     } catch (err) {
       console.error("[polling] Failed to start polling:", err)
+      // Resolve anyway so SSE doesn't block forever
+      this.resolveFirstPoll?.()
+      this.resolveFirstPoll = null
     }
   }
 
@@ -64,7 +84,7 @@ class PollingManager {
     console.log("[polling] All polling stopped (no active connections)")
   }
 
-  /** Start polling for a single item */
+  /** Start polling for a single item. Returns a promise that resolves after the first poll completes. */
   private startPollingItem(item: {
     id: string
     serviceType: string | null
@@ -72,7 +92,7 @@ class PollingManager {
     serviceUrl: string | null
     configEnc: string | null
     pollingMs: number | null
-  }): void {
+  }): Promise<void> {
     const adapter = item.serviceType ? getService(item.serviceType) : null
     const pollingMs = item.pollingMs ?? adapter?.defaultPollingMs ?? 30_000
 
@@ -118,10 +138,16 @@ class PollingManager {
             const isTimeout =
               err instanceof DOMException && err.name === "TimeoutError"
             serverCache.set(item.id, {
-              pingStatus: {
-                state: "unreachable",
-                reason: isTimeout ? "Request timed out" : "Request failed",
-              },
+              pingStatus: isTimeout
+                ? {
+                    state: "slow" as const,
+                    reason: "Request timed out",
+                    timeoutMs: PING_TIMEOUT_MS,
+                  }
+                : {
+                    state: "unreachable" as const,
+                    reason: "Request failed",
+                  },
             })
           }
         }
@@ -161,18 +187,29 @@ class PollingManager {
 
       // Schedule next poll
       if (this.jobs.has(item.id)) {
-        this.jobs.get(item.id)!.timer = setTimeout(poll, pollingMs)
+        const job = this.jobs.get(item.id)!
+        job.timer = setTimeout(poll, pollingMs)
       }
     }
 
-    // Start immediately
-    const timer = setTimeout(poll, 0)
+    // Register the job immediately so polling can be stopped at any time
+    const timer = setTimeout(() => {}, 0) // placeholder, replaced by poll() after first run
     this.jobs.set(item.id, { itemId: item.id, pollingMs, timer })
+
+    // Run the first poll immediately — populates the cache before any
+    // SSE client receives the initial snapshot, preventing a flash of
+    // empty data on page load.
+    return poll()
   }
 
   /** Get current connection count */
   getConnectionCount(): number {
     return this.activeConnections
+  }
+
+  /** Returns a promise that resolves once the first poll cycle has completed. */
+  waitForFirstPoll(): Promise<void> {
+    return this.firstPollReady
   }
 }
 

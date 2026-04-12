@@ -15,6 +15,7 @@ export function StatusDot({ status }: StatusDotProps) {
     degraded: "bg-amber-500",
     reachable: "bg-green-500",
     unreachable: "bg-red-500",
+    slow: "bg-amber-500",
     error: "bg-red-500",
   }
 
@@ -24,13 +25,16 @@ export function StatusDot({ status }: StatusDotProps) {
     degraded: "Degraded",
     reachable: "Reachable",
     unreachable: "Unreachable",
+    slow: "Slow response",
     error: "Error",
   }
 
   const reason =
     status.state === "unreachable" || status.state === "error"
       ? status.reason
-      : undefined
+      : status.state === "slow"
+        ? `${status.reason} (${status.timeoutMs} ms)`
+        : undefined
 
   const dot = (
     <div
@@ -43,7 +47,8 @@ export function StatusDot({ status }: StatusDotProps) {
         colors[status.state],
         (status.state === "unreachable" ||
           status.state === "error" ||
-          status.state === "degraded") &&
+          status.state === "degraded" ||
+          status.state === "slow") &&
           "animate-pulse"
       )}
     />

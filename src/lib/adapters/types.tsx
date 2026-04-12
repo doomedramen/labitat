@@ -43,7 +43,8 @@ export type ServiceStatus =
   | { state: "healthy"; latencyMs?: number }
   | { state: "degraded" } // Service is up but with warnings (e.g. low disk, high queue)
   | { state: "reachable" } // HTTP 200 but no service adapter
-  | { state: "unreachable"; reason: string } // Network error (timeout, refused, DNS)
+  | { state: "unreachable"; reason: string } // Network error (refused, DNS failure, etc.)
+  | { state: "slow"; reason: string; timeoutMs: number } // Request exceeded timeout — service may still be working
   | { state: "error"; reason: string; httpStatus?: number } // HTTP 4xx/5xx or adapter error
 
 // Convert legacy ServiceData._status to new ServiceStatus

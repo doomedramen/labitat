@@ -83,8 +83,10 @@ const liveDataStore = new LiveDataStore()
  * Only re-renders when that item's data changes.
  */
 export function useLiveDataEntry(itemId: string): LiveDataEntry {
-  return useSyncExternalStore(liveDataStore.subscribe, () =>
-    liveDataStore.get(itemId)
+  return useSyncExternalStore(
+    liveDataStore.subscribe,
+    () => liveDataStore.get(itemId),
+    () => DEFAULT_ENTRY // server snapshot — no live data during SSR
   )
 }
 
@@ -94,7 +96,8 @@ export function useLiveDataEntry(itemId: string): LiveDataEntry {
 export function useSseState(): SseState {
   return useSyncExternalStore(
     liveDataStore.subscribeSse,
-    () => liveDataStore.sseState
+    () => liveDataStore.sseState,
+    () => "disconnected" as SseState // server snapshot — SSE is client-only
   )
 }
 
@@ -103,10 +106,10 @@ export function useSseState(): SseState {
 const MAX_BACKOFF = 30_000
 
 interface SseMessage {
-  type: "update"
-  itemId: string
-  widgetData: ServiceData | null
-  pingStatus: ServiceStatus | null
+  type: string
+  itemId?: string
+  widgetData?: ServiceData | null
+  pingStatus?: ServiceStatus | null
 }
 
 /**
@@ -134,10 +137,15 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
     es.onmessage = (event) => {
       try {
         const msg: SseMessage = JSON.parse(event.data)
-        if (msg.type === "update") {
+        if (msg.type === "reconnect") {
+          // Server requested clean reconnect — close and let backoff handle reconnection
+          es.close()
+          return
+        }
+        if (msg.type === "update" && msg.itemId) {
           liveDataStore.set(msg.itemId, {
-            widgetData: msg.widgetData,
-            pingStatus: msg.pingStatus,
+            widgetData: msg.widgetData ?? null,
+            pingStatus: msg.pingStatus ?? null,
           })
         }
       } catch {
