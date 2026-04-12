@@ -22,7 +22,9 @@ async function DashboardContent() {
     throw err
   }
 
-  // Read from server cache — populated by background polling started at boot
+  // Read from server cache — populated by background polling.
+  // Each item's data is sent via SSE as soon as its poll completes
+  // (not batched — items stream in independently).
   const enrichedGroups: GroupWithCache[] = groupsWithItems.map((group) => ({
     ...group,
     items: group.items.map((item) => {

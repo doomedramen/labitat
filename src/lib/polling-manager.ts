@@ -18,21 +18,16 @@ class PollingManager {
   private jobs = new Map<string, PollJob>()
   private activeConnections = 0
   private graceTimer: ReturnType<typeof setTimeout> | null = null
-  private started = false
 
-  /** Start polling on server boot. Called once at startup. */
-  async start(): Promise<void> {
-    if (this.started) return
-    this.started = true
-    await this.startAllPolling()
-  }
-
-  /** A client connected — cancel any grace-period shutdown */
+  /** A client connected — start polling if needed */
   connect(): void {
     this.activeConnections++
     if (this.graceTimer) {
       clearTimeout(this.graceTimer)
       this.graceTimer = null
+    }
+    if (this.activeConnections === 1) {
+      this.startAllPolling()
     }
   }
 
