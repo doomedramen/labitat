@@ -1,8 +1,4 @@
 import { NextResponse } from "next/server"
-import { sql } from "drizzle-orm"
-import { db } from "@/lib/db"
-import { resetAllRateLimits } from "@/lib/auth/rate-limit"
-import { serverCache } from "@/lib/server-cache"
 
 export async function POST(request: Request) {
   if (process.env.NODE_ENV === "production") {
@@ -12,6 +8,12 @@ export async function POST(request: Request) {
   if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
+
+  // Dynamic imports to avoid loading env-dependent modules during build
+  const { db } = await import("@/lib/db")
+  const { sql } = await import("drizzle-orm")
+  const { resetAllRateLimits } = await import("@/lib/auth/rate-limit")
+  const { serverCache } = await import("@/lib/server-cache")
 
   // Delete in FK dependency order
   await db.run(sql`DELETE FROM items`)
