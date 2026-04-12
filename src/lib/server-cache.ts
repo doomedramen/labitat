@@ -1,3 +1,5 @@
+import { db } from "@/lib/db"
+import { widgetCache } from "@/lib/db/schema"
 import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
 
 export interface CachedItem {
@@ -12,15 +14,43 @@ type UpdateCallback = (
   pingStatus: ServiceStatus | null
 ) => void
 
+/** Max age before cached data is considered stale for SSR (5 minutes). */
+const SSR_MAX_AGE_MS = 5 * 60 * 1000
+
 /**
- * Shared in-memory cache for all service data.
- * Singleton — same instance across all requests and SSE connections.
+ * Server-side cache backed by SQLite.
+ *
+ * - Writes go through `set()` → persisted to DB + in-memory map
+ * - Reads use the in-memory map (instant)
+ * - On startup the map is seeded from DB so SSR has data immediately
  */
 class ServerCache {
   private cache = new Map<string, CachedItem>()
   private listeners = new Set<UpdateCallback>()
+  private loaded = false
+
+  /** Load all cached items from DB into memory. Call once at startup. */
+  async loadFromDb(): Promise<void> {
+    if (this.loaded) return
+    try {
+      const rows = await db.select().from(widgetCache)
+      for (const row of rows) {
+        this.cache.set(row.itemId, {
+          widgetData: (row.widgetData as ServiceData) ?? null,
+          pingStatus: (row.pingStatus as ServiceStatus) ?? null,
+          lastFetchedAt: row.updatedAt ? new Date(row.updatedAt).getTime() : 0,
+        })
+      }
+      this.loaded = true
+      console.log(`[server-cache] Loaded ${rows.length} item(s) from DB`)
+    } catch (err) {
+      console.error("[server-cache] Failed to load from DB:", err)
+      this.loaded = true // don't retry on every read
+    }
+  }
 
   get(itemId: string): CachedItem | null {
+    this.loadFromDb() // no-op if already loaded
     return this.cache.get(itemId) ?? null
   }
 
@@ -37,7 +67,31 @@ class ServerCache {
     }
     this.cache.set(itemId, updated)
 
-    // Notify listeners
+    // Persist to DB (fire-and-forget — don't block the caller)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wd = updated.widgetData as any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ps = updated.pingStatus as any
+    db.insert(widgetCache)
+      .values({
+        itemId,
+        widgetData: wd,
+        pingStatus: ps,
+        updatedAt: new Date().toISOString(),
+      })
+      .onConflictDoUpdate({
+        target: widgetCache.itemId,
+        set: {
+          widgetData: wd,
+          pingStatus: ps,
+          updatedAt: new Date().toISOString(),
+        },
+      })
+      .catch((err) => {
+        console.error("[server-cache] DB write failed:", err)
+      })
+
+    // Notify listeners (SSE)
     for (const cb of this.listeners) {
       try {
         cb(itemId, updated.widgetData, updated.pingStatus)
@@ -48,7 +102,17 @@ class ServerCache {
   }
 
   getAll(): [string, CachedItem][] {
+    this.loadFromDb() // no-op if already loaded
     return [...this.cache.entries()]
+  }
+
+  /** Get items fresh enough for SSR rendering. */
+  getAllFresh(maxAgeMs: number = SSR_MAX_AGE_MS): [string, CachedItem][] {
+    this.loadFromDb()
+    const now = Date.now()
+    return [...this.cache.entries()].filter(
+      ([, item]) => now - item.lastFetchedAt < maxAgeMs
+    )
   }
 
   /** Subscribe to cache updates. Returns unsubscribe function. */
@@ -59,7 +123,6 @@ class ServerCache {
     }
   }
 
-  /** Seed data for E2E tests */
   seed(itemId: string, widgetData: ServiceData): void {
     this.cache.set(itemId, {
       widgetData,
