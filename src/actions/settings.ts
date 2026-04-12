@@ -21,6 +21,6 @@ export async function updateDashboardTitle(title: string) {
     .values({ key: "dashboardTitle", value: title })
     .onConflictDoUpdate({ target: settings.key, set: { value: title } })
 
-  await refreshSettingCache("dashboardTitle", title)
+  await refreshSettingCache()
   revalidatePath("/")
 }

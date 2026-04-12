@@ -1,14 +1,11 @@
 "use client"
 
-import { useState, useSyncExternalStore } from "react"
-import useSWR, { type SWRConfiguration, mutate } from "swr"
-import { getWidgetData } from "@/actions/widget-data"
-import { pingUrl } from "@/actions/ping"
+import { useMemo } from "react"
+import { useLiveData } from "@/hooks/use-live-data"
 import type { ItemWithCache } from "@/lib/types"
 import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
 import { dataToStatus } from "@/lib/adapters/types"
 import { getService } from "@/lib/adapters"
-import { useOnAppResume } from "@/hooks/use-on-app-resume"
 
 interface UseItemDataOptions {
   editMode: boolean
@@ -23,160 +20,42 @@ interface UseItemDataResult {
   isClientSide: boolean
 }
 
-const isClient = typeof window !== "undefined"
-
-function subscribeToOnlineState(callback: () => void) {
-  if (!isClient) return () => {}
-  window.addEventListener("online", callback)
-  window.addEventListener("offline", callback)
-  return () => {
-    window.removeEventListener("online", callback)
-    window.removeEventListener("offline", callback)
-  }
-}
-
-function getOnlineState() {
-  return isClient ? navigator.onLine : true
-}
-
 export function useItemData({
   editMode,
   item,
 }: UseItemDataOptions): UseItemDataResult {
-  const isOnline = useSyncExternalStore(
-    subscribeToOnlineState,
-    getOnlineState,
-    () => true
-  )
-
+  const { getData } = useLiveData()
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
-  const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
   const isClientSide = serviceDef?.clientSide ?? false
 
-  const shouldFetchService = !editMode && item.serviceType && serviceDef
-  const shouldPing = !editMode && !item.serviceType && item.href
+  const liveData = getData(item.id)
 
-  const onErrorRetry: SWRConfiguration["onErrorRetry"] = (
-    _error,
-    _key,
-    _config,
-    revalidate,
-    { retryCount }
-  ) => {
-    if (!isOnline) return
-    if (retryCount >= 5) return
-    setTimeout(
-      () => revalidate({ retryCount }),
-      Math.min(1000 * 2 ** retryCount, pollingMs)
-    )
-  }
-
-  // Revalidate on app resume (PWA background → foreground)
-  useOnAppResume(() => {
-    if (isOnline) {
-      mutate((key) => {
-        if (typeof key !== "string") return false
-        return (
-          key === `widget:${item.id}` || key === `ping:${item.id}:${item.href}`
-        )
-      })
-    }
-  })
-
-  const {
-    data: serviceData,
-    isLoading: isServiceLoading,
-    error: serviceError,
-  } = useSWR<ServiceData | null>(
-    shouldFetchService && !isClientSide && isOnline
-      ? `widget:${item.id}`
-      : null,
-    () => getWidgetData(item.id),
-    {
-      fallbackData: item.cachedWidgetData ?? undefined,
-      refreshInterval: isOnline ? pollingMs : 0,
-      revalidateOnFocus: false,
-      revalidateIfStale: true,
-      shouldRetryOnError: isOnline,
-      onErrorRetry,
-    }
-  )
-
-  const {
-    data: pingData,
-    isLoading: isPingLoading,
-    error: pingError,
-  } = useSWR<ServiceStatus | null>(
-    shouldPing && isOnline ? `ping:${item.id}:${item.href}` : null,
-    () => pingUrl(item.href!),
-    {
-      fallbackData: item.cachedPingStatus ?? undefined,
-      refreshInterval: isOnline ? pollingMs : 0,
-      revalidateOnFocus: false,
-      revalidateIfStale: true,
-      shouldRetryOnError: isOnline,
-      onErrorRetry,
-    }
-  )
-
-  // Preserve initial cached data so we can fall back to it when the server
-  // returns an error status (service unreachable). Without this, the widget
-  // loses all stat values the moment the server reports an error.
-  const [initialCached] = useState(() => item.cachedWidgetData)
-
-  const effectiveData = (() => {
+  // Use live WebSocket data, fall back to SSR cache
+  const effectiveData = useMemo(() => {
     if (editMode) return null
-    if (!serviceData) return null
-    // When the server returns an error (no stat values), fall back to the
-    // initial cached data so the widget still shows the last known values.
-    if (
-      serviceData._status === "error" &&
-      initialCached &&
-      initialCached._status !== "error"
-    ) {
-      return initialCached
-    }
-    return serviceData
-  })()
-
-  const effectiveLoading = editMode
-    ? false
-    : !isOnline
-      ? false
-      : shouldFetchService && !isClientSide
-        ? isServiceLoading
-        : shouldPing
-          ? isPingLoading
-          : false
+    return liveData.widgetData ?? item.cachedWidgetData ?? null
+  }, [editMode, liveData.widgetData, item.cachedWidgetData])
 
   const hasStatus = !!item.href && !isClientSide
 
-  // Use serviceData (not effectiveData) for status so the indicator still
-  // reflects the actual server response — e.g. a red dot when unreachable —
-  // even though effectiveData shows the last known values.
-  const serviceStatus: ServiceStatus = editMode
-    ? { state: "unknown" }
-    : !isOnline
-      ? { state: "unreachable", reason: "You're offline" }
-      : serviceError
-        ? {
-            state: "error",
-            reason: serviceError.message || "Failed to fetch service data",
-          }
-        : pingError
-          ? {
-              state: "error",
-              reason: pingError.message || "Failed to ping URL",
-            }
-          : pingData
-            ? pingData
-            : serviceData
-              ? dataToStatus(serviceData)
-              : { state: "unknown" }
+  const serviceStatus: ServiceStatus = useMemo(() => {
+    if (editMode) return { state: "unknown" }
+    if (liveData.pingStatus) return liveData.pingStatus
+    if (liveData.widgetData) return dataToStatus(liveData.widgetData)
+    if (item.cachedPingStatus) return item.cachedPingStatus
+    if (item.cachedWidgetData) return dataToStatus(item.cachedWidgetData)
+    return { state: "unknown" }
+  }, [
+    editMode,
+    liveData.pingStatus,
+    liveData.widgetData,
+    item.cachedPingStatus,
+    item.cachedWidgetData,
+  ])
 
   return {
     effectiveData,
-    effectiveLoading,
+    effectiveLoading: false, // No loading state — data is always available from cache
     serviceStatus,
     hasStatus,
     isClientSide,

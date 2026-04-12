@@ -11,7 +11,6 @@ export type ConnectivityState =
 
 const HEALTH_ENDPOINT = "/api/health"
 const POLL_INTERVAL = 5_000
-const RETRY_DELAY = 3_000
 
 let toastId: string | number | null = null
 

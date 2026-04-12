@@ -4,14 +4,11 @@ import { db } from "@/lib/db"
 import { items } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { decrypt } from "@/lib/crypto"
-import { getCachedWithFallback, setCached } from "@/lib/cache"
-import { cacheWidgetData } from "@/lib/last-datapoints"
 import { getService } from "@/lib/adapters"
+import { serverCache } from "@/lib/server-cache"
 import type { ServiceData } from "@/lib/adapters/types"
 
 export async function fetchServiceData(itemId: string): Promise<ServiceData> {
-  // Auth not required for viewing — only editing requires authentication
-
   const [item] = await db.select().from(items).where(eq(items.id, itemId))
   if (!item) {
     return { _status: "error", _statusText: "Item not found" }
@@ -28,17 +25,14 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
 
   const pollingMs = item.pollingMs ?? adapter.defaultPollingMs ?? 10000
 
-  const { fresh, expired: expiredCache } =
-    await getCachedWithFallback<ServiceData>(`service:${itemId}`, pollingMs)
-  if (fresh) return fresh
-  const hasExpiredCache = expiredCache !== null
-
-  const config: Record<string, string> = {}
-
-  if (item.serviceUrl) {
-    config.url = item.serviceUrl
+  const cached = serverCache.get(itemId)
+  if (cached?.widgetData) {
+    const age = Date.now() - cached.lastFetchedAt
+    if (age < pollingMs) return cached.widgetData
   }
 
+  const config: Record<string, string> = {}
+  if (item.serviceUrl) config.url = item.serviceUrl
   if (item.configEnc) {
     try {
       const decryptedConfig = JSON.parse(await decrypt(item.configEnc))
@@ -70,18 +64,15 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       ...data,
       _status: data._status ?? "ok",
     }
-    setCached(`service:${itemId}`, responseData)
-    cacheWidgetData(itemId, responseData)
+    serverCache.set(itemId, { widgetData: responseData })
     return responseData
   } catch (err) {
-    if (hasExpiredCache) {
-      const fallbackResponse: ServiceData = {
-        ...expiredCache,
+    if (cached?.widgetData) {
+      return {
+        ...cached.widgetData,
         _status: "warn" as const,
         _statusText: "Showing cached data - unable to reach service",
       }
-      cacheWidgetData(itemId, fallbackResponse)
-      return fallbackResponse
     }
 
     console.error(
@@ -98,8 +89,7 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
           ? err.message
           : "Failed to fetch data",
     }
-    setCached(`service:${itemId}`, errorResponse)
-    cacheWidgetData(itemId, errorResponse)
+    serverCache.set(itemId, { widgetData: errorResponse })
     return errorResponse
   }
 }

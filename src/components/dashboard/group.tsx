@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useState } from "react"
+import { memo, useState, useCallback } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable"
@@ -33,6 +33,20 @@ export const GroupCard = memo(function GroupCard({
 }: GroupCardProps) {
   const haptic = useWebHaptics()
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+
+  const handleDeleteItem = useCallback(
+    async (id: string) => {
+      try {
+        const updated = await deleteItem(id)
+        onGroupsChanged(updated)
+        haptic.trigger("warning")
+      } catch {
+        toast.error("Failed to delete item")
+        haptic.trigger("error")
+      }
+    },
+    [onGroupsChanged, haptic]
+  )
 
   const {
     attributes,
@@ -108,16 +122,7 @@ export const GroupCard = memo(function GroupCard({
                 item={item}
                 editMode={editMode}
                 onEdit={onEditItem}
-                onDeleted={async (id) => {
-                  try {
-                    const updated = await deleteItem(id)
-                    onGroupsChanged(updated)
-                    haptic.trigger("warning")
-                  } catch {
-                    toast.error("Failed to delete item")
-                    haptic.trigger("error")
-                  }
-                }}
+                onDeleted={handleDeleteItem}
               />
             ))}
             {editMode && (

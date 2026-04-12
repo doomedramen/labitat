@@ -8,8 +8,7 @@ import { db } from "@/lib/db"
 import { users, groups, items, settings } from "@/lib/db/schema"
 import { resetAllRateLimits } from "@/lib/auth/rate-limit"
 import { getSessionOptions, type SessionData } from "@/lib/auth"
-import { cacheWidgetData, getLastDatapoint } from "@/lib/last-datapoints"
-import { getCachedAny } from "@/lib/cache"
+import { serverCache } from "@/lib/server-cache"
 import type { ServiceData } from "@/lib/adapters/types"
 
 interface SeedRequest {
@@ -41,6 +40,9 @@ export async function POST(request: Request) {
   await db.run(sql`DELETE FROM settings`)
   await db.run(sql`DELETE FROM users`)
   resetAllRateLimits()
+
+  // Clear server cache
+  serverCache.clear()
 
   const body: SeedRequest = await request.json().catch(() => ({}))
 
@@ -100,7 +102,7 @@ export async function POST(request: Request) {
 
           // Pre-seed cached widget data for E2E tests
           if (itemData.cachedWidgetData) {
-            cacheWidgetData(itemId, {
+            serverCache.seed(itemId, {
               _status: "ok",
               ...itemData.cachedWidgetData,
             } as ServiceData)
@@ -122,9 +124,8 @@ export async function GET(request: NextRequest) {
 
   const itemId = request.nextUrl.searchParams.get("itemId")
   if (itemId) {
-    const cached = getCachedAny(`last:widget:${itemId}`)
-    const datapoint = getLastDatapoint(itemId)
-    return NextResponse.json({ itemId, cached, datapoint })
+    const cached = serverCache.get(itemId)
+    return NextResponse.json({ itemId, cached })
   }
 
   return NextResponse.json({ error: "Provide ?itemId=..." }, { status: 400 })

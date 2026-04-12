@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { cn } from "@/lib/utils"
@@ -19,7 +20,12 @@ interface ItemCardProps {
   onDeleted?: (itemId: string) => void
 }
 
-export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
+export const ItemCard = memo(function ItemCard({
+  item,
+  editMode,
+  onEdit,
+  onDeleted,
+}: ItemCardProps) {
   const serviceDef = item.serviceType ? getService(item.serviceType) : null
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
 
@@ -139,7 +145,7 @@ export function ItemCard({ item, editMode, onEdit, onDeleted }: ItemCardProps) {
       )}
     </div>
   )
-}
+})
 
 export function ItemCardDragPreview({ item }: { item: ItemWithCache }) {
   const serviceDef = item.serviceType ? getService(item.serviceType) : null

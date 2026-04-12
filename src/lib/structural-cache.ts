@@ -1,11 +1,7 @@
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { settings } from "@/lib/db/schema"
-import { setCached } from "@/lib/cache"
 import type { GroupWithItems } from "@/lib/types"
-
-const GROUPS_KEY = "structural:groups"
-const settingsKey = (key: string) => `structural:setting:${key}`
 
 async function queryGroupsWithItems(): Promise<GroupWithItems[]> {
   return db.query.groups.findMany({
@@ -34,9 +30,7 @@ export async function getOrSeedGroups(): Promise<GroupWithItems[]> {
 
 /** Re-query DB and overwrite groups cache. Returns updated groups. */
 export async function refreshGroupsCache(): Promise<GroupWithItems[]> {
-  const groups = await queryGroupsWithItems()
-  setCached(GROUPS_KEY, groups)
-  return groups
+  return queryGroupsWithItems()
 }
 
 interface SettingRow {
@@ -60,9 +54,6 @@ export async function getOrSeedSetting(
 }
 
 /** Write a setting value to cache. Call after mutations. */
-export async function refreshSettingCache(
-  key: string,
-  value: string
-): Promise<void> {
-  setCached(settingsKey(key), { key, value })
+export async function refreshSettingCache(): Promise<void> {
+  // No-op — settings are read directly from DB
 }
