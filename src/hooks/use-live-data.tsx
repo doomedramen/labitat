@@ -1,6 +1,14 @@
 "use client"
 
-import { useEffect, useRef, useState, useCallback } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
 import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
 
 interface SseMessage {
@@ -10,17 +18,24 @@ interface SseMessage {
   pingStatus: ServiceStatus | null
 }
 
+interface LiveDataEntry {
+  widgetData: ServiceData | null
+  pingStatus: ServiceStatus | null
+}
+
+interface LiveDataContextValue {
+  getData: (itemId: string) => LiveDataEntry
+  connected: boolean
+}
+
+const LiveDataContext = createContext<LiveDataContextValue | null>(null)
+
 /**
- * Server-Sent Events hook for receiving real-time service data updates.
- * Connects to /api/events and updates cache on each message.
+ * Provider that opens a single SSE connection to /api/events
+ * and shares the cache with all consumers via React context.
  */
-export function useLiveData() {
-  const [cache, setCache] = useState<
-    Map<
-      string,
-      { widgetData: ServiceData | null; pingStatus: ServiceStatus | null }
-    >
-  >(new Map())
+export function LiveDataProvider({ children }: { children: ReactNode }) {
+  const [cache, setCache] = useState<Map<string, LiveDataEntry>>(new Map())
   const [connected, setConnected] = useState(false)
   const esRef = useRef<EventSource | null>(null)
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -63,12 +78,10 @@ export function useLiveData() {
     }
   }, [])
 
-  // Store connect function in ref so onerror can call it
   useEffect(() => {
     connectRef.current = doConnect
   }, [doConnect])
 
-  // Start connection on mount, cleanup on unmount
   useEffect(() => {
     doConnect()
     return () => {
@@ -90,5 +103,21 @@ export function useLiveData() {
     [cache]
   )
 
-  return { getData, connected }
+  return (
+    <LiveDataContext.Provider value={{ getData, connected }}>
+      {children}
+    </LiveDataContext.Provider>
+  )
+}
+
+/**
+ * Hook to access live data from the shared SSE connection.
+ * Must be used within a LiveDataProvider.
+ */
+export function useLiveData(): LiveDataContextValue {
+  const ctx = useContext(LiveDataContext)
+  if (!ctx) {
+    throw new Error("useLiveData must be used within a LiveDataProvider")
+  }
+  return ctx
 }

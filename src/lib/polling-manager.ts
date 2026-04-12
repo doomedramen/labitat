@@ -123,10 +123,16 @@ class PollingManager {
           }
         }
       } catch (err) {
+        const isTimeout =
+          err instanceof DOMException && err.name === "AbortError"
         serverCache.set(item.id, {
           widgetData: {
             _status: "error",
-            _statusText: err instanceof Error ? err.message : "Failed to fetch",
+            _statusText: isTimeout
+              ? "Request timed out"
+              : err instanceof Error
+                ? err.message
+                : "Failed to fetch",
           },
         })
       }

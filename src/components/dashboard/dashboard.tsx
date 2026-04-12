@@ -54,6 +54,7 @@ import { ItemCardDragPreview } from "./item/item-card"
 import { reorderGroups } from "@/actions/groups"
 import { reorderItems } from "@/actions/items"
 import { updateDashboardTitle } from "@/actions/settings"
+import { LiveDataProvider } from "@/hooks/use-live-data"
 
 interface DashboardProps {
   groups: GroupWithCache[]
@@ -286,198 +287,200 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
   return (
     <div className={cn("min-h-svh bg-background p-6", editMode && "pb-24")}>
-      {/* Header */}
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-        {editMode ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              titleForm.handleSubmit()
-            }}
-            className="w-full max-w-xs"
-          >
-            <titleForm.Field name="title">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0
-                return (
-                  <div className="relative">
-                    <Input
-                      value={field.state.value}
-                      onChange={(e) => {
-                        field.handleChange(e.target.value)
-                        setLocalTitle(e.target.value)
-                      }}
-                      onBlur={field.handleBlur}
-                      className={cn("h-8", savingTitle && "pr-8")}
-                      disabled={savingTitle}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault()
-                          titleForm.handleSubmit()
-                        }
-                        if (e.key === "Escape") {
-                          setLocalTitle(null)
-                          setEditMode(false)
-                        }
-                      }}
-                      aria-invalid={isInvalid || undefined}
-                      autoFocus
-                    />
-                    {savingTitle && (
-                      <Loader2 className="absolute top-1/2 right-2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-                    )}
-                  </div>
-                )
+      <LiveDataProvider>
+        {/* Header */}
+        <header className="mb-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+          {editMode ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                titleForm.handleSubmit()
               }}
-            </titleForm.Field>
-          </form>
-        ) : (
-          <h1 className="text-lg font-semibold">{dashboardTitle}</h1>
-        )}
+              className="w-full max-w-xs"
+            >
+              <titleForm.Field name="title">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0
+                  return (
+                    <div className="relative">
+                      <Input
+                        value={field.state.value}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value)
+                          setLocalTitle(e.target.value)
+                        }}
+                        onBlur={field.handleBlur}
+                        className={cn("h-8", savingTitle && "pr-8")}
+                        disabled={savingTitle}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            titleForm.handleSubmit()
+                          }
+                          if (e.key === "Escape") {
+                            setLocalTitle(null)
+                            setEditMode(false)
+                          }
+                        }}
+                        aria-invalid={isInvalid || undefined}
+                        autoFocus
+                      />
+                      {savingTitle && (
+                        <Loader2 className="absolute top-1/2 right-2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                      )}
+                    </div>
+                  )
+                }}
+              </titleForm.Field>
+            </form>
+          ) : (
+            <h1 className="text-lg font-semibold">{dashboardTitle}</h1>
+          )}
 
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Palette className="h-4 w-4" />
-                <span className="sr-only">Theme settings</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Theme</DropdownMenuLabel>
-                <ThemeToggle />
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Palette</DropdownMenuLabel>
-                <PaletteSwitcher />
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Palette className="h-4 w-4" />
+                  <span className="sr-only">Theme settings</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Theme</DropdownMenuLabel>
+                  <ThemeToggle />
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Palette</DropdownMenuLabel>
+                  <PaletteSwitcher />
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {isLoggedIn ? (
-            !editMode ? (
+            {isLoggedIn ? (
+              !editMode ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditMode(true)
+                    haptic.trigger("light")
+                  }}
+                >
+                  Edit
+                </Button>
+              ) : null
+            ) : (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setEditMode(true)
-                  haptic.trigger("light")
-                }}
+                onClick={() => setLoginOpen(true)}
               >
-                Edit
+                <LogIn className="mr-1.5 h-3.5 w-3.5" />
+                Sign in
               </Button>
-            ) : null
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLoginOpen(true)}
-            >
-              <LogIn className="mr-1.5 h-3.5 w-3.5" />
-              Sign in
-            </Button>
-          )}
-        </div>
-      </header>
-
-      {/* Single DndContext handles both group and item reordering */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={localGroups.map((g) => g.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="flex flex-col gap-8">
-            {localGroups.map((group) => (
-              <GroupCard
-                key={group.id}
-                group={group}
-                editMode={editMode}
-                onEditGroup={() => {
-                  setEditingGroup(group)
-                  setGroupDialogOpen(true)
-                }}
-                onAddItem={() => {
-                  setEditingItem(null)
-                  setTargetGroupId(group.id)
-                  setItemDialogOpen(true)
-                }}
-                onGroupsChanged={handleGroupsUpdated}
-                onEditItem={(item) => {
-                  setEditingItem(item)
-                  setTargetGroupId(group.id)
-                  setItemDialogOpen(true)
-                }}
-              />
-            ))}
+            )}
           </div>
-        </SortableContext>
+        </header>
 
-        <DragOverlay dropAnimation={null}>
-          {activeItem ? (
-            <ItemCardDragPreview item={activeItem} />
-          ) : activeGroup ? (
-            <div className="rounded-xl bg-card px-3 py-2 text-sm font-medium shadow-lg ring-2 ring-ring">
-              {activeGroup.name}
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
-
-      {editMode && (
-        <button
-          type="button"
-          onClick={() => {
-            setEditingGroup(null)
-            setGroupDialogOpen(true)
-          }}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/50 py-4 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+        {/* Single DndContext handles both group and item reordering */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
         >
-          <Plus className="h-4 w-4" />
-          Add Group
-        </button>
-      )}
+          <SortableContext
+            items={localGroups.map((g) => g.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="flex flex-col gap-8">
+              {localGroups.map((group) => (
+                <GroupCard
+                  key={group.id}
+                  group={group}
+                  editMode={editMode}
+                  onEditGroup={() => {
+                    setEditingGroup(group)
+                    setGroupDialogOpen(true)
+                  }}
+                  onAddItem={() => {
+                    setEditingItem(null)
+                    setTargetGroupId(group.id)
+                    setItemDialogOpen(true)
+                  }}
+                  onGroupsChanged={handleGroupsUpdated}
+                  onEditItem={(item) => {
+                    setEditingItem(item)
+                    setTargetGroupId(group.id)
+                    setItemDialogOpen(true)
+                  }}
+                />
+              ))}
+            </div>
+          </SortableContext>
 
-      {editMode && isLoggedIn && (
-        <EditBar
-          onDone={async () => {
-            await handleSaveTitle()
-            setEditMode(false)
-            haptic.trigger("light")
-          }}
+          <DragOverlay dropAnimation={null}>
+            {activeItem ? (
+              <ItemCardDragPreview item={activeItem} />
+            ) : activeGroup ? (
+              <div className="rounded-xl bg-card px-3 py-2 text-sm font-medium shadow-lg ring-2 ring-ring">
+                {activeGroup.name}
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+
+        {editMode && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditingGroup(null)
+              setGroupDialogOpen(true)
+            }}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/50 py-4 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+          >
+            <Plus className="h-4 w-4" />
+            Add Group
+          </button>
+        )}
+
+        {editMode && isLoggedIn && (
+          <EditBar
+            onDone={async () => {
+              await handleSaveTitle()
+              setEditMode(false)
+              haptic.trigger("light")
+            }}
+          />
+        )}
+
+        <GroupDialog
+          open={groupDialogOpen}
+          onOpenChange={setGroupDialogOpen}
+          group={editingGroup}
+          onGroupsChanged={handleGroupsUpdated}
         />
-      )}
-
-      <GroupDialog
-        open={groupDialogOpen}
-        onOpenChange={setGroupDialogOpen}
-        group={editingGroup}
-        onGroupsChanged={handleGroupsUpdated}
-      />
-      <ItemDialog
-        open={itemDialogOpen}
-        onOpenChange={setItemDialogOpen}
-        item={editingItem}
-        groupId={targetGroupId ?? ""}
-        onGroupsChanged={handleGroupsUpdated}
-      />
-      <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Sign in</DialogTitle>
-          </DialogHeader>
-          <LoginForm />
-        </DialogContent>
-      </Dialog>
+        <ItemDialog
+          open={itemDialogOpen}
+          onOpenChange={setItemDialogOpen}
+          item={editingItem}
+          groupId={targetGroupId ?? ""}
+          onGroupsChanged={handleGroupsUpdated}
+        />
+        <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Sign in</DialogTitle>
+            </DialogHeader>
+            <LoginForm />
+          </DialogContent>
+        </Dialog>
+      </LiveDataProvider>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { memo, useState } from "react"
 import Image from "next/image"
 import { resolveIconUrl } from "@/lib/icons"
 
@@ -16,7 +16,11 @@ function toProxyUrl(src: string): string | null {
   return `/api/icon?url=${encodeURIComponent(src)}`
 }
 
-export function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
+export const ItemIcon = memo(function ItemIcon({
+  iconUrl,
+  label,
+  serviceIcon,
+}: ItemIconProps) {
   const [hasError, setHasError] = useState(false)
 
   // Use custom iconUrl if provided, otherwise fall back to service icon
@@ -49,4 +53,4 @@ export function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
       />
     </div>
   )
-}
+})
