@@ -25,7 +25,6 @@ interface LiveDataEntry {
 
 interface LiveDataContextValue {
   getData: (itemId: string) => LiveDataEntry
-  connected: boolean
 }
 
 const LiveDataContext = createContext<LiveDataContextValue | null>(null)
@@ -36,7 +35,6 @@ const LiveDataContext = createContext<LiveDataContextValue | null>(null)
  */
 export function LiveDataProvider({ children }: { children: ReactNode }) {
   const [cache, setCache] = useState<Map<string, LiveDataEntry>>(new Map())
-  const [connected, setConnected] = useState(false)
   const esRef = useRef<EventSource | null>(null)
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const connectRef = useRef<(() => void) | null>(null)
@@ -52,7 +50,6 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
 
     es.onopen = () => {
       backoffRef.current = 1000
-      setConnected(true)
     }
 
     es.onmessage = (event) => {
@@ -74,7 +71,6 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
     }
 
     es.onerror = () => {
-      setConnected(false)
       es.close()
       const delay = backoffRef.current
       backoffRef.current = Math.min(delay * 2, MAX_BACKOFF)
@@ -110,7 +106,7 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
   )
 
   return (
-    <LiveDataContext.Provider value={{ getData, connected }}>
+    <LiveDataContext.Provider value={{ getData }}>
       {children}
     </LiveDataContext.Provider>
   )

@@ -4,13 +4,14 @@ import { serverCache } from "@/lib/server-cache"
 
 export const dynamic = "force-dynamic"
 
+const HEARTBEAT_INTERVAL_MS = 15_000
+
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder()
 
   // Create a readable stream for SSE
   const stream = new ReadableStream({
     start(controller) {
-      // Signal connection
       pollingManager.connect()
 
       const send = (data: unknown) => {
@@ -23,19 +24,20 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Send current cache state immediately
-      for (const [id, data] of serverCache.getAll()) {
-        send({
-          type: "update",
-          itemId: id,
-          widgetData: data.widgetData,
-          pingStatus: data.pingStatus,
-        })
+      const sendHeartbeat = () => {
+        try {
+          controller.enqueue(encoder.encode(`: heartbeat\n\n`))
+        } catch {
+          // Stream closed
+        }
       }
 
-      // Subscribe to cache updates
+      // 1. Subscribe to cache updates FIRST — prevents the TOCTOU race where
+      //    an update fires between the snapshot and the subscription.
+      const sentIds = new Set<string>()
       const unsubscribe = serverCache.onUpdate(
         (itemId, widgetData, pingStatus) => {
+          sentIds.add(itemId)
           send({
             type: "update",
             itemId,
@@ -45,8 +47,25 @@ export async function GET(request: NextRequest) {
         }
       )
 
+      // 2. Then send the current cache snapshot. Any item that already fired
+      //    via the listener above will be skipped (sentIds guard).
+      for (const [id, data] of serverCache.getAll()) {
+        if (!sentIds.has(id)) {
+          send({
+            type: "update",
+            itemId: id,
+            widgetData: data.widgetData,
+            pingStatus: data.pingStatus,
+          })
+        }
+      }
+
+      // 3. Periodic heartbeat to keep the connection alive through proxies
+      const heartbeat = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS)
+
       // Cleanup on disconnect
       request.signal.addEventListener("abort", () => {
+        clearInterval(heartbeat)
         unsubscribe()
         pollingManager.disconnect()
         controller.close()

@@ -2,9 +2,11 @@ import { db } from "@/lib/db"
 import { items } from "@/lib/db/schema"
 import { decrypt } from "@/lib/crypto"
 import { getService } from "@/lib/adapters"
+import { fetchWithTimeout } from "@/lib/adapters/fetch-with-timeout"
 import { serverCache } from "./server-cache"
 
 const GRACE_PERIOD_MS = 5 * 60 * 1000 // 5 minutes
+const PING_TIMEOUT_MS = 10_000 // Same as fetchWithTimeout default
 
 type PollJob = {
   itemId: string
@@ -98,14 +100,11 @@ class PollingManager {
         } else if (item.href) {
           // Ping URL
           try {
-            const controller = new AbortController()
-            const timeout = setTimeout(() => controller.abort(), 5000)
-            const res = await fetch(item.href!, {
-              method: "GET",
-              signal: controller.signal,
-              redirect: "manual",
-            })
-            clearTimeout(timeout)
+            const res = await fetchWithTimeout(
+              item.href!,
+              { method: "GET", redirect: "manual" },
+              PING_TIMEOUT_MS
+            )
             serverCache.set(item.id, {
               pingStatus:
                 res.status > 0

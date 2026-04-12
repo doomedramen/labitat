@@ -39,7 +39,11 @@ class ServerCache {
 
     // Notify listeners
     for (const cb of this.listeners) {
-      cb(itemId, updated.widgetData, updated.pingStatus)
+      try {
+        cb(itemId, updated.widgetData, updated.pingStatus)
+      } catch (err) {
+        console.error("[server-cache] Error in update listener:", err)
+      }
     }
   }
 
