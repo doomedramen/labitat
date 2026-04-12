@@ -15,8 +15,8 @@ describe("dataToStatus", () => {
     expect(dataToStatus({ _status: "ok" })).toEqual({ state: "healthy" })
   })
 
-  it("returns healthy for 'warn' status", () => {
-    expect(dataToStatus({ _status: "warn" })).toEqual({ state: "healthy" })
+  it("returns degraded for 'warn' status", () => {
+    expect(dataToStatus({ _status: "warn" })).toEqual({ state: "degraded" })
   })
 
   it("returns error with reason for 'error' status", () => {
