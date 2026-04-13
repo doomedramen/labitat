@@ -78,11 +78,9 @@ export function BackgroundSwitcher({ onSelect }: BackgroundSwitcherProps) {
             >
               {/* Preview swatch: 90x90 */}
               <div
-                className={cn(
-                  "h-[90px] w-[90px] shrink-0 overflow-hidden rounded-md border border-border/50",
-                  bg.className,
-                )}
+                className="h-[90px] w-[90px] shrink-0 overflow-hidden rounded-md border border-border/50"
                 style={{
+                  backgroundImage: isDark ? bg.previewDark : bg.previewLight,
                   backgroundColor: isDark ? "var(--bg-pattern-base)" : "var(--bg-pattern-base)",
                 }}
               />
