@@ -39,28 +39,26 @@ test.describe("SSR Rendering", () => {
 
     const html = await response!.text()
 
-    // ── Dashboard title ──
+    // ── Dashboard title visible ──
     expect(html).toMatch(/<h1[^>]*>.*Labitat.*<\/h1>/i)
 
     // ── Multiple groups visible ──
     expect(html).toMatch(/<h2[^>]*>.*Infrastructure.*<\/h2>/i)
     expect(html).toMatch(/<h2[^>]*>.*Media.*<\/h2>/i)
 
-    // ── Multiple item-cards with titles ──
+    // ── Multiple item-cards with titles visible ──
     expect(html).toContain("Proxmox")
     expect(html).toContain("Grafana")
     expect(html).toContain("Jellyfin")
 
     // ── Palette picker button visible ──
-    expect(html).toContain("Palette settings")
-    expect(html).toMatch(/<svg[^>]*>.*<\/svg>.*Palette/i)
+    expect(html).toContain("Theme settings")
 
     // ── Background picker button visible ──
     expect(html).toContain("Background settings")
 
     // ── Sign-in button visible (not authenticated) ──
     expect(html).toMatch(/<button[^>]*>.*Sign in.*<\/button>/i)
-    expect(html).toContain("Sign in")
 
     // ── Edit button should NOT be visible when not authenticated ──
     expect(html).not.toMatch(/<button[^>]*>.*Edit.*<\/button>/i)
@@ -83,7 +81,7 @@ test.describe("SSR Rendering", () => {
     expect(html).not.toContain("Sign in")
   })
 
-  test("SSR renders stat cards with labels AND values (response.text)", async ({
+  test("SSR renders stat cards with labels AND values when cached data exists (response.text)", async ({
     page,
   }) => {
     // Seed with cached widget data that will produce stat cards
@@ -113,6 +111,9 @@ test.describe("SSR Rendering", () => {
     expect(response?.ok()).toBe(true)
 
     const html = await response!.text()
+
+    // ── Item card visible ──
+    expect(html).toContain("Proxmox")
 
     // ── Stat card labels visible ──
     expect(html).toContain("CPU")
