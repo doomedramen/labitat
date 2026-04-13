@@ -90,6 +90,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     },
   ],
   async fetchData(config) {
+    if (!config.url) throw new Error("URL is required");
     const baseUrl = config.url.replace(/\/$/, "");
     const headers = { "X-Api-Key": config.apiKey };
     const showActiveDownloads = parseBool(config.showActiveDownloads);
