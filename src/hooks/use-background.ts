@@ -59,9 +59,12 @@ export function useBackground() {
   }, [background]);
 
   // Debounced scale persistence
+  const scaleRef = React.useRef(scale);
+  scaleRef.current = scale;
+
   const persistScale = React.useRef(
     debounce(() => {
-      setCookie(SCALE_COOKIE, scale);
+      setCookie(SCALE_COOKIE, scaleRef.current);
     }, 500),
   ).current;
 
@@ -71,9 +74,12 @@ export function useBackground() {
   }, [scale, persistScale]);
 
   // Debounced opacity persistence
+  const opacityRef = React.useRef(opacity);
+  opacityRef.current = opacity;
+
   const persistOpacity = React.useRef(
     debounce(() => {
-      setCookie(OPACITY_COOKIE, opacity);
+      setCookie(OPACITY_COOKIE, opacityRef.current);
     }, 500),
   ).current;
 

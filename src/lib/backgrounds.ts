@@ -35,6 +35,15 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
     previewDark: "radial-gradient(circle at center, var(--bg-pattern-accent) 2px, transparent 2px)",
   },
   {
+    id: "cross",
+    label: "Cross",
+    className: "bg-cross",
+    previewLight:
+      "radial-gradient(circle, transparent 20%, var(--bg-pattern-base) 20%, var(--bg-pattern-base) 80%, transparent 80%), radial-gradient(circle, transparent 20%, var(--bg-pattern-base) 20%, var(--bg-pattern-base) 80%, transparent 80%) 25px 25px, linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px) 0 -1px, linear-gradient(90deg, var(--bg-pattern-accent) 2px, var(--bg-pattern-base) 2px) -1px 0",
+    previewDark:
+      "radial-gradient(circle, transparent 20%, var(--bg-pattern-base) 20%, var(--bg-pattern-base) 80%, transparent 80%), radial-gradient(circle, transparent 20%, var(--bg-pattern-base) 20%, var(--bg-pattern-base) 80%, transparent 80%) 25px 25px, linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px) 0 -1px, linear-gradient(90deg, var(--bg-pattern-accent) 2px, var(--bg-pattern-base) 2px) -1px 0",
+  },
+  {
     id: "crosses",
     label: "Crosses",
     className: "bg-crosses",
@@ -60,15 +69,6 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
       "linear-gradient(30deg, var(--bg-pattern-accent) 12%, transparent 12.5%, transparent 87%, var(--bg-pattern-accent) 87.5%), linear-gradient(150deg, var(--bg-pattern-accent) 12%, transparent 12.5%, transparent 87%, var(--bg-pattern-accent) 87.5%)",
     previewDark:
       "linear-gradient(30deg, var(--bg-pattern-accent) 12%, transparent 12.5%, transparent 87%, var(--bg-pattern-accent) 87.5%), linear-gradient(150deg, var(--bg-pattern-accent) 12%, transparent 12.5%, transparent 87%, var(--bg-pattern-accent) 87.5%)",
-  },
-  {
-    id: "isometric",
-    label: "Isometric",
-    className: "bg-isometric",
-    previewLight:
-      "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
-    previewDark:
-      "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
   },
   {
     id: "lines",
@@ -105,15 +105,6 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
       "repeating-linear-gradient(to right, var(--bg-pattern-accent), var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 1px, var(--bg-pattern-base))",
   },
   {
-    id: "moon",
-    label: "Moon",
-    className: "bg-moon",
-    previewLight:
-      "radial-gradient(ellipse farthest-corner at 10px 10px, var(--bg-pattern-accent), var(--bg-pattern-accent) 50%, var(--bg-pattern-base) 50%)",
-    previewDark:
-      "radial-gradient(ellipse farthest-corner at 10px 10px, var(--bg-pattern-accent), var(--bg-pattern-accent) 50%, var(--bg-pattern-base) 50%)",
-  },
-  {
     id: "paper",
     label: "Paper",
     className: "bg-paper",
@@ -139,15 +130,6 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
       "radial-gradient(var(--bg-pattern-accent) 0.5px, transparent 0.5px), radial-gradient(var(--bg-pattern-accent) 0.5px, var(--bg-pattern-base) 0.5px)",
   },
   {
-    id: "rectangles",
-    label: "Rectangles",
-    className: "bg-rectangles",
-    previewLight:
-      "repeating-linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%, transparent 75%, var(--bg-pattern-accent) 75%), repeating-linear-gradient(45deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%, var(--bg-pattern-base) 75%, var(--bg-pattern-accent) 75%)",
-    previewDark:
-      "repeating-linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%, transparent 75%, var(--bg-pattern-accent) 75%), repeating-linear-gradient(45deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%, var(--bg-pattern-base) 75%, var(--bg-pattern-accent) 75%)",
-  },
-  {
     id: "rhombus",
     label: "Rhombus",
     className: "bg-rhombus",
@@ -155,23 +137,6 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
       "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
     previewDark:
       "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
-  },
-  {
-    id: "triangles",
-    label: "Triangles",
-    className: "bg-triangles",
-    previewLight:
-      "linear-gradient(45deg, var(--bg-pattern-accent) 50%, var(--bg-pattern-base) 50%)",
-    previewDark: "linear-gradient(45deg, var(--bg-pattern-accent) 50%, var(--bg-pattern-base) 50%)",
-  },
-  {
-    id: "triangles-2",
-    label: "Triangles 2",
-    className: "bg-triangles-2",
-    previewLight:
-      "linear-gradient(-45deg, var(--bg-pattern-base), var(--bg-pattern-base) 50%, var(--bg-pattern-accent) 50%, var(--bg-pattern-accent))",
-    previewDark:
-      "linear-gradient(-45deg, var(--bg-pattern-base), var(--bg-pattern-base) 50%, var(--bg-pattern-accent) 50%, var(--bg-pattern-accent))",
   },
   {
     id: "wavy",

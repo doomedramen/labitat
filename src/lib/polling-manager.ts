@@ -21,7 +21,9 @@ class PollingManager {
 
   /** A client connected — start polling if needed */
   connect(): void {
+    const prev = this.activeConnections;
     this.activeConnections++;
+    console.log(`[polling] Client connected: ${prev} → ${this.activeConnections}`);
     if (this.graceTimer) {
       clearTimeout(this.graceTimer);
       this.graceTimer = null;
@@ -33,7 +35,11 @@ class PollingManager {
 
   /** A client disconnected — maybe stop polling after grace period */
   disconnect(): void {
+    const prev = this.activeConnections;
     this.activeConnections = Math.max(0, this.activeConnections - 1);
+    console.log(
+      `[polling] Client disconnected: ${prev} → ${this.activeConnections}${this.activeConnections === 0 ? " — ALL CLIENTS DISCONNECTED" : ""}`,
+    );
     if (this.activeConnections === 0 && this.jobs.size > 0) {
       this.graceTimer = setTimeout(() => {
         this.stopAllPolling();
