@@ -152,6 +152,9 @@ test.describe("Stat Card Reordering and Visibility", () => {
 
     await dragAndDropInDialog(page, unusedHandle, activeStatCard);
 
+    // Wait for the drag animation and state update to complete
+    await page.waitForTimeout(500);
+
     // Verify it's back in active zone
     await expect(unusedItems).toHaveCount(0);
     const activeStatCards = dialog.locator('[data-testid="stat-card"]');
