@@ -3,10 +3,10 @@ import { getService } from "@/lib/adapters";
 import type { ItemWithCache } from "@/lib/types";
 import { ItemIcon } from "./item-icon";
 import { StatusDot } from "./status-dot";
-import { WidgetRenderer } from "./widget-renderer";
 import { BlockLinkPropagationServer } from "./block-link-propagation-server";
-import type { ServiceStatus } from "@/lib/adapters/types";
+import type { ServiceStatus, ServiceData } from "@/lib/adapters/types";
 import { dataToStatus } from "@/lib/adapters/types";
+import { ItemCardLive } from "./item-card-live";
 
 interface ItemCardProps {
   item: ItemWithCache;
@@ -16,9 +16,8 @@ interface ItemCardProps {
 }
 
 /**
- * Server-compatible ItemCard.
- * Renders icon, title, status dot, and stat cards during SSR.
- * For edit mode, use ItemCardDummy instead.
+ * Server-rendered ItemCard shell (icon, title, link).
+ * Delegates widget rendering to ItemCardLive for SSE updates.
  */
 export function ItemCard({ item, editMode }: ItemCardProps) {
   const serviceDef = item.serviceType ? getService(item.serviceType) : null;
@@ -135,13 +134,13 @@ function ItemCardContent({
         </div>
       )}
 
-      <WidgetRenderer
+      {/* Client-side widget renderer for SSE updates */}
+      <ItemCardLive
+        item={item}
         serviceDef={serviceDef ?? null}
-        effectiveData={effectiveData as never}
         isClientSide={isClientSide}
         editMode={editMode}
-        cleanMode={item.cleanMode ?? undefined}
-        item={item}
+        ssrData={effectiveData as ServiceData | null}
       />
     </div>
   );
