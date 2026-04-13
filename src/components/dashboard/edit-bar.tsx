@@ -15,7 +15,11 @@ export function EditBar({ onDone }: EditBarProps) {
       <div className="flex w-full items-center justify-between">
         <p className="text-sm text-muted-foreground">Drag to reorder. Click items to edit.</p>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => startTransition(() => logout())}>
+          <Button
+            variant="outline"
+            className="dark:!bg-background bg-background"
+            onClick={() => startTransition(() => logout())}
+          >
             <LogOut className="mr-1.5 h-4 w-4" />
             Sign out
           </Button>
