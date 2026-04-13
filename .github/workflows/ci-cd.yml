@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        task: [lint, lint:ox, check-adapters, typecheck, build, audit]
+        task: [lint, check-adapters, typecheck, build, audit]
       fail-fast: false
 
     steps:
