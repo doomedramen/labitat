@@ -1,50 +1,110 @@
 ---
-title: Home
-description: A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support.
+layout: home
+
+hero:
+  name: Labitat
+  text: A modern, self-hosted homelab dashboard.
+  tagline: Live service widgets, drag-and-drop layout, and full PWA support.
+  image:
+    src: /logo.svg
+    alt: Labitat Logo
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /getting-started
+    - theme: alt
+      text: View Services
+      link: /services/
+    - theme: alt
+      text: GitHub
+      link: https://github.com/DoomedRamen/labitat
+
+features:
+  - icon: 📊
+    title: Live Monitoring
+    details: Real-time status and metrics for services including Radarr, Sonarr, Plex, and more. No page refresh needed.
+  - icon: 🖱️
+    title: Drag & Drop
+    details: Arrange widgets your way with an intuitive drag-and-drop layout editor. Save multiple layouts for different views.
+  - icon: 📱
+    title: PWA Support
+    details: Install on desktop or mobile for a native app experience. Fast, responsive, and available offline.
+  - icon: 🔒
+    title: Secure by Default
+    details: AES-256-GCM encryption for credentials, HTTP-only sessions, CSRF protection, and strict security headers.
+  - icon: 🪶
+    title: Lightweight
+    details: Optimized for efficiency. Runs smoothly on a Raspberry Pi while scaling to powerful enterprise servers.
+  - icon: 🔌
+    title: Extensible
+    details: Add your own services with a single TypeScript file. Clean adapter API makes contributions a breeze.
 ---
 
-# Labitat
+## Supported Ecosystem
 
-A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support. Monitor your services from a single, beautiful interface.
+::: tip
+Explore our growing library of over 40+ pre-built service adapters. Each service comes with a dedicated real-time widget.
+:::
 
-![Labitat Dashboard](/images/labitat_dash.png)
+<div class="service-section">
 
-<div class="cta-group">
-  <a href="/getting-started" class="cta-primary">Get Started →</a>
-  <a href="/installation" class="cta-secondary">Installation</a>
-  <a href="https://github.com/DoomedRamen/labitat" class="cta-secondary">GitHub</a>
+<div class="service-category">
+
+### 📥 Downloads
+
+- Radarr
+- Sonarr
+- Lidarr
+- Prowlarr
+- qBittorrent
+- SABnzbd
 </div>
 
-## Features
+<div class="service-category">
 
-- **📊 Live Monitoring** — Real-time status and metrics for services including Radarr, Sonarr, Plex, and more.
-- **🖱️ Drag & Drop** — Arrange widgets your way with an intuitive drag-and-drop layout editor.
+### 🎬 Media
 
-  ![Dashboard Edit Mode](/images/labitat_dash_edit.png)
+- Jellyfin
+- Plex
+- Emby
+- Tautulli
+- Immich
+- Frigate
+</div>
 
-- **📱 PWA Support** — Install on desktop or mobile for a native app experience with offline support.
-- **🔒 Secure by Default** — AES-256-GCM encryption for credentials, HTTP-only sessions, and security headers.
-- **🪶 Lightweight** — Runs on a Raspberry Pi, scales to full servers. Minimal resource usage.
-- **🔌 Extensible** — Add your own services with a single TypeScript file. One file = one service.
+<div class="service-category">
 
-## Supported Services
+### 🌐 Networking
 
-| Category | Services |
-|----------|----------|
-| **Downloads** | Radarr, Sonarr, Lidarr, Prowlarr, qBittorrent, SABnzbd, Bazarr |
-| **Media** | Jellyfin, Plex, Emby, Unmanic, Tautulli, Immich, Frigate |
-| **Networking** | Pi-hole, AdGuard Home, Nginx Proxy Manager, Traefik |
-| **Monitoring** | Portainer, Uptime Kuma, Grafana, APCUPS, Unifi |
-| **Automation** | Home Assistant |
-| **Generic** | Ping, REST API (bring your own endpoint) |
+- Pi-hole
+- AdGuard Home
+- NPM
+- Traefik
+- Unifi
+</div>
 
-See [all services](/services/) for individual configuration guides.
+<div class="service-category">
+
+### 📈 Monitoring
+
+- Portainer
+- Uptime Kuma
+- Grafana
+- APCUPS
+- Glances
+</div>
+
+</div>
+
+---
 
 ## Quick Start
 
+Setting up Labitat is as simple as running a single command.
+
 ```bash
+# Clone and run
 git clone https://github.com/DoomedRamen/labitat.git && cd labitat
-cp .env.example .env
 docker compose up -d
 ```
 

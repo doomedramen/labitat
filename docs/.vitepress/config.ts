@@ -120,9 +120,20 @@ export default defineConfig({
   cleanUrls: true,
   outDir: ".vitepress/dist",
 
+  // SEO & Social
+  sitemap: {
+    hostname: "https://doomedramen.github.io/labitat",
+  },
+
   head: [
     ["link", { rel: "icon", href: "/favicon.ico" }],
-    ["meta", { name: "theme-color", content: "#16a34a" }],
+    ["meta", { name: "theme-color", content: "#10b981" }],
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:locale", content: "en" }],
+    ["meta", { property: "og:title", content: "Labitat | Homelab Dashboard" }],
+    ["meta", { property: "og:site_name", content: "Labitat" }],
+    ["meta", { property: "og:image", content: "/images/labitat_dash.png" }],
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
   ],
 
   themeConfig: {
@@ -130,7 +141,7 @@ export default defineConfig({
     siteTitle: "Labitat",
 
     nav: [
-      { text: "Documentation", link: "/" },
+      { text: "Guide", link: "/getting-started" },
       { text: "Services", link: "/services/" },
       {
         text: "GitHub",
@@ -159,6 +170,19 @@ export default defineConfig({
     footer: {
       message: "Released under the MIT License.",
       copyright: "Copyright © 2026 Labitat Contributors",
+    },
+
+    docFooter: {
+      prev: "Previous page",
+      next: "Next page",
+    },
+
+    lastUpdated: {
+      text: "Updated at",
+      formatOptions: {
+        dateStyle: "full",
+        timeStyle: "medium",
+      },
     },
 
     outline: {

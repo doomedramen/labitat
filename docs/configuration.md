@@ -1,45 +1,71 @@
 # Configuration
 
-Labitat is configured through environment variables and the built-in setup wizard.
+Labitat is designed to be zero-config, but we offer powerful environment variables to tune it for your specific homelab environment.
 
-## Environment Variables
+## Key Environment Variables
 
-| Variable       | Required | Description                                                                |
-| -------------- | -------- | -------------------------------------------------------------------------- |
-| `SECRET_KEY`   | No       | 32+ char random string for encryption. Auto-generated if not set (Docker). |
-| `DATABASE_URL` | No       | SQLite path (default: `./data/labitat.db`)                                 |
-| `NODE_ENV`     | No       | Set to `production` for deployment                                         |
-| `PORT`         | No       | Override default port (3000)                                               |
+| Variable       | Default                  | Description                                                         |
+| -------------- | ------------------------ | ------------------------------------------------------------------- |
+| `SECRET_KEY`   | _(Auto)_                 | Used for encryption of service credentials. Must be 32+ characters. |
+| `DATABASE_URL` | `file:./data/labitat.db` | Connection URL for the SQLite database.                             |
+| `NODE_ENV`     | `development`            | Set to `production` when deploying for optimized performance.       |
+| `PORT`         | `3000`                   | The port Labitat listens on.                                        |
+| `SECRET_KEY`   | _(None)_                 | Key for encrypting service credentials. **Back this up.**           |
 
-## Secret Key
+---
 
-In Docker, `SECRET_KEY` is auto-generated on first run and saved to `/app/data/.secret_key`. No action required.
+## Security & Encryption
 
-To set your own key:
+One of Labitat's core principles is **secure credential storage**.
 
-```bash
-openssl rand -base64 32
-```
+### The Secret Key
 
-This key encrypts stored service credentials using AES-256-GCM. **Back it up** — lose it and you lose access to saved credentials. When using Docker, backing up your `labitat_data` volume covers this.
+Labitat uses **AES-256-GCM** to encrypt your API keys and passwords. The encryption key is derived from your `SECRET_KEY` using **HKDF-SHA256**.
 
-## First Run: Create Admin Account
+::: warning Keep it safe
+If you lose your `SECRET_KEY`, you lose access to all stored service credentials.
+:::
 
-On your first visit, you'll be redirected to a setup page to create your admin account. Credentials are stored in the database — no config files to edit.
+- **Docker:** A `SECRET_KEY` is automatically generated on the first run and stored in `/app/data/.secret_key`.
+- **Native:** You should generate a strong random key manually:
+  ```bash
+  openssl rand -base64 32
+  ```
 
-## Database
+---
 
-Labitat uses SQLite by default. To use a custom path:
+## Database Management
+
+Labitat uses **SQLite** via **Drizzle ORM** for its simplicity and robustness.
+
+### Custom Database Path
+
+To move your database to a different location:
 
 ```env
-DATABASE_URL=file:/path/to/labitat.db
+DATABASE_URL=file:/mnt/storage/homelab/labitat.db
 ```
 
-### Database Commands
+### Management Commands
 
-```bash
-pnpm db:push      # Push schema changes to SQLite
-pnpm db:studio    # Open Drizzle Studio (database GUI)
-pnpm db:generate  # Generate migration files
-pnpm db:migrate   # Run migrations
-```
+For advanced users managing their own instance manually:
+
+| Command           | Purpose                                      |
+| ----------------- | -------------------------------------------- |
+| `pnpm db:push`    | Push schema changes directly to the database |
+| `pnpm db:migrate` | Run production migrations                    |
+| `pnpm db:studio`  | Open a GUI to browse your database content   |
+
+---
+
+## First Run Setup
+
+On your first visit, Labitat will guide you through the **Setup Wizard**. This process handles:
+
+1.  Creating the initial database schema.
+2.  Setting up the primary **Admin Account**.
+3.  Generating an encryption key (if one isn't provided).
+
+::: info Account Security
+All users created in Labitat are stored locally in your SQLite database. Labitat does not call home or use external authentication providers.
+:::
