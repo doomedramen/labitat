@@ -6,6 +6,20 @@ html {
   --bg-opacity: 1;
 }
 
+/* ── Shared gradient overlay (top-left accent → bottom-right base) ── */
+html[data-background]:not([data-background="none"]) body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--bg-pattern-accent) calc(var(--bg-opacity) * 100%), transparent),
+    var(--bg-pattern-base)
+  );
+  pointer-events: none;
+}
+
 /* ── Boxes ── */
 .bg-boxes {
   background-color: var(--bg-pattern-base);
