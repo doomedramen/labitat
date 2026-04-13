@@ -130,6 +130,38 @@ describe("plex definition", () => {
       expect(result.sessions![0].user).toBe("user&test");
     });
 
+    it("decodes numeric character references in titles", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/status/sessions")) {
+          return Promise.resolve({
+            ok: true,
+            text: () =>
+              Promise.resolve(
+                '<MediaContainer size="1"><Video title="&#193;ndale" type="episode" grandparentTitle="Euphoria (US)" parentIndex="3" index="1" viewOffset="1000" duration="2000"><User title="TestUser" /><Player state="playing" /></Video></MediaContainer>',
+              ),
+          });
+        }
+        if (url.includes("/library/sections") && !url.includes("/all")) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve("<MediaContainer />"),
+          });
+        }
+        return Promise.reject(new Error("Unexpected URL"));
+      });
+      vi.stubGlobal("fetch", mockFetch);
+
+      const result = await plexDefinition.fetchData!({
+        url: "https://plex.example.com",
+        token: "test-token",
+        showActiveStreams: "true",
+      });
+
+      expect(result.sessions).toHaveLength(1);
+      expect(result.sessions![0].title).toBe("S03E01 - Ándale");
+      expect(result.sessions![0].subtitle).toBe("Euphoria (US)");
+    });
+
     it("formats TV episodes with SxxEyy", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/status/sessions")) {

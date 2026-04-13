@@ -83,6 +83,9 @@ class PollingSupervisor {
     const now = Date.now();
     if (now < this.cacheExpiresAt) return this.itemCache;
 
+    // Preserve lastPolledAt from existing cache to maintain polling schedule
+    const existingLastPolled = new Map(this.itemCache.map((i) => [i.id, i.lastPolledAt]));
+
     try {
       const allItems = await db.select().from(items);
       this.itemCache = allItems
@@ -90,8 +93,6 @@ class PollingSupervisor {
         .map((item) => {
           const adapter = item.serviceType ? getService(item.serviceType) : null;
           const pollingMs = item.pollingMs ?? adapter?.defaultPollingMs ?? 30_000;
-          // Preserve existing lastPolledAt if item already in cache
-          const existing = this.itemCache.find((i) => i.id === item.id);
           return {
             id: item.id,
             serviceType: item.serviceType,
@@ -99,7 +100,7 @@ class PollingSupervisor {
             serviceUrl: item.serviceUrl,
             configEnc: item.configEnc,
             pollingMs,
-            lastPolledAt: existing?.lastPolledAt ?? 0,
+            lastPolledAt: existingLastPolled.get(item.id) ?? 0,
           };
         });
       // Cache for 10 seconds

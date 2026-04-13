@@ -124,12 +124,18 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
         // Determine media type for consistent formatting
         const mediaType = s.media_type ?? "video";
 
+        // Ensure season/episode are numbers (Tautulli API may return them as strings)
+        const seasonNumber =
+          typeof s.season_number === "string" ? parseInt(s.season_number, 10) : s.season_number;
+        const episodeNumber =
+          typeof s.episode_number === "string" ? parseInt(s.episode_number, 10) : s.episode_number;
+
         // Format title with SxxEyy for TV episodes (consistent with Plex/Jellyfin/Emby)
         const { title: formattedTitle, subtitle } = formatMediaTitle(s.title ?? "Unknown", {
           type: mediaType === "episode" ? "episode" : undefined,
           seriesName: s.grandparent_title,
-          season: s.season_number,
-          episode: s.episode_number,
+          season: seasonNumber,
+          episode: episodeNumber,
         });
 
         // Tautulli API returns view_offset and duration in milliseconds
