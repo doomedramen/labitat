@@ -20,10 +20,6 @@ const ROOT_DIR = join(__dirname, "..")
 const SOURCE_SVG = join(ROOT_DIR, "logo.svg")
 const SOURCE_SVG_TRANSPARENT = join(ROOT_DIR, "logo_transparent.svg")
 
-// Gradient: top-left (#0a84ff) → bottom-right (#5e5ce6)
-const GRADIENT_START = { r: 0x0a, g: 0x84, b: 0xff }
-const GRADIENT_END = { r: 0x5e, g: 0x5c, b: 0xe6 }
-
 // Define all required icon sizes
 const ICONS = [
   // ── App (public/) ─────────────────────────────────────────────────────────
