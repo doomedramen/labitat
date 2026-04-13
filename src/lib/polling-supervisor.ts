@@ -7,7 +7,7 @@ import { serverCache } from "./server-cache";
 
 const GRACE_PERIOD_MS = 5 * 60 * 1000; // 5 minutes
 const PING_TIMEOUT_MS = 10_000;
-const TICK_MS = 5_000; // Check every 5 seconds
+const MIN_TICK_MS = 100; // Minimum wake-up delay
 
 type PollingItem = {
   id: string;
@@ -20,7 +20,7 @@ type PollingItem = {
 };
 
 class PollingSupervisor {
-  private timer: ReturnType<typeof setInterval> | null = null;
+  private timer: ReturnType<typeof setTimeout> | null = null;
   private activeConnections = 0;
   private graceTimer: ReturnType<typeof setTimeout> | null = null;
   private itemCache: PollingItem[] = [];
@@ -55,19 +55,17 @@ class PollingSupervisor {
     }
   }
 
-  /** Start the supervisor tick */
+  /** Start the supervisor — first tick immediately, then reschedule dynamically */
   private start(): void {
     if (this.timer) return;
     console.log("[polling] Supervisor started");
-    this.timer = setInterval(() => this.tick(), TICK_MS);
-    // Run first tick immediately
     this.tick().catch(console.error);
   }
 
   /** Stop the supervisor */
   stop(): void {
     if (this.timer) {
-      clearInterval(this.timer);
+      clearTimeout(this.timer);
       this.timer = null;
       this.itemCache = [];
       this.cacheExpiresAt = 0;
@@ -114,17 +112,21 @@ class PollingSupervisor {
     return this.itemCache;
   }
 
-  /** Main tick — check all items and poll those that are due */
+  /** Main tick — check all items and poll those that are due, then reschedule for next due item */
   private async tick(): Promise<void> {
     const now = Date.now();
     const items = await this.getItems();
 
+    let nextDue = Infinity;
+
     for (const item of items) {
+      const dueAt = item.lastPolledAt + item.pollingMs;
+      if (dueAt < nextDue) nextDue = dueAt;
+
       // Skip if already running for this item
       if (this.running.has(item.id)) continue;
 
-      const due = item.lastPolledAt + item.pollingMs;
-      if (now >= due) {
+      if (now >= dueAt) {
         // Mark as polled immediately to prevent double-firing
         item.lastPolledAt = now;
         this.running.add(item.id);
@@ -136,6 +138,14 @@ class PollingSupervisor {
             this.running.delete(item.id);
           });
       }
+    }
+
+    // Reschedule: wake up exactly when the next item is due
+    if (items.length > 0 && this.activeConnections > 0) {
+      const delay = Math.max(nextDue - Date.now(), MIN_TICK_MS);
+      this.timer = setTimeout(() => this.tick(), delay);
+    } else {
+      this.timer = null;
     }
   }
 
