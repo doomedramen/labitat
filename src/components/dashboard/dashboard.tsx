@@ -36,7 +36,13 @@ import { cn } from "@/lib/utils";
 import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -484,6 +490,9 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           <DialogContent className="max-w-sm">
             <DialogHeader>
               <DialogTitle>Sign in</DialogTitle>
+              <DialogDescription>
+                Enter your credentials to access your dashboard.
+              </DialogDescription>
             </DialogHeader>
             <LoginForm />
           </DialogContent>
