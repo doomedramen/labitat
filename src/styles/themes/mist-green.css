@@ -7,7 +7,7 @@
   --background: oklch(0.96 0.025 145);
   --foreground: oklch(0.18 0.005 0);
   --bg-pattern-base: oklch(0.93 0.02 145);
-  --bg-pattern-accent: oklch(0.88 0.03 145);
+  --bg-pattern-accent: oklch(0.4 0.14 141.234);
   --card: oklch(0.99 0.015 145);
   --card-foreground: oklch(0.18 0.005 0);
   --popover: oklch(0.97 0.02 145);
@@ -44,7 +44,7 @@
   --background: oklch(0.18 0.015 145);
   --foreground: oklch(0.75 0.08 145);
   --bg-pattern-base: oklch(0.15 0.01 145);
-  --bg-pattern-accent: oklch(0.22 0.02 145);
+  --bg-pattern-accent: oklch(0.55 0.18 141);
   --card: oklch(0.22 0.02 145);
   --card-foreground: oklch(0.75 0.08 145);
   --popover: oklch(0.2 0.018 145);

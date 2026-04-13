@@ -169,7 +169,6 @@ test.describe("Background Picker", () => {
       "Boxes",
       "Circles",
       "Crosses",
-      "Diagonal",
       "Diagonal 2",
       "Diagonal 3",
       "Isometric",
@@ -209,14 +208,7 @@ test.describe("Background Picker", () => {
     await page.waitForTimeout(200);
     await page.getByRole("button", { name: "Background settings" }).click();
 
-    // Should see "Adjust scale & opacity" button
-    await expect(page.getByText("Adjust scale & opacity")).toBeVisible();
-
-    // Click to show controls
-    await page.getByText("Adjust scale & opacity").click();
-    await page.waitForTimeout(200);
-
-    // Sliders should be visible
+    // Scale and opacity sliders should be visible at the top
     await expect(page.getByTestId("scale-control")).toBeVisible();
     await expect(page.getByTestId("opacity-control")).toBeVisible();
   });

@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types";
-import type { DownloadItem } from "@/components/widgets";
+import type { DownloadItemData } from "@/components/widgets";
 import { formatBytes, formatTimeLeft } from "@/lib/utils/format";
 import { validateResponse, validateArrayResponse, parseBool } from "./validate";
 import { Film, Download, AlertTriangle, Search } from "lucide-react";
@@ -13,7 +13,7 @@ type RadarrData = {
   movies: number;
   showActiveDownloads?: boolean;
   enableQueue?: boolean;
-  downloads?: DownloadItem[];
+  downloads?: DownloadItemData[];
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
@@ -144,7 +144,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
         })
       : { totalRecords: 0 };
 
-    const downloads: DownloadItem[] = [];
+    const downloads: DownloadItemData[] = [];
     if (enableQueue && showActiveDownloads && queue.records) {
       for (const record of queue.records) {
         const size = record.size ?? 0;

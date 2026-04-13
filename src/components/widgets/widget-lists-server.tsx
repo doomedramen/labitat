@@ -1,36 +1,23 @@
 /**
- * Server-compatible wrappers for ActiveStreamList and DownloadList.
- * Uses dynamic imports to embed client components for SSR compatibility.
+ * Server-compatible widget exports.
+ * Re-exports all SSR-safe components from the folder structure.
  */
 
-import dynamic from "next/dynamic";
-import type { ActiveStream, DownloadItem } from "@/components/widgets";
+// List components (server-compatible)
+export { ActiveStreamList, ActiveStreamItem, formatDuration } from "./active-stream";
+export type { ActiveStream } from "./active-stream";
 
-// Dynamically import client components for SSR compatibility
-const ActiveStreamListClient = dynamic(
-  () => import("@/components/widgets").then((mod) => ({ default: mod.ActiveStreamList })),
-  { ssr: false },
-);
+export { DownloadList, DownloadItem } from "./download";
+export type { DownloadItemData } from "./download";
 
-const DownloadListClient = dynamic(
-  () => import("@/components/widgets").then((mod) => ({ default: mod.DownloadList })),
-  { ssr: false },
-);
+export { ListItem } from "./list-item";
+export type { ListItemProps, ListItemTrailingItem } from "./list-item";
 
-interface ActiveStreamListProps {
-  streams: ActiveStream[];
-}
+// Resource bars (server-compatible)
+export { ResourceBar, ResourceBarDual } from "./resource-bar";
+export type { ResourceBarProps, ResourceBarDualProps } from "./resource-bar";
 
-interface DownloadListProps {
-  downloads: DownloadItem[];
-}
-
-export function ActiveStreamList({ streams }: ActiveStreamListProps) {
-  if (!streams.length) return null;
-  return <ActiveStreamListClient streams={streams} />;
-}
-
-export function DownloadList({ downloads }: DownloadListProps) {
-  if (!downloads.length) return null;
-  return <DownloadListClient downloads={downloads} />;
-}
+// Stat cards (StatCard is server-compatible; StatGrid/StatCardSortable are client-only)
+export { StatCard } from "./stat-card";
+export { StatCardSortable, StatGrid } from "./stat-card";
+export type { StatItem, StatCardProps } from "./stat-card";

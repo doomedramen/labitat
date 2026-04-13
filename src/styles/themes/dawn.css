@@ -16,7 +16,7 @@
   --background: oklch(0.975 0.015 64); /* #FAF4ED base - lightened */
   --foreground: oklch(0.35 0.08 281); /* #575279 text - darker for contrast */
   --bg-pattern-base: oklch(0.95 0.012 64);
-  --bg-pattern-accent: oklch(0.9 0.02 64);
+  --bg-pattern-accent: oklch(0.55 0.1 306);
   --card: oklch(0.99 0.005 64); /* lighter overlay */
   --card-foreground: oklch(0.35 0.08 281);
   --popover: oklch(0.99 0.005 64);
@@ -53,7 +53,7 @@
   --background: oklch(0.2111 0.0485 281);
   --foreground: oklch(0.8976 0.038 281);
   --bg-pattern-base: oklch(0.18 0.04 281);
-  --bg-pattern-accent: oklch(0.26 0.055 281);
+  --bg-pattern-accent: oklch(0.7695 0.1127 299);
   --card: oklch(0.2465 0.0481 284);
   --card-foreground: oklch(0.8976 0.038 281);
   --popover: oklch(0.2465 0.0481 284);

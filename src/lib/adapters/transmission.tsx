@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types";
-import type { DownloadItem } from "@/components/widgets";
+import type { DownloadItemData } from "@/components/widgets";
 import { formatBytes, formatDuration } from "@/lib/utils/format";
 import { ArrowDown, ArrowUp, Download, Upload } from "lucide-react";
 
@@ -11,7 +11,7 @@ type TransmissionData = {
   seed: number;
   upload: number;
   showDownloads?: boolean;
-  downloads?: DownloadItem[];
+  downloads?: DownloadItemData[];
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 import { parseBool } from "./validate";
@@ -179,7 +179,7 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
     const leech = torrents.length - completed;
 
     // Build download list for active torrents (not completed, not stalled)
-    const downloads: DownloadItem[] = torrents
+    const downloads: DownloadItemData[] = torrents
       .filter((t: { percentDone: number; left: number }) => t.percentDone < 1 && t.left > 0)
       .sort(
         (a: { percentDone: number }, b: { percentDone: number }) => a.percentDone - b.percentDone,

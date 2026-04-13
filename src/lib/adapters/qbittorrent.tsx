@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types";
-import type { DownloadItem } from "@/components/widgets";
+import type { DownloadItemData } from "@/components/widgets";
 import { formatBytes, formatDuration } from "@/lib/utils/format";
 import { validateResponse, validateArrayResponse, parseBool } from "./validate";
 import { ArrowDown, ArrowUp, Download, List } from "lucide-react";
@@ -12,7 +12,7 @@ type QBittorrentData = {
   activeDownloads: number;
   queued: number;
   showDownloads?: boolean;
-  downloads?: DownloadItem[];
+  downloads?: DownloadItemData[];
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
@@ -159,7 +159,7 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       pausedDL: 5,
     };
 
-    const downloads: DownloadItem[] = torrents
+    const downloads: DownloadItemData[] = torrents
       .sort((a: { state: string; dlspeed: number }, b: { state: string; dlspeed: number }) => {
         // First sort by state priority
         const stateA = statePriority[a.state] ?? 99;

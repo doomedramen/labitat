@@ -31,27 +31,17 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
     label: "Circles",
     className: "bg-circles",
     previewLight:
-      "radial-gradient(circle at center, var(--bg-pattern-accent), var(--bg-pattern-base)), repeating-radial-gradient(circle at center, var(--bg-pattern-accent), var(--bg-pattern-accent), 10px, transparent 20px, transparent 10px)",
-    previewDark:
-      "radial-gradient(circle at center, var(--bg-pattern-accent), var(--bg-pattern-base)), repeating-radial-gradient(circle at center, var(--bg-pattern-accent), var(--bg-pattern-accent), 10px, transparent 20px, transparent 10px)",
+      "radial-gradient(circle at center, var(--bg-pattern-accent) 2px, transparent 2px)",
+    previewDark: "radial-gradient(circle at center, var(--bg-pattern-accent) 2px, transparent 2px)",
   },
   {
     id: "crosses",
     label: "Crosses",
     className: "bg-crosses",
     previewLight:
-      "radial-gradient(circle, transparent 20%, var(--bg-pattern-base) 20%, var(--bg-pattern-base) 80%, transparent 80%), linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px)",
+      "linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px), linear-gradient(90deg, var(--bg-pattern-accent) 2px, transparent 2px)",
     previewDark:
-      "radial-gradient(circle, transparent 20%, var(--bg-pattern-base) 20%, var(--bg-pattern-base) 80%, transparent 80%), linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px)",
-  },
-  {
-    id: "diagonal",
-    label: "Diagonal",
-    className: "bg-diagonal",
-    previewLight:
-      "repeating-linear-gradient(45deg, var(--bg-pattern-accent), var(--bg-pattern-accent) 5px, var(--bg-pattern-base) 5px, var(--bg-pattern-base) 25px)",
-    previewDark:
-      "repeating-linear-gradient(45deg, var(--bg-pattern-accent), var(--bg-pattern-accent) 5px, var(--bg-pattern-base) 5px, var(--bg-pattern-base) 25px)",
+      "linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px), linear-gradient(90deg, var(--bg-pattern-accent) 2px, transparent 2px)",
   },
   {
     id: "diagonal-2",

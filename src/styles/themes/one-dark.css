@@ -14,7 +14,7 @@
   --background: oklch(0.96 0.002 264);
   --foreground: oklch(0.25 0.03 259);
   --bg-pattern-base: oklch(0.94 0.0015 264);
-  --bg-pattern-accent: oklch(0.88 0.005 264);
+  --bg-pattern-accent: oklch(0.52 0.2 261);
   --card: oklch(0.99 0.001 264);
   --card-foreground: oklch(0.25 0.03 259);
   --popover: oklch(0.99 0.001 264);
@@ -51,7 +51,7 @@
   --background: oklch(0.2333 0.0248 264); /* #282C34          */
   --foreground: oklch(0.7331 0.021 258); /* #ABB2BF          */
   --bg-pattern-base: oklch(0.2 0.02 264);
-  --bg-pattern-accent: oklch(0.28 0.03 264);
+  --bg-pattern-accent: oklch(0.7167 0.1244 221);
   --card: oklch(0.2712 0.0246 266); /* #2C313C surface  */
   --card-foreground: oklch(0.7331 0.021 258);
   --popover: oklch(0.2712 0.0246 266);

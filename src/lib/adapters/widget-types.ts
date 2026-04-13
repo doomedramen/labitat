@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { DownloadItem, ActiveStream, StatItem } from "@/components/widgets";
+import type { DownloadItemData, ActiveStream, StatItem } from "@/components/widgets";
 
 /**
  * Standardized widget payload that adapters return.
@@ -10,7 +10,7 @@ export type WidgetPayload = {
   /** Stats to display in the stat grid */
   stats: StatItem[];
   /** Active download/import list (Sonarr, Radarr, Transmission, etc.) */
-  downloads?: DownloadItem[];
+  downloads?: DownloadItemData[];
   /** Active stream list (Plex, Tautulli, Jellyfin, etc.) */
   streams?: ActiveStream[];
   /** Custom component rendered below stats (for adapters that need custom UI like ResourceBars, charts, etc.) */

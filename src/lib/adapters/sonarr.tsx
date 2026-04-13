@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types";
-import type { DownloadItem } from "@/components/widgets";
+import type { DownloadItemData } from "@/components/widgets";
 import { formatBytes, formatTimeLeft } from "@/lib/utils/format";
 import { Tv, Download, AlertTriangle, Search } from "lucide-react";
 
@@ -12,7 +12,7 @@ type SonarrData = {
   series: number;
   showActiveDownloads?: boolean;
   enableQueue?: boolean;
-  downloads?: DownloadItem[];
+  downloads?: DownloadItemData[];
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 import { parseBool } from "./validate";
@@ -145,7 +145,7 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
     const missing = await missingRes.json();
     const cutoff = cutoffRes.ok ? await cutoffRes.json() : { totalRecords: 0 };
 
-    const downloads: DownloadItem[] = [];
+    const downloads: DownloadItemData[] = [];
     if (enableQueue && showActiveDownloads && queue.records) {
       for (const record of queue.records) {
         const size = record.size ?? 0;

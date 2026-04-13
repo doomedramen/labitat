@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types";
-import type { DownloadItem } from "@/components/widgets";
+import type { DownloadItemData } from "@/components/widgets";
 import { validateResponse, parseBool } from "./validate";
 import { ArrowDown, Clock, List } from "lucide-react";
 
@@ -11,7 +11,7 @@ type SABnzbdData = {
   queueSize: number;
   downloading: boolean;
   showDownloads?: boolean;
-  downloads?: DownloadItem[];
+  downloads?: DownloadItemData[];
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
@@ -99,7 +99,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
     const queue = data.queue ?? {};
     const slots = queue.slots ?? [];
 
-    const downloads: DownloadItem[] = slots.slice(0, 3).map((slot) => ({
+    const downloads: DownloadItemData[] = slots.slice(0, 3).map((slot) => ({
       title: slot.filename,
       progress: parseFloat(slot.percentage ?? "0"),
       timeLeft: slot.timeleft,
