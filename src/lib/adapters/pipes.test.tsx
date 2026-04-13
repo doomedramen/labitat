@@ -39,10 +39,11 @@ describe("pipes definition", () => {
 
   describe("renderWidget", () => {
     beforeEach(() => {
-      vi.stubGlobal(
-        "ResizeObserver",
-        vi.fn(() => ({ observe: vi.fn(), disconnect: vi.fn() }))
-      )
+      class MockResizeObserver {
+        observe = vi.fn()
+        disconnect = vi.fn()
+      }
+      vi.stubGlobal("ResizeObserver", MockResizeObserver)
       vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
         mockCtx as unknown as CanvasRenderingContext2D
       )

@@ -56,8 +56,8 @@ STATUS   : ONLINE
         write: ReturnType<typeof vi.fn>
         destroy: ReturnType<typeof vi.fn>
       }
-      mockSocket.write = vi.fn()
-      mockSocket.destroy = vi.fn()
+      mockSocket.write = vi.fn() as typeof mockSocket.write
+      mockSocket.destroy = vi.fn() as typeof mockSocket.destroy
 
       vi.mocked(net.createConnection).mockImplementation(
         (_options, callback) => {
@@ -90,8 +90,8 @@ STATUS   : ONLINE
         write: ReturnType<typeof vi.fn>
         destroy: ReturnType<typeof vi.fn>
       }
-      mockSocket.write = vi.fn()
-      mockSocket.destroy = vi.fn()
+      mockSocket.write = vi.fn() as typeof mockSocket.write
+      mockSocket.destroy = vi.fn() as typeof mockSocket.destroy
 
       vi.mocked(net.createConnection).mockImplementation(() => {
         // Simulate connection error

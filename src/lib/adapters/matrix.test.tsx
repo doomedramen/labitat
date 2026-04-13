@@ -32,10 +32,11 @@ describe("matrix definition", () => {
   describe("renderWidget", () => {
     beforeEach(() => {
       // Stub ResizeObserver and canvas context for jsdom
-      vi.stubGlobal(
-        "ResizeObserver",
-        vi.fn(() => ({ observe: vi.fn(), disconnect: vi.fn() }))
-      )
+      class MockResizeObserver {
+        observe = vi.fn()
+        disconnect = vi.fn()
+      }
+      vi.stubGlobal("ResizeObserver", MockResizeObserver)
       vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
         mockCtx as unknown as CanvasRenderingContext2D
       )
