@@ -4,6 +4,12 @@
 pre-commit:
   parallel: false
   commands:
+    oxlint:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: npx oxlint {staged_files}
+    cspell:
+      glob: "*"
+      run: npx cspell {staged_files}
     lint:
       glob: "*.{ts,tsx,js,jsx}"
       run: pnpm lint:fix {staged_files}

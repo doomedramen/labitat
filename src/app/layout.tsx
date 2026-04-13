@@ -80,7 +80,7 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: {
       capable: true,
       title: title,
-      statusBarStyle: "default",
+      statusBarStyle: "black-translucent",
     },
   }
 }
@@ -115,9 +115,7 @@ export default async function RootLayout({
       data-background={background}
       className={cn("font-sans antialiased", inter.variable, fontMono.variable)}
     >
-      <head>
-        <SplashScreenLinks />
-      </head>
+      <SplashScreenLinks />
       <body>
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
           <ThemeColorUpdater />

@@ -1,5 +1,5 @@
 import { test, expect, seedAndAuth } from "../fixtures"
-import { dragAndDrop } from "../helpers/dnd"
+import { dragAndDrop, dragAndDropManual } from "../helpers/dnd"
 
 test.describe("Drag and Drop Reordering", () => {
   test.beforeEach(async ({ page }) => {
@@ -60,11 +60,18 @@ test.describe("Drag and Drop Reordering", () => {
       .locator("..")
       .locator('[aria-label="Drag to reorder group"]')
 
+    // Listen for the Next.js server action POST (has next-action header)
     const responsePromise = page.waitForResponse(
-      (resp) => resp.request().method() === "POST" && resp.status() === 200
+      (resp) =>
+        resp.request().method() === "POST" &&
+        "next-action" in resp.request().headers()
     )
-    await dragAndDrop(page, groupBHandle, groupAHandle)
+    await dragAndDropManual(page, groupBHandle, groupAHandle)
     await responsePromise
+
+    // Verify the order changed
+    await expect(groups.nth(0)).toContainText("Group B")
+    await expect(groups.nth(1)).toContainText("Group A")
   })
 
   test("cancelling drag reverts position", async ({ page }) => {

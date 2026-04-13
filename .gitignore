@@ -41,3 +41,6 @@ next-env.d.ts
 homepage/
 /docs/.vitepress/dist
 /.unlighthouse
+
+*storybook.log
+storybook-static

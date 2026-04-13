@@ -1,3 +1,9 @@
+import withBundleAnalyzer from "@next/bundle-analyzer"
+
+const analyze = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+})
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
@@ -24,13 +30,13 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     optimizePackageImports: [
-      '@dnd-kit/core',
-      '@dnd-kit/sortable',
-      '@dnd-kit/utilities',
-      'lucide-react',
-      'recharts',
+      "@dnd-kit/core",
+      "@dnd-kit/sortable",
+      "@dnd-kit/utilities",
+      "lucide-react",
+      "recharts",
     ],
   },
 }
 
-export default nextConfig
+export default analyze(nextConfig)

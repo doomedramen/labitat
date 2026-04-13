@@ -333,7 +333,7 @@ export function ItemDialog({
       pollingMs: item?.pollingMs ? item.pollingMs / 1000 : 10,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
-  }, [item?.id, item])
+  }, [item?.id, item, open])
 
   // Reset form and local state when dialog closes
   useEffect(() => {
