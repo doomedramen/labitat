@@ -1,8 +1,6 @@
 [data-palette="nord"] {
   --background: oklch(0.97 0.01 255);
   --foreground: oklch(0.22 0.045 264);
-  --bg-pattern-base: oklch(0.95 0.008 255);
-  --bg-pattern-accent: oklch(0.52 0.11 246);
   --card: oklch(0.99 0.005 255);
   --card-foreground: oklch(0.22 0.045 264);
   --popover: oklch(0.99 0.005 255);
@@ -37,8 +35,6 @@
 [data-palette="nord"].dark {
   --background: oklch(0.2584 0.039 264);
   --foreground: oklch(0.8831 0.0185 255);
-  --bg-pattern-base: oklch(0.22 0.03 264);
-  --bg-pattern-accent: oklch(0.778 0.0736 211);
   --card: oklch(0.3202 0.0378 268);
   --card-foreground: oklch(0.8831 0.0185 255);
   --popover: oklch(0.3202 0.0378 268);

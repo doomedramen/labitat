@@ -4,7 +4,6 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SORTED_BACKGROUNDS } from "@/lib/backgrounds";
 import { useBackground } from "@/hooks/use-background";
-import { useThemeCookie } from "@/components/theme-provider";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
 
@@ -14,14 +13,12 @@ interface BackgroundSwitcherProps {
 
 export function BackgroundSwitcher({ onSelect }: BackgroundSwitcherProps) {
   const { background, setBackground, scale, setScale, opacity, setOpacity } = useBackground();
-  const { resolvedTheme } = useThemeCookie();
 
   function handleChange(id: string) {
     setBackground(id);
     onSelect?.();
   }
 
-  const isDark = resolvedTheme === "dark";
   const showControls = background !== "none";
 
   return (
@@ -78,11 +75,10 @@ export function BackgroundSwitcher({ onSelect }: BackgroundSwitcherProps) {
             >
               {/* Preview swatch: 90x90 */}
               <div
-                className="h-[90px] w-[90px] shrink-0 overflow-hidden rounded-md border border-border/50"
-                style={{
-                  backgroundImage: isDark ? bg.previewDark : bg.previewLight,
-                  backgroundColor: isDark ? "var(--bg-pattern-base)" : "var(--bg-pattern-base)",
-                }}
+                className={cn(
+                  "h-[90px] w-[90px] shrink-0 overflow-hidden rounded-md border border-border/50",
+                  bg.className,
+                )}
               />
               {/* Label with checkmark */}
               <div className="flex w-full items-center justify-between">

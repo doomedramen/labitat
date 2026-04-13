@@ -1,8 +1,6 @@
 [data-palette="default"] {
   --background: oklch(0.985 0.008 244.2507);
   --foreground: oklch(0.25 0.04 259.7328);
-  --bg-pattern-base: oklch(0.97 0.005 244.2507);
-  --bg-pattern-accent: oklch(0.65 0.22 149.5793);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.25 0.04 259.7328);
   --popover: oklch(1 0 0);
@@ -37,8 +35,6 @@
 [data-palette="default"].dark {
   --background: oklch(0.2077 0.0398 265.7549);
   --foreground: oklch(0.8717 0.0093 258.3382);
-  --bg-pattern-base: oklch(0.18 0.03 265.7549);
-  --bg-pattern-accent: oklch(0.7729 0.1535 163.2231);
   --card: oklch(0.2795 0.0368 260.031);
   --card-foreground: oklch(0.8717 0.0093 258.3382);
   --popover: oklch(0.2795 0.0368 260.031);

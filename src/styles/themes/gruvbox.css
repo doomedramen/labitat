@@ -15,8 +15,6 @@
   /* Light — warm Gruvbox light with retro earth tones */
   --background: oklch(0.96 0.04 94);
   --foreground: oklch(0.22 0.008 0);
-  --bg-pattern-base: oklch(0.93 0.03 94);
-  --bg-pattern-accent: oklch(0.52 0.1 192);
   --card: oklch(0.98 0.025 89);
   --card-foreground: oklch(0.22 0.008 0);
   --popover: oklch(0.98 0.025 89);
@@ -51,8 +49,6 @@
 [data-palette="gruvbox"].dark {
   --background: oklch(0.2109 0 0); /* #282828 bg0         */
   --foreground: oklch(0.8879 0.0645 89); /* #EBDBB2 fg1 (cream) */
-  --bg-pattern-base: oklch(0.18 0 0);
-  --bg-pattern-accent: oklch(0.6542 0.0626 182);
   --card: oklch(0.2906 0.0152 57); /* #3C3836 bg1         */
   --card-foreground: oklch(0.8879 0.0645 89);
   --popover: oklch(0.2906 0.0152 57);

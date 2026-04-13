@@ -9,8 +9,6 @@
   /* Light — soft sakura blossom with glowing pink accents */
   --background: oklch(0.985 0.012 340);
   --foreground: oklch(0.25 0.04 340);
-  --bg-pattern-base: oklch(0.96 0.01 340);
-  --bg-pattern-accent: oklch(0.65 0.22 345);
   --card: oklch(1 0.005 340);
   --card-foreground: oklch(0.25 0.04 340);
   --popover: oklch(1 0.005 340);
@@ -45,8 +43,6 @@
 [data-palette="sakura-blossom-neon"].dark {
   --background: oklch(0.256 0.023 280.937);
   --foreground: oklch(0.806 0.115 340.709 / 87%);
-  --bg-pattern-base: oklch(0.22 0.02 280.937);
-  --bg-pattern-accent: oklch(0.828 0.128 341.206);
   --card: oklch(0.226 0.021 280.476);
   --card-foreground: oklch(0.875 0.09 340.4 / 85%);
   --popover: oklch(0.263 0.015 256.813);

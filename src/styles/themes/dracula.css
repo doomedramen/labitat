@@ -10,8 +10,6 @@
   /* Light — Dracula-inspired light with vibrant neon accents */
   --background: oklch(0.96 0.008 280);
   --foreground: oklch(0.25 0.04 277);
-  --bg-pattern-base: oklch(0.94 0.006 280);
-  --bg-pattern-accent: oklch(0.65 0.25 349);
   --card: oklch(0.99 0.004 280);
   --card-foreground: oklch(0.25 0.04 277);
   --popover: oklch(0.99 0.004 280);
@@ -46,8 +44,6 @@
 [data-palette="dracula"].dark {
   --background: oklch(0.2291 0.0428 277); /* #282A36              */
   --foreground: oklch(0.9761 0.005 106); /* #F8F8F2              */
-  --bg-pattern-base: oklch(0.2 0.035 277);
-  --bg-pattern-accent: oklch(0.7731 0.203 349);
   --card: oklch(0.3722 0.0399 277); /* #44475A current-line */
   --card-foreground: oklch(0.9761 0.005 106);
   --popover: oklch(0.3722 0.0399 277);
