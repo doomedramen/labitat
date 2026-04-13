@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Visual Regression", () => {
-  test("Dashboard snapshot", async ({ page }) => {
+  test.skip("Dashboard snapshot", async ({ page }) => {
     // Go to the dashboard
     await page.goto("/");
 

@@ -93,6 +93,7 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
     },
   ],
   async fetchData(config) {
+    if (!config.url) throw new Error("URL is required");
     const baseUrl = config.url.replace(/\/$/, "");
 
     // Login

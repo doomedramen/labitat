@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import type { WidgetPayload } from "@/lib/adapters/widget-types";
 import { useWidgetDisplay } from "@/components/dashboard/item/widget-display-context";
+import { ActiveStreamList, DownloadList } from "./widget-lists-server";
 
 interface WidgetContainerProps {
   payload: WidgetPayload;
@@ -77,26 +78,6 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
       {hasDownloads && <DownloadList downloads={payload.downloads!} />}
 
       {payload.customComponent}
-    </div>
-  );
-}
-
-// Minimal server-compatible versions of stream/download lists
-// These are simple renders — full interactivity comes from client hydration
-function ActiveStreamList({ streams }: { streams: unknown[] }) {
-  if (!streams.length) return null;
-  return (
-    <div className="text-xs text-muted-foreground">
-      {streams.length} active stream{streams.length !== 1 ? "s" : ""}
-    </div>
-  );
-}
-
-function DownloadList({ downloads }: { downloads: unknown[] }) {
-  if (!downloads.length) return null;
-  return (
-    <div className="text-xs text-muted-foreground">
-      {downloads.length} download{downloads.length !== 1 ? "s" : ""}
     </div>
   );
 }
