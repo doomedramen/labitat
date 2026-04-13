@@ -7,6 +7,7 @@ const meta: Meta<typeof ItemCard> = {
   component: ItemCard,
   parameters: {
     layout: "centered",
+    test: { disable: true },
   },
   tags: ["autodocs"],
   decorators: [

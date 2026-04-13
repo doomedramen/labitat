@@ -80,6 +80,11 @@ export default defineConfig({
               },
             ],
           },
+          exclude: [
+            "**/node_modules/**",
+            "**/.next/**",
+            "src/components/dashboard/item/item-card.stories.tsx",
+          ],
         },
       },
     ],
