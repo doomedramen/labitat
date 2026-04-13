@@ -52,6 +52,12 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
     return null
   }
 
+  // Filter out unused stat cards when not in edit mode
+  const unusedIds = new Set(displaySettings?.statCardOrder?.unused ?? [])
+  const visibleStats = isEditMode
+    ? payload.stats
+    : payload.stats.filter((stat) => !unusedIds.has(stat.id))
+
   return (
     <div className="space-y-2">
       {hasStats &&
@@ -63,7 +69,7 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
             displayMode={displaySettings?.statDisplayMode ?? "label"}
           />
         ) : (
-          <WidgetStatGrid items={payload.stats} />
+          <WidgetStatGrid items={visibleStats} />
         ))}
 
       {hasStreams && <ActiveStreamList streams={payload.streams!} />}
