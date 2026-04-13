@@ -1,14 +1,11 @@
-"use client";
-
 /**
- * Client-only StatGrid component.
- * Wraps StatCards in a DnD context when sortable+editMode are enabled.
+ * Server-compatible StatGrid component.
+ * Renders stat cards in a grid layout.
+ * Delegates to StatGridClient when DnD is enabled.
  */
 
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
-import type { DragEndEvent } from "@dnd-kit/core";
 import { StatCard } from "./stat-card";
+import { StatGridClient } from "./stat-grid-client";
 import type { StatItem } from "./types";
 import type { StatDisplayMode } from "@/lib/types";
 
@@ -31,22 +28,17 @@ export function StatGrid({
 }: StatGridProps) {
   const dndEnabled = sortable && editMode && items.length > 1;
 
-  const sensor = useSensor(PointerSensor, {
-    activationConstraint: { distance: 8 },
-  });
-  const sensors = useSensors(sensor);
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || !onReorder) return;
-    if (active.id !== over.id) {
-      onReorder(active.id as string, over.id as string);
-    }
-  };
-
   if (items.length === 0) return null;
 
-  const inner = (
+  // Client path: DnD enabled — delegate to client component
+  if (dndEnabled) {
+    return (
+      <StatGridClient items={items} cols={cols} displayMode={displayMode} onReorder={onReorder} />
+    );
+  }
+
+  // Server path: no DnD — render directly
+  return (
     <div
       className="grid gap-1.5 text-xs"
       style={{
@@ -58,22 +50,10 @@ export function StatGrid({
           key={item.id}
           {...item}
           displayMode={displayMode}
-          sortable={dndEnabled}
+          sortable={false}
           editMode={editMode}
         />
       ))}
     </div>
   );
-
-  if (dndEnabled) {
-    return (
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={items.map((i) => i.id)} strategy={horizontalListSortingStrategy}>
-          {inner}
-        </SortableContext>
-      </DndContext>
-    );
-  }
-
-  return inner;
 }
