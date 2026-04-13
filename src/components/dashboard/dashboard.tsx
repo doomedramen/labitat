@@ -375,7 +375,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
-                  <Image className="h-4 w-4" />
+                  <Image className="h-4 w-4" alt="Background settings icon" />
                   <span className="sr-only">Background settings</span>
                 </Button>
               </DropdownMenuTrigger>
