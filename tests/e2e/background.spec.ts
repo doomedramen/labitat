@@ -131,8 +131,9 @@ test.describe("Background Picker", () => {
     const count = await swatches.count();
     expect(count).toBeGreaterThan(1);
 
-    // Verify 2-column grid layout
-    const grid = page.locator('[class*="grid-cols-2"]');
+    // Verify 2-column grid layout (scoped to background dropdown)
+    const dropdown = page.locator("[data-radix-dropdown-menu-content]");
+    const grid = dropdown.locator("div.grid-cols-2");
     await expect(grid).toBeVisible();
   });
 
