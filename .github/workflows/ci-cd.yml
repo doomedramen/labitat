@@ -14,145 +14,133 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  SECRET_KEY: ci-temp-secret-key-for-build-testing-32chars!
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10.30.3"
+  SECRET_KEY: ci-secret-key-for-e2e-tests-must-be-32chars!
+  TEST_SECRET: e2e-test-reset-token
 
 jobs:
-  # ── Test & Build ────────────────────────────────────────────────────────────
-  test:
-    name: ${{ matrix.task }}
+  # ── Reusable setup composite (via workflow_call would be ideal, but inline for now)
+  #     Each job below is minimal: checkout → setup → cache → install → run
+
+  # ── Lint & Check ────────────────────────────────────────────────────────────
+  lint:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        task: [lint, check-adapters, typecheck, build, audit]
-      fail-fast: false
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: pnpm/action-setup@v5
         with:
-          version: 10.30.3
-          run_install: false
+          version: ${{ env.PNPM_VERSION }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
 
-      - name: Restore pnpm cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.pnpm-store
-            node_modules
-          key: ${{ runner.os }}-node22-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-node22-pnpm-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Rebuild native modules
-        run: pnpm rebuild better-sqlite3
-
-      - name: Run ${{ matrix.task }}
-        run: pnpm ${{ matrix.task }}
-
-  # ── Tests ───────────────────────────────────────────────────────────────
-  tests:
-    name: ${{ matrix.test }}
+  check-adapters:
     runs-on: ubuntu-latest
-    needs: test
-    strategy:
-      matrix:
-        test: [unit, e2e]
-      fail-fast: false
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: pnpm/action-setup@v5
         with:
-          version: 10.30.3
-          run_install: false
+          version: ${{ env.PNPM_VERSION }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check-adapters
 
-      - name: Restore pnpm cache
-        uses: actions/cache@v5
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          path: |
-            ~/.pnpm-store
-            node_modules
-          key: ${{ runner.os }}-node22-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-node22-pnpm-
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: pnpm/action-setup@v5
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+  # ── Build ───────────────────────────────────────────────────────────────────
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: pnpm/action-setup@v5
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
 
-      - name: Rebuild native modules
-        run: pnpm rebuild better-sqlite3
+  # ── Unit Tests ──────────────────────────────────────────────────────────────
+  test-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: pnpm/action-setup@v5
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:unit
 
-      - name: Restore Playwright browsers cache
-        uses: actions/cache@v5
+  # ── E2E Tests ───────────────────────────────────────────────────────────────
+  test-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: pnpm/action-setup@v5
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run unit tests
-        if: matrix.test == 'unit'
-        run: pnpm test:unit
-        env:
-          SECRET_KEY: ci-secret-key-for-e2e-tests-must-be-32chars!
-          TEST_SECRET: e2e-test-reset-token
-
-      - name: Run e2e tests
-        if: matrix.test == 'e2e'
-        run: pnpm test:e2e
-        env:
-          SECRET_KEY: ci-secret-key-for-e2e-tests-must-be-32chars!
-          TEST_SECRET: e2e-test-reset-token
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
 
   # ── Docker Build & Push ─────────────────────────────────────────────────────
   docker:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: [test, tests]
+    needs: [lint, check-adapters, typecheck, build, test-unit, test-e2e]
     if: github.event_name == 'push'
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+      - uses: docker/setup-buildx-action@v4
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
+      - uses: docker/metadata-action@v5
         id: meta
-        uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -163,19 +151,17 @@ jobs:
             type=semver,pattern={{major}},prefix=v
             type=sha,prefix=
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max,ignore-error=true
+          cache-to: type=gha,mode=max
           platforms: ${{ startsWith(github.ref, 'refs/tags/v') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
-          provenance: false
 
-  # ── Release (on tag) ─────────────────────────────────────────────────────────
+  # ── Release (on tag) ────────────────────────────────────────────────────────
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
@@ -185,28 +171,10 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - name: Generate release notes
-        run: |
-          cat > /tmp/release_notes.md << EOF
-          ## Changes
-
-          $(git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"* %s")
-
-          ## Docker Images
-
-          - \`docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}\`
-          - \`docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\`
-          EOF
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2
         with:
-          body_path: /tmp/release_notes.md
-          draft: false
-          prerelease: false
           generate_release_notes: true

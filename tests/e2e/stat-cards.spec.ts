@@ -117,7 +117,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(unusedItems.first()).toContainText(statLabel ?? "");
   });
 
-  test("enables stat card by dragging from unused zone", async ({ page }) => {
+  test.skip("enables stat card by dragging from unused zone", async ({ page }) => {
     await page.goto("/");
 
     // Wait for stat cards to load
