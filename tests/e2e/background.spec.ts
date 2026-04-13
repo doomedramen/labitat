@@ -191,7 +191,7 @@ test.describe("Background Picker", () => {
     ];
 
     for (const bg of expectedBackgrounds) {
-      await expect(page.getByText(bg)).toBeVisible();
+      await expect(page.getByText(bg, { exact: true })).toBeVisible();
     }
   });
 
