@@ -65,7 +65,11 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    }
+  html:not([data-background]) body,
+  html[data-background="none"] body {
+    @apply bg-background;
     }
   html {
     @apply font-sans;
