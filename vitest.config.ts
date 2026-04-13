@@ -35,12 +35,10 @@ export default defineConfig({
         "components/ui/**", // shadcn components (third-party UI library)
       ],
       thresholds: {
-        // Baseline: 27.86% statements, 52.76% branches, 31.21% functions
-        // These thresholds will be increased as we add more tests
-        lines: 27,
-        functions: 30,
-        branches: 50,
-        statements: 27,
+        lines: 70,
+        functions: 60,
+        branches: 60,
+        statements: 70,
       },
     },
     projects: [

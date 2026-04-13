@@ -93,7 +93,9 @@ export async function decrypt(encrypted: string): Promise<string> {
   const iv = Buffer.from(ivB64, "base64")
   const authTag = Buffer.from(authTagB64, "base64")
 
-  const decipher = createDecipheriv(ALGORITHM, key, iv)
+  const decipher = createDecipheriv(ALGORITHM, key, iv, {
+    authTagLength: 16,
+  })
   decipher.setAuthTag(authTag)
 
   let plaintext = decipher.update(ciphertextB64, "base64", "utf8")
