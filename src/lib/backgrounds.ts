@@ -18,6 +18,15 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
     previewDark: "var(--background)",
   },
   {
+    id: "gradient",
+    label: "Gradient",
+    className: "bg-gradient",
+    previewLight:
+      "linear-gradient(135deg, var(--bg-pattern-base), color-mix(in srgb, var(--bg-pattern-accent) 100%, transparent))",
+    previewDark:
+      "linear-gradient(135deg, var(--bg-pattern-base), color-mix(in srgb, var(--bg-pattern-accent) 100%, transparent))",
+  },
+  {
     id: "boxes",
     label: "Boxes",
     className: "bg-boxes",

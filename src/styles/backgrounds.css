@@ -6,18 +6,14 @@ html {
   --bg-opacity: 1;
 }
 
-/* ── Shared gradient overlay (top-left accent → bottom-right base) ── */
-html[data-background]:not([data-background="none"]) body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(
+/* ── Gradient ── */
+html[data-background="gradient"] body {
+  background-color: var(--bg-pattern-base);
+  background-image: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--bg-pattern-accent) calc(var(--bg-opacity) * 100%), transparent),
-    var(--bg-pattern-base)
+    var(--bg-pattern-base),
+    color-mix(in srgb, var(--bg-pattern-accent) calc(var(--bg-opacity) * 100%), transparent)
   );
-  pointer-events: none;
 }
 
 /* ── Boxes ── */
