@@ -154,7 +154,10 @@
     "customise",
     "SVGSVG",
     "Héllo",
-    "wörld"
+    "wörld",
+    "Buildx",
+    "buildx",
+    "softprops"
   ],
   "ignorePaths": [
     "node_modules",
