@@ -66,7 +66,6 @@ html[data-background="circles"] body {
 /* ── Crosses ── */
 .bg-crosses {
   background-color: var(--background);
-  opacity: var(--bg-opacity);
   background:
     radial-gradient(circle, transparent 20%, var(--background) 20%, var(--background) 80%, transparent 80%, transparent),
     radial-gradient(circle, transparent 20%, var(--background) 20%, var(--background) 80%, transparent 80%, transparent) calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
@@ -81,7 +80,6 @@ html[data-background="circles"] body {
 
 html[data-background="crosses"] body {
   background-color: var(--background);
-  opacity: var(--bg-opacity);
   background:
     radial-gradient(circle, transparent 20%, var(--background) 20%, var(--background) 80%, transparent 80%, transparent),
     radial-gradient(circle, transparent 20%, var(--background) 20%, var(--background) 80%, transparent 80%, transparent) calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
