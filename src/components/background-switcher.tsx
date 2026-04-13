@@ -25,7 +25,7 @@ export function BackgroundSwitcher({ onSelect }: BackgroundSwitcherProps) {
   const showControls = background !== "none";
 
   return (
-    <div className="flex flex-col gap-1.5 p-1">
+    <div className="flex flex-col p-1">
       {/* Scale & Opacity sliders - shown at top when a background is selected */}
       {showControls && (
         <>
@@ -61,37 +61,39 @@ export function BackgroundSwitcher({ onSelect }: BackgroundSwitcherProps) {
         </>
       )}
 
-      {/* Background grid */}
-      <div className="grid grid-cols-2 gap-1.5">
-        {SORTED_BACKGROUNDS.map((bg) => (
-          <DropdownMenuItem
-            key={bg.id}
-            className={cn(
-              "flex flex-col gap-1 rounded-md p-1.5",
-              background === bg.id && "bg-accent",
-            )}
-            onSelect={(e) => {
-              e.preventDefault();
-              handleChange(bg.id);
-            }}
-          >
-            {/* Preview swatch: 90x90 */}
-            <div
+      {/* Scrollable background list */}
+      <div className="max-h-[400px] overflow-y-auto">
+        <div className="grid grid-cols-2 gap-1.5">
+          {SORTED_BACKGROUNDS.map((bg) => (
+            <DropdownMenuItem
+              key={bg.id}
               className={cn(
-                "h-[90px] w-[90px] shrink-0 overflow-hidden rounded-md border border-border/50",
-                bg.className,
+                "flex flex-col gap-1 rounded-md p-1.5",
+                background === bg.id && "bg-accent",
               )}
-              style={{
-                backgroundColor: isDark ? "var(--bg-pattern-base)" : "var(--bg-pattern-base)",
+              onSelect={(e) => {
+                e.preventDefault();
+                handleChange(bg.id);
               }}
-            />
-            {/* Label with checkmark */}
-            <div className="flex w-full items-center justify-between">
-              <span className="text-xs">{bg.label}</span>
-              {background === bg.id && <Check className="h-3.5 w-3.5 text-primary" />}
-            </div>
-          </DropdownMenuItem>
-        ))}
+            >
+              {/* Preview swatch: 90x90 */}
+              <div
+                className={cn(
+                  "h-[90px] w-[90px] shrink-0 overflow-hidden rounded-md border border-border/50",
+                  bg.className,
+                )}
+                style={{
+                  backgroundColor: isDark ? "var(--bg-pattern-base)" : "var(--bg-pattern-base)",
+                }}
+              />
+              {/* Label with checkmark */}
+              <div className="flex w-full items-center justify-between">
+                <span className="text-xs">{bg.label}</span>
+                {background === bg.id && <Check className="h-3.5 w-3.5 text-primary" />}
+              </div>
+            </DropdownMenuItem>
+          ))}
+        </div>
       </div>
     </div>
   );
