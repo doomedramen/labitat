@@ -141,14 +141,20 @@ test.describe("Stat Card Reordering and Visibility", () => {
     const unusedZone = dialog.locator('[aria-label="Unused stat cards"]');
     await dragAndDropInDialog(page, firstHandle, unusedZone);
 
+    // Wait for drag animation and state update
+    await page.waitForTimeout(500);
+
     // Verify it's in unused
     const unusedItems = dialog.locator('[data-testid="unused-stat-card"]');
     await expect(unusedItems).toHaveCount(1);
     const unusedLabel = await unusedItems.first().textContent();
 
-    // Now drag it back to active zone
-    const unusedHandle = dialog.locator('[aria-label="Drag to reorder stat card"]').last();
+    // Now drag it back to active zone - re-query to ensure we get the freshly rendered element
+    const unusedHandle = unusedItems.first();
+    await expect(unusedHandle).toBeVisible();
+
     const activeStatCard = dialog.locator('[data-testid="stat-card"]').first();
+    await expect(activeStatCard).toBeVisible();
 
     await dragAndDropInDialog(page, unusedHandle, activeStatCard);
 

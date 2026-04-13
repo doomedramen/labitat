@@ -18,7 +18,12 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { useSortable, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
+import {
+  useSortable,
+  horizontalListSortingStrategy,
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useCallback, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -277,16 +282,21 @@ function UnusedZone({ items, displayMode }: { items: StatItem[]; displayMode: St
         <span>Unused ({items.length})</span>
       </div>
       {items.length > 0 ? (
-        <div
-          className="grid gap-1.5 text-xs"
-          style={{
-            gridTemplateColumns: "repeat(auto-fit, minmax(60px, 1fr))",
-          }}
+        <SortableContext
+          items={items.map((i: StatItem) => i.id)}
+          strategy={horizontalListSortingStrategy}
         >
-          {items.map((item) => (
-            <UnusedStatCard key={item.id} item={item} displayMode={displayMode} />
-          ))}
-        </div>
+          <div
+            className="grid gap-1.5 text-xs"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(60px, 1fr))",
+            }}
+          >
+            {items.map((item) => (
+              <UnusedStatCard key={item.id} item={item} displayMode={displayMode} />
+            ))}
+          </div>
+        </SortableContext>
       ) : (
         <p className="text-center text-xs text-muted-foreground/60">Drop here to hide</p>
       )}
