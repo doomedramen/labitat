@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Shared widget components for service adapters.
  * Barrel file that re-exports server-compatible and client components.
@@ -11,6 +9,9 @@
  *
  * Client-only (use dnd-kit hooks):
  *   - StatGrid, StatCardSortable
+ *
+ * Note: This barrel file itself is server-compatible. Import client components
+ * directly when needed in client components.
  */
 
 // ── Server-compatible list widgets ────────────────────────────────────────────

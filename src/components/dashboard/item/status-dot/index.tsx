@@ -1,15 +1,16 @@
 import { cn } from "@/lib/utils";
 import type { ServiceStatus } from "@/lib/adapters/types";
+import { StatusDotClient } from "./status-dot-client";
 
-interface StatusDotServerProps {
+interface StatusDotProps {
   status: ServiceStatus;
 }
 
 /**
- * Server-compatible StatusDot.
- * Renders just the dot without HoverCard interactivity.
+ * StatusDot - Server component that delegates to client version when tooltip is needed.
+ * Renders just the dot for simple statuses, wraps with HoverCard for error/degraded/slow states.
  */
-export function StatusDotServer({ status }: StatusDotServerProps) {
+export function StatusDot({ status }: StatusDotProps) {
   const colors = {
     unknown: "bg-muted-foreground/30",
     healthy: "bg-green-500",
@@ -37,7 +38,7 @@ export function StatusDotServer({ status }: StatusDotServerProps) {
         ? `${status.reason} (${status.timeoutMs} ms)`
         : undefined;
 
-  return (
+  const dot = (
     <div
       role="status"
       aria-label={reason ? `${labels[status.state]}: ${reason}` : labels[status.state]}
@@ -52,4 +53,11 @@ export function StatusDotServer({ status }: StatusDotServerProps) {
       )}
     />
   );
+
+  // Delegate to client component when tooltip is needed (uses HoverCard)
+  if (reason) {
+    return <StatusDotClient dot={dot} reason={reason} />;
+  }
+
+  return dot;
 }

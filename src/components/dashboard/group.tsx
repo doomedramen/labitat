@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import type { GroupWithCache } from "@/lib/types";
 import { ItemCard } from "./item/item-card";

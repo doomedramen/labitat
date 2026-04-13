@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { getService } from "@/lib/adapters";
 import type { ItemWithCache } from "@/lib/types";
 import { ItemIcon } from "./item-icon";
-import { StatusDotServer } from "./status-dot-server";
+import { StatusDot } from "./status-dot";
 import { WidgetRenderer } from "./widget-renderer";
 import { BlockLinkPropagationServer } from "./block-link-propagation-server";
 import type { ServiceStatus } from "@/lib/adapters/types";
@@ -104,7 +104,7 @@ function ItemCardContent({
     >
       {!editMode && hasStatus && !item.cleanMode && (
         <BlockLinkPropagationServer className="absolute top-3 right-3 transition-all duration-300 group-hover/item:scale-110">
-          <StatusDotServer status={serviceStatus} />
+          <StatusDot status={serviceStatus} />
         </BlockLinkPropagationServer>
       )}
 

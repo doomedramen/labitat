@@ -1,5 +1,3 @@
-"use client";
-
 import type { GlancesProcessesData } from "@/lib/adapters/glances-processes";
 import { cn } from "@/lib/utils";
 import { Circle, AlertTriangle, Pause, StopCircle } from "lucide-react";
