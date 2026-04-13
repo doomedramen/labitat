@@ -32,11 +32,36 @@ import { useWebHaptics } from "web-haptics/react";
 import { createItem, updateItem, getItemConfig } from "@/actions/items";
 import { getAllServices } from "@/lib/adapters";
 import type { ServiceDefinition } from "@/lib/adapters";
+import type { WidgetPayload } from "@/lib/adapters/widget-types";
 import type { ItemWithCache, GroupWithItems } from "@/lib/types";
-import { WidgetDisplayProvider } from "@/components/dashboard/item/widget-display-context";
-import { WidgetContainer } from "@/components/widgets";
+import {
+  WidgetDisplayProvider,
+  useWidgetDisplay,
+} from "@/components/dashboard/item/widget-display-context";
+import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid";
 import { parseStatCardOrder, type StatCardOrder } from "@/hooks/use-stat-card-order";
 import { useLiveDataEntry } from "@/hooks/use-live-data";
+
+/**
+ * Stat card editor that only shows stat cards for reordering.
+ * Excludes list items (streams, downloads) to prevent dialog overflow.
+ */
+function StatCardEditor({ payload }: { payload: WidgetPayload }) {
+  const displaySettings = useWidgetDisplay();
+
+  if (payload.loading || payload.error || payload.stats.length === 0) {
+    return null;
+  }
+
+  return (
+    <EditableStatGrid
+      items={payload.stats}
+      order={displaySettings?.statCardOrder ?? null}
+      onOrderChange={displaySettings?.onOrderChange ?? (() => {})}
+      displayMode={displaySettings?.statDisplayMode ?? "label"}
+    />
+  );
+}
 
 const itemSchema = z.object({
   label: z.string().min(1, "Label is required."),
@@ -701,7 +726,7 @@ export function ItemDialog({
                       }}
                     >
                       {selectedService.toPayload && widgetData ? (
-                        <WidgetContainer payload={selectedService.toPayload(widgetData)} />
+                        <StatCardEditor payload={selectedService.toPayload(widgetData)} />
                       ) : null}
                     </WidgetDisplayProvider>
                   </div>

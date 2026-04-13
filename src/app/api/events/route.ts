@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { pollingManager } from "@/lib/polling-manager";
+import { pollingSup } from "@/lib/polling-supervisor";
 import { serverCache } from "@/lib/server-cache";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   const stream = new ReadableStream({
     start(controller) {
-      pollingManager.connect();
+      pollingSup.connect();
 
       let closed = false;
 
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         clearInterval(heartbeat);
         clearTimeout(maxAgeTimer);
         unsubscribe();
-        pollingManager.disconnect();
+        pollingSup.disconnect();
         controller.close();
       });
 

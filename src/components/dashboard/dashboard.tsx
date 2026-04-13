@@ -55,7 +55,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { PaletteSwitcher } from "@/components/palette-switcher";
 import { BackgroundSwitcher } from "@/components/background-switcher";
 import { useBackground } from "@/hooks/use-background";
-import { SORTED_BACKGROUNDS } from "@/lib/backgrounds";
 import { LoginForm } from "@/components/auth/login-form";
 import { GroupCard } from "./group";
 import { GroupCardDummy } from "./group-dummy";
@@ -76,7 +75,7 @@ interface DashboardProps {
 
 export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   const haptic = useWebHaptics();
-  const { background } = useBackground();
+  useBackground();
   const [editMode, setEditMode] = useState(false);
   const [localTitle, setLocalTitle] = useState<string | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);

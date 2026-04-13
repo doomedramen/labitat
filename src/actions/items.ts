@@ -8,6 +8,7 @@ import { items } from "@/lib/db/schema";
 import { encrypt, decrypt } from "@/lib/crypto";
 import { getService } from "@/lib/adapters";
 import { refreshGroupsCache } from "@/lib/structural-cache";
+import { pollingSup } from "@/lib/polling-supervisor";
 import type { GroupWithItems } from "@/lib/types";
 
 async function buildServiceConfig(
@@ -87,6 +88,7 @@ export async function createItem(groupId: string, formData: FormData): Promise<G
     statDisplayMode,
     order: nextOrder,
   });
+  pollingSup.invalidateCache();
   return refreshGroupsCache();
 }
 
@@ -158,12 +160,14 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
       statCardOrder: statCardOrder ?? existingItem?.statCardOrder ?? null,
     })
     .where(eq(items.id, id));
+  pollingSup.invalidateCache();
   return refreshGroupsCache();
 }
 
 export async function deleteItem(id: string): Promise<GroupWithItems[]> {
   await requireAuth();
   await db.delete(items).where(eq(items.id, id));
+  pollingSup.invalidateCache();
   return refreshGroupsCache();
 }
 
@@ -177,6 +181,7 @@ export async function reorderItems(
       db.update(items).set({ order: index, groupId }).where(eq(items.id, id)),
     ),
   );
+  pollingSup.invalidateCache();
   return refreshGroupsCache();
 }
 

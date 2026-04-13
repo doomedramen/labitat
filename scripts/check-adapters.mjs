@@ -29,7 +29,6 @@ async function main() {
 
   // 1. Check for unregistered files
   const files = fs.readdirSync(adaptersDir);
-  const registeredIds = new Set(Object.values(registry).map((a) => a.id));
 
   for (const file of files) {
     const ext = path.extname(file);
