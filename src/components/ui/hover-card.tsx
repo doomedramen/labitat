@@ -5,8 +5,13 @@ import { HoverCard as HoverCardPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
 
-function HoverCard({ ...props }: React.ComponentProps<typeof HoverCardPrimitive.Root>) {
-  return <HoverCardPrimitive.Root data-slot="hover-card" {...props} />;
+function HoverCard({
+  delayDuration = 175,
+  ...props
+}: React.ComponentProps<typeof HoverCardPrimitive.Root>) {
+  return (
+    <HoverCardPrimitive.Root data-slot="hover-card" delayDuration={delayDuration} {...props} />
+  );
 }
 
 function HoverCardTrigger({ ...props }: React.ComponentProps<typeof HoverCardPrimitive.Trigger>) {
