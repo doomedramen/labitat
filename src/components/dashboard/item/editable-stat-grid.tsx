@@ -429,6 +429,3 @@ function StatCardOverlay({
     </div>
   )
 }
-
-// Need to import DragStartEvent type
-import type { DragStartEvent } from "@dnd-kit/core"
