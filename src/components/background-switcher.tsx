@@ -78,7 +78,7 @@ export function BackgroundSwitcher({ onSelect }: BackgroundSwitcherProps) {
           {/* Scale & Opacity sliders */}
           {showControls && (
             <div className="flex flex-col gap-3 rounded-md border border-border/50 p-2">
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5" data-testid="scale-control">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Scale</span>
                   <span className="font-mono text-xs">{parseFloat(scale).toFixed(1)}x</span>
@@ -91,7 +91,7 @@ export function BackgroundSwitcher({ onSelect }: BackgroundSwitcherProps) {
                   onValueChange={([v]) => setScale(v.toFixed(1))}
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5" data-testid="opacity-control">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Opacity</span>
                   <span className="font-mono text-xs">{parseFloat(opacity).toFixed(1)}</span>

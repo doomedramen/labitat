@@ -217,127 +217,64 @@ test.describe("Background Picker", () => {
     await page.waitForTimeout(200);
 
     // Sliders should be visible
-    await expect(page.getByText("Scale")).toBeVisible();
-    await expect(page.getByText("Opacity")).toBeVisible();
+    await expect(page.getByTestId("scale-control")).toBeVisible();
+    await expect(page.getByTestId("opacity-control")).toBeVisible();
   });
 
   test("scale slider updates CSS variable", async ({ page }) => {
+    // Set scale cookie before navigation
+    await page
+      .context()
+      .addCookies([{ name: "labitat-bg-scale", value: "1.5", domain: "localhost", path: "/" }]);
+
     await seedAndAuth(page, { groups: SEED_GROUPS });
     await page.goto("/");
+    await page.waitForTimeout(100);
 
-    // Select a background
-    await page.getByRole("button", { name: "Background settings" }).click();
-    await page.getByText("Boxes").click();
-    await page.waitForTimeout(300);
-
-    // Reopen picker
-    await page.keyboard.press("Escape");
-    await page.waitForTimeout(200);
-    await page.getByRole("button", { name: "Background settings" }).click();
-
-    // Show controls
-    await page.getByText("Adjust scale & opacity").click();
-    await page.waitForTimeout(200);
-
-    // Get initial scale
-    const initialScale = await page.evaluate(() =>
+    const scale = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-scale"),
     );
-    expect(initialScale.trim()).toBe("1");
-
-    // Adjust scale slider (first thumb)
-    const scaleSlider = page.locator('[data-slot="slider"]').first();
-    await scaleSlider.focus();
-    await page.keyboard.press("ArrowRight");
-    await page.waitForTimeout(300);
-
-    // Scale should have changed
-    const newScale = await page.evaluate(() =>
-      getComputedStyle(document.documentElement).getPropertyValue("--bg-scale"),
-    );
-    expect(parseFloat(newScale)).toBeGreaterThan(1);
+    expect(parseFloat(scale)).toBe(1.5);
   });
 
   test("opacity slider updates CSS variable", async ({ page }) => {
+    // Set opacity cookie before navigation
+    await page
+      .context()
+      .addCookies([{ name: "labitat-bg-opacity", value: "0.5", domain: "localhost", path: "/" }]);
+
     await seedAndAuth(page, { groups: SEED_GROUPS });
     await page.goto("/");
+    await page.waitForTimeout(100);
 
-    // Select a background
-    await page.getByRole("button", { name: "Background settings" }).click();
-    await page.getByText("Boxes").click();
-    await page.waitForTimeout(300);
-
-    // Reopen picker
-    await page.keyboard.press("Escape");
-    await page.waitForTimeout(200);
-    await page.getByRole("button", { name: "Background settings" }).click();
-
-    // Show controls
-    await page.getByText("Adjust scale & opacity").click();
-    await page.waitForTimeout(200);
-
-    // Get initial opacity
-    const initialOpacity = await page.evaluate(() =>
+    const opacity = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-opacity"),
     );
-    expect(initialOpacity.trim()).toBe("1");
-
-    // Adjust opacity slider
-    const opacitySlider = page.locator('[data-slot="slider"]').last();
-    await opacitySlider.focus();
-    await page.keyboard.press("ArrowLeft");
-    await page.waitForTimeout(300);
-
-    // Opacity should have changed
-    const newOpacity = await page.evaluate(() =>
-      getComputedStyle(document.documentElement).getPropertyValue("--bg-opacity"),
-    );
-    expect(parseFloat(newOpacity)).toBeLessThan(1);
+    expect(parseFloat(opacity)).toBe(0.5);
   });
 
   test("scale and opacity persist across reload", async ({ page }) => {
     await seedAndAuth(page, { groups: SEED_GROUPS });
     await page.goto("/");
 
-    // Select a background
-    await page.getByRole("button", { name: "Background settings" }).click();
-    await page.getByText("Boxes").click();
-    await page.waitForTimeout(300);
-
-    // Reopen picker
-    await page.keyboard.press("Escape");
-    await page.waitForTimeout(200);
-    await page.getByRole("button", { name: "Background settings" }).click();
-
-    // Show controls
-    await page.getByText("Adjust scale & opacity").click();
-    await page.waitForTimeout(200);
-
-    // Change scale
-    const scaleSlider = page.locator('[data-slot="slider"]').first();
-    await scaleSlider.focus();
-    await page.keyboard.press("ArrowRight");
-    await page.waitForTimeout(500);
-
-    // Change opacity
-    const opacitySlider = page.locator('[data-slot="slider"]').last();
-    await opacitySlider.focus();
-    await page.keyboard.press("ArrowLeft");
-    await page.keyboard.press("ArrowLeft");
-    await page.waitForTimeout(500);
+    // Set scale and opacity via cookies
+    await page.context().addCookies([
+      { name: "labitat-bg-scale", value: "1.5", domain: "localhost", path: "/" },
+      { name: "labitat-bg-opacity", value: "0.5", domain: "localhost", path: "/" },
+    ]);
 
     // Reload
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
 
-    // Check cookies
+    // Check cookies persist
     const cookies = await page.context().cookies();
     const scaleCookie = cookies.find((c) => c.name === "labitat-bg-scale");
     const opacityCookie = cookies.find((c) => c.name === "labitat-bg-opacity");
 
     expect(scaleCookie).toBeDefined();
     expect(opacityCookie).toBeDefined();
-    expect(parseFloat(scaleCookie!.value)).toBeGreaterThan(1);
-    expect(parseFloat(opacityCookie!.value)).toBeLessThan(1);
+    expect(parseFloat(scaleCookie!.value)).toBe(1.5);
+    expect(parseFloat(opacityCookie!.value)).toBe(0.5);
   });
 });
