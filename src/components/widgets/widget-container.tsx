@@ -4,18 +4,24 @@
  * and this component renders them in a consistent structure.
  *
  * Server-compatible: renders stat cards and lists from cached data during SSR.
+ * In edit mode: uses EditableStatGrid for drag-to-reorder and unused area.
  */
 
 import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
+import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AlertCircle } from "lucide-react"
 import type { WidgetPayload } from "@/lib/adapters/widget-types"
+import { useWidgetDisplay } from "@/components/dashboard/item/widget-display-context"
 
 interface WidgetContainerProps {
   payload: WidgetPayload
 }
 
 export function WidgetContainer({ payload }: WidgetContainerProps) {
+  const displaySettings = useWidgetDisplay()
+  const isEditMode = displaySettings?.editMode ?? false
+
   // Show loading skeleton when loading
   if (payload.loading) {
     return (
@@ -48,7 +54,17 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
 
   return (
     <div className="space-y-2">
-      {hasStats && <WidgetStatGrid items={payload.stats} />}
+      {hasStats &&
+        (isEditMode ? (
+          <EditableStatGrid
+            items={payload.stats}
+            order={displaySettings?.statCardOrder ?? null}
+            onOrderChange={displaySettings?.onOrderChange ?? (() => {})}
+            displayMode={displaySettings?.statDisplayMode ?? "label"}
+          />
+        ) : (
+          <WidgetStatGrid items={payload.stats} />
+        ))}
 
       {hasStreams && <ActiveStreamList streams={payload.streams!} />}
 
