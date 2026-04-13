@@ -27,11 +27,6 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
     className: "bg-circles",
   },
   {
-    id: "cross",
-    label: "Cross",
-    className: "bg-cross",
-  },
-  {
     id: "crosses",
     label: "Crosses",
     className: "bg-crosses",
