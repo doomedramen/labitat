@@ -340,7 +340,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="dark:!bg-background bg-background">
                   <Palette className="h-4 w-4" />
                   <span className="sr-only">Theme settings</span>
                 </Button>
@@ -360,7 +360,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="dark:!bg-background bg-background">
                   <Image className="h-4 w-4" />
                   <span className="sr-only">Background settings</span>
                 </Button>
@@ -375,6 +375,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="dark:!bg-background bg-background"
                   onClick={() => {
                     setEditMode(true);
                     haptic.trigger("light");
@@ -384,7 +385,12 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                 </Button>
               ) : null
             ) : (
-              <Button variant="outline" size="sm" onClick={() => setLoginOpen(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="dark:!bg-background bg-background"
+                onClick={() => setLoginOpen(true)}
+              >
                 <LogIn className="mr-1.5 h-3.5 w-3.5" />
                 Sign in
               </Button>
