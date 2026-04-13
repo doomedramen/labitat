@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * Client Dashboard component.
+ * Handles edit mode with drag-and-drop, dialogs, and interactive controls.
+ * During non-edit mode, renders server-compatible components for hydration match.
+ */
+
 import { useEffect, useMemo, useState } from "react"
 import React from "react"
 import { useForm } from "@tanstack/react-form"
@@ -22,7 +28,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
-import { Palette, LogIn, Plus, Loader2, Image } from "lucide-react"
+import { Palette, LogIn, Loader2, Image } from "lucide-react"
 import { toast } from "sonner"
 import { useWebHaptics } from "web-haptics/react"
 
@@ -51,6 +57,7 @@ import { useBackground } from "@/hooks/use-background"
 import { SORTED_BACKGROUNDS } from "@/lib/backgrounds"
 import { LoginForm } from "@/components/auth/login-form"
 import { GroupCard } from "./group"
+import { GroupCardDummy } from "./group-dummy"
 import { EditBar } from "./edit-bar"
 import { GroupDialog } from "@/components/editor/group-dialog"
 import { ItemDialog } from "@/components/editor/item-dialog"
@@ -78,13 +85,12 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   const [editingItem, setEditingItem] = useState<ItemWithCache | null>(null)
   const [targetGroupId, setTargetGroupId] = useState<string | null>(null)
 
-  // Optimistic state for DnD — keeps UI smooth while server round-trips
+  // Optimistic state for DnD
   const [localGroups, setLocalGroups] = useState<GroupWithCache[]>(groups)
   useEffect(() => {
     setLocalGroups(groups)
   }, [groups])
 
-  // Enrich server-returned groups with cached widget data from current state
   function handleGroupsUpdated(newGroups: GroupWithItems[]) {
     const cacheMap = new Map<
       string,
@@ -115,7 +121,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     setLocalGroups(enriched)
   }
 
-  // Track the active drag item/group for DragOverlay and cross-group logic
   const [activeId, setActiveId] = useState<string | null>(null)
   const [dragStartGroupId, setDragStartGroupId] = useState<string | null>(null)
 
@@ -162,7 +167,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
     if (!activeGroupId || !overGroupId || activeGroupId === overGroupId) return
 
-    // Optimistically move the item into the target group
     setLocalGroups((prev) => {
       const srcGroup = prev.find((g) => g.id === activeGroupId)!
       const item = srcGroup.items.find((i) => i.id === activeId)!
@@ -180,12 +184,11 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     setActiveId(null)
 
     if (!over) {
-      setLocalGroups(groups) // revert on cancel
+      setLocalGroups(groups)
       setDragStartGroupId(null)
       return
     }
 
-    // Haptic feedback on successful drop
     haptic.trigger("medium")
 
     const activeId = active.id as string
@@ -205,8 +208,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         })
       }
     } else if (type === "item") {
-      // By the time drag ends, handleDragOver has already moved the item into
-      // the correct group. We just need to finalise the position within that group.
       const currentGroupId = findItemGroupId(activeId)
       if (!currentGroupId) {
         setDragStartGroupId(null)
@@ -242,7 +243,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         })
       }
 
-      // If cross-group, also persist the (now item-less) source group
       if (dragStartGroupId && dragStartGroupId !== currentGroupId) {
         const srcGroup = localGroups.find((g) => g.id === dragStartGroupId)
         if (srcGroup)
@@ -275,9 +275,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
   }
 
   const titleForm = useForm({
-    defaultValues: {
-      title: title,
-    },
+    defaultValues: { title },
     validators: {
       onChange: z.object({
         title: z.string().min(1, "Title is required."),
@@ -287,7 +285,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
 
   useEffect(() => {
     titleForm.setFieldValue("title", localTitle ?? title)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- titleForm is a stable reference from useForm
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localTitle, title])
 
   return (
@@ -301,6 +299,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
     >
       <LiveDataProvider>
         <SseReconnectBanner />
+
         {/* Header */}
         <header className="mb-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
           {editMode ? (
@@ -411,54 +410,62 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           </div>
         </header>
 
-        {/* Single DndContext handles both group and item reordering */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={localGroups.map((g) => g.id)}
-            strategy={verticalListSortingStrategy}
+        {/* Groups */}
+        {editMode ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
           >
-            <div className="flex flex-col gap-8">
-              {localGroups.map((group) => (
-                <GroupCard
-                  key={group.id}
-                  group={group}
-                  editMode={editMode}
-                  onEditGroup={() => {
-                    setEditingGroup(group)
-                    setGroupDialogOpen(true)
-                  }}
-                  onAddItem={() => {
-                    setEditingItem(null)
-                    setTargetGroupId(group.id)
-                    setItemDialogOpen(true)
-                  }}
-                  onGroupsChanged={handleGroupsUpdated}
-                  onEditItem={(item) => {
-                    setEditingItem(item)
-                    setTargetGroupId(group.id)
-                    setItemDialogOpen(true)
-                  }}
-                />
-              ))}
-            </div>
-          </SortableContext>
-
-          <DragOverlay dropAnimation={null}>
-            {activeItem ? (
-              <ItemCardDragPreview item={activeItem} />
-            ) : activeGroup ? (
-              <div className="rounded-xl bg-card px-3 py-2 text-sm font-medium shadow-lg ring-2 ring-ring">
-                {activeGroup.name}
+            <SortableContext
+              items={localGroups.map((g) => g.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="flex flex-col gap-8">
+                {localGroups.map((group) => (
+                  <GroupCardDummy
+                    key={group.id}
+                    group={group}
+                    editMode={editMode}
+                    onEditGroup={() => {
+                      setEditingGroup(group)
+                      setGroupDialogOpen(true)
+                    }}
+                    onAddItem={() => {
+                      setEditingItem(null)
+                      setTargetGroupId(group.id)
+                      setItemDialogOpen(true)
+                    }}
+                    onEditItem={(item) => {
+                      setEditingItem(item)
+                      setTargetGroupId(group.id)
+                      setItemDialogOpen(true)
+                    }}
+                    onGroupsChanged={handleGroupsUpdated}
+                  />
+                ))}
               </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+            </SortableContext>
+
+            <DragOverlay dropAnimation={null}>
+              {activeItem ? (
+                <ItemCardDragPreview item={activeItem} />
+              ) : activeGroup ? (
+                <div className="rounded-xl bg-card px-3 py-2 text-sm font-medium shadow-lg ring-2 ring-ring">
+                  {activeGroup.name}
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        ) : (
+          <div className="flex flex-col gap-8">
+            {localGroups.map((group) => (
+              <GroupCard key={group.id} group={group} editMode={editMode} />
+            ))}
+          </div>
+        )}
 
         {editMode && (
           <button
@@ -469,7 +476,6 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
             }}
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/50 py-4 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
           >
-            <Plus className="h-4 w-4" />
             Add Group
           </button>
         )}
@@ -521,10 +527,7 @@ function SseReconnectBanner() {
       setVisible(false)
       return
     }
-
-    // Don't show banner until SSE has connected at least once
     if (!hasConnectedRef.current) return
-
     const timer = setTimeout(() => setVisible(true), 3000)
     return () => clearTimeout(timer)
   }, [sseState])

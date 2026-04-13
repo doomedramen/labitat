@@ -1,13 +1,12 @@
-"use client"
-
 /**
  * Standardized widget container that handles layout for all adapters.
  * Adapters provide a WidgetPayload (stats + optional lists),
  * and this component renders them in a consistent structure.
+ *
+ * Server-compatible: renders stat cards and lists from cached data during SSR.
  */
 
 import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
-import { ActiveStreamList, DownloadList } from "@/components/widgets"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AlertCircle } from "lucide-react"
 import type { WidgetPayload } from "@/lib/adapters/widget-types"
@@ -56,6 +55,26 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
       {hasDownloads && <DownloadList downloads={payload.downloads!} />}
 
       {payload.customComponent}
+    </div>
+  )
+}
+
+// Minimal server-compatible versions of stream/download lists
+// These are simple renders — full interactivity comes from client hydration
+function ActiveStreamList({ streams }: { streams: unknown[] }) {
+  if (!streams.length) return null
+  return (
+    <div className="text-xs text-muted-foreground">
+      {streams.length} active stream{streams.length !== 1 ? "s" : ""}
+    </div>
+  )
+}
+
+function DownloadList({ downloads }: { downloads: unknown[] }) {
+  if (!downloads.length) return null
+  return (
+    <div className="text-xs text-muted-foreground">
+      {downloads.length} download{downloads.length !== 1 ? "s" : ""}
     </div>
   )
 }

@@ -344,6 +344,11 @@ interface StatCardProps extends StatItem {
   editMode?: boolean
 }
 
+/**
+ * Server-compatible StatCard component.
+ * When sortable+editMode are false (SSR case), renders without client hooks.
+ * When sortable+editMode are true, uses dnd-kit for drag-and-drop.
+ */
 export function StatCard({
   id,
   value,
@@ -355,6 +360,85 @@ export function StatCard({
   sortable = false,
   editMode = false,
 }: StatCardProps) {
+  const showIcon = displayMode === "icon" && icon
+  const showLabel = displayMode === "label"
+  // Tooltips only appear in icon mode — the label is already visible in label mode
+  const effectiveTooltip = showIcon ? (tooltip ?? label) : undefined
+
+  const content = (
+    <div
+      className={cn(
+        "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground select-none",
+        "transition-all duration-200 hover:scale-105 hover:bg-secondary/80 active:scale-95"
+      )}
+    >
+      <span
+        className={cn(
+          "font-medium tabular-nums",
+          valueClassName ?? "text-secondary-foreground"
+        )}
+      >
+        {value}
+      </span>
+      {showIcon && icon && (
+        <div className="mt-0.5 text-secondary-foreground/50">
+          {(() => {
+            const Icon = icon
+            return <Icon className="h-3 w-3" />
+          })()}
+        </div>
+      )}
+      {showLabel ? (
+        <span className="text-secondary-foreground/60">{label}</span>
+      ) : !showIcon && effectiveTooltip ? (
+        <span className="sr-only">{effectiveTooltip}</span>
+      ) : null}
+    </div>
+  )
+
+  // SSR path: no sortable, no editMode — render directly
+  if (!sortable || !editMode) {
+    if (effectiveTooltip) {
+      return (
+        <BlockLinkPropagation>
+          <HoverCard>
+            <HoverCardTrigger asChild>{content}</HoverCardTrigger>
+            <HoverCardContent side="top" align="center" className="w-auto">
+              {effectiveTooltip}
+            </HoverCardContent>
+          </HoverCard>
+        </BlockLinkPropagation>
+      )
+    }
+    return content
+  }
+
+  // Client path: sortable + editMode — use dnd-kit hooks
+  return (
+    <StatCardSortable
+      id={id}
+      sortable
+      editMode
+      displayMode={displayMode}
+      value={value}
+      label={label}
+      icon={icon}
+      tooltip={tooltip}
+      valueClassName={valueClassName}
+    />
+  )
+}
+
+/** Client-only wrapper that adds sortable functionality to StatCard */
+function StatCardSortable({
+  id,
+  value,
+  label,
+  icon,
+  tooltip,
+  valueClassName,
+  displayMode,
+}: StatCardProps & { sortable: true; editMode: true }) {
   const {
     attributes,
     listeners,
@@ -363,44 +447,36 @@ export function StatCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id, disabled: !sortable })
+  } = useSortable({ id, disabled: false })
 
-  const style: React.CSSProperties = sortable
-    ? {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.35 : undefined,
-      }
-    : {}
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.35 : undefined,
+  }
 
   const showIcon = displayMode === "icon" && icon
   const showLabel = displayMode === "label"
-  // Tooltips only appear in icon mode — the label is already visible in label mode
   const effectiveTooltip = showIcon ? (tooltip ?? label) : undefined
 
-  // When sortable+editMode, make the whole card the drag activator
-  const dragProps = sortable && editMode ? { ...attributes, ...listeners } : {}
   // Must be memoized — inline arrow functions cause ref reset (null then element)
   // on every render, which unregisters/re-registers the node during drag.
   const combinedRef = useCallback(
     (el: HTMLDivElement | null) => {
       setNodeRef(el)
-      if (sortable && editMode) setActivatorNodeRef(el)
+      setActivatorNodeRef(el)
     },
-    [setNodeRef, setActivatorNodeRef, sortable, editMode]
+    [setNodeRef, setActivatorNodeRef]
   )
 
   const inner = (
     <div
       ref={combinedRef}
       style={style}
-      {...dragProps}
+      {...attributes}
+      {...listeners}
       className={cn(
-        "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground select-none",
-        "transition-all duration-200 hover:scale-105 hover:bg-secondary/80 active:scale-95",
-        sortable &&
-          editMode &&
-          "cursor-grab hover:shadow-md active:cursor-grabbing",
+        "flex h-full cursor-grab flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground transition-all duration-200 select-none hover:scale-105 hover:bg-secondary/80 hover:shadow-md active:scale-95 active:cursor-grabbing",
         isDragging && "scale-110 rotate-3 opacity-50 shadow-lg"
       )}
     >

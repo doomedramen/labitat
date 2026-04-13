@@ -1,13 +1,15 @@
 {
   "name": "labitat",
-  "version": "0.0.358",
+  "version": "0.0.360",
   "type": "module",
   "private": true,
   "engines": {
     "node": ">=22"
   },
   "scripts": {
+    "check": "pnpm lint && pnpm knip && pnpm typecheck && pnpm format",
     "dev": "next dev --turbopack",
+    "dev:force": "lsof -ti :3000 | xargs kill -9 2>/dev/null; next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings=-1",
@@ -37,7 +39,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
-    "lighthouse": "npx unlighthouse-ci --site http://localhost:3000 --no-cache --samples 3"
+    "lighthouse": "npx unlighthouse-ci --site http://localhost:3000 --no-cache --samples 3",
+    "knip": "knip"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -97,6 +100,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "16.1.7",
     "jsdom": "^29.0.1",
+    "knip": "^6.4.1",
     "lefthook": "^2.1.4",
     "postcss": "^8",
     "prettier": "^3.8.1",

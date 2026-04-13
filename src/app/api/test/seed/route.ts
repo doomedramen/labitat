@@ -108,7 +108,7 @@ export async function POST(request: Request) {
 
           // Pre-seed cached widget data for E2E tests
           if (itemData.cachedWidgetData) {
-            serverCache.seed(itemId, {
+            await serverCache.seed(itemId, {
               _status: "ok",
               ...itemData.cachedWidgetData,
             } as ServiceData)

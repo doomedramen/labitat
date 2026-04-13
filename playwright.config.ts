@@ -7,7 +7,7 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   timeout: 45_000,
-  maxFailures: 0,
+  maxFailures: 1,
   reporter: "list",
   use: {
     baseURL: "http://localhost:3000",
@@ -18,7 +18,7 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...devices["Desktop Chrome"], headless: false },
     },
   ],
 

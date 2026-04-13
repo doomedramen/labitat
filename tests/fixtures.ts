@@ -38,7 +38,7 @@ export async function seedAndAuth(
     }>
   }
 ) {
-  await page.request.post("/api/test/seed", {
+  const response = await page.request.post("/api/test/seed", {
     headers: { "x-test-secret": TEST_SECRET },
     data: {
       admin: opts?.admin ?? {
@@ -49,6 +49,51 @@ export async function seedAndAuth(
       groups: opts?.groups,
     },
   })
+
+  // Extract session cookie from response and add to browser context
+  const setCookieHeaders = response.headers()["set-cookie"]
+  if (setCookieHeaders) {
+    const cookies = Array.isArray(setCookieHeaders)
+      ? setCookieHeaders
+      : [setCookieHeaders]
+
+    const parsedCookies = cookies.map((cookieStr) => {
+      const [nameValue, ...attrs] = cookieStr
+        .split(";")
+        .map((s: string) => s.trim())
+      const [name, value] = nameValue.split("=")
+      const cookie: {
+        name: string
+        value: string
+        domain?: string
+        path?: string
+        secure?: boolean
+        httpOnly?: boolean
+        sameSite?: "Strict" | "Lax" | "None"
+      } = {
+        name,
+        value,
+        domain: "localhost",
+        path: "/",
+      }
+
+      for (const attr of attrs) {
+        const lower = attr.toLowerCase()
+        if (lower === "secure") cookie.secure = true
+        else if (lower === "httponly") cookie.httpOnly = true
+        else if (lower.startsWith("samesite=")) {
+          const val = attr.split("=")[1]?.trim()
+          if (val === "Strict" || val === "Lax" || val === "None") {
+            cookie.sameSite = val
+          }
+        }
+      }
+
+      return cookie
+    })
+
+    await page.context().addCookies(parsedCookies)
+  }
 }
 
 /** Default seeded groups for dashboard tests */

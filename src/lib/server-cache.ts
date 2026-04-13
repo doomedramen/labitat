@@ -108,6 +108,8 @@ class ServerCache {
 
   /** Get items fresh enough for SSR rendering. */
   getAllFresh(maxAgeMs: number = SSR_MAX_AGE_MS): [string, CachedItem][] {
+    // Always reload from DB to ensure we have the latest seeded data
+    this.loaded = false
     this.loadFromDb()
     const now = Date.now()
     return [...this.cache.entries()].filter(
@@ -123,16 +125,42 @@ class ServerCache {
     }
   }
 
-  seed(itemId: string, widgetData: ServiceData): void {
-    this.cache.set(itemId, {
+  async seed(itemId: string, widgetData: ServiceData): Promise<void> {
+    const entry: CachedItem = {
       widgetData,
       pingStatus: null,
       lastFetchedAt: Date.now(),
-    })
+    }
+    this.cache.set(itemId, entry)
+
+    // Persist to DB synchronously so it's available immediately
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wd = widgetData as any
+    try {
+      await db
+        .insert(widgetCache)
+        .values({
+          itemId,
+          widgetData: wd,
+          pingStatus: null,
+          updatedAt: new Date().toISOString(),
+        })
+        .onConflictDoUpdate({
+          target: widgetCache.itemId,
+          set: {
+            widgetData: wd,
+            pingStatus: null,
+            updatedAt: new Date().toISOString(),
+          },
+        })
+    } catch (err) {
+      console.error("[server-cache] DB seed failed:", err)
+    }
   }
 
   clear(): void {
     this.cache.clear()
+    this.loaded = false // Force reload from DB on next read
   }
 }
 

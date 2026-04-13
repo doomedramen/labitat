@@ -1,8 +1,6 @@
-"use client"
-
 import { useMemo } from "react"
 import { cn } from "@/lib/utils"
-import { WidgetContainer } from "@/components/widgets"
+import { WidgetContainer } from "@/components/widgets/widget-container"
 import type { ServiceData } from "@/lib/adapters/types"
 import type { ServiceDefinition } from "@/lib/adapters/types"
 import type { ItemRow } from "@/lib/types"
@@ -18,6 +16,11 @@ interface WidgetRendererProps {
   item: ItemRow
 }
 
+/**
+ * Server-compatible widget renderer.
+ * During SSR: renders widgets from cached data.
+ * During client edit mode: delegates to WidgetRendererClient for DnD support.
+ */
 export function WidgetRenderer({
   serviceDef,
   effectiveData,
@@ -27,21 +30,19 @@ export function WidgetRenderer({
   item,
 }: WidgetRendererProps) {
   // Custom widget takes precedence, otherwise use toPayload
-  const hasCustomWidget =
-    serviceDef?.renderWidget && (isClientSide || effectiveData)
+  const hasCustomWidget = !!serviceDef?.renderWidget && !isClientSide
 
-  // Compute payload once and reuse
   const payload = useMemo(
     () =>
-      effectiveData && serviceDef?.toPayload
+      effectiveData && serviceDef?.toPayload && !hasCustomWidget
         ? serviceDef.toPayload(effectiveData)
         : null,
-    [effectiveData, serviceDef]
+    [effectiveData, serviceDef, hasCustomWidget]
   )
 
-  const hasPayload = !!payload && !hasCustomWidget
+  const hasPayload = !!payload
 
-  // Memoize context value to prevent unnecessary re-renders
+  // Memoize context value
   const contextValue = useMemo(
     () => ({
       statDisplayMode: (item.statDisplayMode as "icon" | "label") ?? "label",
@@ -52,6 +53,11 @@ export function WidgetRenderer({
     }),
     [item.statDisplayMode, item.statCardOrder, editMode, item.id, payload]
   )
+
+  // Don't render client-side-only services during SSR
+  if (isClientSide && !effectiveData) {
+    return <div className={cn(cleanMode ? "" : "mt-2")} />
+  }
 
   if (!(hasCustomWidget || hasPayload) || !effectiveData || !serviceDef) {
     return <div className={cn(cleanMode ? "" : "mt-2")} />

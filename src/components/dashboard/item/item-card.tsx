@@ -1,60 +1,100 @@
-"use client"
-
-import { memo } from "react"
-import { useSortable } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
 import { cn } from "@/lib/utils"
 import { getService } from "@/lib/adapters"
 import type { ItemWithCache } from "@/lib/types"
 import { ItemIcon } from "./item-icon"
-import { StatusDot } from "./status-dot"
+import { StatusDotServer } from "./status-dot-server"
 import { WidgetRenderer } from "./widget-renderer"
-import { EditModeControls } from "./edit-mode-controls"
-import { BlockLinkPropagation } from "./block-link-propagation"
-import { useItemData } from "@/hooks/use-item-data"
+import { BlockLinkPropagationServer } from "./block-link-propagation-server"
+import type { ServiceStatus } from "@/lib/adapters/types"
+import { dataToStatus } from "@/lib/adapters/types"
 
 interface ItemCardProps {
   item: ItemWithCache
   editMode: boolean
-  onEdit: (item: ItemWithCache) => void
+  onEdit?: (item: ItemWithCache) => void
   onDeleted?: (itemId: string) => void
 }
 
-export const ItemCard = memo(function ItemCard({
+/**
+ * Server-compatible ItemCard.
+ * Renders icon, title, status dot, and stat cards during SSR.
+ * For edit mode, use ItemCardDummy instead.
+ */
+export function ItemCard({ item, editMode }: ItemCardProps) {
+  const serviceDef = item.serviceType ? getService(item.serviceType) : null
+  const isClientSide = serviceDef?.clientSide ?? false
+
+  // Use cached data for SSR (only if not clientSide-only service)
+  const effectiveData =
+    !editMode && !isClientSide ? item.cachedWidgetData : null
+  const serviceStatus: ServiceStatus = item.cachedPingStatus
+    ? item.cachedPingStatus
+    : item.cachedWidgetData
+      ? dataToStatus(item.cachedWidgetData)
+      : { state: "unknown" }
+  const hasStatus = !!item.href && !isClientSide
+
+  return (
+    <div
+      className={cn(
+        "group/item relative overflow-hidden rounded-xl bg-card transition-all duration-300 ease-in-out",
+        editMode ? "border border-ring/50" : "border border-border/50",
+        !editMode &&
+          "transform hover:scale-[1.02] hover:border-border/80 hover:shadow-lg active:scale-[0.98]",
+        !editMode && item.href && "cursor-pointer"
+      )}
+    >
+      {!editMode && item.href ? (
+        <a
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={item.label || item.href}
+          className="block"
+        >
+          <ItemCardContent
+            item={item}
+            editMode={editMode}
+            serviceDef={serviceDef}
+            effectiveData={effectiveData}
+            isClientSide={isClientSide}
+            serviceStatus={serviceStatus}
+            hasStatus={hasStatus}
+          />
+        </a>
+      ) : (
+        <ItemCardContent
+          item={item}
+          editMode={editMode}
+          serviceDef={serviceDef}
+          effectiveData={effectiveData}
+          isClientSide={isClientSide}
+          serviceStatus={serviceStatus}
+          hasStatus={hasStatus}
+        />
+      )}
+    </div>
+  )
+}
+
+function ItemCardContent({
   item,
   editMode,
-  onEdit,
-  onDeleted,
-}: ItemCardProps) {
-  const serviceDef = item.serviceType ? getService(item.serviceType) : null
-  const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000
-
-  const { effectiveData, serviceStatus, hasStatus, isClientSide } = useItemData(
-    { editMode, item }
-  )
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: item.id,
-    data: { type: "item" },
-    disabled: !editMode,
-  })
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.35 : undefined,
-    zIndex: isDragging ? 999 : undefined,
-  }
-
-  const inner = (
+  serviceDef,
+  effectiveData,
+  isClientSide,
+  serviceStatus,
+  hasStatus,
+}: {
+  item: ItemWithCache
+  editMode: boolean
+  serviceDef: ReturnType<typeof getService> | null
+  effectiveData: ReturnType<typeof getService> extends null ? null : unknown
+  isClientSide: boolean
+  serviceStatus: ServiceStatus
+  hasStatus: boolean
+}) {
+  return (
     <div
       className={cn(
         "relative",
@@ -64,9 +104,9 @@ export const ItemCard = memo(function ItemCard({
       data-item-id={item.id}
     >
       {!editMode && hasStatus && !item.cleanMode && (
-        <BlockLinkPropagation className="absolute top-3 right-3 transition-all duration-300 group-hover/item:scale-110">
-          <StatusDot status={serviceStatus} />
-        </BlockLinkPropagation>
+        <BlockLinkPropagationServer className="absolute top-3 right-3 transition-all duration-300 group-hover/item:scale-110">
+          <StatusDotServer status={serviceStatus} />
+        </BlockLinkPropagationServer>
       )}
 
       {(!item.cleanMode || editMode) && (
@@ -88,7 +128,11 @@ export const ItemCard = memo(function ItemCard({
               <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
                 {serviceDef && <span>{serviceDef.name}</span>}
                 {item.href && <span className="truncate">{item.href}</span>}
-                <span>{pollingMs / 1000}s poll</span>
+                <span>
+                  {(item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000) /
+                    1000}
+                  s poll
+                </span>
               </div>
             )}
           </div>
@@ -97,7 +141,7 @@ export const ItemCard = memo(function ItemCard({
 
       <WidgetRenderer
         serviceDef={serviceDef ?? null}
-        effectiveData={effectiveData}
+        effectiveData={effectiveData as never}
         isClientSide={isClientSide}
         editMode={editMode}
         cleanMode={item.cleanMode ?? undefined}
@@ -105,47 +149,7 @@ export const ItemCard = memo(function ItemCard({
       />
     </div>
   )
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "group/item relative overflow-hidden rounded-xl bg-card transition-all duration-300 ease-in-out",
-        editMode ? "border border-ring/50" : "border border-border/50",
-        !editMode &&
-          "transform hover:scale-[1.02] hover:border-border/80 hover:shadow-lg active:scale-[0.98]",
-        !editMode && item.href && "cursor-pointer",
-        isDragging && "rotate-2 shadow-2xl ring-2 ring-ring/20"
-      )}
-    >
-      {!editMode && item.href ? (
-        <a
-          href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={item.label || item.href}
-          className="block"
-        >
-          {inner}
-        </a>
-      ) : (
-        inner
-      )}
-
-      {editMode && (
-        <EditModeControls
-          item={item}
-          onEdit={onEdit}
-          onDeleted={onDeleted}
-          setActivatorNodeRef={setActivatorNodeRef}
-          attributes={attributes}
-          listeners={listeners}
-        />
-      )}
-    </div>
-  )
-})
+}
 
 export function ItemCardDragPreview({ item }: { item: ItemWithCache }) {
   const serviceDef = item.serviceType ? getService(item.serviceType) : null

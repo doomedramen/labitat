@@ -1,7 +1,5 @@
-import { Suspense } from "react"
 import { getSession } from "@/lib/auth"
 import { Dashboard } from "@/components/dashboard/dashboard"
-import { DashboardSkeleton } from "@/components/dashboard/skeleton"
 import { serverCache } from "@/lib/server-cache"
 import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache"
 import type { GroupWithCache, ItemWithCache } from "@/lib/types"
@@ -23,7 +21,6 @@ async function DashboardContent() {
   }
 
   // Read from server cache — only use data fresh enough for SSR.
-  // Stale cache (server was down) is ignored; SSE will populate it.
   const freshCache = new Map(serverCache.getAllFresh())
 
   const enrichedGroups: GroupWithCache[] = groupsWithItems.map((group) => ({
@@ -38,19 +35,16 @@ async function DashboardContent() {
     }),
   }))
 
+  const isLoggedIn = !!session.loggedIn
+  const dashboardTitle = titleSetting?.value ?? "Labitat"
+
   return (
     <Dashboard
       groups={enrichedGroups}
-      isLoggedIn={!!session.loggedIn}
-      title={titleSetting?.value ?? "Labitat"}
+      isLoggedIn={isLoggedIn}
+      title={dashboardTitle}
     />
   )
 }
 
-export default function DashboardPage() {
-  return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardContent />
-    </Suspense>
-  )
-}
+export default DashboardContent

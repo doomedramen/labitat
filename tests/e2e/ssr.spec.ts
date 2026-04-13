@@ -32,7 +32,15 @@ test.describe("SSR Rendering", () => {
   test("SSR renders all required UI elements visible (response.text)", async ({
     page,
   }) => {
-    await seedAndAuth(page, { groups: SEED_GROUPS })
+    // Seed admin user (creates session) but then clear cookies to be unauthenticated
+    await page.request.post("/api/test/seed", {
+      headers: { "x-test-secret": "e2e-test-reset-token" },
+      data: {
+        admin: { email: "admin@test.com", password: "password123" },
+        groups: SEED_GROUPS,
+      },
+    })
+    await page.context().clearCookies()
 
     const response = await page.goto("/")
     expect(response?.ok()).toBe(true)
@@ -96,16 +104,24 @@ test.describe("SSR Rendering", () => {
               serviceType: "proxmox",
               serviceUrl: "https://proxmox.test",
               cachedWidgetData: {
+                nodes: 3,
+                vms: 10,
+                containers: 5,
+                runningVMs: 8,
+                runningContainers: 4,
                 cpuUsage: 45.2,
                 memoryUsage: 68.5,
-                diskUsage: 52.1,
-                uptime: "15d 4h 23m",
+                memoryUsed: "32 GB",
+                memoryTotal: "64 GB",
               },
             },
           ],
         },
       ],
     })
+
+    // Give the server cache time to populate
+    await page.waitForTimeout(500)
 
     const response = await page.goto("/")
     expect(response?.ok()).toBe(true)
@@ -115,15 +131,19 @@ test.describe("SSR Rendering", () => {
     // ── Item card visible ──
     expect(html).toContain("Proxmox")
 
-    // ── Stat card labels visible ──
+    // ── Stat card labels MUST be visible during SSR ──
+    expect(html).toContain("Nodes")
+    expect(html).toContain("VMs")
+    expect(html).toContain("LXCs")
     expect(html).toContain("CPU")
     expect(html).toContain("Memory")
-    expect(html).toContain("Disk")
 
-    // ── Stat card values visible ──
-    expect(html).toContain("45")
-    expect(html).toContain("68")
-    expect(html).toContain("52")
+    // ── Stat card values MUST be visible during SSR ──
+    expect(html).toContain("3")
+    expect(html).toContain("8/10")
+    expect(html).toContain("4/5")
+    expect(html).toContain("45.2")
+    expect(html).toContain("68.5")
   })
 
   test("SSR renders status dots for items (response.text)", async ({
@@ -187,10 +207,13 @@ test.describe("SSR Rendering", () => {
       },
     })
 
+    // Clear cookies so user is not authenticated (seed API sets session cookie)
+    await context.clearCookies()
+
     await page.goto("/")
 
     // ── Dashboard title visible ──
-    await expect(page.locator("h1")).toContainText("Labitat")
+    await expect(page.locator("h1").first()).toContainText("Labitat")
 
     // ── Multiple groups visible ──
     await expect(page.locator("h2")).toHaveText(["Infrastructure", "Media"])
@@ -278,9 +301,34 @@ test.describe("SSR Rendering", () => {
     // Normal browser (hydrated)
     const jsContext = await browser.newContext()
     const pageJs = await jsContext.newPage()
+
+    // Capture console errors
+    const consoleErrors: string[] = []
+    pageJs.on("console", (msg) => {
+      if (msg.type() === "error") {
+        consoleErrors.push(msg.text())
+      }
+    })
+
     await pageJs.goto("/")
-    await pageJs.waitForLoadState("domcontentloaded")
+    // Wait for hydration to complete
     await pageJs.waitForTimeout(1000)
+
+    // Check for hydration errors
+    const hydrationErrors = consoleErrors.filter(
+      (e) =>
+        e.includes("hydration") ||
+        e.includes("Hydration") ||
+        e.includes("did not match") ||
+        e.includes("Application error")
+    )
+
+    // If there are hydration errors, the test should fail with a clear message
+    if (hydrationErrors.length > 0) {
+      throw new Error(
+        `Hydration errors detected:\n${hydrationErrors.join("\n")}`
+      )
+    }
 
     const hydratedGroups = await pageJs.locator("h2").allTextContents()
     const hydratedItems = await pageJs
