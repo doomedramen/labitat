@@ -19,7 +19,7 @@ This document explains the high-level architecture of Labitat, including the ser
 │                      Next.js Server Layer                        │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
 │  │  Page Routes  │  │   Actions    │  │   API Routes         │  │
-│  │  (app/)       │  │  (actions/)  │  │   (app/api/)         │  │
+│  │  (app/)       │  │  (src/actions)│  │   (src/app/api/)     │  │
 │  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
 │         │                  │                      │              │
 └─────────┼──────────────────┼──────────────────────┼──────────────┘
@@ -29,12 +29,12 @@ This document explains the high-level architecture of Labitat, including the ser
 │                       Business Logic Layer                       │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
 │  │   Database   │  │   Adapters   │  │   Utilities          │  │
-│  │  (lib/db)    │  │(lib/adapters)│  │  (lib/*.ts)          │  │
+│  │  (src/lib/db) │  │(src/lib/adapters)│  │  (src/lib/*.ts)     │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 │                                                                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
 │  │   Auth       │  │   Crypto     │  │   Cache              │  │
-│  │ (iron-sess)  │  │ (AES-GCM)    │  │  (in-memory + TTL)   │  │
+│  │(src/lib/auth) │  │ (AES-GCM)    │  │  (in-memory + TTL)   │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
           │
@@ -52,7 +52,7 @@ This document explains the high-level architecture of Labitat, including the ser
 The adapter pattern is the heart of Labitat's extensibility. Each service (Radarr, Plex, etc.) is encapsulated in a self-contained definition that includes:
 
 ```typescript
-// lib/adapters/types.ts
+// src/lib/adapters/types.ts
 type ServiceDefinition<TData> = {
   id: string // Unique identifier (e.g., "radarr")
   name: string // Display name
@@ -76,7 +76,7 @@ type ServiceDefinition<TData> = {
 **Registry System:**
 
 ```typescript
-// lib/adapters/index.ts
+// src/lib/adapters/index.ts
 function buildRegistry(definitions: unknown[]): ServiceRegistry {
   const registry: Record<string, ServiceDefinition> = {}
   for (const def of definitions as ServiceDefinition[]) {
@@ -103,14 +103,14 @@ User opens dashboard
         │
         ▼
 ┌──────────────────────────────────────────┐
-│ app/page.tsx (Server Component)          │
+│ src/app/page.tsx (Server Component)      │
 │  - Fetches groups + items from DB        │
 │  - Revalidates every 30 seconds          │
 └────────────┬─────────────────────────────┘
              │
              ▼
 ┌──────────────────────────────────────────┐
-│ components/dashboard/dashboard.tsx       │
+│ src/components/dashboard/dashboard.tsx   │
 │  - Renders groups with optimistic UI    │
 │  - DnD via @dnd-kit                     │
 │  - useReducer for state management      │
@@ -125,7 +125,7 @@ User opens dashboard
              │
              ▼
 ┌──────────────────────────────────────────┐
-│ actions/services.ts (Server Action)      │
+│ src/actions/services.ts (Server Action)  │
 │  1. Load item from DB                    │
 │  2. Check cache (TTL-based)              │
 │  3. Decrypt credentials (AES-256-GCM)    │
@@ -136,7 +136,7 @@ User opens dashboard
              │
              ▼
 ┌──────────────────────────────────────────┐
-│ lib/adapters/radarr.tsx                  │
+│ src/lib/adapters/radarr.tsx              │
 │  - Fetches from Radarr API               │
 │  - Returns typed data (RadarrData)       │
 └──────────────────────────────────────────┘
@@ -147,7 +147,7 @@ User opens dashboard
 Some widgets (like DateTime, Search) handle their own data fetching:
 
 ```typescript
-// lib/adapters/datetime.tsx
+// src/lib/adapters/datetime.tsx
 export const datetimeDefinition: ServiceDefinition<DateTimeData> = {
   id: "datetime",
   clientSide: true,  // Widget handles its own updates
@@ -200,29 +200,13 @@ When a user creates/updates/deletes an item:
 
 ### 4. Caching Strategy
 
-#### In-Memory Cache (lib/cache.ts)
+#### Server-Side Cache (src/lib/server-cache.ts)
 
-```typescript
-// TTL-based cache for service data
-const cache = new Map<string, { data: any; expiresAt: number }>()
+Labitat uses a server-side cache backed by SQLite to ensure data persists across restarts and is immediately available for SSR.
 
-export async function getCached<T>(
-  key: string,
-  ttlMs: number
-): Promise<T | null> {
-  const entry = cache.get(key)
-  if (!entry || Date.now() > entry.expiresAt) return null
-  return entry.data
-}
-
-export async function setCached<T>(key: string, data: T): Promise<void> {
-  cache.set(key, { data, expiresAt: Date.now() + ttlMs })
-}
-```
-
-**Cache Keys**: `service:${itemId}`  
-**TTL**: Per-item (default 10s, configurable per adapter)  
-**Error Caching**: Errors cached briefly (5s) to avoid hammering failing services
+**Cache Keys**: `itemId`  
+**TTL**: Configurable per service (default 10s)  
+**Implementation**: See `src/lib/server-cache.ts`
 
 ### 5. Security Architecture
 
@@ -259,14 +243,7 @@ User enters API key
 
 #### Rate Limiting
 
-```typescript
-// lib/rate-limit.ts
-// - In-memory Map for fast lookups
-// - Debounced file writes (every 5s)
-// - Graceful shutdown flush
-// - Dual tracking: IP + email/account
-// - 5 attempts → 30 min lockout
-```
+Rate limiting is implemented in `src/lib/auth/rate-limit.ts` to protect authentication endpoints. It uses a persistent SQLite-backed storage to track attempts across restarts.
 
 ### 6. Database Schema
 
@@ -292,7 +269,6 @@ User enters API key
 │ icon_url     │
 │ service_type │  ← Adapter ID (e.g., "radarr")
 │ service_url  │
-│ api_key_enc  │  ← Encrypted JSON
 │ config_enc   │  ← Encrypted JSON
 │ order        │
 │ polling_ms   │
@@ -301,25 +277,25 @@ User enters API key
 ```
 
 **Engine**: SQLite via better-sqlite3 + Drizzle ORM  
-**Migrations**: Drizzle Kit, run on startup in Docker
+**Migrations**: Drizzle Kit, stored in `drizzle/` and run on startup in Docker
 
 ## Key Files
 
-| Path                                 | Purpose                                  |
-| ------------------------------------ | ---------------------------------------- |
-| `lib/adapters/`                      | Service adapter definitions              |
-| `lib/adapters/index.ts`              | Registry - add new adapters here         |
-| `lib/adapters/types.ts`              | Core types for adapters                  |
-| `actions/services.ts`                | Server action for fetching widget data   |
-| `actions/auth.ts`                    | Login, setup, logout actions             |
-| `actions/groups.ts`                  | CRUD for groups                          |
-| `actions/items.ts`                   | CRUD for items                           |
-| `components/dashboard/dashboard.tsx` | Main dashboard with DnD                  |
-| `lib/crypto.ts`                      | AES-256-GCM encryption with HKDF         |
-| `lib/cache.ts`                       | In-memory TTL cache                      |
-| `lib/rate-limit.ts`                  | Rate limiting with debounced persistence |
-| `lib/db/schema.ts`                   | Drizzle schema definition                |
-| `lib/env.ts`                         | Environment validation with Zod v4       |
+| Path                                     | Purpose                                |
+| ---------------------------------------- | -------------------------------------- |
+| `src/lib/adapters/`                      | Service adapter definitions            |
+| `src/lib/adapters/index.ts`              | Registry - add new adapters here       |
+| `src/lib/adapters/types.ts`              | Core types for adapters                |
+| `src/actions/services.ts`                | Server action for fetching widget data |
+| `src/actions/auth.ts`                    | Login, setup, logout actions           |
+| `src/actions/groups.ts`                  | CRUD for groups                        |
+| `src/actions/items.ts`                   | CRUD for items                         |
+| `src/components/dashboard/dashboard.tsx` | Main dashboard with DnD                |
+| `src/lib/crypto.ts`                      | AES-256-GCM encryption with HKDF       |
+| `src/lib/server-cache.ts`                | Server-side cache backed by SQLite     |
+| `src/lib/auth/rate-limit.ts`             | Rate limiting with persistence         |
+| `src/lib/db/schema.ts`                   | Drizzle schema definition              |
+| `src/lib/env.ts`                         | Environment validation with Zod        |
 
 ## Adding a New Service
 
@@ -330,5 +306,5 @@ See [Adding a Service](../adding-a-service.md) for a step-by-step guide. In brie
 3. Create `Widget` component
 4. Implement `fetchData` (optional)
 5. Define `configFields` for credentials
-6. Register in `lib/adapters/index.ts`
+6. Register in `src/lib/adapters/index.ts`
 7. Test and move from "disabled" to "active"

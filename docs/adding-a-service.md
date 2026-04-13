@@ -4,7 +4,7 @@ The most common contribution. The goal is **one file = one service**.
 
 ## Step 1: Create the Adapter File
 
-Create `lib/adapters/your-service.tsx`:
+Create `src/lib/adapters/your-service.tsx`:
 
 ```typescript
 import type { ServiceDefinition } from './types'
@@ -75,10 +75,10 @@ export const yourServiceDefinition: ServiceDefinition<YourServiceData> = {
 
 ## Step 2: Register in index.ts
 
-Add to `lib/adapters/index.ts`:
+Add to `src/lib/adapters/index.ts`:
 
 ```typescript
-import { yourServiceDefinition } from './your-service'
+import { yourServiceDefinition } from "./your-service"
 
 export const registry: ServiceRegistry = {
   // ...existing

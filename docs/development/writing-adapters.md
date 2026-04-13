@@ -22,7 +22,7 @@ Each adapter defines: **config fields** (shown in the UI), **data fetching** (se
 Single file. No `"use client"` directive.
 
 ```
-lib/adapters/radarr.tsx    ← configFields + fetchData + Widget
+src/lib/adapters/radarr.tsx    ← configFields + fetchData + Widget
 ```
 
 ### Adapters with client-side widgets
@@ -30,8 +30,8 @@ lib/adapters/radarr.tsx    ← configFields + fetchData + Widget
 **Split into two files** to keep the adapter definition importable on the server:
 
 ```
-lib/adapters/glances-timeseries.tsx       ← adapter definition (NO "use client")
-lib/adapters/glances-timeseries-widget.tsx ← Widget component ("use client")
+src/lib/adapters/glances-timeseries.tsx       ← adapter definition (NO "use client")
+src/lib/adapters/glances-timeseries-widget.tsx ← Widget component ("use client")
 ```
 
 > **⚠️ CRITICAL:** If your adapter file has `"use client"` at the top, the server action
@@ -45,7 +45,7 @@ lib/adapters/glances-timeseries-widget.tsx ← Widget component ("use client")
 ## Adapter Definition Template
 
 ```tsx
-// lib/adapters/my-service.tsx  ← NO "use client"
+// src/lib/adapters/my-service.tsx  ← NO "use client"
 
 import type { ServiceDefinition } from "./types"
 import { MyServiceWidget } from "./my-service-widget" // if client-side
@@ -113,7 +113,7 @@ export const myServiceDefinition: ServiceDefinition<MyServiceData> = {
 ## Client-Side Widget Template
 
 ```tsx
-// lib/adapters/my-service-widget.tsx  ← "use client" REQUIRED
+// src/lib/adapters/my-service-widget.tsx  ← "use client" REQUIRED
 
 "use client"
 
@@ -160,11 +160,11 @@ handles this by reading boolean values from React state and injecting them into
 
 ## Registering Your Adapter
 
-1. Add the import to `lib/adapters/index.ts`
+1. Add the import to `src/lib/adapters/index.ts`
 2. Add to the `registry` object
 
 ```ts
-// lib/adapters/index.ts
+// src/lib/adapters/index.ts
 
 import { myServiceDefinition } from "./my-service"
 
@@ -184,7 +184,7 @@ Used for grouping in the UI:
 ### Shared config fields (like Glances variants)
 
 ```ts
-// lib/adapters/glances-common.ts
+// src/lib/adapters/glances-common.ts
 export const GLANCES_BASE_FIELDS: FieldDef[] = [
   { key: "url", label: "Glances URL", type: "url", required: true, ... },
   { key: "username", label: "Username", type: "text", ... },
@@ -221,7 +221,7 @@ if (!res.ok) {
 
 - [ ] Adapter definition file does **NOT** have `"use client"` (unless it has no configFields/fetchData)
 - [ ] Widget is in a separate file with `"use client"` if it uses React hooks
-- [ ] Registered in `lib/adapters/index.ts`
+- [ ] Registered in `src/lib/adapters/index.ts`
 - [ ] `id` is unique and kebab-case
 - [ ] `configFields` covers all required inputs
 - [ ] `fetchData` handles errors gracefully (401, 404, network errors)

@@ -229,6 +229,8 @@ function EditableStatCard({ item, displayMode }: EditableStatCardProps) {
       style={style}
       {...attributes}
       {...listeners}
+      aria-label="Drag to reorder stat card"
+      data-testid="stat-card"
       className={cn(
         "flex h-full cursor-grab flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground transition-all duration-200 select-none hover:scale-105 hover:bg-secondary/80 hover:shadow-md active:scale-95 active:cursor-grabbing",
         isDragging && "scale-110 rotate-3 opacity-50 shadow-lg"
@@ -283,6 +285,7 @@ function UnusedZone({
   return (
     <div
       ref={setNodeRef}
+      aria-label="Unused stat cards"
       className={cn(
         "rounded-lg border-2 border-dashed p-3 transition-colors",
         isOver
@@ -354,6 +357,8 @@ function UnusedStatCard({
       style={style}
       {...attributes}
       {...listeners}
+      aria-label="Drag to reorder stat card"
+      data-testid="unused-stat-card"
       className={cn(
         "flex h-full cursor-grab flex-col items-center justify-center rounded-md bg-muted/50 px-2 py-1.5 text-center text-muted-foreground transition-all duration-200 select-none hover:bg-muted/70 active:scale-95 active:cursor-grabbing",
         isDragging && "scale-110 rotate-3 opacity-50 shadow-lg"

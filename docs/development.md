@@ -53,7 +53,7 @@ Hooks are installed automatically with `pnpm install`.
 ├── actions/               # Server actions
 ├── components/            # React components
 ├── hooks/                 # Custom React hooks
-├── lib/
+├── src/lib/
 │   ├── adapters/          # Service adapters (one file = one service)
 │   └── ...                # Utilities
 ├── public/                # Static assets

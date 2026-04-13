@@ -1,0 +1,262 @@
+import { test, expect, seedAndAuth } from "../fixtures"
+import { dragAndDrop } from "../helpers/dnd"
+
+const RADARR_URL = "https://radarr.test"
+
+test.describe("Stat Card Reordering and Visibility", () => {
+  test.beforeEach(async ({ page }) => {
+    await seedAndAuth(page, {
+      groups: [
+        {
+          name: "Media",
+          items: [
+            {
+              label: "Radarr",
+              href: RADARR_URL,
+              serviceType: "radarr",
+              serviceUrl: RADARR_URL,
+              cachedWidgetData: {
+                queued: 5,
+                missing: 3,
+                wanted: 7,
+                movies: 42,
+              },
+            },
+          ],
+        },
+      ],
+    })
+  })
+
+  test("reorders stat cards via drag-and-drop in edit mode", async ({
+    page,
+  }) => {
+    await page.goto("/")
+
+    // Wait for stat cards to load
+    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 })
+
+    // Enter edit mode
+    await page.getByRole("button", { name: "Edit" }).click()
+
+    // Hover over the item card to reveal edit controls
+    const itemCard = page.getByTestId("item-card").first()
+    await itemCard.hover()
+
+    // Open the item dialog by clicking the edit button on the item
+    await page.getByLabel("Edit item").first().click()
+
+    // Wait for dialog to open and stat cards to render
+    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible()
+    await expect(page.getByText("Stat Card Layout")).toBeVisible()
+
+    // Get the initial order of stat cards
+    const statCards = page.locator('[data-testid="stat-card"]')
+    const initialCount = await statCards.count()
+    expect(initialCount).toBeGreaterThanOrEqual(2)
+
+    // Get the first two stat cards' labels
+    const firstLabel = await statCards.nth(0).textContent()
+    const secondLabel = await statCards.nth(1).textContent()
+
+    // Drag the second stat card to the first position
+    const handles = page.locator('[aria-label="Drag to reorder stat card"]')
+    const firstHandle = handles.nth(0)
+    const secondHandle = handles.nth(1)
+
+    await dragAndDrop(page, secondHandle, firstHandle)
+
+    // Verify order changed
+    const reorderedFirstLabel = await statCards.nth(0).textContent()
+    expect(reorderedFirstLabel).toBe(secondLabel)
+  })
+
+  test("disables stat card by dragging to unused zone", async ({ page }) => {
+    await page.goto("/")
+
+    // Wait for stat cards to load
+    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 })
+
+    // Count visible stat cards before edit
+    const initialStatCount = await page
+      .locator('[data-testid="stat-card"]')
+      .count()
+    expect(initialStatCount).toBeGreaterThanOrEqual(2)
+
+    // Enter edit mode
+    await page.getByRole("button", { name: "Edit" }).click()
+
+    // Hover over the item card to reveal edit controls
+    const itemCard = page.getByTestId("item-card").first()
+    await itemCard.hover()
+
+    // Open the item dialog
+    await page.getByLabel("Edit item").first().click()
+
+    // Wait for dialog to open
+    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible()
+    await expect(page.getByText("Stat Card Layout")).toBeVisible()
+
+    // Get a stat card to drag (e.g., the first one)
+    const statCard = page.locator('[data-testid="stat-card"]').first()
+    const statLabel = await statCard.textContent()
+
+    // Drag to unused zone
+    const firstHandle = page
+      .locator('[aria-label="Drag to reorder stat card"]')
+      .nth(0)
+    const unusedZone = page.locator('[aria-label="Unused stat cards"]')
+
+    await dragAndDrop(page, firstHandle, unusedZone)
+
+    // Verify the stat card moved to unused area
+    const unusedItems = page.locator('[data-testid="unused-stat-card"]')
+    await expect(unusedItems).toHaveCount(1)
+
+    // Verify the unused zone shows the moved card
+    await expect(unusedItems.first()).toContainText(statLabel ?? "")
+  })
+
+  test("enables stat card by dragging from unused zone", async ({ page }) => {
+    await page.goto("/")
+
+    // Wait for stat cards to load
+    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 })
+
+    // Enter edit mode
+    await page.getByRole("button", { name: "Edit" }).click()
+
+    // Hover over the item card to reveal edit controls
+    const itemCard = page.getByTestId("item-card").first()
+    await itemCard.hover()
+
+    // Open the item dialog
+    await page.getByLabel("Edit item").first().click()
+
+    // Wait for dialog to open
+    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible()
+    await expect(page.getByText("Stat Card Layout")).toBeVisible()
+
+    // First, drag a stat card to unused zone
+    const firstHandle = page
+      .locator('[aria-label="Drag to reorder stat card"]')
+      .nth(0)
+    const unusedZone = page.locator('[aria-label="Unused stat cards"]')
+    await dragAndDrop(page, firstHandle, unusedZone)
+
+    // Verify it's in unused
+    const unusedItems = page.locator('[data-testid="unused-stat-card"]')
+    await expect(unusedItems).toHaveCount(1)
+    const unusedLabel = await unusedItems.first().textContent()
+
+    // Now drag it back to active zone
+    const unusedHandle = page
+      .locator('[aria-label="Drag to reorder stat card"]')
+      .last()
+    const activeStatCard = page.locator('[data-testid="stat-card"]').first()
+
+    await dragAndDrop(page, unusedHandle, activeStatCard)
+
+    // Verify it's back in active zone
+    await expect(unusedItems).toHaveCount(0)
+    const activeStatCards = page.locator('[data-testid="stat-card"]')
+    await expect(activeStatCards.first()).toContainText(unusedLabel ?? "")
+  })
+
+  test("persists stat card order after saving", async ({ page }) => {
+    await page.goto("/")
+
+    // Wait for stat cards to load
+    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 })
+
+    // Enter edit mode
+    await page.getByRole("button", { name: "Edit" }).click()
+
+    // Hover over the item card to reveal edit controls
+    const itemCard = page.getByTestId("item-card").first()
+    await itemCard.hover()
+
+    // Open the item dialog
+    await page.getByLabel("Edit item").first().click()
+
+    // Wait for dialog to open
+    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible()
+    await expect(page.getByText("Stat Card Layout")).toBeVisible()
+
+    // Get initial order
+    const statCards = page.locator('[data-testid="stat-card"]')
+    const initialFirstLabel = await statCards.nth(0).textContent()
+    const initialSecondLabel = await statCards.nth(1).textContent()
+
+    // Reorder: drag second to first
+    const handles = page.locator('[aria-label="Drag to reorder stat card"]')
+    await dragAndDrop(page, handles.nth(1), handles.nth(0))
+
+    // Save the item
+    await page.getByRole("button", { name: "Update" }).click()
+
+    // Wait for dialog to close
+    await expect(page.getByText("Stat Card Layout")).not.toBeVisible()
+
+    // Exit edit mode
+    await page.getByRole("button", { name: "Done" }).click()
+
+    // Reload page to verify persistence
+    await page.reload()
+
+    // Wait for stat cards to load
+    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 })
+
+    // Re-enter edit mode
+    await page.getByRole("button", { name: "Edit" }).click()
+
+    // Hover over the item card to reveal edit controls
+    await page.getByTestId("item-card").first().hover()
+
+    // Open the item dialog again
+    await page.getByLabel("Edit item").first().click()
+
+    // Wait for dialog to open
+    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible()
+    await expect(page.getByText("Stat Card Layout")).toBeVisible()
+
+    // Verify order persisted
+    const reorderedStatCards = page.locator('[data-testid="stat-card"]')
+    const persistedFirstLabel = await reorderedStatCards.nth(0).textContent()
+    expect(persistedFirstLabel).toBe(initialSecondLabel)
+  })
+
+  test("shows unused zone with count", async ({ page }) => {
+    await page.goto("/")
+
+    // Wait for stat cards to load
+    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 })
+
+    // Enter edit mode
+    await page.getByRole("button", { name: "Edit" }).click()
+
+    // Hover over the item card to reveal edit controls
+    const itemCard = page.getByTestId("item-card").first()
+    await itemCard.hover()
+
+    // Open the item dialog
+    await page.getByLabel("Edit item").first().click()
+
+    // Wait for dialog to open
+    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible()
+    await expect(page.getByText("Stat Card Layout")).toBeVisible()
+
+    // Unused zone should show count of 0 initially
+    await expect(page.getByText("Unused (0)")).toBeVisible()
+
+    // Drag a stat card to unused zone
+    const firstHandle = page
+      .locator('[aria-label="Drag to reorder stat card"]')
+      .nth(0)
+    const unusedZone = page.locator('[aria-label="Unused stat cards"]')
+    await dragAndDrop(page, firstHandle, unusedZone)
+
+    // Unused zone should now show count of 1
+    await expect(page.getByText("Unused (1)")).toBeVisible()
+  })
+})

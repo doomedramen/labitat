@@ -14,7 +14,7 @@ import readline from "readline";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
-const adaptersDir = path.join(rootDir, "lib", "adapters");
+const adaptersDir = path.join(rootDir, "src", "lib", "adapters");
 const registryFile = path.join(adaptersDir, "index.ts");
 
 const rl = readline.createInterface({
@@ -159,7 +159,7 @@ export const ${camelName}Definition: ServiceDefinition<${pascalName}Data> = {
 `;
 
   fs.writeFileSync(adapterFile, template, "utf-8");
-  console.log(`\n✅ Created: lib/adapters/${id}.tsx`);
+  console.log(`\n✅ Created: src/lib/adapters/${id}.tsx`);
 
   // Update registry
   const registryContent = fs.readFileSync(registryFile, "utf-8");
@@ -210,11 +210,11 @@ export const ${camelName}Definition: ServiceDefinition<${pascalName}Data> = {
       `export const registry: ServiceRegistry = {${updatedRegistryObj}\n}`
     );
     fs.writeFileSync(registryFile, newRegistryContent, "utf-8");
-    console.log(`✅ Registered in lib/adapters/index.ts`);
+    console.log(`✅ Registered in src/lib/adapters/index.ts`);
   }
 
   console.log(`\n📝 Next steps:`);
-  console.log(`   1. Edit lib/adapters/${id}.tsx with your API logic`);
+  console.log(`   1. Edit src/lib/adapters/${id}.tsx with your API logic`);
   console.log(`   2. Run pnpm check-adapters to verify`);
   console.log(`   3. Add docs/services/${id}.md`);
 
