@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/auth";
-import { Dashboard } from "@/components/dashboard/dashboard";
+import { Dashboard } from "@/components/dashboard";
 import { serverCache } from "@/lib/server-cache";
 import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache";
 import type { GroupWithCache, ItemWithCache } from "@/lib/types";
