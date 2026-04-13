@@ -4,10 +4,10 @@ Media request management.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Overseerr/Seerr server URL |
-| API Key | Password | Yes | API key |
+| Field   | Type     | Required | Description                |
+| ------- | -------- | -------- | -------------------------- |
+| URL     | URL      | Yes      | Overseerr/Seerr server URL |
+| API Key | Password | Yes      | API key                    |
 
 ## Finding Your API Key
 

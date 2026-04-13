@@ -1,16 +1,16 @@
-import type { ServiceDefinition } from "./types"
-import { Thermometer, Droplets, Wind, Sun, Moon } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Thermometer, Droplets, Wind, Sun, Moon } from "lucide-react";
 
 type OpenMeteoData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  temperature: number
-  humidity: number
-  windSpeed: number
-  weatherCode: number
-  isDay: boolean
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  temperature: number;
+  humidity: number;
+  windSpeed: number;
+  weatherCode: number;
+  isDay: boolean;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 // WMO weather code descriptions
 const weatherDescriptions: Record<number, string> = {
@@ -33,10 +33,10 @@ const weatherDescriptions: Record<number, string> = {
   81: "Moderate showers",
   82: "Violent showers",
   95: "Thunderstorm",
-}
+};
 
 function openmeteoToPayload(data: OpenMeteoData) {
-  const weatherDesc = weatherDescriptions[data.weatherCode] ?? "Unknown"
+  const weatherDesc = weatherDescriptions[data.weatherCode] ?? "Unknown";
 
   return {
     stats: [
@@ -65,7 +65,7 @@ function openmeteoToPayload(data: OpenMeteoData) {
         icon: data.isDay ? Sun : Moon,
       },
     ],
-  }
+  };
 }
 
 export const openmeteoDefinition: ServiceDefinition<OpenMeteoData> = {
@@ -93,15 +93,15 @@ export const openmeteoDefinition: ServiceDefinition<OpenMeteoData> = {
     },
   ],
   async fetchData(config) {
-    const lat = config.latitude
-    const lon = config.longitude
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&temperature_unit=celsius&wind_speed_unit=kmh`
+    const lat = config.latitude;
+    const lon = config.longitude;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&temperature_unit=celsius&wind_speed_unit=kmh`;
 
-    const res = await fetchWithTimeout(url)
-    if (!res.ok) throw new Error(`Open-Meteo error: ${res.status}`)
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error(`Open-Meteo error: ${res.status}`);
 
-    const data = await res.json()
-    const current = data.current ?? {}
+    const data = await res.json();
+    const current = data.current ?? {};
 
     return {
       _status: "ok",
@@ -110,7 +110,7 @@ export const openmeteoDefinition: ServiceDefinition<OpenMeteoData> = {
       windSpeed: Math.round(current.wind_speed_10m ?? 0),
       weatherCode: current.weather_code ?? 0,
       isDay: current.is_day === 1,
-    }
+    };
   },
   toPayload: openmeteoToPayload,
-}
+};

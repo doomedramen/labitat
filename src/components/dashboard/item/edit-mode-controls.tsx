@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import type { ItemWithCache } from "@/lib/types"
-import { Pencil, Trash2, GripHorizontal } from "lucide-react"
-import type { DraggableAttributes } from "@dnd-kit/core"
-import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
-import { ConfirmDialog } from "@/components/confirm-dialog"
+import { useState } from "react";
+import type { ItemWithCache } from "@/lib/types";
+import { Pencil, Trash2, GripHorizontal } from "lucide-react";
+import type { DraggableAttributes } from "@dnd-kit/core";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface EditModeControlsProps {
-  item: ItemWithCache
-  onEdit: (item: ItemWithCache) => void
-  onDeleted?: (itemId: string) => void
-  setActivatorNodeRef: (element: HTMLElement | null) => void
-  attributes: DraggableAttributes
-  listeners: SyntheticListenerMap | undefined
+  item: ItemWithCache;
+  onEdit: (item: ItemWithCache) => void;
+  onDeleted?: (itemId: string) => void;
+  setActivatorNodeRef: (element: HTMLElement | null) => void;
+  attributes: DraggableAttributes;
+  listeners: SyntheticListenerMap | undefined;
 }
 
 export function EditModeControls({
@@ -24,7 +24,7 @@ export function EditModeControls({
   attributes,
   listeners,
 }: EditModeControlsProps) {
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   return (
     <>
@@ -63,10 +63,10 @@ export function EditModeControls({
         title="Delete item"
         description={`Are you sure you want to delete "${item.label}"? This cannot be undone.`}
         onConfirm={() => {
-          onDeleted?.(item.id)
-          setDeleteConfirmOpen(false)
+          onDeleted?.(item.id);
+          setDeleteConfirmOpen(false);
         }}
       />
     </>
-  )
+  );
 }

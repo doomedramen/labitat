@@ -2,8 +2,8 @@
  * Mock data for networking and monitoring adapters (AdGuard, Pi-hole, Glances, OpenMeteo, etc.)
  */
 
-import type { MockResponse } from "../adapter-mocks"
-import { successResponse, urlPatterns } from "../adapter-mocks"
+import type { MockResponse } from "../adapter-mocks";
+import { successResponse, urlPatterns } from "../adapter-mocks";
 
 // ── AdGuard Mocks ───────────────────────────────────────────────────────────────
 
@@ -11,11 +11,11 @@ export const adguardMocks = {
   success: (
     baseUrl = "https://adguard.example.com",
     opts?: {
-      queries?: number
-      blocked?: number
-      parentalBlocked?: number
-      safeSearchBlocked?: number
-    }
+      queries?: number;
+      blocked?: number;
+      parentalBlocked?: number;
+      safeSearchBlocked?: number;
+    },
   ): MockResponse[] => [
     successResponse(urlPatterns.api(baseUrl, "/control/stats"), {
       num_dns_queries: opts?.queries ?? 15234,
@@ -34,23 +34,16 @@ export const adguardMocks = {
     }),
   ],
 
-  error: (
-    baseUrl = "https://adguard.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://adguard.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/control/stats"),
       { error: `AdGuard error: ${status}` },
-      status
+      status,
     ),
 
   unauthorized: (baseUrl = "https://adguard.example.com"): MockResponse =>
-    successResponse(
-      urlPatterns.api(baseUrl, "/control/stats"),
-      { error: "Unauthorized" },
-      401
-    ),
-}
+    successResponse(urlPatterns.api(baseUrl, "/control/stats"), { error: "Unauthorized" }, 401),
+};
 
 // ── Pi-hole Mocks ───────────────────────────────────────────────────────────────
 
@@ -58,47 +51,41 @@ export const piholeMocks = {
   success: (
     baseUrl = "https://pihole.example.com",
     opts?: {
-      queries?: number
-      blocked?: number
-      percentage?: number
-      domainsBeingBlocked?: number
-    }
+      queries?: number;
+      blocked?: number;
+      percentage?: number;
+      domainsBeingBlocked?: number;
+    },
   ): MockResponse[] => [
-    successResponse(
-      urlPatterns.withQuery(baseUrl, "/admin/api.php", { summary: "true" }),
-      {
-        domains_being_blocked: opts?.domainsBeingBlocked ?? 125432,
-        dns_queries_today: opts?.queries ?? 8765,
-        ads_blocked_today: opts?.blocked ?? 1234,
-        ads_percentage_today: opts?.percentage ?? 14.07,
-        unique_domains: 3456,
-        queries_forwarded: 5432,
-        queries_cached: 2099,
-        status: "enabled",
-      }
-    ),
+    successResponse(urlPatterns.withQuery(baseUrl, "/admin/api.php", { summary: "true" }), {
+      domains_being_blocked: opts?.domainsBeingBlocked ?? 125432,
+      dns_queries_today: opts?.queries ?? 8765,
+      ads_blocked_today: opts?.blocked ?? 1234,
+      ads_percentage_today: opts?.percentage ?? 14.07,
+      unique_domains: 3456,
+      queries_forwarded: 5432,
+      queries_cached: 2099,
+      status: "enabled",
+    }),
   ],
 
   empty: (baseUrl = "https://pihole.example.com"): MockResponse[] => [
-    successResponse(
-      urlPatterns.withQuery(baseUrl, "/admin/api.php", { summary: "true" }),
-      {
-        domains_being_blocked: 0,
-        dns_queries_today: 0,
-        ads_blocked_today: 0,
-        ads_percentage_today: 0,
-        status: "enabled",
-      }
-    ),
+    successResponse(urlPatterns.withQuery(baseUrl, "/admin/api.php", { summary: "true" }), {
+      domains_being_blocked: 0,
+      dns_queries_today: 0,
+      ads_blocked_today: 0,
+      ads_percentage_today: 0,
+      status: "enabled",
+    }),
   ],
 
   error: (baseUrl = "https://pihole.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.withQuery(baseUrl, "/admin/api.php", { summary: "true" }),
       { error: `Pi-hole error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── Glances Mocks ───────────────────────────────────────────────────────────────
 
@@ -106,16 +93,16 @@ export const glancesMocks = {
   success: (
     baseUrl = "https://glances.example.com",
     opts?: {
-      cpuPercent?: number
-      memPercent?: number
-      memUsed?: number
-      memTotal?: number
-      load?: number[]
-      diskReadRate?: number
-      diskWriteRate?: number
-      networkRx?: number
-      networkTx?: number
-    }
+      cpuPercent?: number;
+      memPercent?: number;
+      memUsed?: number;
+      memTotal?: number;
+      load?: number[];
+      diskReadRate?: number;
+      diskWriteRate?: number;
+      networkRx?: number;
+      networkTx?: number;
+    },
   ): MockResponse[] => [
     successResponse(urlPatterns.api(baseUrl, "/api/4/quicklook"), {
       cpu: opts?.cpuPercent ?? 45.2,
@@ -164,30 +151,27 @@ export const glancesMocks = {
     }),
   ],
 
-  error: (
-    baseUrl = "https://glances.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://glances.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/api/4/quicklook"),
       { error: `Glances error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── OpenMeteo Mocks ─────────────────────────────────────────────────────────────
 
 export const openmeteoMocks = {
   success: (opts?: {
-    latitude?: number
-    longitude?: number
-    temperature?: number
-    humidity?: number
-    windSpeed?: number
-    weatherCode?: number
+    latitude?: number;
+    longitude?: number;
+    temperature?: number;
+    humidity?: number;
+    windSpeed?: number;
+    weatherCode?: number;
   }): MockResponse[] => {
-    const lat = opts?.latitude ?? 51.5074
-    const lon = opts?.longitude ?? -0.1278
+    const lat = opts?.latitude ?? 51.5074;
+    const lon = opts?.longitude ?? -0.1278;
 
     return [
       successResponse(urlPatterns.contains("api.open-meteo.com"), {
@@ -200,7 +184,7 @@ export const openmeteoMocks = {
           weather_code: opts?.weatherCode ?? 2, // Partly cloudy
         },
       }),
-    ]
+    ];
   },
 
   empty: (): MockResponse[] => [
@@ -220,19 +204,19 @@ export const openmeteoMocks = {
     successResponse(
       urlPatterns.contains("api.open-meteo.com"),
       { error: `OpenMeteo error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── OpenWeatherMap Mocks ────────────────────────────────────────────────────────
 
 export const openweathermapMocks = {
   success: (opts?: {
-    city?: string
-    temperature?: number
-    humidity?: number
-    windSpeed?: number
-    description?: string
+    city?: string;
+    temperature?: number;
+    humidity?: number;
+    windSpeed?: number;
+    description?: string;
   }): MockResponse[] => [
     successResponse(urlPatterns.contains("api.openweathermap.org"), {
       name: opts?.city ?? "London",
@@ -265,16 +249,16 @@ export const openweathermapMocks = {
     successResponse(
       urlPatterns.contains("api.openweathermap.org"),
       { error: `OpenWeatherMap error: ${status}` },
-      status
+      status,
     ),
 
   unauthorized: (): MockResponse =>
     successResponse(
       urlPatterns.contains("api.openweathermap.org"),
       { message: "Invalid API key" },
-      401
+      401,
     ),
-}
+};
 
 // ── UniFi Mocks ─────────────────────────────────────────────────────────────────
 
@@ -282,12 +266,12 @@ export const unifiMocks = {
   success: (
     baseUrl = "https://unifi.example.com",
     opts?: {
-      wanBytes?: number
-      lanBytes?: number
-      wlanBytes?: number
-      userCount?: number
-      guestCount?: number
-    }
+      wanBytes?: number;
+      lanBytes?: number;
+      wlanBytes?: number;
+      userCount?: number;
+      guestCount?: number;
+    },
   ): MockResponse[] => [
     // Login
     successResponse(urlPatterns.api(baseUrl, "/api/login"), {
@@ -330,9 +314,9 @@ export const unifiMocks = {
     successResponse(
       urlPatterns.api(baseUrl, "/api/login"),
       { meta: { rc: "error", msg: "Authentication failed" } },
-      status
+      status,
     ),
-}
+};
 
 // ── APC UPS Mocks ───────────────────────────────────────────────────────────────
 
@@ -340,12 +324,12 @@ export const apcupsMocks = {
   success: (
     baseUrl = "https://apcups.example.com",
     opts?: {
-      loadPercent?: number
-      batteryCharge?: number
-      timeLeft?: number
-      voltage?: number
-      temperature?: number
-    }
+      loadPercent?: number;
+      batteryCharge?: number;
+      timeLeft?: number;
+      voltage?: number;
+      temperature?: number;
+    },
   ): MockResponse[] => [
     successResponse(urlPatterns.api(baseUrl, "/api/status"), {
       loadpercent: opts?.loadPercent ?? 35.0,
@@ -372,6 +356,6 @@ export const apcupsMocks = {
     successResponse(
       urlPatterns.api(baseUrl, "/api/status"),
       { error: `APC UPS error: ${status}` },
-      status
+      status,
     ),
-}
+};

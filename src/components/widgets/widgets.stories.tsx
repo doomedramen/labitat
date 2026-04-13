@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   StatGrid,
   ResourceBar,
@@ -6,15 +6,8 @@ import {
   DownloadList,
   ActiveStreamList,
   ListItem,
-} from "./index"
-import {
-  Download,
-  AlertTriangle,
-  Search,
-  Film,
-  HardDrive,
-  Monitor,
-} from "lucide-react"
+} from "./index";
+import { Download, AlertTriangle, Search, Film, HardDrive, Monitor } from "lucide-react";
 
 const meta: Meta = {
   title: "Widgets/Core",
@@ -22,9 +15,9 @@ const meta: Meta = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
+export default meta;
 
 /**
  * StatGrid - used for high-level metrics (e.g., Radarr/Sonarr totals)
@@ -50,7 +43,7 @@ export const Stats: StoryObj<typeof StatGrid> = {
       <StatGrid {...args} />
     </div>
   ),
-}
+};
 
 /**
  * ResourceBar - used for single metrics like CPU or Memory
@@ -64,21 +57,11 @@ export const Resources: StoryObj<typeof ResourceBar> = {
   render: (args) => (
     <div className="flex w-[300px] flex-col gap-4">
       <ResourceBar {...args} />
-      <ResourceBar
-        label="Memory"
-        value={75}
-        hint="12.4 GB / 16 GB"
-        warningAt={70}
-      />
-      <ResourceBar
-        label="Disk Space"
-        value={92}
-        hint="Critical"
-        criticalAt={90}
-      />
+      <ResourceBar label="Memory" value={75} hint="12.4 GB / 16 GB" warningAt={70} />
+      <ResourceBar label="Disk Space" value={92} hint="Critical" criticalAt={90} />
     </div>
   ),
-}
+};
 
 /**
  * ResourceBarDual - used for Used vs Free metrics
@@ -95,7 +78,7 @@ export const ResourcesDual: StoryObj<typeof ResourceBarDual> = {
       <ResourceBarDual {...args} />
     </div>
   ),
-}
+};
 
 /**
  * DownloadList - used by Sonarr, Radarr, qBittorrent, etc.
@@ -130,7 +113,7 @@ export const Downloads: StoryObj<typeof DownloadList> = {
       <DownloadList {...args} />
     </div>
   ),
-}
+};
 
 /**
  * ActiveStreamList - used by Plex, Tautulli, Jellyfin
@@ -166,7 +149,7 @@ export const ActiveStreams: StoryObj<typeof ActiveStreamList> = {
       <ActiveStreamList {...args} />
     </div>
   ),
-}
+};
 
 /**
  * Generic ListItem examples
@@ -194,4 +177,4 @@ export const GenericItems: StoryObj<typeof ListItem> = {
       />
     </div>
   ),
-}
+};

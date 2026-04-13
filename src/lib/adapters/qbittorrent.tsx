@@ -1,23 +1,23 @@
-import type { ServiceDefinition } from "./types"
-import type { DownloadItem } from "@/components/widgets"
-import { formatBytes, formatDuration } from "@/lib/utils/format"
-import { validateResponse, validateArrayResponse, parseBool } from "./validate"
-import { ArrowDown, ArrowUp, Download, List } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import type { DownloadItem } from "@/components/widgets";
+import { formatBytes, formatDuration } from "@/lib/utils/format";
+import { validateResponse, validateArrayResponse, parseBool } from "./validate";
+import { ArrowDown, ArrowUp, Download, List } from "lucide-react";
 
 type QBittorrentData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  downSpeed: string
-  upSpeed: string
-  activeDownloads: number
-  queued: number
-  showDownloads?: boolean
-  downloads?: DownloadItem[]
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  downSpeed: string;
+  upSpeed: string;
+  activeDownloads: number;
+  queued: number;
+  showDownloads?: boolean;
+  downloads?: DownloadItem[];
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function formatSpeed(bytesPerSec: number): string {
-  return `${formatBytes(bytesPerSec)}/s`
+  return `${formatBytes(bytesPerSec)}/s`;
 }
 
 function qbittorrentToPayload(data: QBittorrentData) {
@@ -48,9 +48,8 @@ function qbittorrentToPayload(data: QBittorrentData) {
         icon: List,
       },
     ],
-    downloads:
-      data.showDownloads && data.downloads?.length ? data.downloads : undefined,
-  }
+    downloads: data.showDownloads && data.downloads?.length ? data.downloads : undefined,
+  };
 }
 
 export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
@@ -89,8 +88,8 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const showDownloads = parseBool(config.showDownloads, true)
+    const baseUrl = config.url.replace(/\/$/, "");
+    const showDownloads = parseBool(config.showDownloads, true);
 
     // Login
     const loginRes = await fetchWithTimeout(`${baseUrl}/api/v2/auth/login`, {
@@ -99,16 +98,15 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
         username: config.username,
         password: config.password,
       }),
-    })
-    if (!loginRes.ok)
-      throw new Error(`qBittorrent login failed: ${loginRes.status}`)
+    });
+    if (!loginRes.ok) throw new Error(`qBittorrent login failed: ${loginRes.status}`);
     // qBittorrent returns HTTP 200 with body "Fails." on bad credentials
-    const loginBody = await loginRes.text()
+    const loginBody = await loginRes.text();
     if (loginBody.trim() === "Fails.")
-      throw new Error("qBittorrent login failed: invalid credentials")
-    const cookie = loginRes.headers.getSetCookie?.()[0] ?? ""
+      throw new Error("qBittorrent login failed: invalid credentials");
+    const cookie = loginRes.headers.getSetCookie?.()[0] ?? "";
 
-    const headers = { Cookie: cookie }
+    const headers = { Cookie: cookie };
 
     // Get transfer info, torrent list, and queued count
     const [infoRes, torrentsRes, queuedRes] = await Promise.all([
@@ -119,36 +117,36 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       fetchWithTimeout(`${baseUrl}/api/v2/torrents/info?filter=queuedDL`, {
         headers,
       }),
-    ])
+    ]);
 
-    if (!infoRes.ok) throw new Error(`qBittorrent error: ${infoRes.status}`)
+    if (!infoRes.ok) throw new Error(`qBittorrent error: ${infoRes.status}`);
 
     const info = validateResponse<{
-      dl_info_speed?: number
-      up_info_speed?: number
+      dl_info_speed?: number;
+      up_info_speed?: number;
     }>(await infoRes.json(), ["dl_info_speed", "up_info_speed"], [], {
       adapter: "qbittorrent",
-    })
+    });
     const torrents = torrentsRes.ok
       ? validateArrayResponse<{
-          state: string
-          dlspeed: number
-          name: string
-          progress: number
-          eta: number
-          size: number
+          state: string;
+          dlspeed: number;
+          name: string;
+          progress: number;
+          eta: number;
+          size: number;
         }>(await torrentsRes.json(), {
           adapter: "qbittorrent",
           optional: true,
         })
-      : []
+      : [];
     const queuedRaw = queuedRes.ok
       ? validateArrayResponse(await queuedRes.json(), {
           adapter: "qbittorrent",
           optional: true,
         })
-      : []
-    const queued = queuedRaw.length
+      : [];
+    const queued = queuedRaw.length;
 
     // Build active download list with state-priority sorting
     // State priority (like Homepage): downloading > forcedDL > metaDL > stalledDL > queuedDL > pausedDL
@@ -159,39 +157,34 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       stalledDL: 3,
       queuedDL: 4,
       pausedDL: 5,
-    }
+    };
 
     const downloads: DownloadItem[] = torrents
-      .sort(
-        (
-          a: { state: string; dlspeed: number },
-          b: { state: string; dlspeed: number }
-        ) => {
-          // First sort by state priority
-          const stateA = statePriority[a.state] ?? 99
-          const stateB = statePriority[b.state] ?? 99
-          if (stateA !== stateB) return stateA - stateB
-          // Then by download speed (descending)
-          return b.dlspeed - a.dlspeed
-        }
-      )
+      .sort((a: { state: string; dlspeed: number }, b: { state: string; dlspeed: number }) => {
+        // First sort by state priority
+        const stateA = statePriority[a.state] ?? 99;
+        const stateB = statePriority[b.state] ?? 99;
+        if (stateA !== stateB) return stateA - stateB;
+        // Then by download speed (descending)
+        return b.dlspeed - a.dlspeed;
+      })
       .slice(0, 5)
       .map(
         (t: {
-          name: string
-          progress: number
-          eta: number
-          dlspeed: number
-          size: number
-          state: string
+          name: string;
+          progress: number;
+          eta: number;
+          dlspeed: number;
+          size: number;
+          state: string;
         }) => {
           // Map qBittorrent states to user-friendly labels
-          let activity = "downloading"
-          if (t.state === "stalledDL") activity = "Stalled"
-          else if (t.state === "queuedDL") activity = "Queued"
-          else if (t.state === "pausedDL") activity = "Paused"
-          else if (t.state === "metaDL") activity = "Fetching metadata"
-          else if (t.state === "forcedDL") activity = "Forced downloading"
+          let activity = "downloading";
+          if (t.state === "stalledDL") activity = "Stalled";
+          else if (t.state === "queuedDL") activity = "Queued";
+          else if (t.state === "pausedDL") activity = "Paused";
+          else if (t.state === "metaDL") activity = "Fetching metadata";
+          else if (t.state === "forcedDL") activity = "Forced downloading";
 
           return {
             title: t.name,
@@ -199,9 +192,9 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
             timeLeft: formatDuration(t.eta),
             activity,
             size: formatBytes(t.size),
-          }
-        }
-      )
+          };
+        },
+      );
 
     return {
       _status: "ok",
@@ -211,7 +204,7 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       queued,
       showDownloads,
       downloads: showDownloads ? downloads : [],
-    }
+    };
   },
   toPayload: qbittorrentToPayload,
-}
+};

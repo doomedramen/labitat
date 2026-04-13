@@ -4,10 +4,10 @@ Usenet downloader.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | SABnzbd server URL |
-| API Key | Password | Yes | SABnzbd API key |
+| Field   | Type     | Required | Description        |
+| ------- | -------- | -------- | ------------------ |
+| URL     | URL      | Yes      | SABnzbd server URL |
+| API Key | Password | Yes      | SABnzbd API key    |
 
 ## Finding Your API Key
 

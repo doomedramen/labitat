@@ -1,19 +1,19 @@
-import { useMemo } from "react"
-import { cn } from "@/lib/utils"
-import { WidgetContainer } from "@/components/widgets/widget-container"
-import type { ServiceData } from "@/lib/adapters/types"
-import type { ServiceDefinition } from "@/lib/adapters/types"
-import type { ItemRow } from "@/lib/types"
-import { WidgetDisplayProvider } from "./widget-display-context"
-import { parseStatCardOrder } from "@/hooks/use-stat-card-order"
+import { useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { WidgetContainer } from "@/components/widgets/widget-container";
+import type { ServiceData } from "@/lib/adapters/types";
+import type { ServiceDefinition } from "@/lib/adapters/types";
+import type { ItemRow } from "@/lib/types";
+import { WidgetDisplayProvider } from "./widget-display-context";
+import { parseStatCardOrder } from "@/hooks/use-stat-card-order";
 
 interface WidgetRendererProps {
-  serviceDef: ServiceDefinition | null
-  effectiveData: ServiceData | null
-  isClientSide: boolean
-  editMode: boolean
-  cleanMode?: boolean
-  item: ItemRow
+  serviceDef: ServiceDefinition | null;
+  effectiveData: ServiceData | null;
+  isClientSide: boolean;
+  editMode: boolean;
+  cleanMode?: boolean;
+  item: ItemRow;
 }
 
 /**
@@ -30,17 +30,17 @@ export function WidgetRenderer({
   item,
 }: WidgetRendererProps) {
   // Custom widget takes precedence, otherwise use toPayload
-  const hasCustomWidget = !!serviceDef?.renderWidget && !isClientSide
+  const hasCustomWidget = !!serviceDef?.renderWidget && !isClientSide;
 
   const payload = useMemo(
     () =>
       effectiveData && serviceDef?.toPayload && !hasCustomWidget
         ? serviceDef.toPayload(effectiveData)
         : null,
-    [effectiveData, serviceDef, hasCustomWidget]
-  )
+    [effectiveData, serviceDef, hasCustomWidget],
+  );
 
-  const hasPayload = !!payload
+  const hasPayload = !!payload;
 
   // Memoize context value
   const contextValue = useMemo(
@@ -51,29 +51,27 @@ export function WidgetRenderer({
       itemId: item.id,
       defaultActiveIds: payload?.defaultActiveIds,
     }),
-    [item.statDisplayMode, item.statCardOrder, editMode, item.id, payload]
-  )
+    [item.statDisplayMode, item.statCardOrder, editMode, item.id, payload],
+  );
 
   // Don't render client-side-only services during SSR
   if (isClientSide && !effectiveData) {
-    return <div className={cn(cleanMode ? "" : "mt-2")} />
+    return <div className={cn(cleanMode ? "" : "mt-2")} />;
   }
 
   if (!(hasCustomWidget || hasPayload) || !effectiveData || !serviceDef) {
-    return <div className={cn(cleanMode ? "" : "mt-2")} />
+    return <div className={cn(cleanMode ? "" : "mt-2")} />;
   }
 
   return (
     <div className={cn(cleanMode ? "" : "mt-2")}>
       <WidgetDisplayProvider value={contextValue}>
         {hasCustomWidget && serviceDef.renderWidget ? (
-          <serviceDef.renderWidget
-            {...(effectiveData as Record<string, unknown>)}
-          />
+          <serviceDef.renderWidget {...(effectiveData as Record<string, unknown>)} />
         ) : hasPayload && payload ? (
           <WidgetContainer payload={payload} />
         ) : null}
       </WidgetDisplayProvider>
     </div>
-  )
+  );
 }

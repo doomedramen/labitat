@@ -1,20 +1,20 @@
-import type { ServiceDefinition } from "./types"
-import type { ActiveStream } from "@/components/widgets"
-import { formatBytes } from "@/lib/utils/format"
-import { buildStreamsTooltip, formatMediaTitle } from "@/lib/utils/format-media"
-import { Activity, Cpu, Monitor, Play, Radio } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import type { ActiveStream } from "@/components/widgets";
+import { formatBytes } from "@/lib/utils/format";
+import { buildStreamsTooltip, formatMediaTitle } from "@/lib/utils/format-media";
+import { Activity, Cpu, Monitor, Play, Radio } from "lucide-react";
 
 type TautulliData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  streamCount: number
-  totalBandwidth: string
-  transcodeStreams: number
-  directPlayStreams: number
-  directStreamStreams: number
-  sessions?: ActiveStream[]
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  streamCount: number;
+  totalBandwidth: string;
+  transcodeStreams: number;
+  directPlayStreams: number;
+  directStreamStreams: number;
+  sessions?: ActiveStream[];
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function tautulliToPayload(data: TautulliData) {
   return {
@@ -53,13 +53,8 @@ function tautulliToPayload(data: TautulliData) {
     ],
     streams: data.sessions?.length ? data.sessions : undefined,
     // Default to 4 stats: hide "streams" count, show bandwidth/transcoding/direct-play/direct-stream
-    defaultActiveIds: [
-      "bandwidth",
-      "transcoding",
-      "direct-play",
-      "direct-stream",
-    ],
-  }
+    defaultActiveIds: ["bandwidth", "transcoding", "direct-play", "direct-stream"],
+  };
 }
 
 export const tautulliDefinition: ServiceDefinition<TautulliData> = {
@@ -85,71 +80,67 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const url = `${baseUrl}/api/v2?apikey=${config.apiKey}&cmd=get_activity`
+    const baseUrl = config.url.replace(/\/$/, "");
+    const url = `${baseUrl}/api/v2?apikey=${config.apiKey}&cmd=get_activity`;
 
-    const res = await fetchWithTimeout(url)
-    if (!res.ok) throw new Error(`Tautulli error: ${res.status}`)
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error(`Tautulli error: ${res.status}`);
 
-    const data = await res.json()
-    const sessions = data.response?.data?.sessions ?? []
+    const data = await res.json();
+    const sessions = data.response?.data?.sessions ?? [];
 
-    let totalBandwidth = 0
-    let transcodeStreams = 0
-    let directPlayStreams = 0
-    let directStreamStreams = 0
+    let totalBandwidth = 0;
+    let transcodeStreams = 0;
+    let directPlayStreams = 0;
+    let directStreamStreams = 0;
 
     const activeStreams: ActiveStream[] = sessions.map(
       (s: {
-        title: string
-        grandparent_title?: string
-        parent_title?: string
-        media_type?: string
-        season_number?: number
-        episode_number?: number
-        user: string
-        progress_percent: number
-        duration: number
-        view_offset: number
-        state: string
-        video_decision: string
-        video_decision_text?: string
-        transcode_decision?: string
-        bandwidth: number
-        stream_container_direct_play?: number
-        stream_container_video_decision?: string
-        session_key?: string
+        title: string;
+        grandparent_title?: string;
+        parent_title?: string;
+        media_type?: string;
+        season_number?: number;
+        episode_number?: number;
+        user: string;
+        progress_percent: number;
+        duration: number;
+        view_offset: number;
+        state: string;
+        video_decision: string;
+        video_decision_text?: string;
+        transcode_decision?: string;
+        bandwidth: number;
+        stream_container_direct_play?: number;
+        stream_container_video_decision?: string;
+        session_key?: string;
       }) => {
-        totalBandwidth += s.bandwidth ?? 0
+        totalBandwidth += s.bandwidth ?? 0;
 
-        if (s.video_decision === "transcode") transcodeStreams++
-        else if (s.video_decision === "direct play") directPlayStreams++
-        else if (s.video_decision === "copy") directStreamStreams++
+        if (s.video_decision === "transcode") transcodeStreams++;
+        else if (s.video_decision === "direct play") directPlayStreams++;
+        else if (s.video_decision === "copy") directStreamStreams++;
 
         // Determine media type for consistent formatting
-        const mediaType = s.media_type ?? "video"
+        const mediaType = s.media_type ?? "video";
 
         // Format title with SxxEyy for TV episodes (consistent with Plex/Jellyfin/Emby)
-        const { title: formattedTitle, subtitle } = formatMediaTitle(
-          s.title ?? "Unknown",
-          {
-            type: mediaType === "episode" ? "episode" : undefined,
-            seriesName: s.grandparent_title,
-            season: s.season_number,
-            episode: s.episode_number,
-          }
-        )
+        const { title: formattedTitle, subtitle } = formatMediaTitle(s.title ?? "Unknown", {
+          type: mediaType === "episode" ? "episode" : undefined,
+          seriesName: s.grandparent_title,
+          season: s.season_number,
+          episode: s.episode_number,
+        });
 
         // Tautulli API returns view_offset and duration in milliseconds
-        const viewOffsetMs =
-          s.view_offset ?? ((s.progress_percent ?? 0) * (s.duration ?? 0)) / 100
+        const viewOffsetMs = s.view_offset ?? ((s.progress_percent ?? 0) * (s.duration ?? 0)) / 100;
 
-        const progressSec = viewOffsetMs / 1000
-        const durationSec = (s.duration ?? 0) / 1000
+        const progressSec = viewOffsetMs / 1000;
+        const durationSec = (s.duration ?? 0) / 1000;
 
         // Build transcoding info (consistent with Jellyfin/Emby)
-        const isDirectPlay = s.video_decision === "direct play"
-        const isTranscoding = s.video_decision === "transcode"
+        const isDirectPlay = s.video_decision === "direct play";
+        const isTranscoding = s.video_decision === "transcode";
         const transcodingInfo = isTranscoding
           ? {
               isDirect: false,
@@ -162,7 +153,7 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
                 hardwareDecoding: false,
                 hardwareEncoding: false,
               }
-            : undefined
+            : undefined;
 
         return {
           title: formattedTitle,
@@ -173,9 +164,9 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
           state: s.state === "paused" ? "paused" : "playing",
           streamId: s.session_key,
           transcoding: transcodingInfo,
-        }
-      }
-    )
+        };
+      },
+    );
 
     return {
       _status: "ok",
@@ -185,7 +176,7 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
       directPlayStreams,
       directStreamStreams,
       sessions: activeStreams,
-    }
+    };
   },
   toPayload: tautulliToPayload,
-}
+};

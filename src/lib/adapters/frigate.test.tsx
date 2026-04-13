@@ -1,39 +1,39 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { frigateDefinition } from "@/lib/adapters/frigate"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { frigateDefinition } from "@/lib/adapters/frigate";
 
 describe("frigate definition", () => {
   it("has correct metadata", () => {
-    expect(frigateDefinition.id).toBe("frigate")
-    expect(frigateDefinition.name).toBe("Frigate")
-    expect(frigateDefinition.icon).toBe("frigate")
-    expect(frigateDefinition.category).toBe("monitoring")
-    expect(frigateDefinition.defaultPollingMs).toBe(30_000)
-  })
+    expect(frigateDefinition.id).toBe("frigate");
+    expect(frigateDefinition.name).toBe("Frigate");
+    expect(frigateDefinition.icon).toBe("frigate");
+    expect(frigateDefinition.category).toBe("monitoring");
+    expect(frigateDefinition.defaultPollingMs).toBe(30_000);
+  });
 
   it("has configFields defined", () => {
-    expect(frigateDefinition.configFields).toBeDefined()
-    expect(frigateDefinition.configFields).toHaveLength(4)
-    expect(frigateDefinition.configFields[0].key).toBe("url")
-    expect(frigateDefinition.configFields[0].type).toBe("url")
-    expect(frigateDefinition.configFields[0].required).toBe(true)
-    expect(frigateDefinition.configFields[1].key).toBe("username")
-    expect(frigateDefinition.configFields[1].type).toBe("text")
-    expect(frigateDefinition.configFields[1].required).toBe(false)
-    expect(frigateDefinition.configFields[2].key).toBe("password")
-    expect(frigateDefinition.configFields[2].type).toBe("password")
-    expect(frigateDefinition.configFields[2].required).toBe(false)
-    expect(frigateDefinition.configFields[3].key).toBe("showRecentEvents")
-    expect(frigateDefinition.configFields[3].type).toBe("boolean")
-  })
+    expect(frigateDefinition.configFields).toBeDefined();
+    expect(frigateDefinition.configFields).toHaveLength(4);
+    expect(frigateDefinition.configFields[0].key).toBe("url");
+    expect(frigateDefinition.configFields[0].type).toBe("url");
+    expect(frigateDefinition.configFields[0].required).toBe(true);
+    expect(frigateDefinition.configFields[1].key).toBe("username");
+    expect(frigateDefinition.configFields[1].type).toBe("text");
+    expect(frigateDefinition.configFields[1].required).toBe(false);
+    expect(frigateDefinition.configFields[2].key).toBe("password");
+    expect(frigateDefinition.configFields[2].type).toBe("password");
+    expect(frigateDefinition.configFields[2].required).toBe(false);
+    expect(frigateDefinition.configFields[3].key).toBe("showRecentEvents");
+    expect(frigateDefinition.configFields[3].type).toBe("boolean");
+  });
 
   describe("fetchData", () => {
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
+      vi.resetAllMocks();
+    });
 
     afterEach(() => {
-      vi.restoreAllMocks()
-    })
+      vi.restoreAllMocks();
+    });
 
     it("fetches data successfully", async () => {
       vi.stubGlobal("fetch", () =>
@@ -51,30 +51,30 @@ describe("frigate definition", () => {
                 version: "0.14.0",
               },
             }),
-        })
-      )
+        }),
+      );
 
       const result = await frigateDefinition.fetchData!({
         url: "https://frigate.example.com/",
-      })
+      });
 
-      expect(result._status).toBe("ok")
-      expect(result.cameras).toBe(3)
-      expect(result.uptime).toBe(86400)
-      expect(result.version).toBe("0.14.0")
-    })
+      expect(result._status).toBe("ok");
+      expect(result.cameras).toBe(3);
+      expect(result.uptime).toBe(86400);
+      expect(result.version).toBe("0.14.0");
+    });
 
     it("throws on login failure", async () => {
-      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 401 }))
+      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 401 }));
 
       await expect(
         frigateDefinition.fetchData!({
           url: "https://frigate.example.com",
           username: "admin",
           password: "wrong",
-        })
-      ).rejects.toThrow("Failed to authenticate with Frigate")
-    })
+        }),
+      ).rejects.toThrow("Failed to authenticate with Frigate");
+    });
 
     it("throws on invalid credentials for stats endpoint", async () => {
       const mockFetch = vi.fn((url: string) => {
@@ -82,33 +82,33 @@ describe("frigate definition", () => {
           return Promise.resolve({
             ok: true,
             headers: { get: () => null },
-          })
+          });
         }
-        return Promise.resolve({ ok: false, status: 401 })
-      })
-      vi.stubGlobal("fetch", mockFetch)
+        return Promise.resolve({ ok: false, status: 401 });
+      });
+      vi.stubGlobal("fetch", mockFetch);
 
       await expect(
         frigateDefinition.fetchData!({
           url: "https://frigate.example.com",
           username: "admin",
           password: "secret",
-        })
-      ).rejects.toThrow("Invalid credentials")
-    })
+        }),
+      ).rejects.toThrow("Invalid credentials");
+    });
 
     it("throws on not found", async () => {
-      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 404 }))
+      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 404 }));
 
       await expect(
         frigateDefinition.fetchData!({
           url: "https://frigate.example.com",
-        })
-      ).rejects.toThrow("Frigate not found at this URL")
-    })
+        }),
+      ).rejects.toThrow("Frigate not found at this URL");
+    });
 
     it("fetches recent events when enabled", async () => {
-      const now = Date.now() / 1000
+      const now = Date.now() / 1000;
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/api/stats")) {
           return Promise.resolve({
@@ -118,7 +118,7 @@ describe("frigate definition", () => {
                 cameras: { front: {} },
                 service: { uptime: 3600, version: "0.14.0" },
               }),
-          })
+          });
         }
         if (url.includes("/api/events")) {
           return Promise.resolve({
@@ -140,41 +140,41 @@ describe("frigate definition", () => {
                   start_time: now - 300,
                 },
               ]),
-          })
+          });
         }
-        return Promise.reject(new Error("Unexpected URL"))
-      })
-      vi.stubGlobal("fetch", mockFetch)
+        return Promise.reject(new Error("Unexpected URL"));
+      });
+      vi.stubGlobal("fetch", mockFetch);
 
       const result = await frigateDefinition.fetchData!({
         url: "https://frigate.example.com",
         showRecentEvents: "true",
-      })
+      });
 
-      expect(result._status).toBe("ok")
-      expect(result.showRecentEvents).toBe(true)
-      expect(result.recentEvents).toHaveLength(2)
-      expect(result.recentEvents?.[0].camera).toBe("front")
-      expect(result.recentEvents?.[0].label).toBe("person")
-      expect(result.recentEvents?.[0].score).toBe(0.85)
-    })
+      expect(result._status).toBe("ok");
+      expect(result.showRecentEvents).toBe(true);
+      expect(result.recentEvents).toHaveLength(2);
+      expect(result.recentEvents?.[0].camera).toBe("front");
+      expect(result.recentEvents?.[0].label).toBe("person");
+      expect(result.recentEvents?.[0].score).toBe(0.85);
+    });
 
     it("handles missing data with defaults", async () => {
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
           json: () => Promise.resolve({}),
-        })
-      )
+        }),
+      );
 
       const result = await frigateDefinition.fetchData!({
         url: "https://frigate.example.com",
-      })
+      });
 
-      expect(result.cameras).toBe(0)
-      expect(result.uptime).toBe(0)
-      expect(result.version).toBe("unknown")
-    })
+      expect(result.cameras).toBe(0);
+      expect(result.uptime).toBe(0);
+      expect(result.version).toBe("unknown");
+    });
 
     it("authenticates when credentials provided", async () => {
       const mockFetch = vi.fn((url: string) => {
@@ -182,27 +182,27 @@ describe("frigate definition", () => {
           return Promise.resolve({
             ok: true,
             headers: { get: () => "session=abc123" },
-          })
+          });
         }
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({ cameras: {}, service: {} }),
-        })
-      })
-      vi.stubGlobal("fetch", mockFetch)
+        });
+      });
+      vi.stubGlobal("fetch", mockFetch);
 
       await frigateDefinition.fetchData!({
         url: "https://frigate.example.com",
         username: "admin",
         password: "secret",
-      })
+      });
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://frigate.example.com/api/login",
-        expect.objectContaining({ method: "POST" })
-      )
-    })
-  })
+        expect.objectContaining({ method: "POST" }),
+      );
+    });
+  });
 
   describe("toPayload", () => {
     it("converts data to payload with stats", () => {
@@ -211,15 +211,15 @@ describe("frigate definition", () => {
         cameras: 3,
         uptime: 86400,
         version: "0.14.0",
-      })
-      expect(payload.stats).toHaveLength(3)
-      expect(payload.stats[0].value).toBe("3")
-      expect(payload.stats[0].label).toBe("Cameras")
-      expect(payload.stats[1].value).toBe("1d 0h")
-      expect(payload.stats[1].label).toBe("Uptime")
-      expect(payload.stats[2].value).toBe("0.14.0")
-      expect(payload.stats[2].label).toBe("Version")
-    })
+      });
+      expect(payload.stats).toHaveLength(3);
+      expect(payload.stats[0].value).toBe("3");
+      expect(payload.stats[0].label).toBe("Cameras");
+      expect(payload.stats[1].value).toBe("1d 0h");
+      expect(payload.stats[1].label).toBe("Uptime");
+      expect(payload.stats[2].value).toBe("0.14.0");
+      expect(payload.stats[2].label).toBe("Version");
+    });
 
     it("handles zero values", () => {
       const payload = frigateDefinition.toPayload!({
@@ -227,11 +227,11 @@ describe("frigate definition", () => {
         cameras: 0,
         uptime: 0,
         version: "unknown",
-      })
-      expect(payload.stats[0].value).toBe("0")
-      expect(payload.stats[1].value).toBe("0m")
-      expect(payload.stats[2].value).toBe("unknown")
-    })
+      });
+      expect(payload.stats[0].value).toBe("0");
+      expect(payload.stats[1].value).toBe("0m");
+      expect(payload.stats[2].value).toBe("unknown");
+    });
 
     it("formats uptime with hours", () => {
       const payload = frigateDefinition.toPayload!({
@@ -239,12 +239,12 @@ describe("frigate definition", () => {
         cameras: 1,
         uptime: 7200,
         version: "0.14.0",
-      })
-      expect(payload.stats[1].value).toBe("2h 0m")
-    })
+      });
+      expect(payload.stats[1].value).toBe("2h 0m");
+    });
 
     it("includes recent events as streams when enabled", () => {
-      const now = Date.now() / 1000
+      const now = Date.now() / 1000;
       const payload = frigateDefinition.toPayload!({
         _status: "ok",
         cameras: 3,
@@ -260,12 +260,12 @@ describe("frigate definition", () => {
             startTime: now - 120,
           },
         ],
-      })
-      expect(payload.streams).toHaveLength(1)
-      expect(payload.streams?.[0].title).toContain("front")
-      expect(payload.streams?.[0].title).toContain("person")
-      expect(payload.streams?.[0].subtitle).toContain("ago")
-    })
+      });
+      expect(payload.streams).toHaveLength(1);
+      expect(payload.streams?.[0].title).toContain("front");
+      expect(payload.streams?.[0].title).toContain("person");
+      expect(payload.streams?.[0].subtitle).toContain("ago");
+    });
 
     it("excludes streams when recent events disabled", () => {
       const payload = frigateDefinition.toPayload!({
@@ -283,8 +283,8 @@ describe("frigate definition", () => {
             startTime: Date.now() / 1000 - 120,
           },
         ],
-      })
-      expect(payload.streams).toBeUndefined()
-    })
-  })
-})
+      });
+      expect(payload.streams).toBeUndefined();
+    });
+  });
+});

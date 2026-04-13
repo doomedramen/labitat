@@ -176,7 +176,7 @@ export const ${camelName}Definition: ServiceDefinition<${pascalName}Data> = {
     fs.writeFileSync(registryFile, newRegistry, "utf-8");
   } else {
     // Just add after existing imports
-    const lastImport = registryContent.lastIndexOf("from \"./");
+    const lastImport = registryContent.lastIndexOf('from "./');
     const endOfLastImport = registryContent.indexOf("\n", lastImport);
     const before = registryContent.slice(0, endOfLastImport + 1);
     const after = registryContent.slice(endOfLastImport + 1);
@@ -186,7 +186,7 @@ export const ${camelName}Definition: ServiceDefinition<${pascalName}Data> = {
 
   // Add to registry object
   const registryObjMatch = registryContent.match(
-    /export const registry: ServiceRegistry = \{([\s\S]*?)\n\}/
+    /export const registry: ServiceRegistry = \{([\s\S]*?)\n\}/,
   );
   if (registryObjMatch) {
     const registryObj = registryObjMatch[1];
@@ -197,17 +197,14 @@ export const ${camelName}Definition: ServiceDefinition<${pascalName}Data> = {
     let updatedRegistryObj;
     if (disabledInObj !== -1) {
       updatedRegistryObj =
-        registryObj.slice(0, disabledInObj) +
-        newEntry +
-        "\n" +
-        registryObj.slice(disabledInObj);
+        registryObj.slice(0, disabledInObj) + newEntry + "\n" + registryObj.slice(disabledInObj);
     } else {
       updatedRegistryObj = registryObj + newEntry;
     }
 
     const newRegistryContent = registryContent.replace(
       /export const registry: ServiceRegistry = \{[\s\S]*?\n\}/,
-      `export const registry: ServiceRegistry = {${updatedRegistryObj}\n}`
+      `export const registry: ServiceRegistry = {${updatedRegistryObj}\n}`,
     );
     fs.writeFileSync(registryFile, newRegistryContent, "utf-8");
     console.log(`✅ Registered in src/lib/adapters/index.ts`);

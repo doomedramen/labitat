@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useCallback, useMemo } from "react"
-import type { StatItem } from "@/components/widgets"
-import { updateStatCardOrder } from "@/actions/stat-cards"
+import { useCallback, useMemo } from "react";
+import type { StatItem } from "@/components/widgets";
+import { updateStatCardOrder } from "@/actions/stat-cards";
 
 /** Stored order: which stat cards are active vs unused */
 export type StatCardOrder = {
-  active: string[]
-  unused: string[]
-}
+  active: string[];
+  unused: string[];
+};
 
 /** Validate an unknown value as a StatCardOrder, returning null if invalid */
 export function parseStatCardOrder(value: unknown): StatCardOrder | null {
@@ -20,9 +20,9 @@ export function parseStatCardOrder(value: unknown): StatCardOrder | null {
     Array.isArray((value as StatCardOrder).active) &&
     Array.isArray((value as StatCardOrder).unused)
   ) {
-    return value as StatCardOrder
+    return value as StatCardOrder;
   }
-  return null
+  return null;
 }
 
 /**
@@ -33,88 +33,81 @@ export function useStatCardOrder(
   itemId: string,
   allItems: StatItem[],
   storedOrder: StatCardOrder | null,
-  defaultActiveIds?: string[]
+  defaultActiveIds?: string[],
 ) {
   // Build active and unused item lists
   const { activeItems, unusedItems } = useMemo(() => {
-    const itemMap = new Map(allItems.map((item) => [item.id, item]))
+    const itemMap = new Map(allItems.map((item) => [item.id, item]));
 
     // If no stored order, use default active IDs if provided
     if (!storedOrder) {
       if (defaultActiveIds && defaultActiveIds.length > 0) {
         const active = defaultActiveIds
           .map((id) => itemMap.get(id))
-          .filter((item): item is StatItem => item !== undefined)
+          .filter((item): item is StatItem => item !== undefined);
 
-        const unused = allItems.filter(
-          (item) => !defaultActiveIds.includes(item.id)
-        )
+        const unused = allItems.filter((item) => !defaultActiveIds.includes(item.id));
 
-        return { activeItems: active, unusedItems: unused }
+        return { activeItems: active, unusedItems: unused };
       }
       // No defaults - all items active
-      return { activeItems: allItems, unusedItems: [] as StatItem[] }
+      return { activeItems: allItems, unusedItems: [] as StatItem[] };
     }
 
     const active = storedOrder.active
       .map((id) => itemMap.get(id))
-      .filter((item): item is StatItem => item !== undefined)
+      .filter((item): item is StatItem => item !== undefined);
 
     const unused = storedOrder.unused
       .map((id) => itemMap.get(id))
-      .filter((item): item is StatItem => item !== undefined)
+      .filter((item): item is StatItem => item !== undefined);
 
     // Include any items not in stored order (newly added stats) as active
-    const storedIds = new Set([...storedOrder.active, ...storedOrder.unused])
-    const newItems = allItems.filter((item) => !storedIds.has(item.id))
+    const storedIds = new Set([...storedOrder.active, ...storedOrder.unused]);
+    const newItems = allItems.filter((item) => !storedIds.has(item.id));
 
-    return { activeItems: [...active, ...newItems], unusedItems: unused }
-  }, [allItems, storedOrder, defaultActiveIds])
+    return { activeItems: [...active, ...newItems], unusedItems: unused };
+  }, [allItems, storedOrder, defaultActiveIds]);
 
   const persist = useCallback(
     async (active: string[], unused: string[]) => {
-      await updateStatCardOrder(itemId, { active, unused })
+      await updateStatCardOrder(itemId, { active, unused });
     },
-    [itemId]
-  )
+    [itemId],
+  );
 
   const handleReorder = useCallback(
     (active: StatItem[], unused: StatItem[]) => {
       persist(
         active.map((i) => i.id),
-        unused.map((i) => i.id)
-      ).catch(console.error)
+        unused.map((i) => i.id),
+      ).catch(console.error);
     },
-    [persist]
-  )
+    [persist],
+  );
 
   const moveBetweenLists = useCallback(
-    (
-      movedId: string,
-      from: "active" | "unused",
-      active: StatItem[],
-      unused: StatItem[]
-    ) => {
+    (movedId: string, from: "active" | "unused", active: StatItem[], unused: StatItem[]) => {
       if (from === "active") {
-        const item = active.find((i) => i.id === movedId)
-        if (!item) return
-        const newActive = active.filter((i) => i.id !== movedId)
-        const newUnused = [...unused, item]
-        handleReorder(newActive, newUnused)
+        const item = active.find((i) => i.id === movedId);
+        if (!item) return;
+        const newActive = active.filter((i) => i.id !== movedId);
+        const newUnused = [...unused, item];
+        handleReorder(newActive, newUnused);
       } else {
-        const item = unused.find((i) => i.id === movedId)
-        if (!item) return
-        const newUnused = unused.filter((i) => i.id !== movedId)
-        const newActive = [...active, item]
-        handleReorder(newActive, newUnused)
+        const item = unused.find((i) => i.id === movedId);
+        if (!item) return;
+        const newUnused = unused.filter((i) => i.id !== movedId);
+        const newActive = [...active, item];
+        handleReorder(newActive, newUnused);
       }
     },
-    [handleReorder]
-  )
+    [handleReorder],
+  );
 
   const resetOrder = useCallback(async () => {
-    await updateStatCardOrder(itemId, null)
-  }, [itemId])
+    await updateStatCardOrder(itemId, null);
+  }, [itemId]);
 
   return {
     activeItems,
@@ -122,5 +115,5 @@ export function useStatCardOrder(
     handleReorder,
     moveBetweenLists,
     resetOrder,
-  }
+  };
 }

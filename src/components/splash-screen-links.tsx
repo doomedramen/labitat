@@ -2,10 +2,7 @@ export function SplashScreenLinks() {
   return (
     <>
       <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta
-        name="apple-mobile-web-app-status-bar-style"
-        content="black-translucent"
-      />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
       {/* iPhones */}
       <link
@@ -210,5 +207,5 @@ export function SplashScreenLinks() {
         href="/splash_screens/13__iPad_Pro_M4_landscape.png"
       />
     </>
-  )
+  );
 }

@@ -4,9 +4,9 @@ Simple ICMP health check.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| Host | Text | Yes | Hostname or IP to ping |
+| Field | Type | Required | Description            |
+| ----- | ---- | -------- | ---------------------- |
+| Host  | Text | Yes      | Hostname or IP to ping |
 
 ## Use Cases
 

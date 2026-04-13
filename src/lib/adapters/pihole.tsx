@@ -1,15 +1,15 @@
-import type { ServiceDefinition } from "./types"
-import { Globe, Ban, Percent, Shield } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Globe, Ban, Percent, Shield } from "lucide-react";
 
 type PiholeData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  queries: number
-  blocked: number
-  percentBlocked: string
-  domainsBlocked: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  queries: number;
+  blocked: number;
+  percentBlocked: string;
+  domainsBlocked: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function piholeToPayload(data: PiholeData) {
   return {
@@ -39,7 +39,7 @@ function piholeToPayload(data: PiholeData) {
         icon: Shield,
       },
     ],
-  }
+  };
 }
 
 export const piholeDefinition: ServiceDefinition<PiholeData> = {
@@ -68,53 +68,46 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
+    const baseUrl = config.url.replace(/\/$/, "");
 
     // Pi-hole v6 uses session-based auth, v5 uses password in query string
     // Try v6 API first with session auth
-    let summaryData: Record<string, unknown> = {}
+    let summaryData: Record<string, unknown> = {};
 
     // Try to get session token for v6 API
     const sessionRes = await fetchWithTimeout(`${baseUrl}/api/auth`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: config.password }),
-    })
+    });
 
     if (sessionRes.ok) {
       // v6 API available — session object contains the SID token
-      const sessionData = await sessionRes.json()
-      const token = sessionData.session?.sid
-      if (!token)
-        throw new Error(
-          "Pi-hole v6 auth succeeded but no session token returned"
-        )
+      const sessionData = await sessionRes.json();
+      const token = sessionData.session?.sid;
+      if (!token) throw new Error("Pi-hole v6 auth succeeded but no session token returned");
 
-      const summaryRes = await fetchWithTimeout(
-        `${baseUrl}/api/stats/summary`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
+      const summaryRes = await fetchWithTimeout(`${baseUrl}/api/stats/summary`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (!summaryRes.ok) {
-        throw new Error(`Pi-hole v6 stats error: ${summaryRes.status}`)
+        throw new Error(`Pi-hole v6 stats error: ${summaryRes.status}`);
       }
 
-      summaryData = await summaryRes.json()
+      summaryData = await summaryRes.json();
     } else {
       // Fall back to v5 API
       const summaryRes = await fetchWithTimeout(
-        `${baseUrl}/admin/api.php?summaryRaw&auth=${config.password}`
-      )
+        `${baseUrl}/admin/api.php?summaryRaw&auth=${config.password}`,
+      );
 
       if (!summaryRes.ok) {
-        if (summaryRes.status === 404)
-          throw new Error("Pi-hole not found at this URL")
-        throw new Error(`Pi-hole error: ${summaryRes.status}`)
+        if (summaryRes.status === 404) throw new Error("Pi-hole not found at this URL");
+        throw new Error(`Pi-hole error: ${summaryRes.status}`);
       }
 
-      summaryData = await summaryRes.json()
+      summaryData = await summaryRes.json();
     }
 
     return {
@@ -123,8 +116,8 @@ export const piholeDefinition: ServiceDefinition<PiholeData> = {
       blocked: (summaryData.ads_blocked_today as number) ?? 0,
       percentBlocked: `${(summaryData.ads_percentage_today as number) ?? 0}%`,
       domainsBlocked: (summaryData.domains_being_blocked as number) ?? 0,
-    }
+    };
   },
 
   toPayload: piholeToPayload,
-}
+};

@@ -1,433 +1,841 @@
 /* Dashboard Backgrounds */
 
-.bg-subtle-gradient {
-  background-image: linear-gradient(
-    135deg,
-    oklch(0.96 0.01 240) 0%,
-    oklch(0.92 0.02 180) 100%
-  );
+/* ── Default scale and opacity ── */
+html {
+  --bg-scale: 1;
+  --bg-opacity: 1;
 }
 
-.dark .bg-subtle-gradient {
-  background-image: linear-gradient(
-    135deg,
-    oklch(0.18 0.01 240) 0%,
-    oklch(0.22 0.02 180) 100%
-  );
+/* ── Boxes ── */
+.bg-boxes {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(var(--bg-pattern-accent) 1px, transparent 1px),
+    linear-gradient(to right, var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 1px);
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="subtle-gradient"] body {
-  background-image: linear-gradient(
-    135deg,
-    oklch(0.96 0.01 240) 0%,
-    oklch(0.92 0.02 180) 100%
-  );
+html[data-background="boxes"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(var(--bg-pattern-accent) 1px, transparent 1px),
+    linear-gradient(to right, var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 1px);
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="subtle-gradient"].dark body {
-  background-image: linear-gradient(
-    135deg,
-    oklch(0.18 0.01 240) 0%,
-    oklch(0.22 0.02 180) 100%
-  );
+/* ── Circles ── */
+.bg-circles {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    radial-gradient(circle at center center, var(--bg-pattern-accent), var(--bg-pattern-base)),
+    repeating-radial-gradient(
+      circle at center center,
+      var(--bg-pattern-accent),
+      var(--bg-pattern-accent),
+      calc(10px * var(--bg-scale)),
+      transparent calc(20px * var(--bg-scale)),
+      transparent calc(10px * var(--bg-scale))
+    );
+  background-blend-mode: multiply;
+  opacity: var(--bg-opacity);
 }
 
-.bg-diagonal-stripes {
+html[data-background="circles"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    radial-gradient(circle at center center, var(--bg-pattern-accent), var(--bg-pattern-base)),
+    repeating-radial-gradient(
+      circle at center center,
+      var(--bg-pattern-accent),
+      var(--bg-pattern-accent),
+      calc(10px * var(--bg-scale)),
+      transparent calc(20px * var(--bg-scale)),
+      transparent calc(10px * var(--bg-scale))
+    );
+  background-blend-mode: multiply;
+  opacity: var(--bg-opacity);
+}
+
+/* ── Crosses ── */
+.bg-crosses {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    radial-gradient(
+      circle,
+      transparent 20%,
+      var(--bg-pattern-base) 20%,
+      var(--bg-pattern-base) 80%,
+      transparent 80%,
+      transparent
+    ),
+    radial-gradient(
+        circle,
+        transparent 20%,
+        var(--bg-pattern-base) 20%,
+        var(--bg-pattern-base) 80%,
+        transparent 80%,
+        transparent
+      )
+      calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
+    linear-gradient(
+        var(--bg-pattern-accent) calc(2px * var(--bg-scale)),
+        transparent calc(2px * var(--bg-scale))
+      )
+      0 calc(-1px * var(--bg-scale)),
+    linear-gradient(
+        90deg,
+        var(--bg-pattern-accent) calc(2px * var(--bg-scale)),
+        var(--bg-pattern-base) calc(2px * var(--bg-scale))
+      )
+      calc(-1px * var(--bg-scale)) 0;
+  background-size:
+    calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
+    calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
+    calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
+    calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="crosses"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    radial-gradient(
+      circle,
+      transparent 20%,
+      var(--bg-pattern-base) 20%,
+      var(--bg-pattern-base) 80%,
+      transparent 80%,
+      transparent
+    ),
+    radial-gradient(
+        circle,
+        transparent 20%,
+        var(--bg-pattern-base) 20%,
+        var(--bg-pattern-base) 80%,
+        transparent 80%,
+        transparent
+      )
+      calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
+    linear-gradient(
+        var(--bg-pattern-accent) calc(2px * var(--bg-scale)),
+        transparent calc(2px * var(--bg-scale))
+      )
+      0 calc(-1px * var(--bg-scale)),
+    linear-gradient(
+        90deg,
+        var(--bg-pattern-accent) calc(2px * var(--bg-scale)),
+        var(--bg-pattern-base) calc(2px * var(--bg-scale))
+      )
+      calc(-1px * var(--bg-scale)) 0;
+  background-size:
+    calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
+    calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
+    calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
+    calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+/* ── Diagonal ── */
+.bg-diagonal {
+  background-color: var(--bg-pattern-base);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) calc(5px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(5px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(25px * var(--bg-scale))
+  );
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="diagonal"] body {
+  background-color: var(--bg-pattern-base);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) calc(5px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(5px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(25px * var(--bg-scale))
+  );
+  opacity: var(--bg-opacity);
+}
+
+/* ── Diagonal 2 ── */
+.bg-diagonal-2 {
+  background-color: var(--bg-pattern-base);
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
   background-image: repeating-linear-gradient(
     45deg,
-    oklch(0.95 0.01 240) 0px,
-    oklch(0.95 0.01 240) 10px,
-    oklch(0.90 0.015 240) 10px,
-    oklch(0.90 0.015 240) 20px
+    var(--bg-pattern-accent) 0,
+    var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base) 0,
+    var(--bg-pattern-base) 50%
   );
+  opacity: var(--bg-opacity);
 }
 
-.dark .bg-diagonal-stripes {
+html[data-background="diagonal-2"] body {
+  background-color: var(--bg-pattern-base);
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
   background-image: repeating-linear-gradient(
     45deg,
-    oklch(0.22 0.01 240) 0px,
-    oklch(0.22 0.01 240) 10px,
-    oklch(0.18 0.015 240) 10px,
-    oklch(0.18 0.015 240) 20px
+    var(--bg-pattern-accent) 0,
+    var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base) 0,
+    var(--bg-pattern-base) 50%
   );
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="diagonal-stripes"] body {
+/* ── Diagonal 3 ── */
+.bg-diagonal-3 {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(
+      30deg,
+      var(--bg-pattern-accent) 12%,
+      transparent 12.5%,
+      transparent 87%,
+      var(--bg-pattern-accent) 87.5%,
+      var(--bg-pattern-accent)
+    ),
+    linear-gradient(
+      150deg,
+      var(--bg-pattern-accent) 12%,
+      transparent 12.5%,
+      transparent 87%,
+      var(--bg-pattern-accent) 87.5%,
+      var(--bg-pattern-accent)
+    ),
+    linear-gradient(
+      30deg,
+      var(--bg-pattern-accent) 12%,
+      transparent 12.5%,
+      transparent 87%,
+      var(--bg-pattern-accent) 87.5%,
+      var(--bg-pattern-accent)
+    ),
+    linear-gradient(
+      150deg,
+      var(--bg-pattern-accent) 12%,
+      transparent 12.5%,
+      transparent 87%,
+      var(--bg-pattern-accent) 87.5%,
+      var(--bg-pattern-accent)
+    ),
+    linear-gradient(
+      60deg,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent) 25%,
+      transparent 25.5%,
+      transparent 75%,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent) 75%,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent)
+    ),
+    linear-gradient(
+      60deg,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent) 25%,
+      transparent 25.5%,
+      transparent 75%,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent) 75%,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent)
+    );
+  background-size: calc(20px * var(--bg-scale)) calc(35px * var(--bg-scale));
+  background-position:
+    0 0,
+    0 0,
+    calc(10px * var(--bg-scale)) calc(18px * var(--bg-scale)),
+    calc(10px * var(--bg-scale)) calc(18px * var(--bg-scale)),
+    0 0,
+    calc(10px * var(--bg-scale)) calc(18px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="diagonal-3"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(
+      30deg,
+      var(--bg-pattern-accent) 12%,
+      transparent 12.5%,
+      transparent 87%,
+      var(--bg-pattern-accent) 87.5%,
+      var(--bg-pattern-accent)
+    ),
+    linear-gradient(
+      150deg,
+      var(--bg-pattern-accent) 12%,
+      transparent 12.5%,
+      transparent 87%,
+      var(--bg-pattern-accent) 87.5%,
+      var(--bg-pattern-accent)
+    ),
+    linear-gradient(
+      30deg,
+      var(--bg-pattern-accent) 12%,
+      transparent 12.5%,
+      transparent 87%,
+      var(--bg-pattern-accent) 87.5%,
+      var(--bg-pattern-accent)
+    ),
+    linear-gradient(
+      150deg,
+      var(--bg-pattern-accent) 12%,
+      transparent 12.5%,
+      transparent 87%,
+      var(--bg-pattern-accent) 87.5%,
+      var(--bg-pattern-accent)
+    ),
+    linear-gradient(
+      60deg,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent) 25%,
+      transparent 25.5%,
+      transparent 75%,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent) 75%,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent)
+    ),
+    linear-gradient(
+      60deg,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent) 25%,
+      transparent 25.5%,
+      transparent 75%,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent) 75%,
+      color-mix(in srgb, var(--bg-pattern-accent) 47%, transparent)
+    );
+  background-size: calc(20px * var(--bg-scale)) calc(35px * var(--bg-scale));
+  background-position:
+    0 0,
+    0 0,
+    calc(10px * var(--bg-scale)) calc(18px * var(--bg-scale)),
+    calc(10px * var(--bg-scale)) calc(18px * var(--bg-scale)),
+    0 0,
+    calc(10px * var(--bg-scale)) calc(18px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+/* ── Isometric ── */
+.bg-isometric {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%);
+  background-position:
+    calc(10px * var(--bg-scale)) 0,
+    calc(10px * var(--bg-scale)) 0,
+    0 0,
+    0 0;
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  background-repeat: repeat;
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="isometric"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%);
+  background-position:
+    calc(10px * var(--bg-scale)) 0,
+    calc(10px * var(--bg-scale)) 0,
+    0 0,
+    0 0;
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  background-repeat: repeat;
+  opacity: var(--bg-opacity);
+}
+
+/* ── Lines ── */
+.bg-lines {
+  background-color: var(--bg-pattern-base);
+  background-image: linear-gradient(0deg, var(--bg-pattern-base) 50%, var(--bg-pattern-accent) 50%);
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="lines"] body {
+  background-color: var(--bg-pattern-base);
+  background-image: linear-gradient(0deg, var(--bg-pattern-base) 50%, var(--bg-pattern-accent) 50%);
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+/* ── Lines 2 ── */
+.bg-lines-2 {
+  background-color: var(--bg-pattern-base);
+  background-image: linear-gradient(
+    to right,
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) calc(5px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(5px * var(--bg-scale)),
+    var(--bg-pattern-base)
+  );
+  background-size: calc(10px * var(--bg-scale)) 100%;
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="lines-2"] body {
+  background-color: var(--bg-pattern-base);
+  background-image: linear-gradient(
+    to right,
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) calc(5px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(5px * var(--bg-scale)),
+    var(--bg-pattern-base)
+  );
+  background-size: calc(10px * var(--bg-scale)) 100%;
+  opacity: var(--bg-opacity);
+}
+
+/* ── Lines 3 ── */
+.bg-lines-3 {
+  background-color: var(--bg-pattern-base);
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
   background-image: repeating-linear-gradient(
-    45deg,
-    oklch(0.95 0.01 240) 0px,
-    oklch(0.95 0.01 240) 10px,
-    oklch(0.90 0.015 240) 10px,
-    oklch(0.90 0.015 240) 20px
+    0deg,
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base)
   );
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="diagonal-stripes"].dark body {
+html[data-background="lines-3"] body {
+  background-color: var(--bg-pattern-base);
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
   background-image: repeating-linear-gradient(
-    45deg,
-    oklch(0.22 0.01 240) 0px,
-    oklch(0.22 0.01 240) 10px,
-    oklch(0.18 0.015 240) 10px,
-    oklch(0.18 0.015 240) 20px
+    0deg,
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base)
   );
+  opacity: var(--bg-opacity);
 }
 
-.bg-dots {
-  background-image: radial-gradient(
-      circle,
-      oklch(0.70 0.05 240) 1px,
-      transparent 1px
-    ),
-    oklch(0.96 0.005 240);
-  background-size: 16px 16px;
-}
-
-.dark .bg-dots {
-  background-image: radial-gradient(
-      circle,
-      oklch(0.55 0.05 240) 1px,
-      transparent 1px
-    ),
-    oklch(0.20 0.005 240);
-  background-size: 16px 16px;
-}
-
-html[data-background="dots"] body {
-  background-image: radial-gradient(
-      circle,
-      oklch(0.70 0.05 240) 1px,
-      transparent 1px
-    ),
-    oklch(0.96 0.005 240);
-  background-size: 16px 16px;
-}
-
-html[data-background="dots"].dark body {
-  background-image: radial-gradient(
-      circle,
-      oklch(0.55 0.05 240) 1px,
-      transparent 1px
-    ),
-    oklch(0.20 0.005 240);
-  background-size: 16px 16px;
-}
-
-.bg-mesh-gradient {
-  background-image: radial-gradient(
-      at 20% 30%,
-      oklch(0.85 0.08 200) 0px,
-      transparent 50%
-    ),
-    radial-gradient(
-      at 80% 70%,
-      oklch(0.85 0.08 320) 0px,
-      transparent 50%
-    ),
-    radial-gradient(
-      at 50% 50%,
-      oklch(0.90 0.06 160) 0px,
-      transparent 50%
-    ),
-    oklch(0.95 0.005 240);
-}
-
-.dark .bg-mesh-gradient {
-  background-image: radial-gradient(
-      at 20% 30%,
-      oklch(0.35 0.08 200) 0px,
-      transparent 50%
-    ),
-    radial-gradient(
-      at 80% 70%,
-      oklch(0.35 0.08 320) 0px,
-      transparent 50%
-    ),
-    radial-gradient(
-      at 50% 50%,
-      oklch(0.30 0.06 160) 0px,
-      transparent 50%
-    ),
-    oklch(0.20 0.005 240);
-}
-
-html[data-background="mesh-gradient"] body {
-  background-image: radial-gradient(
-      at 20% 30%,
-      oklch(0.85 0.08 200) 0px,
-      transparent 50%
-    ),
-    radial-gradient(
-      at 80% 70%,
-      oklch(0.85 0.08 320) 0px,
-      transparent 50%
-    ),
-    radial-gradient(
-      at 50% 50%,
-      oklch(0.90 0.06 160) 0px,
-      transparent 50%
-    ),
-    oklch(0.95 0.005 240);
-}
-
-html[data-background="mesh-gradient"].dark body {
-  background-image: radial-gradient(
-      at 20% 30%,
-      oklch(0.35 0.08 200) 0px,
-      transparent 50%
-    ),
-    radial-gradient(
-      at 80% 70%,
-      oklch(0.35 0.08 320) 0px,
-      transparent 50%
-    ),
-    radial-gradient(
-      at 50% 50%,
-      oklch(0.30 0.06 160) 0px,
-      transparent 50%
-    ),
-    oklch(0.20 0.005 240);
-}
-
-.bg-aurora {
-  background-image: linear-gradient(
-    120deg,
-    oklch(0.90 0.06 180) 0%,
-    oklch(0.88 0.08 140) 25%,
-    oklch(0.90 0.06 280) 50%,
-    oklch(0.88 0.08 320) 75%,
-    oklch(0.90 0.06 180) 100%
+/* ── Lines 4 ── */
+.bg-lines-4 {
+  background-color: var(--bg-pattern-base);
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base)
   );
+  opacity: var(--bg-opacity);
 }
 
-.dark .bg-aurora {
-  background-image: linear-gradient(
-    120deg,
-    oklch(0.30 0.06 180) 0%,
-    oklch(0.28 0.08 140) 25%,
-    oklch(0.30 0.06 280) 50%,
-    oklch(0.28 0.08 320) 75%,
-    oklch(0.30 0.06 180) 100%
+html[data-background="lines-4"] body {
+  background-color: var(--bg-pattern-base);
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(1px * var(--bg-scale)),
+    var(--bg-pattern-base)
   );
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="aurora"] body {
-  background-image: linear-gradient(
-    120deg,
-    oklch(0.90 0.06 180) 0%,
-    oklch(0.88 0.08 140) 25%,
-    oklch(0.90 0.06 280) 50%,
-    oklch(0.88 0.08 320) 75%,
-    oklch(0.90 0.06 180) 100%
+/* ── Moon ── */
+.bg-moon {
+  background-color: var(--bg-pattern-base);
+  background-image: radial-gradient(
+    ellipse farthest-corner at calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale)),
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) 50%,
+    var(--bg-pattern-base) 50%
   );
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="aurora"].dark body {
-  background-image: linear-gradient(
-    120deg,
-    oklch(0.30 0.06 180) 0%,
-    oklch(0.28 0.08 140) 25%,
-    oklch(0.30 0.06 280) 50%,
-    oklch(0.28 0.08 320) 75%,
-    oklch(0.30 0.06 180) 100%
+html[data-background="moon"] body {
+  background-color: var(--bg-pattern-base);
+  background-image: radial-gradient(
+    ellipse farthest-corner at calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale)),
+    var(--bg-pattern-accent),
+    var(--bg-pattern-accent) 50%,
+    var(--bg-pattern-base) 50%
   );
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-.bg-grid {
-  background-image: linear-gradient(
-      oklch(0.85 0.02 240) 1px,
-      transparent 1px
+/* ── Paper ── */
+.bg-paper {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(
+      var(--bg-pattern-accent) calc(2px * var(--bg-scale)),
+      transparent calc(2px * var(--bg-scale))
     ),
     linear-gradient(
       90deg,
-      oklch(0.85 0.02 240) 1px,
-      transparent 1px
+      var(--bg-pattern-accent) calc(2px * var(--bg-scale)),
+      transparent calc(2px * var(--bg-scale))
     ),
-    oklch(0.97 0.005 240);
-  background-size: 20px 20px;
-}
-
-.dark .bg-grid {
-  background-image: linear-gradient(
-      oklch(0.35 0.02 240) 1px,
-      transparent 1px
+    linear-gradient(
+      var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+      transparent calc(1px * var(--bg-scale))
     ),
     linear-gradient(
       90deg,
-      oklch(0.35 0.02 240) 1px,
-      transparent 1px
-    ),
-    oklch(0.18 0.005 240);
-  background-size: 20px 20px;
+      var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+      var(--bg-pattern-base) calc(1px * var(--bg-scale))
+    );
+  background-size:
+    calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
+    calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
+    calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale)),
+    calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  background-position:
+    calc(-2px * var(--bg-scale)) calc(-2px * var(--bg-scale)),
+    calc(-2px * var(--bg-scale)) calc(-2px * var(--bg-scale)),
+    calc(-1px * var(--bg-scale)) calc(-1px * var(--bg-scale)),
+    calc(-1px * var(--bg-scale)) calc(-1px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="grid"] body {
-  background-image: linear-gradient(
-      oklch(0.85 0.02 240) 1px,
-      transparent 1px
+html[data-background="paper"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(
+      var(--bg-pattern-accent) calc(2px * var(--bg-scale)),
+      transparent calc(2px * var(--bg-scale))
     ),
     linear-gradient(
       90deg,
-      oklch(0.85 0.02 240) 1px,
-      transparent 1px
+      var(--bg-pattern-accent) calc(2px * var(--bg-scale)),
+      transparent calc(2px * var(--bg-scale))
     ),
-    oklch(0.97 0.005 240);
-  background-size: 20px 20px;
-}
-
-html[data-background="grid"].dark body {
-  background-image: linear-gradient(
-      oklch(0.35 0.02 240) 1px,
-      transparent 1px
+    linear-gradient(
+      var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+      transparent calc(1px * var(--bg-scale))
     ),
     linear-gradient(
       90deg,
-      oklch(0.35 0.02 240) 1px,
-      transparent 1px
-    ),
-    oklch(0.18 0.005 240);
-  background-size: 20px 20px;
+      var(--bg-pattern-accent) calc(1px * var(--bg-scale)),
+      var(--bg-pattern-base) calc(1px * var(--bg-scale))
+    );
+  background-size:
+    calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
+    calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
+    calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale)),
+    calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  background-position:
+    calc(-2px * var(--bg-scale)) calc(-2px * var(--bg-scale)),
+    calc(-2px * var(--bg-scale)) calc(-2px * var(--bg-scale)),
+    calc(-1px * var(--bg-scale)) calc(-1px * var(--bg-scale)),
+    calc(-1px * var(--bg-scale)) calc(-1px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-.bg-waves {
-  background-image: repeating-radial-gradient(
-    circle at 50% 100%,
-    oklch(0.92 0.03 220) 0px,
-    oklch(0.92 0.03 220) 10px,
-    oklch(0.96 0.01 220) 10px,
-    oklch(0.96 0.01 220) 20px
+/* ── Polka ── */
+.bg-polka {
+  background-color: var(--bg-pattern-base);
+  background-image: radial-gradient(
+    var(--bg-pattern-accent) calc(0.5px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(0.5px * var(--bg-scale))
   );
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-.dark .bg-waves {
-  background-image: repeating-radial-gradient(
-    circle at 50% 100%,
-    oklch(0.28 0.03 220) 0px,
-    oklch(0.28 0.03 220) 10px,
-    oklch(0.22 0.01 220) 10px,
-    oklch(0.22 0.01 220) 20px
+html[data-background="polka"] body {
+  background-color: var(--bg-pattern-base);
+  background-image: radial-gradient(
+    var(--bg-pattern-accent) calc(0.5px * var(--bg-scale)),
+    var(--bg-pattern-base) calc(0.5px * var(--bg-scale))
   );
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="waves"] body {
-  background-image: repeating-radial-gradient(
-    circle at 50% 100%,
-    oklch(0.92 0.03 220) 0px,
-    oklch(0.92 0.03 220) 10px,
-    oklch(0.96 0.01 220) 10px,
-    oklch(0.96 0.01 220) 20px
+/* ── Polka 2 ── */
+.bg-polka-2 {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    radial-gradient(
+      var(--bg-pattern-accent) calc(0.5px * var(--bg-scale)),
+      transparent calc(0.5px * var(--bg-scale))
+    ),
+    radial-gradient(
+      var(--bg-pattern-accent) calc(0.5px * var(--bg-scale)),
+      var(--bg-pattern-base) calc(0.5px * var(--bg-scale))
+    );
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  background-position:
+    0 0,
+    calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="polka-2"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    radial-gradient(
+      var(--bg-pattern-accent) calc(0.5px * var(--bg-scale)),
+      transparent calc(0.5px * var(--bg-scale))
+    ),
+    radial-gradient(
+      var(--bg-pattern-accent) calc(0.5px * var(--bg-scale)),
+      var(--bg-pattern-base) calc(0.5px * var(--bg-scale))
+    );
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  background-position:
+    0 0,
+    calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+/* ── Rectangles ── */
+.bg-rectangles {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--bg-pattern-accent) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--bg-pattern-accent) 75%,
+      var(--bg-pattern-accent)
+    ),
+    repeating-linear-gradient(
+      45deg,
+      var(--bg-pattern-accent) 25%,
+      var(--bg-pattern-base) 25%,
+      var(--bg-pattern-base) 75%,
+      var(--bg-pattern-accent) 75%,
+      var(--bg-pattern-accent)
+    );
+  background-position:
+    0 0,
+    calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="rectangles"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--bg-pattern-accent) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--bg-pattern-accent) 75%,
+      var(--bg-pattern-accent)
+    ),
+    repeating-linear-gradient(
+      45deg,
+      var(--bg-pattern-accent) 25%,
+      var(--bg-pattern-base) 25%,
+      var(--bg-pattern-base) 75%,
+      var(--bg-pattern-accent) 75%,
+      var(--bg-pattern-accent)
+    );
+  background-position:
+    0 0,
+    calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+/* ── Rhombus ── */
+.bg-rhombus {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%);
+  background-position:
+    calc(10px * var(--bg-scale)) 0,
+    calc(10px * var(--bg-scale)) 0,
+    0 0,
+    0 0;
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  background-repeat: repeat;
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="rhombus"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%);
+  background-position:
+    calc(10px * var(--bg-scale)) 0,
+    calc(10px * var(--bg-scale)) 0,
+    0 0,
+    0 0;
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  background-repeat: repeat;
+  opacity: var(--bg-opacity);
+}
+
+/* ── Triangles ── */
+.bg-triangles {
+  background-color: var(--bg-pattern-base);
+  background-image: linear-gradient(
+    45deg,
+    var(--bg-pattern-accent) 50%,
+    var(--bg-pattern-base) 50%
   );
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="waves"].dark body {
-  background-image: repeating-radial-gradient(
-    circle at 50% 100%,
-    oklch(0.28 0.03 220) 0px,
-    oklch(0.28 0.03 220) 10px,
-    oklch(0.22 0.01 220) 10px,
-    oklch(0.22 0.01 220) 20px
+html[data-background="triangles"] body {
+  background-color: var(--bg-pattern-base);
+  background-image: linear-gradient(
+    45deg,
+    var(--bg-pattern-accent) 50%,
+    var(--bg-pattern-base) 50%
   );
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-.bg-noise {
-  background-color: oklch(0.94 0.01 240);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
-}
-
-.dark .bg-noise {
-  background-color: oklch(0.22 0.01 240);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
-}
-
-html[data-background="noise"] body {
-  background-color: oklch(0.94 0.01 240);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
-}
-
-html[data-background="noise"].dark body {
-  background-color: oklch(0.22 0.01 240);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
-}
-
-.bg-crosshatch {
+/* ── Triangles 2 ── */
+.bg-triangles-2 {
+  background-color: var(--bg-pattern-base);
   background-image: linear-gradient(
-      45deg,
-      oklch(0.88 0.02 240) 25%,
-      transparent 25%,
-      transparent 75%,
-      oklch(0.88 0.02 240) 75%
-    ),
-    linear-gradient(
-      -45deg,
-      oklch(0.88 0.02 240) 25%,
-      transparent 25%,
-      transparent 75%,
-      oklch(0.88 0.02 240) 75%
-    ),
-    oklch(0.96 0.005 240);
-  background-size: 16px 16px;
+    -45deg,
+    var(--bg-pattern-base),
+    var(--bg-pattern-base) 50%,
+    var(--bg-pattern-accent) 50%,
+    var(--bg-pattern-accent)
+  );
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-.dark .bg-crosshatch {
+html[data-background="triangles-2"] body {
+  background-color: var(--bg-pattern-base);
   background-image: linear-gradient(
-      45deg,
-      oklch(0.32 0.02 240) 25%,
-      transparent 25%,
-      transparent 75%,
-      oklch(0.32 0.02 240) 75%
-    ),
-    linear-gradient(
-      -45deg,
-      oklch(0.32 0.02 240) 25%,
-      transparent 25%,
-      transparent 75%,
-      oklch(0.32 0.02 240) 75%
-    ),
-    oklch(0.20 0.005 240);
-  background-size: 16px 16px;
+    -45deg,
+    var(--bg-pattern-base),
+    var(--bg-pattern-base) 50%,
+    var(--bg-pattern-accent) 50%,
+    var(--bg-pattern-accent)
+  );
+  background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="crosshatch"] body {
-  background-image: linear-gradient(
-      45deg,
-      oklch(0.88 0.02 240) 25%,
-      transparent 25%,
-      transparent 75%,
-      oklch(0.88 0.02 240) 75%
+/* ── Wavy ── */
+.bg-wavy {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    repeating-radial-gradient(
+      circle at 0 0,
+      transparent 0,
+      var(--bg-pattern-base) calc(10px * var(--bg-scale))
     ),
-    linear-gradient(
-      -45deg,
-      oklch(0.88 0.02 240) 25%,
-      transparent 25%,
-      transparent 75%,
-      oklch(0.88 0.02 240) 75%
-    ),
-    oklch(0.96 0.005 240);
-  background-size: 16px 16px;
+    repeating-linear-gradient(var(--bg-pattern-accent), var(--bg-pattern-accent));
+  opacity: var(--bg-opacity);
 }
 
-html[data-background="crosshatch"].dark body {
-  background-image: linear-gradient(
-      45deg,
-      oklch(0.32 0.02 240) 25%,
-      transparent 25%,
-      transparent 75%,
-      oklch(0.32 0.02 240) 75%
+html[data-background="wavy"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    repeating-radial-gradient(
+      circle at 0 0,
+      transparent 0,
+      var(--bg-pattern-base) calc(10px * var(--bg-scale))
     ),
+    repeating-linear-gradient(var(--bg-pattern-accent), var(--bg-pattern-accent));
+  opacity: var(--bg-opacity);
+}
+
+/* ── Zigzag ── */
+.bg-zigzag {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%);
+  background-position:
+    calc(10px * var(--bg-scale)) 0,
+    calc(10px * var(--bg-scale)) 0,
+    0 0,
+    0 0;
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  background-repeat: repeat;
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="zigzag"] body {
+  background-color: var(--bg-pattern-base);
+  background-image:
+    linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%),
+    linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%);
+  background-position:
+    calc(10px * var(--bg-scale)) 0,
+    calc(10px * var(--bg-scale)) 0,
+    0 0,
+    0 0;
+  background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  background-repeat: repeat;
+  opacity: var(--bg-opacity);
+}
+
+/* ── Zigzag 3D ── */
+.bg-zigzag-3d {
+  background-color: var(--bg-pattern-base);
+  background:
     linear-gradient(
-      -45deg,
-      oklch(0.32 0.02 240) 25%,
-      transparent 25%,
-      transparent 75%,
-      oklch(0.32 0.02 240) 75%
-    ),
-    oklch(0.20 0.005 240);
-  background-size: 16px 16px;
+        135deg,
+        color-mix(in srgb, var(--bg-pattern-accent) 33%, transparent) 25%,
+        transparent 25%
+      )
+      calc(-10px * var(--bg-scale)) 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
+    linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%)
+      calc(-10px * var(--bg-scale)) 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
+    linear-gradient(
+        315deg,
+        color-mix(in srgb, var(--bg-pattern-accent) 33%, transparent) 25%,
+        transparent 25%
+      )
+      0px 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
+    linear-gradient(45deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%) 0px 0 /
+      calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  opacity: var(--bg-opacity);
+}
+
+html[data-background="zigzag-3d"] body {
+  background-color: var(--bg-pattern-base);
+  background:
+    linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bg-pattern-accent) 33%, transparent) 25%,
+        transparent 25%
+      )
+      calc(-10px * var(--bg-scale)) 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
+    linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%)
+      calc(-10px * var(--bg-scale)) 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
+    linear-gradient(
+        315deg,
+        color-mix(in srgb, var(--bg-pattern-accent) 33%, transparent) 25%,
+        transparent 25%
+      )
+      0px 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
+    linear-gradient(45deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%) 0px 0 /
+      calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+  opacity: var(--bg-opacity);
 }

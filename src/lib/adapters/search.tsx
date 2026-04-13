@@ -1,13 +1,13 @@
-import type { ServiceDefinition } from "./types"
+import type { ServiceDefinition } from "./types";
 
 type SearchData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  engines: string
-}
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  engines: string;
+};
 
 function SearchWidget({ engines }: SearchData) {
-  const engineList = engines.split(",").map((e) => e.trim())
+  const engineList = engines.split(",").map((e) => e.trim());
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 py-2">
@@ -23,7 +23,7 @@ function SearchWidget({ engines }: SearchData) {
         </a>
       ))}
     </div>
-  )
+  );
 }
 
 export const searchDefinition: ServiceDefinition<SearchData> = {
@@ -45,7 +45,7 @@ export const searchDefinition: ServiceDefinition<SearchData> = {
     return Promise.resolve({
       _status: "ok",
       engines: config.engines || "Google,DuckDuckGo,Bing",
-    })
+    });
   },
   renderWidget: SearchWidget,
-}
+};

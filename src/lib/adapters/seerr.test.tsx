@@ -1,34 +1,34 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { seerrDefinition } from "@/lib/adapters/seerr"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { seerrDefinition } from "@/lib/adapters/seerr";
 
 describe("seerr definition", () => {
   it("has correct metadata", () => {
-    expect(seerrDefinition.id).toBe("seerr")
-    expect(seerrDefinition.name).toBe("Overseerr (Seerr)")
-    expect(seerrDefinition.icon).toBe("overseerr")
-    expect(seerrDefinition.category).toBe("media")
-    expect(seerrDefinition.defaultPollingMs).toBe(15_000)
-  })
+    expect(seerrDefinition.id).toBe("seerr");
+    expect(seerrDefinition.name).toBe("Overseerr (Seerr)");
+    expect(seerrDefinition.icon).toBe("overseerr");
+    expect(seerrDefinition.category).toBe("media");
+    expect(seerrDefinition.defaultPollingMs).toBe(15_000);
+  });
 
   it("has configFields defined", () => {
-    expect(seerrDefinition.configFields).toBeDefined()
-    expect(seerrDefinition.configFields).toHaveLength(2)
-    expect(seerrDefinition.configFields[0].key).toBe("url")
-    expect(seerrDefinition.configFields[0].type).toBe("url")
-    expect(seerrDefinition.configFields[0].required).toBe(true)
-    expect(seerrDefinition.configFields[1].key).toBe("apiKey")
-    expect(seerrDefinition.configFields[1].type).toBe("password")
-    expect(seerrDefinition.configFields[1].required).toBe(true)
-  })
+    expect(seerrDefinition.configFields).toBeDefined();
+    expect(seerrDefinition.configFields).toHaveLength(2);
+    expect(seerrDefinition.configFields[0].key).toBe("url");
+    expect(seerrDefinition.configFields[0].type).toBe("url");
+    expect(seerrDefinition.configFields[0].required).toBe(true);
+    expect(seerrDefinition.configFields[1].key).toBe("apiKey");
+    expect(seerrDefinition.configFields[1].type).toBe("password");
+    expect(seerrDefinition.configFields[1].required).toBe(true);
+  });
 
   describe("fetchData", () => {
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
+      vi.resetAllMocks();
+    });
 
     afterEach(() => {
-      vi.restoreAllMocks()
-    })
+      vi.restoreAllMocks();
+    });
 
     it("fetches data successfully", async () => {
       const mockCounts = {
@@ -37,56 +37,56 @@ describe("seerr definition", () => {
         available: 3,
         processing: 1,
         declined: 0,
-      }
+      };
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
           json: () => Promise.resolve(mockCounts),
-        })
-      )
+        }),
+      );
 
       const result = await seerrDefinition.fetchData!({
         url: "https://overseerr.example.com/",
         apiKey: "test-key",
-      })
+      });
 
-      expect(result._status).toBe("ok")
-      expect(result.pending).toBe(2)
-      expect(result.approved).toBe(1)
-      expect(result.available).toBe(3)
-      expect(result.processing).toBe(1)
-    })
+      expect(result._status).toBe("ok");
+      expect(result.pending).toBe(2);
+      expect(result.approved).toBe(1);
+      expect(result.available).toBe(3);
+      expect(result.processing).toBe(1);
+    });
 
     it("throws on error response", async () => {
-      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 403 }))
+      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 403 }));
 
       await expect(
         seerrDefinition.fetchData!({
           url: "https://overseerr.example.com",
           apiKey: "bad-key",
-        })
-      ).rejects.toThrow("Overseerr error: 403")
-    })
+        }),
+      ).rejects.toThrow("Overseerr error: 403");
+    });
 
     it("handles missing count fields with defaults", async () => {
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
           json: () => Promise.resolve({}),
-        })
-      )
+        }),
+      );
 
       const result = await seerrDefinition.fetchData!({
         url: "https://overseerr.example.com",
         apiKey: "test-key",
-      })
+      });
 
-      expect(result.pending).toBe(0)
-      expect(result.approved).toBe(0)
-      expect(result.available).toBe(0)
-      expect(result.processing).toBe(0)
-    })
-  })
+      expect(result.pending).toBe(0);
+      expect(result.approved).toBe(0);
+      expect(result.available).toBe(0);
+      expect(result.processing).toBe(0);
+    });
+  });
 
   describe("toPayload", () => {
     it("converts data to payload with stats", () => {
@@ -96,17 +96,17 @@ describe("seerr definition", () => {
         approved: 5,
         available: 3,
         processing: 1,
-      })
-      expect(payload.stats).toHaveLength(4)
-      expect(payload.stats[0].value).toBe(2)
-      expect(payload.stats[0].label).toBe("Pending")
-      expect(payload.stats[1].value).toBe(5)
-      expect(payload.stats[1].label).toBe("Approved")
-      expect(payload.stats[2].value).toBe(3)
-      expect(payload.stats[2].label).toBe("Available")
-      expect(payload.stats[3].value).toBe(1)
-      expect(payload.stats[3].label).toBe("Processing")
-    })
+      });
+      expect(payload.stats).toHaveLength(4);
+      expect(payload.stats[0].value).toBe(2);
+      expect(payload.stats[0].label).toBe("Pending");
+      expect(payload.stats[1].value).toBe(5);
+      expect(payload.stats[1].label).toBe("Approved");
+      expect(payload.stats[2].value).toBe(3);
+      expect(payload.stats[2].label).toBe("Available");
+      expect(payload.stats[3].value).toBe(1);
+      expect(payload.stats[3].label).toBe("Processing");
+    });
 
     it("handles zero values", () => {
       const payload = seerrDefinition.toPayload!({
@@ -115,8 +115,8 @@ describe("seerr definition", () => {
         approved: 0,
         available: 0,
         processing: 0,
-      })
-      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
-    })
-  })
-})
+      });
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true);
+    });
+  });
+});

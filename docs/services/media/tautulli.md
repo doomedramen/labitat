@@ -4,10 +4,10 @@ Plex monitoring and statistics.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Tautulli server URL |
-| API Key | Password | Yes | Tautulli API key |
+| Field   | Type     | Required | Description         |
+| ------- | -------- | -------- | ------------------- |
+| URL     | URL      | Yes      | Tautulli server URL |
+| API Key | Password | Yes      | Tautulli API key    |
 
 ## Finding Your API Key
 

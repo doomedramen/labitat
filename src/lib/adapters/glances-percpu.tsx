@@ -1,51 +1,39 @@
-import { cn } from "@/lib/utils"
-import type { ServiceDefinition } from "./types"
+import { cn } from "@/lib/utils";
+import type { ServiceDefinition } from "./types";
 
 type GlancesPerCpuData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  cores: number
-  maxCore: number
-  avgCpu: number
-  coreUsages: number[]
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  cores: number;
+  maxCore: number;
+  avgCpu: number;
+  coreUsages: number[];
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function CoreBar({ pct }: { pct: number }) {
-  const barColor =
-    pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-amber-500" : "bg-primary"
+  const barColor = pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-amber-500" : "bg-primary";
   const textColor =
-    pct >= 90
-      ? "text-destructive"
-      : pct >= 70
-        ? "text-amber-500"
-        : "text-secondary-foreground/60"
+    pct >= 90 ? "text-destructive" : pct >= 70 ? "text-amber-500" : "text-secondary-foreground/60";
 
   return (
     <div className="flex items-center gap-1.5">
       <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-secondary">
         <div
-          className={cn(
-            "h-full rounded-full transition-all duration-500",
-            barColor
-          )}
+          className={cn("h-full rounded-full transition-all duration-500", barColor)}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className={cn("w-7 shrink-0 text-right tabular-nums", textColor)}>
-        {pct}%
-      </span>
+      <span className={cn("w-7 shrink-0 text-right tabular-nums", textColor)}>{pct}%</span>
     </div>
-  )
+  );
 }
 
 function GlancesPerCpuWidget({ coreUsages }: GlancesPerCpuData) {
-  const usages = coreUsages ?? []
+  const usages = coreUsages ?? [];
 
   if (usages.length === 0) {
-    return (
-      <div className="text-xs text-secondary-foreground/50">No core data</div>
-    )
+    return <div className="text-xs text-secondary-foreground/50">No core data</div>;
   }
 
   return (
@@ -54,7 +42,7 @@ function GlancesPerCpuWidget({ coreUsages }: GlancesPerCpuData) {
         <CoreBar key={i} pct={pct} />
       ))}
     </div>
-  )
+  );
 }
 
 export const glancesPerCpuDefinition: ServiceDefinition<GlancesPerCpuData> = {
@@ -85,31 +73,25 @@ export const glancesPerCpuDefinition: ServiceDefinition<GlancesPerCpuData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const headers: Record<string, string> = {}
+    const baseUrl = config.url.replace(/\/$/, "");
+    const headers: Record<string, string> = {};
 
     if (config.username && config.password) {
-      headers["Authorization"] =
-        `Basic ${btoa(`${config.username}:${config.password}`)}`
+      headers["Authorization"] = `Basic ${btoa(`${config.username}:${config.password}`)}`;
     }
 
-    const res = await fetchWithTimeout(`${baseUrl}/api/4/percpu`, { headers })
-    if (!res.ok) throw new Error(`Glances error: ${res.status}`)
+    const res = await fetchWithTimeout(`${baseUrl}/api/4/percpu`, { headers });
+    if (!res.ok) throw new Error(`Glances error: ${res.status}`);
 
-    const percpu = await res.json()
-    const coreList = Array.isArray(percpu) ? percpu : []
+    const percpu = await res.json();
+    const coreList = Array.isArray(percpu) ? percpu : [];
 
-    const cpuValues = coreList.map((c: { total?: number }) =>
-      Math.round(c.total ?? 0)
-    )
-    const maxCore = Math.max(...cpuValues, 0)
+    const cpuValues = coreList.map((c: { total?: number }) => Math.round(c.total ?? 0));
+    const maxCore = Math.max(...cpuValues, 0);
     const avgCpu =
       cpuValues.length > 0
-        ? Math.round(
-            cpuValues.reduce((a: number, b: number) => a + b, 0) /
-              cpuValues.length
-          )
-        : 0
+        ? Math.round(cpuValues.reduce((a: number, b: number) => a + b, 0) / cpuValues.length)
+        : 0;
 
     return {
       _status: "ok",
@@ -117,7 +99,7 @@ export const glancesPerCpuDefinition: ServiceDefinition<GlancesPerCpuData> = {
       maxCore,
       avgCpu,
       coreUsages: cpuValues,
-    }
+    };
   },
   renderWidget: GlancesPerCpuWidget,
-}
+};

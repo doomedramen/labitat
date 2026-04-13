@@ -4,10 +4,10 @@ Open-source media server.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Jellyfin server URL |
-| API Key | Password | Yes | Jellyfin API key |
+| Field   | Type     | Required | Description         |
+| ------- | -------- | -------- | ------------------- |
+| URL     | URL      | Yes      | Jellyfin server URL |
+| API Key | Password | Yes      | Jellyfin API key    |
 
 ## Finding Your API Key
 

@@ -4,9 +4,9 @@ UPS (Uninterruptible Power Supply) monitoring.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | APC UPS API URL |
+| Field | Type | Required | Description     |
+| ----- | ---- | -------- | --------------- |
+| URL   | URL  | Yes      | APC UPS API URL |
 
 ## Widget Displays
 

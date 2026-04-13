@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import type { GlancesProcessesData } from "@/lib/adapters/glances-processes"
-import { cn } from "@/lib/utils"
-import { Circle, AlertTriangle, Pause, StopCircle } from "lucide-react"
+import type { GlancesProcessesData } from "@/lib/adapters/glances-processes";
+import { cn } from "@/lib/utils";
+import { Circle, AlertTriangle, Pause, StopCircle } from "lucide-react";
 
 function valueColor(value: number, warnAt: number, critAt: number): string {
-  if (value >= critAt) return "text-destructive"
-  if (value >= warnAt) return "text-amber-500"
-  return "text-secondary-foreground"
+  if (value >= critAt) return "text-destructive";
+  if (value >= warnAt) return "text-amber-500";
+  return "text-secondary-foreground";
 }
 
 /**
@@ -22,20 +22,20 @@ function valueColor(value: number, warnAt: number, critAt: number): string {
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
     case "R": // Running
-      return <Circle className="h-3 w-3 fill-green-500 text-green-500" />
+      return <Circle className="h-3 w-3 fill-green-500 text-green-500" />;
     case "S": // Sleeping
-      return <Circle className="h-3 w-3 text-blue-500" />
+      return <Circle className="h-3 w-3 text-blue-500" />;
     case "D": // Disk sleep
-      return <Pause className="h-3 w-3 text-blue-500" />
+      return <Pause className="h-3 w-3 text-blue-500" />;
     case "Z": // Zombie
-      return <AlertTriangle className="h-3 w-3 text-destructive" />
+      return <AlertTriangle className="h-3 w-3 text-destructive" />;
     case "T": // Traced
     case "t":
-      return <StopCircle className="h-3 w-3 text-purple-500" />
+      return <StopCircle className="h-3 w-3 text-purple-500" />;
     case "X": // Dead
-      return <Circle className="h-3 w-3 text-muted-foreground/50" />
+      return <Circle className="h-3 w-3 text-muted-foreground/50" />;
     default:
-      return <Circle className="h-3 w-3 text-muted-foreground/50" />
+      return <Circle className="h-3 w-3 text-muted-foreground/50" />;
   }
 }
 
@@ -50,7 +50,7 @@ export function GlancesProcessesWidget({
       <div className="flex h-full items-center justify-center text-sm text-destructive">
         {_statusText ?? "Error fetching processes"}
       </div>
-    )
+    );
   }
 
   if (!processes || processes.length === 0) {
@@ -58,16 +58,12 @@ export function GlancesProcessesWidget({
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         No processes available
       </div>
-    )
+    );
   }
 
   const score = (p: { cpu: number; memory: number }) =>
-    sortBy === "memory"
-      ? p.memory
-      : sortBy === "both"
-        ? Math.max(p.cpu, p.memory)
-        : p.cpu
-  const sorted = [...processes].sort((a, b) => score(b) - score(a))
+    sortBy === "memory" ? p.memory : sortBy === "both" ? Math.max(p.cpu, p.memory) : p.cpu;
+  const sorted = [...processes].sort((a, b) => score(b) - score(a));
 
   return (
     <div className="flex flex-col gap-0.5 text-xs">
@@ -77,8 +73,7 @@ export function GlancesProcessesWidget({
         <div
           className={cn(
             "col-span-2 text-right",
-            (sortBy === "cpu" || sortBy === "both") &&
-              "font-medium text-secondary-foreground/80"
+            (sortBy === "cpu" || sortBy === "both") && "font-medium text-secondary-foreground/80",
           )}
         >
           CPU
@@ -87,7 +82,7 @@ export function GlancesProcessesWidget({
           className={cn(
             "col-span-3 text-right",
             (sortBy === "memory" || sortBy === "both") &&
-              "font-medium text-secondary-foreground/80"
+              "font-medium text-secondary-foreground/80",
           )}
         >
           MEM
@@ -106,31 +101,18 @@ export function GlancesProcessesWidget({
                 <StatusIcon status={proc.status} />
               </span>
             )}
-            <div
-              className="truncate text-secondary-foreground"
-              title={proc.name}
-            >
+            <div className="truncate text-secondary-foreground" title={proc.name}>
               {proc.name}
             </div>
           </div>
-          <div
-            className={cn(
-              "col-span-2 text-right tabular-nums",
-              valueColor(proc.cpu, 30, 70)
-            )}
-          >
+          <div className={cn("col-span-2 text-right tabular-nums", valueColor(proc.cpu, 30, 70))}>
             {proc.cpu.toFixed(1)}%
           </div>
-          <div
-            className={cn(
-              "col-span-3 text-right tabular-nums",
-              valueColor(proc.memory, 5, 20)
-            )}
-          >
+          <div className={cn("col-span-3 text-right tabular-nums", valueColor(proc.memory, 5, 20))}>
             {proc.memory.toFixed(1)}%
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }

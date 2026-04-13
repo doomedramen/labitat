@@ -5,16 +5,16 @@
  * Supports various extensions and defaults to PNG.
  */
 export function resolveIconUrl(icon: string | null | undefined): string {
-  if (!icon) return ""
+  if (!icon) return "";
 
   // Already a full URL
   if (icon.startsWith("http://") || icon.startsWith("https://")) {
-    return icon
+    return icon;
   }
 
   // Remove file extension if present
-  const slug = icon.replace(/\.(png|svg|webp)$/i, "")
+  const slug = icon.replace(/\.(png|svg|webp)$/i, "");
 
   // Return PNG format from selfh.st CDN
-  return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${slug}.png`
+  return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${slug}.png`;
 }

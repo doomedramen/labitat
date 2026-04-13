@@ -1,100 +1,97 @@
-import { NextRequest, NextResponse } from "next/server"
-import type { ServiceData } from "@/lib/adapters/types"
-import type { SessionData } from "@/lib/auth"
+import { NextRequest, NextResponse } from "next/server";
+import type { ServiceData } from "@/lib/adapters/types";
+import type { SessionData } from "@/lib/auth";
 
 interface SeedRequest {
-  admin?: { email: string; password: string }
-  settings?: Record<string, string>
+  admin?: { email: string; password: string };
+  settings?: Record<string, string>;
   groups?: Array<{
-    name: string
+    name: string;
     items?: Array<{
-      label: string
-      href?: string
-      iconUrl?: string
-      serviceType?: string
-      serviceUrl?: string
+      label: string;
+      href?: string;
+      iconUrl?: string;
+      serviceType?: string;
+      serviceUrl?: string;
       /** Pre-seed cached widget data for E2E tests */
-      cachedWidgetData?: Record<string, unknown>
-    }>
-  }>
+      cachedWidgetData?: Record<string, unknown>;
+    }>;
+  }>;
 }
 
 export async function POST(request: Request) {
   if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const secret = request.headers.get("x-test-secret")
+  const secret = request.headers.get("x-test-secret");
   if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   // Dynamic imports to avoid loading env-dependent modules during build
-  const { sql } = await import("drizzle-orm")
-  const { getIronSession } = await import("iron-session")
-  const { cookies } = await import("next/headers")
-  const bcrypt = await import("bcryptjs")
-  const { nanoid } = await import("nanoid")
-  const { db } = await import("@/lib/db")
-  const { users, groups, items, settings } = await import("@/lib/db/schema")
-  const { resetAllRateLimits } = await import("@/lib/auth/rate-limit")
-  const { getSessionOptions } = await import("@/lib/auth")
-  const { serverCache } = await import("@/lib/server-cache")
+  const { sql } = await import("drizzle-orm");
+  const { getIronSession } = await import("iron-session");
+  const { cookies } = await import("next/headers");
+  const bcrypt = await import("bcryptjs");
+  const { nanoid } = await import("nanoid");
+  const { db } = await import("@/lib/db");
+  const { users, groups, items, settings } = await import("@/lib/db/schema");
+  const { resetAllRateLimits } = await import("@/lib/auth/rate-limit");
+  const { getSessionOptions } = await import("@/lib/auth");
+  const { serverCache } = await import("@/lib/server-cache");
 
   // Reset first
-  await db.run(sql`DELETE FROM items`)
-  await db.run(sql`DELETE FROM groups`)
-  await db.run(sql`DELETE FROM settings`)
-  await db.run(sql`DELETE FROM users`)
-  resetAllRateLimits()
+  await db.run(sql`DELETE FROM items`);
+  await db.run(sql`DELETE FROM groups`);
+  await db.run(sql`DELETE FROM settings`);
+  await db.run(sql`DELETE FROM users`);
+  resetAllRateLimits();
 
   // Clear server cache
-  serverCache.clear()
+  serverCache.clear();
 
-  const body: SeedRequest = await request.json().catch(() => ({}))
+  const body: SeedRequest = await request.json().catch(() => ({}));
 
   // Seed admin user
   if (body.admin) {
-    const userId = nanoid()
-    const passwordHash = await bcrypt.default.hash(body.admin.password, 4)
+    const userId = nanoid();
+    const passwordHash = await bcrypt.default.hash(body.admin.password, 4);
     await db.insert(users).values({
       id: userId,
       email: body.admin.email,
       passwordHash,
       role: "admin",
-    })
+    });
 
     // Set session cookie
-    const session = await getIronSession<SessionData>(
-      await cookies(),
-      getSessionOptions()
-    )
-    session.loggedIn = true
-    session.userId = userId
-    await session.save()
+    const session = await getIronSession<SessionData>(await cookies(), getSessionOptions());
+    session.loggedIn = true;
+    session.userId = userId;
+    await session.save();
   }
 
   // Seed settings
   if (body.settings) {
     for (const [key, value] of Object.entries(body.settings)) {
-      await db.insert(settings).values({ key, value })
+      await db.insert(settings).values({ key, value });
     }
   }
 
   // Seed groups and items
   if (body.groups) {
     for (let gi = 0; gi < body.groups.length; gi++) {
-      const groupData = body.groups[gi]
-      const groupId = nanoid()
+      const groupData = body.groups[gi];
+      const groupId = nanoid();
       await db.insert(groups).values({
         id: groupId,
         name: groupData.name,
         order: gi,
-      })
+      });
 
       if (groupData.items) {
         for (let ii = 0; ii < groupData.items.length; ii++) {
-          const itemData = groupData.items[ii]
-          const itemId = nanoid()
+          const itemData = groupData.items[ii];
+          const itemId = nanoid();
           await db.insert(items).values({
             id: itemId,
             groupId,
@@ -104,39 +101,39 @@ export async function POST(request: Request) {
             serviceType: itemData.serviceType ?? null,
             serviceUrl: itemData.serviceUrl ?? null,
             order: ii,
-          })
+          });
 
           // Pre-seed cached widget data for E2E tests
           if (itemData.cachedWidgetData) {
             await serverCache.seed(itemId, {
               _status: "ok",
               ...itemData.cachedWidgetData,
-            } as ServiceData)
+            } as ServiceData);
           }
         }
       }
     }
   }
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true });
 }
 
 // GET handler for debugging cache state in E2E tests
 export async function GET(request: NextRequest) {
   if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const secret = request.headers.get("x-test-secret")
+  const secret = request.headers.get("x-test-secret");
   if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { serverCache } = await import("@/lib/server-cache")
-  const itemId = request.nextUrl.searchParams.get("itemId")
+  const { serverCache } = await import("@/lib/server-cache");
+  const itemId = request.nextUrl.searchParams.get("itemId");
   if (itemId) {
-    const cached = serverCache.get(itemId)
-    return NextResponse.json({ itemId, cached })
+    const cached = serverCache.get(itemId);
+    return NextResponse.json({ itemId, cached });
   }
 
-  return NextResponse.json({ error: "Provide ?itemId=..." }, { status: 400 })
+  return NextResponse.json({ error: "Provide ?itemId=..." }, { status: 400 });
 }

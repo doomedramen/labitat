@@ -1,34 +1,34 @@
-import type { ServiceDefinition } from "./types"
-import { Play, Music, Film, Tv } from "lucide-react"
-import { buildStreamsTooltip, formatMediaTitle } from "@/lib/utils/format-media"
-import { parseBool } from "./validate"
+import type { ServiceDefinition } from "./types";
+import { Play, Music, Film, Tv } from "lucide-react";
+import { buildStreamsTooltip, formatMediaTitle } from "@/lib/utils/format-media";
+import { parseBool } from "./validate";
 
 type PlexSession = {
-  title: string
-  subtitle?: string
-  user: string
-  progress: number
-  duration: number
-  state?: "playing" | "paused"
-  streamId?: string
+  title: string;
+  subtitle?: string;
+  user: string;
+  progress: number;
+  duration: number;
+  state?: "playing" | "paused";
+  streamId?: string;
   transcoding?: {
-    isDirect?: boolean
-    hardwareDecoding?: boolean
-    hardwareEncoding?: boolean
-  }
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+    isDirect?: boolean;
+    hardwareDecoding?: boolean;
+    hardwareEncoding?: boolean;
+  };
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 type PlexData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  streams: number
-  albums: number
-  movies: number
-  tvShows: number
-  showActiveStreams?: boolean
-  sessions?: PlexSession[]
-}
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  streams: number;
+  albums: number;
+  movies: number;
+  tvShows: number;
+  showActiveStreams?: boolean;
+  sessions?: PlexSession[];
+};
 
 function decodeXMLEntities(str: string): string {
   return str
@@ -37,7 +37,7 @@ function decodeXMLEntities(str: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#?39;/g, "'")
-    .replace(/&apos;/g, "'")
+    .replace(/&apos;/g, "'");
 }
 
 function plexToPayload(data: PlexData) {
@@ -51,7 +51,7 @@ function plexToPayload(data: PlexData) {
       state: s.state,
       streamId: s.streamId,
       transcoding: s.transcoding,
-    })) ?? []
+    })) ?? [];
 
   return {
     stats: [
@@ -94,7 +94,7 @@ function plexToPayload(data: PlexData) {
             transcoding: session.transcoding,
           }))
         : undefined,
-  }
+  };
 }
 
 export const plexDefinition: ServiceDefinition<PlexData> = {
@@ -128,97 +128,88 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const headers = { "X-Plex-Token": config.token }
-    const showActiveStreams = parseBool(config.showActiveStreams)
+    const baseUrl = config.url.replace(/\/$/, "");
+    const headers = { "X-Plex-Token": config.token };
+    const showActiveStreams = parseBool(config.showActiveStreams);
 
     const [sessionsRes, libraryRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/status/sessions`, { headers }),
       fetchWithTimeout(`${baseUrl}/library/sections`, { headers }),
-    ])
+    ]);
 
     if (!sessionsRes.ok) {
-      if (sessionsRes.status === 401) throw new Error("Invalid Plex token")
-      if (sessionsRes.status === 404)
-        throw new Error("Plex not found at this URL")
-      throw new Error(`Plex error: ${sessionsRes.status}`)
+      if (sessionsRes.status === 401) throw new Error("Invalid Plex token");
+      if (sessionsRes.status === 404) throw new Error("Plex not found at this URL");
+      throw new Error(`Plex error: ${sessionsRes.status}`);
     }
 
-    const sessionsText = await sessionsRes.text()
-    const libraryText = await libraryRes.text()
+    const sessionsText = await sessionsRes.text();
+    const libraryText = await libraryRes.text();
 
-    const streamMatch = sessionsText.match(/size="(\d+)"/)
-    const streams = streamMatch ? parseInt(streamMatch[1], 10) : 0
+    const streamMatch = sessionsText.match(/size="(\d+)"/);
+    const streams = streamMatch ? parseInt(streamMatch[1], 10) : 0;
 
-    const dirRegex = /<Directory[^>]*key="([^"]*)"[^>]*type="([^"]*)"[^>]*>/g
-    const libraries: { key: string; type: string }[] = []
-    let dirMatch
+    const dirRegex = /<Directory[^>]*key="([^"]*)"[^>]*type="([^"]*)"[^>]*>/g;
+    const libraries: { key: string; type: string }[] = [];
+    let dirMatch;
     while ((dirMatch = dirRegex.exec(libraryText)) !== null) {
-      const [, key, type] = dirMatch
+      const [, key, type] = dirMatch;
       if (["movie", "show", "artist"].includes(type)) {
-        libraries.push({ key, type })
+        libraries.push({ key, type });
       }
     }
 
-    let albums = 0
-    let movies = 0
-    let tvShows = 0
+    let albums = 0;
+    let movies = 0;
+    let tvShows = 0;
 
     await Promise.all(
       libraries.map(async ({ key, type }) => {
         const endpoint =
           type === "artist"
             ? `${baseUrl}/library/sections/${key}/albums`
-            : `${baseUrl}/library/sections/${key}/all`
+            : `${baseUrl}/library/sections/${key}/all`;
 
         try {
-          const res = await fetchWithTimeout(endpoint, { headers })
-          if (!res.ok) return
+          const res = await fetchWithTimeout(endpoint, { headers });
+          if (!res.ok) return;
 
-          const text = await res.text()
-          const sizeMatch = text.match(
-            /<MediaContainer[^>]*(?:totalSize|size)="(\d+)"/
-          )
-          const count = sizeMatch ? parseInt(sizeMatch[1], 10) : 0
+          const text = await res.text();
+          const sizeMatch = text.match(/<MediaContainer[^>]*(?:totalSize|size)="(\d+)"/);
+          const count = sizeMatch ? parseInt(sizeMatch[1], 10) : 0;
 
-          if (type === "movie") movies += count
-          else if (type === "show") tvShows += count
-          else if (type === "artist") albums += count
+          if (type === "movie") movies += count;
+          else if (type === "show") tvShows += count;
+          else if (type === "artist") albums += count;
         } catch {
           // Ignore errors for individual library sections
         }
-      })
-    )
+      }),
+    );
 
-    const sessions: PlexSession[] = []
+    const sessions: PlexSession[] = [];
     if (showActiveStreams) {
       // Split by Video elements to capture full context including nested elements
-      const videoSections = sessionsText.split(/<Video\s/)
-      const videoElements = videoSections
-        .slice(1)
-        .map((section) => "<Video " + section)
+      const videoSections = sessionsText.split(/<Video\s/);
+      const videoElements = videoSections.slice(1).map((section) => "<Video " + section);
 
       for (const videoEl of videoElements) {
         const getAttr = (name: string): string | null => {
-          const m = videoEl.match(new RegExp(`\\b${name}="([^"]*)"`, "i"))
-          return m ? m[1] : null
-        }
+          const m = videoEl.match(new RegExp(`\\b${name}="([^"]*)"`, "i"));
+          return m ? m[1] : null;
+        };
 
-        const title = decodeXMLEntities(getAttr("title") ?? "")
+        const title = decodeXMLEntities(getAttr("title") ?? "");
         const grandparentTitle = getAttr("grandparentTitle")
           ? decodeXMLEntities(getAttr("grandparentTitle")!)
-          : null
-        const type = getAttr("type")
-        const viewOffset = getAttr("viewOffset")
-        const duration = getAttr("duration")
+          : null;
+        const type = getAttr("type");
+        const viewOffset = getAttr("viewOffset");
+        const duration = getAttr("duration");
 
         // Extract season/episode numbers for TV episodes
-        const seasonNumber = getAttr("parentIndex")
-          ? parseInt(getAttr("parentIndex")!, 10)
-          : null
-        const episodeNumber = getAttr("index")
-          ? parseInt(getAttr("index")!, 10)
-          : null
+        const seasonNumber = getAttr("parentIndex") ? parseInt(getAttr("parentIndex")!, 10) : null;
+        const episodeNumber = getAttr("index") ? parseInt(getAttr("index")!, 10) : null;
 
         // Use shared formatMediaTitle for consistent formatting across all media adapters
         const { title: formattedTitle, subtitle } = formatMediaTitle(title, {
@@ -228,31 +219,29 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
           episode: episodeNumber,
           albumArtist: getAttr("originalTitle") ?? undefined,
           album: getAttr("parentTitle") ?? undefined,
-        })
+        });
 
-        const userMatch = videoEl.match(/<User[^>]*title="([^"]*)"/)
-        const user = userMatch ? decodeXMLEntities(userMatch[1]) : "Unknown"
+        const userMatch = videoEl.match(/<User[^>]*title="([^"]*)"/);
+        const user = userMatch ? decodeXMLEntities(userMatch[1]) : "Unknown";
 
-        const stateMatch = videoEl.match(/<Player[^>]*state="([^"]*)"/)
-        const state = stateMatch?.[1] === "paused" ? "paused" : "playing"
+        const stateMatch = videoEl.match(/<Player[^>]*state="([^"]*)"/);
+        const state = stateMatch?.[1] === "paused" ? "paused" : "playing";
 
         // Plex API returns viewOffset and duration in milliseconds
-        const progress = viewOffset ? parseInt(viewOffset, 10) / 1000 : 0
-        const durationSec = duration ? parseInt(duration, 10) / 1000 : 0
+        const progress = viewOffset ? parseInt(viewOffset, 10) / 1000 : 0;
+        const durationSec = duration ? parseInt(duration, 10) / 1000 : 0;
 
         // Safety check: ensure progress doesn't exceed duration
-        const safeProgress =
-          durationSec > 0 ? Math.min(progress, durationSec) : progress
+        const safeProgress = durationSec > 0 ? Math.min(progress, durationSec) : progress;
 
         // Extract transcoding info from Plex XML
         // Plex uses videoDecision="direct play", "transcode", or "copy"
-        const videoDecision = getAttr("videoDecision")?.toLowerCase()
-        const isDirectPlay = videoDecision === "direct play"
-        const isTranscoding = videoDecision === "transcode"
+        const videoDecision = getAttr("videoDecision")?.toLowerCase();
+        const isDirectPlay = videoDecision === "direct play";
+        const isTranscoding = videoDecision === "transcode";
 
         // Check for hardware transcoding in TranscodeSession
-        const transcodeHw =
-          videoEl.includes('hwAccel="1"') || videoEl.includes('hwDecode="1"')
+        const transcodeHw = videoEl.includes('hwAccel="1"') || videoEl.includes('hwDecode="1"');
         const transcodingInfo = isTranscoding
           ? {
               isDirect: false,
@@ -265,7 +254,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
                 hardwareDecoding: false,
                 hardwareEncoding: false,
               }
-            : undefined
+            : undefined;
 
         sessions.push({
           title: formattedTitle,
@@ -276,7 +265,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
           state,
           streamId: getAttr("ratingKey") ?? undefined,
           transcoding: transcodingInfo,
-        })
+        });
       }
     }
 
@@ -288,7 +277,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
       tvShows,
       showActiveStreams,
       sessions,
-    }
+    };
   },
   toPayload: plexToPayload,
-}
+};

@@ -4,10 +4,10 @@ API proxy for torrent trackers.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Jackett server URL |
-| API Key | Password | Yes | Jackett API key |
+| Field   | Type     | Required | Description        |
+| ------- | -------- | -------- | ------------------ |
+| URL     | URL      | Yes      | Jackett server URL |
+| API Key | Password | Yes      | Jackett API key    |
 
 ## Finding Your API Key
 

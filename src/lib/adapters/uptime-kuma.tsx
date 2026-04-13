@@ -1,20 +1,20 @@
-import type { ServiceDefinition } from "./types"
-import type { StatItem } from "@/components/widgets"
-import { Check, X, Clock, AlertTriangle } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import type { StatItem } from "@/components/widgets";
+import { Check, X, Clock, AlertTriangle } from "lucide-react";
 
 type UptimeKumaData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  up: number
-  down: number
-  uptime: string
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  up: number;
+  down: number;
+  uptime: string;
   incident?: {
-    title: string
-    createdDate: string
-    hoursAgo: number
-  }
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+    title: string;
+    createdDate: string;
+    hoursAgo: number;
+  };
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function uptimeKumaToPayload(data: UptimeKumaData) {
   const stats: StatItem[] = [
@@ -36,7 +36,7 @@ function uptimeKumaToPayload(data: UptimeKumaData) {
       label: "Uptime",
       icon: Clock,
     },
-  ]
+  ];
 
   // Add incident stat if there's an active incident
   if (data.incident) {
@@ -46,10 +46,10 @@ function uptimeKumaToPayload(data: UptimeKumaData) {
       label: "Incident",
       icon: AlertTriangle,
       tooltip: data.incident.title,
-    })
+    });
   }
 
-  return { stats }
+  return { stats };
 }
 
 export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
@@ -79,49 +79,46 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const slug = config.slug ?? "default"
+    const baseUrl = config.url.replace(/\/$/, "");
+    const slug = config.slug ?? "default";
 
     // Uptime Kuma uses REST API (like Homepage)
     const [_statusRes, heartbeatRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/api/status-page?slug=${slug}`),
       fetchWithTimeout(`${baseUrl}/api/status-page/heartbeat?slug=${slug}`),
-    ])
+    ]);
 
     if (!_statusRes.ok || !heartbeatRes.ok) {
-      throw new Error("Failed to fetch Uptime Kuma data")
+      throw new Error("Failed to fetch Uptime Kuma data");
     }
 
-    const statusData = await _statusRes.json()
-    const heartbeatData = await heartbeatRes.json()
+    const statusData = await _statusRes.json();
+    const heartbeatData = await heartbeatRes.json();
 
     // Count sites up/down from heartbeat list
-    let sitesUp = 0
-    let sitesDown = 0
+    let sitesUp = 0;
+    let sitesDown = 0;
 
     const heartbeatList = heartbeatData.heartbeatList as
       | Record<string, { status: number }[]>
-      | undefined
+      | undefined;
     if (heartbeatList) {
       Object.values(heartbeatList).forEach((siteList) => {
-        const lastHeartbeat = siteList[siteList.length - 1]
+        const lastHeartbeat = siteList[siteList.length - 1];
         if (lastHeartbeat?.status === 1) {
-          sitesUp++
+          sitesUp++;
         } else {
-          sitesDown++
+          sitesDown++;
         }
-      })
+      });
     }
 
     // Calculate average uptime
-    const uptimeList = Object.values(heartbeatData.uptimeList ?? {}) as number[]
+    const uptimeList = Object.values(heartbeatData.uptimeList ?? {}) as number[];
     const avgUptime =
       uptimeList.length > 0
-        ? (
-            (uptimeList.reduce((a, b) => a + b, 0) / uptimeList.length) *
-            100
-          ).toFixed(1)
-        : "0"
+        ? ((uptimeList.reduce((a, b) => a + b, 0) / uptimeList.length) * 100).toFixed(1)
+        : "0";
 
     // Check for active incidents (matches Homepage's implementation)
     const incident = statusData.incident
@@ -129,13 +126,11 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
           title: statusData.incident.title ?? "Unknown Incident",
           createdDate: statusData.incident.createdDate,
           hoursAgo:
-            Math.abs(
-              new Date(statusData.incident.createdDate).getTime() - Date.now()
-            ) /
+            Math.abs(new Date(statusData.incident.createdDate).getTime() - Date.now()) /
             1000 /
             (60 * 60),
         }
-      : undefined
+      : undefined;
 
     return {
       _status: "ok" as const,
@@ -143,8 +138,8 @@ export const uptimeKumaDefinition: ServiceDefinition<UptimeKumaData> = {
       down: sitesDown,
       uptime: `${avgUptime}%`,
       incident,
-    }
+    };
   },
 
   toPayload: uptimeKumaToPayload,
-}
+};

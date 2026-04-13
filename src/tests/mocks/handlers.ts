@@ -1,4 +1,4 @@
-import { http, HttpResponse } from "msw"
+import { http, HttpResponse } from "msw";
 
 /**
  * Common request handlers for service adapter testing.
@@ -18,7 +18,7 @@ export const handlers = [
           trackedDownloadState: "downloading",
         },
       ],
-    })
+    });
   }),
 
   // Example: Mock Plex identity
@@ -27,7 +27,7 @@ export const handlers = [
       `<?xml version="1.0" encoding="UTF-8"?>
       <MediaContainer size="0" machineIdentifier="test-machine-id">
       </MediaContainer>`,
-      { headers: { "Content-Type": "application/xml" } }
-    )
+      { headers: { "Content-Type": "application/xml" } },
+    );
   }),
-]
+];

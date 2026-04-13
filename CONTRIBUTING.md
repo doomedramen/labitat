@@ -134,12 +134,12 @@ export const yourServiceDefinition: ServiceDefinition<YourServiceData> = {
 Add to `lib/adapters/index.ts`:
 
 ```typescript
-import { yourServiceDefinition } from "./your-service"
+import { yourServiceDefinition } from "./your-service";
 
 export const registry: ServiceRegistry = {
   // ...existing
   [yourServiceDefinition.id]: yourServiceDefinition,
-}
+};
 ```
 
 ### Adapter Checklist

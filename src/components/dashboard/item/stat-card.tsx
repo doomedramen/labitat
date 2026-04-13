@@ -3,15 +3,15 @@
  * Renders label + value during SSR. No icons (Lucide components are client-only).
  */
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface StatCardProps {
-  id: string
-  value: string | number
-  label: string
-  tooltip?: string
-  valueClassName?: string
-  displayMode?: "icon" | "label"
+  id: string;
+  value: string | number;
+  label: string;
+  tooltip?: string;
+  valueClassName?: string;
+  displayMode?: "icon" | "label";
 }
 
 export function StatCard({
@@ -21,22 +21,18 @@ export function StatCard({
   valueClassName,
   displayMode = "label",
 }: StatCardProps) {
-  const showLabel = displayMode === "label"
-  const effectiveTooltip =
-    displayMode === "icon" ? (tooltip ?? label) : undefined
+  const showLabel = displayMode === "label";
+  const effectiveTooltip = displayMode === "icon" ? (tooltip ?? label) : undefined;
 
   return (
     <div
       className={cn(
         "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground select-none",
-        "transition-all duration-200 hover:scale-105 hover:bg-secondary/80 active:scale-95"
+        "transition-all duration-200 hover:scale-105 hover:bg-secondary/80 active:scale-95",
       )}
     >
       <span
-        className={cn(
-          "font-medium tabular-nums",
-          valueClassName ?? "text-secondary-foreground"
-        )}
+        className={cn("font-medium tabular-nums", valueClassName ?? "text-secondary-foreground")}
       >
         {value}
       </span>
@@ -46,5 +42,5 @@ export function StatCard({
         <span className="sr-only">{effectiveTooltip}</span>
       ) : null}
     </div>
-  )
+  );
 }

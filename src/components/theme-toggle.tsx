@@ -1,14 +1,11 @@
-"use client"
+"use client";
 
-import { Moon, Sun } from "lucide-react"
-import { useThemeCookie } from "@/components/theme-provider"
-import {
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-} from "@/components/ui/dropdown-menu"
+import { Moon, Sun } from "lucide-react";
+import { useThemeCookie } from "@/components/theme-provider";
+import { DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useThemeCookie()
+  const { theme, setTheme } = useThemeCookie();
 
   return (
     <DropdownMenuRadioGroup value={theme ?? "system"} onValueChange={setTheme}>
@@ -20,12 +17,9 @@ export function ThemeToggle() {
         <Moon className="mr-2 h-3.5 w-3.5" />
         Dark
       </DropdownMenuRadioItem>
-      <DropdownMenuRadioItem
-        value="system"
-        onSelect={(e) => e.preventDefault()}
-      >
+      <DropdownMenuRadioItem value="system" onSelect={(e) => e.preventDefault()}>
         System
       </DropdownMenuRadioItem>
     </DropdownMenuRadioGroup>
-  )
+  );
 }

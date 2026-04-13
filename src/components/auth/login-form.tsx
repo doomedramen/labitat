@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useActionState, startTransition } from "react"
-import { useForm } from "@tanstack/react-form"
-import { z } from "zod"
-import { login } from "@/actions/auth"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { formatErrors } from "@/lib/utils"
+import { useActionState, startTransition } from "react";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
+import { login } from "@/actions/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { formatErrors } from "@/lib/utils";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(1, "Password is required."),
-})
+});
 
 export function LoginForm() {
-  const [state, formAction, isPending] = useActionState(login, null)
+  const [state, formAction, isPending] = useActionState(login, null);
 
   const form = useForm({
     defaultValues: {
@@ -27,26 +27,26 @@ export function LoginForm() {
       onBlur: loginSchema,
     },
     onSubmit: async ({ value }) => {
-      const formData = new FormData()
-      formData.append("email", value.email)
-      formData.append("password", value.password)
+      const formData = new FormData();
+      formData.append("email", value.email);
+      formData.append("password", value.password);
       startTransition(() => {
-        formAction(formData)
-      })
+        formAction(formData);
+      });
     },
-  })
+  });
 
   return (
     <form
       onSubmit={(e) => {
-        e.preventDefault()
-        form.handleSubmit()
+        e.preventDefault();
+        form.handleSubmit();
       }}
       className="space-y-4"
     >
       <form.Field name="email">
         {(field) => {
-          const isInvalid = field.state.meta.errors.length > 0
+          const isInvalid = field.state.meta.errors.length > 0;
           return (
             <div className="space-y-2">
               <Label htmlFor={field.name}>Email</Label>
@@ -61,17 +61,15 @@ export function LoginForm() {
                 aria-invalid={isInvalid || undefined}
               />
               {isInvalid && (
-                <p className="text-sm text-destructive">
-                  {formatErrors(field.state.meta.errors)}
-                </p>
+                <p className="text-sm text-destructive">{formatErrors(field.state.meta.errors)}</p>
               )}
             </div>
-          )
+          );
         }}
       </form.Field>
       <form.Field name="password">
         {(field) => {
-          const isInvalid = field.state.meta.errors.length > 0
+          const isInvalid = field.state.meta.errors.length > 0;
           return (
             <div className="space-y-2">
               <Label htmlFor={field.name}>Password</Label>
@@ -86,12 +84,10 @@ export function LoginForm() {
                 aria-invalid={isInvalid || undefined}
               />
               {isInvalid && (
-                <p className="text-sm text-destructive">
-                  {formatErrors(field.state.meta.errors)}
-                </p>
+                <p className="text-sm text-destructive">{formatErrors(field.state.meta.errors)}</p>
               )}
             </div>
-          )
+          );
         }}
       </form.Field>
       {state?.error && (
@@ -103,5 +99,5 @@ export function LoginForm() {
         {isPending ? "Signing in..." : "Sign in"}
       </Button>
     </form>
-  )
+  );
 }

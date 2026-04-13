@@ -8,17 +8,17 @@
  * Usage: node scripts/generate-icons.js
  */
 
-import sharp from "sharp"
-import { mkdirSync, existsSync, copyFileSync } from "fs"
-import { join, dirname } from "path"
-import { fileURLToPath } from "url"
+import sharp from "sharp";
+import { mkdirSync, existsSync, copyFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const ROOT_DIR = join(__dirname, "..")
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const ROOT_DIR = join(__dirname, "..");
 
-const SOURCE_SVG = join(ROOT_DIR, "logo.svg")
-const SOURCE_SVG_TRANSPARENT = join(ROOT_DIR, "logo_transparent.svg")
+const SOURCE_SVG = join(ROOT_DIR, "logo.svg");
+const SOURCE_SVG_TRANSPARENT = join(ROOT_DIR, "logo_transparent.svg");
 
 // Define all required icon sizes
 const ICONS = [
@@ -48,7 +48,7 @@ const ICONS = [
 
   // ── Docs (docs/public/) ────────────────────────────────────────────────────
   { size: 32, output: "docs/public/favicon.ico" },
-]
+];
 
 // iOS splash screens: actual pixel dimensions (CSS points × device pixel ratio)
 // Logo is rendered at ~25% of the shorter dimension, centered.
@@ -149,7 +149,7 @@ const SPLASH_SCREENS = [
   { w: 2732, h: 2048, name: "12.9__iPad_Pro_landscape" },
   { w: 2064, h: 2752, name: "13__iPad_Pro_M4_portrait" },
   { w: 2752, h: 2064, name: "13__iPad_Pro_M4_landscape" },
-]
+];
 
 function gradientSvg(w, h) {
   return Buffer.from(
@@ -161,16 +161,16 @@ function gradientSvg(w, h) {
         </linearGradient>
       </defs>
       <rect width="${w}" height="${h}" fill="url(#g)"/>
-    </svg>`
-  )
+    </svg>`,
+  );
 }
 
 async function generateSplash(w, h, name) {
-  const outputPath = join(ROOT_DIR, "public/splash_screens", `${name}.png`)
-  const relativePath = outputPath.replace(ROOT_DIR + "/", "")
+  const outputPath = join(ROOT_DIR, "public/splash_screens", `${name}.png`);
+  const relativePath = outputPath.replace(ROOT_DIR + "/", "");
 
   // Logo size: 30% of the shorter dimension
-  const logoSize = Math.round(Math.min(w, h) * 0.3)
+  const logoSize = Math.round(Math.min(w, h) * 0.3);
 
   const logoPng = await sharp(SOURCE_SVG_TRANSPARENT)
     .resize(logoSize, logoSize, {
@@ -178,25 +178,25 @@ async function generateSplash(w, h, name) {
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     })
     .png()
-    .toBuffer()
+    .toBuffer();
 
-  const left = Math.round((w - logoSize) / 2)
-  const top = Math.round((h - logoSize) / 2)
+  const left = Math.round((w - logoSize) / 2);
+  const top = Math.round((h - logoSize) / 2);
 
   await sharp(gradientSvg(w, h))
     .composite([{ input: logoPng, left, top }])
     .png()
-    .toFile(outputPath)
+    .toFile(outputPath);
 
-  console.log(`✓ ${relativePath} (${w}x${h})`)
+  console.log(`✓ ${relativePath} (${w}x${h})`);
 }
 
 async function generateIcon(size, outputPath) {
-  const relativePath = outputPath.replace(ROOT_DIR + "/", "")
+  const relativePath = outputPath.replace(ROOT_DIR + "/", "");
 
-  const outputDir = dirname(outputPath)
+  const outputDir = dirname(outputPath);
   if (!existsSync(outputDir)) {
-    mkdirSync(outputDir, { recursive: true })
+    mkdirSync(outputDir, { recursive: true });
   }
 
   await sharp(SOURCE_SVG)
@@ -205,41 +205,39 @@ async function generateIcon(size, outputPath) {
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     })
     .png()
-    .toFile(outputPath)
+    .toFile(outputPath);
 
-  console.log(`✓ ${relativePath} (${size}x${size})`)
+  console.log(`✓ ${relativePath} (${size}x${size})`);
 }
 
 async function main() {
   if (!existsSync(SOURCE_SVG)) {
-    console.error(`Error: Source SVG not found at ${SOURCE_SVG}`)
-    process.exit(1)
+    console.error(`Error: Source SVG not found at ${SOURCE_SVG}`);
+    process.exit(1);
   }
   if (!existsSync(SOURCE_SVG_TRANSPARENT)) {
-    console.error(
-      `Error: Transparent logo SVG not found at ${SOURCE_SVG_TRANSPARENT}`
-    )
-    process.exit(1)
+    console.error(`Error: Transparent logo SVG not found at ${SOURCE_SVG_TRANSPARENT}`);
+    process.exit(1);
   }
 
-  console.log("Generating icons from logo.svg...\n")
+  console.log("Generating icons from logo.svg...\n");
 
-  copyFileSync(SOURCE_SVG, join(ROOT_DIR, "docs/public/logo.svg"))
-  console.log("✓ docs/public/logo.svg")
+  copyFileSync(SOURCE_SVG, join(ROOT_DIR, "docs/public/logo.svg"));
+  console.log("✓ docs/public/logo.svg");
 
   for (const icon of ICONS) {
-    await generateIcon(icon.size, join(ROOT_DIR, icon.output))
+    await generateIcon(icon.size, join(ROOT_DIR, icon.output));
   }
 
-  console.log("\nGenerating splash screens from logo_transparent.svg...\n")
+  console.log("\nGenerating splash screens from logo_transparent.svg...\n");
 
-  mkdirSync(join(ROOT_DIR, "public/splash_screens"), { recursive: true })
+  mkdirSync(join(ROOT_DIR, "public/splash_screens"), { recursive: true });
 
   for (const splash of SPLASH_SCREENS) {
-    await generateSplash(splash.w, splash.h, splash.name)
+    await generateSplash(splash.w, splash.h, splash.name);
   }
 
-  console.log("\nDone!")
+  console.log("\nDone!");
 }
 
-main()
+main();

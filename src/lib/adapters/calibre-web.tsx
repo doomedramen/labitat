@@ -1,15 +1,15 @@
-import type { ServiceDefinition } from "./types"
-import { Book, PenTool, List, FileText } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Book, PenTool, List, FileText } from "lucide-react";
 
 type CalibreWebData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  books: number
-  authors: number
-  series: number
-  formats: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  books: number;
+  authors: number;
+  series: number;
+  formats: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function calibreWebToPayload(data: CalibreWebData) {
   return {
@@ -39,7 +39,7 @@ function calibreWebToPayload(data: CalibreWebData) {
         icon: FileText,
       },
     ],
-  }
+  };
 }
 
 export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
@@ -72,7 +72,7 @@ export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
+    const baseUrl = config.url.replace(/\/$/, "");
 
     // Login to get session cookie
     const loginRes = await fetchWithTimeout(`${baseUrl}/login`, {
@@ -85,25 +85,25 @@ export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
         password: config.password,
       }),
       redirect: "manual",
-    })
+    });
 
     if (!loginRes.ok && loginRes.status !== 302) {
-      throw new Error(`Calibre-Web login failed: ${loginRes.status}`)
+      throw new Error(`Calibre-Web login failed: ${loginRes.status}`);
     }
 
-    const cookie = loginRes.headers.getSetCookie?.().join("; ") ?? ""
-    const headers = { Cookie: cookie }
+    const cookie = loginRes.headers.getSetCookie?.().join("; ") ?? "";
+    const headers = { Cookie: cookie };
 
     // Use OPDS stats endpoint (JSON API - more reliable than HTML scraping)
     const statsRes = await fetchWithTimeout(`${baseUrl}/opds/stats`, {
       headers,
-    })
+    });
 
     if (!statsRes.ok) {
-      throw new Error(`Calibre-Web stats error: ${statsRes.status}`)
+      throw new Error(`Calibre-Web stats error: ${statsRes.status}`);
     }
 
-    const statsData = await statsRes.json()
+    const statsData = await statsRes.json();
 
     // OPDS stats returns an object with counts
     return {
@@ -112,7 +112,7 @@ export const calibreWebDefinition: ServiceDefinition<CalibreWebData> = {
       authors: statsData.authors ?? 0,
       series: statsData.series ?? 0,
       formats: statsData.formats ?? statsData.formats_total ?? 0,
-    }
+    };
   },
   toPayload: calibreWebToPayload,
-}
+};

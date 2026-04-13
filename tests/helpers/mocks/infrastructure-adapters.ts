@@ -2,8 +2,8 @@
  * Mock data for infrastructure and server adapters (Proxmox, Nginx Proxy Manager, Portainer, etc.)
  */
 
-import type { MockResponse } from "../adapter-mocks"
-import { successResponse, urlPatterns } from "../adapter-mocks"
+import type { MockResponse } from "../adapter-mocks";
+import { successResponse, urlPatterns } from "../adapter-mocks";
 
 // ── Proxmox Mocks ───────────────────────────────────────────────────────────────
 
@@ -11,28 +11,28 @@ export const proxmoxMocks = {
   success: (
     baseUrl = "https://proxmox.example.com",
     opts?: {
-      nodes?: number
+      nodes?: number;
       vms?: Array<{
-        vmid: number
-        name: string
-        status: "running" | "stopped"
-        cpu?: number
-        mem?: number
-        maxmem?: number
-        disk?: number
-        maxdisk?: number
-      }>
+        vmid: number;
+        name: string;
+        status: "running" | "stopped";
+        cpu?: number;
+        mem?: number;
+        maxmem?: number;
+        disk?: number;
+        maxdisk?: number;
+      }>;
       containers?: Array<{
-        vmid: number
-        name: string
-        status: "running" | "stopped"
-        cpu?: number
-        mem?: number
-        maxmem?: number
-        disk?: number
-        maxdisk?: number
-      }>
-    }
+        vmid: number;
+        name: string;
+        status: "running" | "stopped";
+        cpu?: number;
+        mem?: number;
+        maxmem?: number;
+        disk?: number;
+        maxdisk?: number;
+      }>;
+    },
   ): MockResponse[] => {
     const vms = opts?.vms || [
       {
@@ -51,8 +51,8 @@ export const proxmoxMocks = {
         mem: 8589934592,
         maxmem: 17179869184,
       },
-    ]
-    const containers = opts?.containers || []
+    ];
+    const containers = opts?.containers || [];
 
     return [
       // Login
@@ -74,36 +74,33 @@ export const proxmoxMocks = {
         })),
       }),
       // QEMU VMs
-      successResponse(
-        urlPatterns.api(baseUrl, "/api2/json/cluster/resources"),
-        {
-          data: [
-            ...vms.map((vm) => ({
-              vmid: vm.vmid,
-              name: vm.name,
-              status: vm.status,
-              type: "qemu",
-              cpu: vm.cpu ?? 0,
-              mem: vm.mem ?? 0,
-              maxmem: vm.maxmem ?? 0,
-              disk: vm.disk ?? 0,
-              maxdisk: vm.maxdisk ?? 0,
-            })),
-            ...containers.map((ct) => ({
-              vmid: ct.vmid,
-              name: ct.name,
-              status: ct.status,
-              type: "lxc",
-              cpu: ct.cpu ?? 0,
-              mem: ct.mem ?? 0,
-              maxmem: ct.maxmem ?? 0,
-              disk: ct.disk ?? 0,
-              maxdisk: ct.maxdisk ?? 0,
-            })),
-          ],
-        }
-      ),
-    ]
+      successResponse(urlPatterns.api(baseUrl, "/api2/json/cluster/resources"), {
+        data: [
+          ...vms.map((vm) => ({
+            vmid: vm.vmid,
+            name: vm.name,
+            status: vm.status,
+            type: "qemu",
+            cpu: vm.cpu ?? 0,
+            mem: vm.mem ?? 0,
+            maxmem: vm.maxmem ?? 0,
+            disk: vm.disk ?? 0,
+            maxdisk: vm.maxdisk ?? 0,
+          })),
+          ...containers.map((ct) => ({
+            vmid: ct.vmid,
+            name: ct.name,
+            status: ct.status,
+            type: "lxc",
+            cpu: ct.cpu ?? 0,
+            mem: ct.mem ?? 0,
+            maxmem: ct.maxmem ?? 0,
+            disk: ct.disk ?? 0,
+            maxdisk: ct.maxdisk ?? 0,
+          })),
+        ],
+      }),
+    ];
   },
 
   empty: (baseUrl = "https://proxmox.example.com"): MockResponse[] => [
@@ -116,23 +113,20 @@ export const proxmoxMocks = {
     }),
   ],
 
-  error: (
-    baseUrl = "https://proxmox.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://proxmox.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/api2/json/access/ticket"),
       { error: `Proxmox error: ${status}` },
-      status
+      status,
     ),
 
   unauthorized: (baseUrl = "https://proxmox.example.com"): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/api2/json/access/ticket"),
       { error: "Authentication failed" },
-      401
+      401,
     ),
-}
+};
 
 // ── Proxmox Backup Server Mocks ─────────────────────────────────────────────────
 
@@ -140,10 +134,10 @@ export const proxmoxBackupServerMocks = {
   success: (
     baseUrl = "https://pbs.example.com",
     opts?: {
-      datastores?: number
-      usedBytes?: number
-      totalBytes?: number
-    }
+      datastores?: number;
+      usedBytes?: number;
+      totalBytes?: number;
+    },
   ): MockResponse[] => [
     successResponse(urlPatterns.api(baseUrl, "/api2/json/access/ticket"), {
       data: {
@@ -173,9 +167,9 @@ export const proxmoxBackupServerMocks = {
     successResponse(
       urlPatterns.api(baseUrl, "/api2/json/access/ticket"),
       { error: `PBS error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── Nginx Proxy Manager Mocks ───────────────────────────────────────────────────
 
@@ -183,11 +177,11 @@ export const nginxProxyManagerMocks = {
   success: (
     baseUrl = "https://npm.example.com",
     opts?: {
-      proxyHosts?: number
-      redirectionHosts?: number
-      streams?: number
-      deadHosts?: number
-    }
+      proxyHosts?: number;
+      redirectionHosts?: number;
+      streams?: number;
+      deadHosts?: number;
+    },
   ): MockResponse[] => [
     // Login
     successResponse(urlPatterns.api(baseUrl, "/api/tokens"), {
@@ -201,7 +195,7 @@ export const nginxProxyManagerMocks = {
         id: i + 1,
         domain_names: [`service-${i}.example.com`],
         enabled: true,
-      }))
+      })),
     ),
     // Redirection hosts
     successResponse(
@@ -210,7 +204,7 @@ export const nginxProxyManagerMocks = {
         id: i + 1,
         domain_names: [`redirect-${i}.example.com`],
         enabled: true,
-      }))
+      })),
     ),
     // Streams
     successResponse(
@@ -219,7 +213,7 @@ export const nginxProxyManagerMocks = {
         id: i + 1,
         incoming_port: 8000 + i,
         enabled: true,
-      }))
+      })),
     ),
     // Dead hosts
     successResponse(
@@ -228,7 +222,7 @@ export const nginxProxyManagerMocks = {
         id: i + 1,
         domain_names: [`dead-${i}.example.com`],
         enabled: false,
-      }))
+      })),
     ),
   ],
 
@@ -238,10 +232,7 @@ export const nginxProxyManagerMocks = {
       expires: "2026-12-31T23:59:59Z",
     }),
     successResponse(urlPatterns.api(baseUrl, "/api/nginx/proxy-hosts"), []),
-    successResponse(
-      urlPatterns.api(baseUrl, "/api/nginx/redirection-hosts"),
-      []
-    ),
+    successResponse(urlPatterns.api(baseUrl, "/api/nginx/redirection-hosts"), []),
     successResponse(urlPatterns.api(baseUrl, "/api/nginx/streams"), []),
     successResponse(urlPatterns.api(baseUrl, "/api/nginx/dead-hosts"), []),
   ],
@@ -250,9 +241,9 @@ export const nginxProxyManagerMocks = {
     successResponse(
       urlPatterns.api(baseUrl, "/api/tokens"),
       { error: `NPM error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── Portainer Mocks ──────────────────────────────────────────────────────────────
 
@@ -260,11 +251,11 @@ export const portainerMocks = {
   success: (
     baseUrl = "https://portainer.example.com",
     opts?: {
-      endpoints?: number
-      stacks?: number
-      containers?: number
-      runningContainers?: number
-    }
+      endpoints?: number;
+      stacks?: number;
+      containers?: number;
+      runningContainers?: number;
+    },
   ): MockResponse[] => [
     // Login
     successResponse(urlPatterns.api(baseUrl, "/api/auth"), {
@@ -278,7 +269,7 @@ export const portainerMocks = {
         Name: `endpoint-${i}`,
         Type: 1,
         Status: 1,
-      }))
+      })),
     ),
     // Stacks
     successResponse(
@@ -287,7 +278,7 @@ export const portainerMocks = {
         Id: i + 1,
         Name: `stack-${i}`,
         Status: 1,
-      }))
+      })),
     ),
     // Containers
     successResponse(
@@ -296,11 +287,8 @@ export const portainerMocks = {
         Id: `container-${i}`,
         Names: [`/container-${i}`],
         State: i < (opts?.runningContainers ?? 8) ? "running" : "exited",
-        Status:
-          i < (opts?.runningContainers ?? 8)
-            ? "Up 5 days"
-            : "Exited (0) 2 days ago",
-      }))
+        Status: i < (opts?.runningContainers ?? 8) ? "Up 5 days" : "Exited (0) 2 days ago",
+      })),
     ),
   ],
 
@@ -310,22 +298,16 @@ export const portainerMocks = {
     }),
     successResponse(urlPatterns.api(baseUrl, "/api/endpoints"), []),
     successResponse(urlPatterns.api(baseUrl, "/api/stacks"), []),
-    successResponse(
-      urlPatterns.api(baseUrl, "/api/endpoints/1/docker/containers/json"),
-      []
-    ),
+    successResponse(urlPatterns.api(baseUrl, "/api/endpoints/1/docker/containers/json"), []),
   ],
 
-  error: (
-    baseUrl = "https://portainer.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://portainer.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/api/auth"),
       { error: `Portainer error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── Traefik Mocks ───────────────────────────────────────────────────────────────
 
@@ -333,10 +315,10 @@ export const traefikMocks = {
   success: (
     baseUrl = "https://traefik.example.com",
     opts?: {
-      routers?: number
-      services?: number
-      middlewares?: number
-    }
+      routers?: number;
+      services?: number;
+      middlewares?: number;
+    },
   ): MockResponse[] => [
     successResponse(urlPatterns.api(baseUrl, "/api/rawdata"), {
       routers: Array.from({ length: opts?.routers ?? 8 }, (_, i) => ({
@@ -365,16 +347,13 @@ export const traefikMocks = {
     }),
   ],
 
-  error: (
-    baseUrl = "https://traefik.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://traefik.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/api/rawdata"),
       { error: `Traefik error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── Seerr (Overseerr) Mocks ─────────────────────────────────────────────────────
 
@@ -382,11 +361,11 @@ export const seerrMocks = {
   success: (
     baseUrl = "https://seerr.example.com",
     opts?: {
-      pendingRequests?: number
-      approvedRequests?: number
-      availableRequests?: number
-      totalRequests?: number
-    }
+      pendingRequests?: number;
+      approvedRequests?: number;
+      availableRequests?: number;
+      totalRequests?: number;
+    },
   ): MockResponse[] => [
     successResponse(urlPatterns.api(baseUrl, "/api/v1/request"), {
       pageInfo: {
@@ -423,9 +402,9 @@ export const seerrMocks = {
     successResponse(
       urlPatterns.api(baseUrl, "/api/v1/request"),
       { error: `Seerr error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── Calibre-Web Mocks ───────────────────────────────────────────────────────────
 
@@ -433,17 +412,14 @@ export const calibreWebMocks = {
   success: (
     baseUrl = "https://calibre-web.example.com",
     opts?: {
-      books?: number
-      authors?: number
-      series?: number
-    }
+      books?: number;
+      authors?: number;
+      series?: number;
+    },
   ): MockResponse[] => [
-    successResponse(
-      urlPatterns.api(baseUrl, "/admin"),
-      "<html><body></body></html>",
-      200,
-      { "Content-Type": "text/html" }
-    ),
+    successResponse(urlPatterns.api(baseUrl, "/admin"), "<html><body></body></html>", 200, {
+      "Content-Type": "text/html",
+    }),
     successResponse(urlPatterns.api(baseUrl, "/stats"), {
       books: opts?.books ?? 1234,
       authors: opts?.authors ?? 456,
@@ -452,12 +428,9 @@ export const calibreWebMocks = {
   ],
 
   empty: (baseUrl = "https://calibre-web.example.com"): MockResponse[] => [
-    successResponse(
-      urlPatterns.api(baseUrl, "/admin"),
-      "<html><body></body></html>",
-      200,
-      { "Content-Type": "text/html" }
-    ),
+    successResponse(urlPatterns.api(baseUrl, "/admin"), "<html><body></body></html>", 200, {
+      "Content-Type": "text/html",
+    }),
     successResponse(urlPatterns.api(baseUrl, "/stats"), {
       books: 0,
       authors: 0,
@@ -465,16 +438,13 @@ export const calibreWebMocks = {
     }),
   ],
 
-  error: (
-    baseUrl = "https://calibre-web.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://calibre-web.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/admin"),
       { error: `Calibre-Web error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── Unmanic Mocks ───────────────────────────────────────────────────────────────
 
@@ -482,11 +452,11 @@ export const unmanicMocks = {
   success: (
     baseUrl = "https://unmanic.example.com",
     opts?: {
-      activeTasks?: number
-      completedTasks?: number
-      workerCount?: number
-      queueLength?: number
-    }
+      activeTasks?: number;
+      completedTasks?: number;
+      workerCount?: number;
+      queueLength?: number;
+    },
   ): MockResponse[] => [
     successResponse(urlPatterns.api(baseUrl, "/unmanic/api/v1/status"), {
       active: opts?.activeTasks ?? 2,
@@ -516,13 +486,10 @@ export const unmanicMocks = {
     }),
   ],
 
-  error: (
-    baseUrl = "https://unmanic.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://unmanic.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/unmanic/api/v1/status"),
       { error: `Unmanic error: ${status}` },
-      status
+      status,
     ),
-}
+};

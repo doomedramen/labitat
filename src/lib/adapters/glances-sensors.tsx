@@ -1,23 +1,23 @@
-import type { ServiceDefinition } from "./types"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
-import { ResourceBar } from "@/components/widgets"
-import { Thermometer, Fan } from "lucide-react"
-import type { WidgetPayload } from "./widget-types"
+import type { ServiceDefinition } from "./types";
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid";
+import { ResourceBar } from "@/components/widgets";
+import { Thermometer, Fan } from "lucide-react";
+import type { WidgetPayload } from "./widget-types";
 
 type GlancesSensorsData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  cpuTemp: number
-  maxTemp: number
-  fanSpeed: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  cpuTemp: number;
+  maxTemp: number;
+  fanSpeed: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function glancesSensorsToPayload(data: GlancesSensorsData): WidgetPayload {
-  const cpu = data.cpuTemp ?? 0
-  const max = data.maxTemp ?? 0
-  const fan = data.fanSpeed ?? 0
-  const tempPct = Math.min(100, Math.round(cpu))
+  const cpu = data.cpuTemp ?? 0;
+  const max = data.maxTemp ?? 0;
+  const fan = data.fanSpeed ?? 0;
+  const tempPct = Math.min(100, Math.round(cpu));
 
   return {
     stats: [
@@ -51,20 +51,16 @@ function glancesSensorsToPayload(data: GlancesSensorsData): WidgetPayload {
         />
       </div>
     ),
-  }
+  };
 }
 
-function GlancesSensorsWidget({
-  cpuTemp,
-  maxTemp,
-  fanSpeed,
-}: GlancesSensorsData) {
-  const cpu = cpuTemp ?? 0
-  const max = maxTemp ?? 0
-  const fan = fanSpeed ?? 0
+function GlancesSensorsWidget({ cpuTemp, maxTemp, fanSpeed }: GlancesSensorsData) {
+  const cpu = cpuTemp ?? 0;
+  const max = maxTemp ?? 0;
+  const fan = fanSpeed ?? 0;
 
   // Scale temperature as % of 100°C for the progress bar
-  const tempPct = Math.min(100, Math.round(cpu))
+  const tempPct = Math.min(100, Math.round(cpu));
 
   return (
     <div className="flex flex-col gap-2 text-xs">
@@ -92,7 +88,7 @@ function GlancesSensorsWidget({
         ]}
       />
     </div>
-  )
+  );
 }
 
 export const glancesSensorsDefinition: ServiceDefinition<GlancesSensorsData> = {
@@ -123,23 +119,22 @@ export const glancesSensorsDefinition: ServiceDefinition<GlancesSensorsData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url?.replace(/\/$/, "")
+    const baseUrl = config.url?.replace(/\/$/, "");
     if (!baseUrl) {
-      throw new Error("Glances URL is required")
+      throw new Error("Glances URL is required");
     }
 
-    const headers: Record<string, string> = {}
+    const headers: Record<string, string> = {};
 
     if (config.username && config.password) {
-      headers["Authorization"] =
-        `Basic ${btoa(`${config.username}:${config.password}`)}`
+      headers["Authorization"] = `Basic ${btoa(`${config.username}:${config.password}`)}`;
     }
 
-    const res = await fetchWithTimeout(`${baseUrl}/api/4/sensors`, { headers })
-    if (!res.ok) throw new Error(`Glances error: ${res.status}`)
+    const res = await fetchWithTimeout(`${baseUrl}/api/4/sensors`, { headers });
+    if (!res.ok) throw new Error(`Glances error: ${res.status}`);
 
-    const sensors = await res.json()
-    const sensorList = Array.isArray(sensors) ? sensors : []
+    const sensors = await res.json();
+    const sensorList = Array.isArray(sensors) ? sensors : [];
 
     // Find temperature sensors
     const tempSensors = sensorList.filter(
@@ -147,27 +142,25 @@ export const glancesSensorsDefinition: ServiceDefinition<GlancesSensorsData> = {
         s.type === "temperature_core" ||
         s.type === "temperature" ||
         s.label?.toLowerCase().includes("cpu") ||
-        s.label?.toLowerCase().includes("core")
-    )
+        s.label?.toLowerCase().includes("core"),
+    );
 
-    const fanSensors = sensorList.filter(
-      (s: { type: string }) => s.type === "fan_speed"
-    )
+    const fanSensors = sensorList.filter((s: { type: string }) => s.type === "fan_speed");
 
-    const temps = tempSensors.map((s: { value: number }) => s.value ?? 0)
-    const cpuTemp = temps.length > 0 ? Math.round(temps[0]) : 0
-    const maxTemp = temps.length > 0 ? Math.round(Math.max(...temps)) : 0
+    const temps = tempSensors.map((s: { value: number }) => s.value ?? 0);
+    const cpuTemp = temps.length > 0 ? Math.round(temps[0]) : 0;
+    const maxTemp = temps.length > 0 ? Math.round(Math.max(...temps)) : 0;
 
-    const fans = fanSensors.map((s: { value: number }) => s.value ?? 0)
-    const fanSpeed = fans.length > 0 ? Math.round(fans[0]) : 0
+    const fans = fanSensors.map((s: { value: number }) => s.value ?? 0);
+    const fanSpeed = fans.length > 0 ? Math.round(fans[0]) : 0;
 
     return {
       _status: "ok",
       cpuTemp,
       maxTemp,
       fanSpeed,
-    }
+    };
   },
   toPayload: glancesSensorsToPayload,
   renderWidget: GlancesSensorsWidget,
-}
+};

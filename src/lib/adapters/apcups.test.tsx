@@ -1,43 +1,43 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { EventEmitter } from "events"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { EventEmitter } from "events";
 
 vi.mock("net", () => ({
   createConnection: vi.fn(),
-}))
+}));
 
-import { apcupsDefinition } from "@/lib/adapters/apcups"
-import * as net from "net"
+import { apcupsDefinition } from "@/lib/adapters/apcups";
+import * as net from "net";
 
 describe("apcups definition", () => {
   it("has correct metadata", () => {
-    expect(apcupsDefinition.id).toBe("apcups")
-    expect(apcupsDefinition.name).toBe("APC UPS")
-    expect(apcupsDefinition.icon).toBe("apc")
-    expect(apcupsDefinition.category).toBe("monitoring")
-    expect(apcupsDefinition.defaultPollingMs).toBe(15_000)
-  })
+    expect(apcupsDefinition.id).toBe("apcups");
+    expect(apcupsDefinition.name).toBe("APC UPS");
+    expect(apcupsDefinition.icon).toBe("apc");
+    expect(apcupsDefinition.category).toBe("monitoring");
+    expect(apcupsDefinition.defaultPollingMs).toBe(15_000);
+  });
 
   it("has configFields defined", () => {
-    expect(apcupsDefinition.configFields).toBeDefined()
-    expect(apcupsDefinition.configFields).toHaveLength(4)
-    expect(apcupsDefinition.configFields[0].key).toBe("connectionType")
-    expect(apcupsDefinition.configFields[0].type).toBe("select")
-    expect(apcupsDefinition.configFields[1].key).toBe("host")
-    expect(apcupsDefinition.configFields[1].type).toBe("text")
-    expect(apcupsDefinition.configFields[2].key).toBe("port")
-    expect(apcupsDefinition.configFields[2].type).toBe("number")
-    expect(apcupsDefinition.configFields[3].key).toBe("url")
-    expect(apcupsDefinition.configFields[3].type).toBe("url")
-  })
+    expect(apcupsDefinition.configFields).toBeDefined();
+    expect(apcupsDefinition.configFields).toHaveLength(4);
+    expect(apcupsDefinition.configFields[0].key).toBe("connectionType");
+    expect(apcupsDefinition.configFields[0].type).toBe("select");
+    expect(apcupsDefinition.configFields[1].key).toBe("host");
+    expect(apcupsDefinition.configFields[1].type).toBe("text");
+    expect(apcupsDefinition.configFields[2].key).toBe("port");
+    expect(apcupsDefinition.configFields[2].type).toBe("number");
+    expect(apcupsDefinition.configFields[3].key).toBe("url");
+    expect(apcupsDefinition.configFields[3].type).toBe("url");
+  });
 
   describe("fetchData", () => {
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
+      vi.resetAllMocks();
+    });
 
     afterEach(() => {
-      vi.restoreAllMocks()
-    })
+      vi.restoreAllMocks();
+    });
 
     it("fetches data successfully via TCP", async () => {
       const mockTcpData = `APC      : 001,034,0871
@@ -50,66 +50,61 @@ BCHARGE  : 100.0 Percent
 TIMELEFT : 35.0 Minutes
 ITEMP    : 32.5 C
 STATUS   : ONLINE
-`
+`;
 
       const mockSocket = new EventEmitter() as net.Socket & {
-        write: ReturnType<typeof vi.fn>
-        destroy: ReturnType<typeof vi.fn>
-      }
-      mockSocket.write = vi.fn() as typeof mockSocket.write
-      mockSocket.destroy = vi.fn() as typeof mockSocket.destroy
+        write: ReturnType<typeof vi.fn>;
+        destroy: ReturnType<typeof vi.fn>;
+      };
+      mockSocket.write = vi.fn() as typeof mockSocket.write;
+      mockSocket.destroy = vi.fn() as typeof mockSocket.destroy;
 
-      vi.mocked(net.createConnection).mockImplementation(
-        (_options, callback) => {
-          // Simulate connection established
-          setTimeout(() => callback?.(), 0)
-          // Simulate data received
-          setTimeout(() => mockSocket.emit("data", Buffer.from(mockTcpData)), 5)
-          // Simulate connection end
-          setTimeout(() => mockSocket.emit("end"), 10)
-          return mockSocket
-        }
-      )
+      vi.mocked(net.createConnection).mockImplementation((_options, callback) => {
+        // Simulate connection established
+        setTimeout(() => callback?.(), 0);
+        // Simulate data received
+        setTimeout(() => mockSocket.emit("data", Buffer.from(mockTcpData)), 5);
+        // Simulate connection end
+        setTimeout(() => mockSocket.emit("end"), 10);
+        return mockSocket;
+      });
 
       const result = await apcupsDefinition.fetchData!({
         connectionType: "tcp",
         host: "192.168.1.100",
         port: "3551",
-      })
+      });
 
-      expect(result._status).toBe("ok")
-      expect(result.loadPercent).toBe(45.2)
-      expect(result.batteryCharge).toBe(100)
-      expect(result.timeLeft).toBe(35)
-      expect(result.temperature).toBe(32.5)
-      expect(result.status).toBe("ONLINE")
-    })
+      expect(result._status).toBe("ok");
+      expect(result.loadPercent).toBe(45.2);
+      expect(result.batteryCharge).toBe(100);
+      expect(result.timeLeft).toBe(35);
+      expect(result.temperature).toBe(32.5);
+      expect(result.status).toBe("ONLINE");
+    });
 
     it("throws error when TCP connection fails", async () => {
       const mockSocket = new EventEmitter() as net.Socket & {
-        write: ReturnType<typeof vi.fn>
-        destroy: ReturnType<typeof vi.fn>
-      }
-      mockSocket.write = vi.fn() as typeof mockSocket.write
-      mockSocket.destroy = vi.fn() as typeof mockSocket.destroy
+        write: ReturnType<typeof vi.fn>;
+        destroy: ReturnType<typeof vi.fn>;
+      };
+      mockSocket.write = vi.fn() as typeof mockSocket.write;
+      mockSocket.destroy = vi.fn() as typeof mockSocket.destroy;
 
       vi.mocked(net.createConnection).mockImplementation(() => {
         // Simulate connection error
-        setTimeout(
-          () => mockSocket.emit("error", new Error("Connection refused")),
-          5
-        )
-        return mockSocket
-      })
+        setTimeout(() => mockSocket.emit("error", new Error("Connection refused")), 5);
+        return mockSocket;
+      });
 
       await expect(
         apcupsDefinition.fetchData!({
           connectionType: "tcp",
           host: "192.168.1.100",
           port: "3551",
-        })
-      ).rejects.toThrow("TCP connection to 192.168.1.100:3551 failed")
-    })
+        }),
+      ).rejects.toThrow("TCP connection to 192.168.1.100:3551 failed");
+    });
 
     it("fetches data successfully from HTTP CGI", async () => {
       const mockHtml = `
@@ -120,26 +115,26 @@ STATUS   : ONLINE
           <tr><td>ITEMP : <span>32.5 C</span></td></tr>
           <tr><td>STATUS : <span>ONLINE</span></td></tr>
         </table>
-      `
+      `;
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
           text: () => Promise.resolve(mockHtml),
-        })
-      )
+        }),
+      );
 
       const result = await apcupsDefinition.fetchData!({
         connectionType: "http",
         url: "https://apcups.example.com/",
-      })
+      });
 
-      expect(result._status).toBe("ok")
-      expect(result.loadPercent).toBe(45.2)
-      expect(result.batteryCharge).toBe(100)
-      expect(result.timeLeft).toBe(35)
-      expect(result.temperature).toBe(32.5)
-      expect(result.status).toBe("ONLINE")
-    })
+      expect(result._status).toBe("ok");
+      expect(result.loadPercent).toBe(45.2);
+      expect(result.batteryCharge).toBe(100);
+      expect(result.timeLeft).toBe(35);
+      expect(result.temperature).toBe(32.5);
+      expect(result.status).toBe("ONLINE");
+    });
 
     it("sets warn status when not ONLINE", async () => {
       const mockHtml = `
@@ -150,54 +145,54 @@ STATUS   : ONLINE
           <tr><td>TIMELEFT : <span>10 Minutes</span></td></tr>
           <tr><td>ITEMP : <span>30 C</span></td></tr>
         </table>
-      `
+      `;
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
           text: () => Promise.resolve(mockHtml),
-        })
-      )
+        }),
+      );
 
       const result = await apcupsDefinition.fetchData!({
         connectionType: "http",
         url: "https://apcups.example.com",
-      })
+      });
 
-      expect(result._status).toBe("warn")
-      expect(result.status).toBe("ONBATT")
-    })
+      expect(result._status).toBe("warn");
+      expect(result.status).toBe("ONBATT");
+    });
 
     it("throws on error response", async () => {
-      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 404 }))
+      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 404 }));
 
       await expect(
         apcupsDefinition.fetchData!({
           connectionType: "http",
           url: "https://apcups.example.com",
-        })
-      ).rejects.toThrow("APC UPS error: 404")
-    })
+        }),
+      ).rejects.toThrow("APC UPS error: 404");
+    });
 
     it("handles missing values with defaults", async () => {
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
           text: () => Promise.resolve("<html></html>"),
-        })
-      )
+        }),
+      );
 
       const result = await apcupsDefinition.fetchData!({
         connectionType: "http",
         url: "https://apcups.example.com",
-      })
+      });
 
-      expect(result.loadPercent).toBe(0)
-      expect(result.batteryCharge).toBe(0)
-      expect(result.timeLeft).toBe(0)
-      expect(result.temperature).toBe(0)
-      expect(result.status).toBe("Unknown")
-    })
-  })
+      expect(result.loadPercent).toBe(0);
+      expect(result.batteryCharge).toBe(0);
+      expect(result.timeLeft).toBe(0);
+      expect(result.temperature).toBe(0);
+      expect(result.status).toBe("Unknown");
+    });
+  });
 
   describe("toPayload", () => {
     it("converts data to payload with stats", () => {
@@ -208,17 +203,17 @@ STATUS   : ONLINE
         timeLeft: 2100,
         temperature: 32,
         status: "ONLINE",
-      })
-      expect(payload.stats).toHaveLength(4)
-      expect(payload.stats[0].value).toBe("45%")
-      expect(payload.stats[0].label).toBe("Load")
-      expect(payload.stats[1].value).toBe("100%")
-      expect(payload.stats[1].label).toBe("Battery")
-      expect(payload.stats[2].value).toBe("35m")
-      expect(payload.stats[2].label).toBe("Time")
-      expect(payload.stats[3].value).toBe("32°C")
-      expect(payload.stats[3].label).toBe("Temp")
-    })
+      });
+      expect(payload.stats).toHaveLength(4);
+      expect(payload.stats[0].value).toBe("45%");
+      expect(payload.stats[0].label).toBe("Load");
+      expect(payload.stats[1].value).toBe("100%");
+      expect(payload.stats[1].label).toBe("Battery");
+      expect(payload.stats[2].value).toBe("35m");
+      expect(payload.stats[2].label).toBe("Time");
+      expect(payload.stats[3].value).toBe("32°C");
+      expect(payload.stats[3].label).toBe("Temp");
+    });
 
     it("shows seconds when time left is under 60", () => {
       const payload = apcupsDefinition.toPayload!({
@@ -229,8 +224,8 @@ STATUS   : ONLINE
         timeLeft: 30,
         temperature: 35,
         status: "ONBATT",
-      })
-      expect(payload.stats[2].value).toBe("30s")
-    })
-  })
-})
+      });
+      expect(payload.stats[2].value).toBe("30s");
+    });
+  });
+});

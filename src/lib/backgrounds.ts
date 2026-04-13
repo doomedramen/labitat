@@ -1,12 +1,12 @@
 export interface BackgroundDefinition {
-  id: string
-  label: string
+  id: string;
+  label: string;
   /** CSS class applied to the container */
-  className: string
-  /** Preview gradient/colors for the 256x90 swatch in light mode */
-  previewLight: string
-  /** Preview gradient/colors for the 256x90 swatch in dark mode */
-  previewDark: string
+  className: string;
+  /** Preview gradient/colors for the 90x90 swatch in light mode */
+  previewLight: string;
+  /** Preview gradient/colors for the 90x90 swatch in dark mode */
+  previewDark: string;
 }
 
 export const BACKGROUNDS: BackgroundDefinition[] = [
@@ -18,93 +18,207 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
     previewDark: "var(--background)",
   },
   {
-    id: "subtle-gradient",
-    label: "Subtle Gradient",
-    className: "bg-subtle-gradient",
+    id: "boxes",
+    label: "Boxes",
+    className: "bg-boxes",
     previewLight:
-      "linear-gradient(135deg, oklch(0.96 0.01 240) 0%, oklch(0.92 0.02 180) 100%)",
+      "linear-gradient(var(--bg-pattern-accent) 1px, transparent 1px), linear-gradient(to right, var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 1px)",
     previewDark:
-      "linear-gradient(135deg, oklch(0.18 0.01 240) 0%, oklch(0.22 0.02 180) 100%)",
+      "linear-gradient(var(--bg-pattern-accent) 1px, transparent 1px), linear-gradient(to right, var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 1px)",
   },
   {
-    id: "diagonal-stripes",
-    label: "Diagonal Stripes",
-    className: "bg-diagonal-stripes",
+    id: "circles",
+    label: "Circles",
+    className: "bg-circles",
     previewLight:
-      "repeating-linear-gradient(45deg, oklch(0.95 0.01 240) 0px, oklch(0.95 0.01 240) 10px, oklch(0.90 0.015 240) 10px, oklch(0.90 0.015 240) 20px)",
+      "radial-gradient(circle at center, var(--bg-pattern-accent), var(--bg-pattern-base)), repeating-radial-gradient(circle at center, var(--bg-pattern-accent), var(--bg-pattern-accent), 10px, transparent 20px, transparent 10px)",
     previewDark:
-      "repeating-linear-gradient(45deg, oklch(0.22 0.01 240) 0px, oklch(0.22 0.01 240) 10px, oklch(0.18 0.015 240) 10px, oklch(0.18 0.015 240) 20px)",
+      "radial-gradient(circle at center, var(--bg-pattern-accent), var(--bg-pattern-base)), repeating-radial-gradient(circle at center, var(--bg-pattern-accent), var(--bg-pattern-accent), 10px, transparent 20px, transparent 10px)",
   },
   {
-    id: "dots",
-    label: "Dots",
-    className: "bg-dots",
+    id: "crosses",
+    label: "Crosses",
+    className: "bg-crosses",
     previewLight:
-      "radial-gradient(circle, oklch(0.70 0.05 240) 1px, transparent 1px) 0 0 / 16px 16px, oklch(0.96 0.005 240)",
+      "radial-gradient(circle, transparent 20%, var(--bg-pattern-base) 20%, var(--bg-pattern-base) 80%, transparent 80%), linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px)",
     previewDark:
-      "radial-gradient(circle, oklch(0.55 0.05 240) 1px, transparent 1px) 0 0 / 16px 16px, oklch(0.20 0.005 240)",
+      "radial-gradient(circle, transparent 20%, var(--bg-pattern-base) 20%, var(--bg-pattern-base) 80%, transparent 80%), linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px)",
   },
   {
-    id: "mesh-gradient",
-    label: "Mesh Gradient",
-    className: "bg-mesh-gradient",
+    id: "diagonal",
+    label: "Diagonal",
+    className: "bg-diagonal",
     previewLight:
-      "radial-gradient(at 20% 30%, oklch(0.85 0.08 200) 0px, transparent 50%), radial-gradient(at 80% 70%, oklch(0.85 0.08 320) 0px, transparent 50%), radial-gradient(at 50% 50%, oklch(0.90 0.06 160) 0px, transparent 50%), oklch(0.95 0.005 240)",
+      "repeating-linear-gradient(45deg, var(--bg-pattern-accent), var(--bg-pattern-accent) 5px, var(--bg-pattern-base) 5px, var(--bg-pattern-base) 25px)",
     previewDark:
-      "radial-gradient(at 20% 30%, oklch(0.35 0.08 200) 0px, transparent 50%), radial-gradient(at 80% 70%, oklch(0.35 0.08 320) 0px, transparent 50%), radial-gradient(at 50% 50%, oklch(0.30 0.06 160) 0px, transparent 50%), oklch(0.20 0.005 240)",
+      "repeating-linear-gradient(45deg, var(--bg-pattern-accent), var(--bg-pattern-accent) 5px, var(--bg-pattern-base) 5px, var(--bg-pattern-base) 25px)",
   },
   {
-    id: "aurora",
-    label: "Aurora",
-    className: "bg-aurora",
+    id: "diagonal-2",
+    label: "Diagonal 2",
+    className: "bg-diagonal-2",
     previewLight:
-      "linear-gradient(120deg, oklch(0.90 0.06 180) 0%, oklch(0.88 0.08 140) 25%, oklch(0.90 0.06 280) 50%, oklch(0.88 0.08 320) 75%, oklch(0.90 0.06 180) 100%)",
+      "repeating-linear-gradient(45deg, var(--bg-pattern-accent) 0, var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 0, var(--bg-pattern-base) 50%)",
     previewDark:
-      "linear-gradient(120deg, oklch(0.30 0.06 180) 0%, oklch(0.28 0.08 140) 25%, oklch(0.30 0.06 280) 50%, oklch(0.28 0.08 320) 75%, oklch(0.30 0.06 180) 100%)",
+      "repeating-linear-gradient(45deg, var(--bg-pattern-accent) 0, var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 0, var(--bg-pattern-base) 50%)",
   },
   {
-    id: "grid",
-    label: "Grid",
-    className: "bg-grid",
+    id: "diagonal-3",
+    label: "Diagonal 3",
+    className: "bg-diagonal-3",
     previewLight:
-      "linear-gradient(oklch(0.85 0.02 240) 1px, transparent 1px) 0 0 / 20px 20px, linear-gradient(90deg, oklch(0.85 0.02 240) 1px, transparent 1px) 0 0 / 20px 20px, oklch(0.97 0.005 240)",
+      "linear-gradient(30deg, var(--bg-pattern-accent) 12%, transparent 12.5%, transparent 87%, var(--bg-pattern-accent) 87.5%), linear-gradient(150deg, var(--bg-pattern-accent) 12%, transparent 12.5%, transparent 87%, var(--bg-pattern-accent) 87.5%)",
     previewDark:
-      "linear-gradient(oklch(0.35 0.02 240) 1px, transparent 1px) 0 0 / 20px 20px, linear-gradient(90deg, oklch(0.35 0.02 240) 1px, transparent 1px) 0 0 / 20px 20px, oklch(0.18 0.005 240)",
+      "linear-gradient(30deg, var(--bg-pattern-accent) 12%, transparent 12.5%, transparent 87%, var(--bg-pattern-accent) 87.5%), linear-gradient(150deg, var(--bg-pattern-accent) 12%, transparent 12.5%, transparent 87%, var(--bg-pattern-accent) 87.5%)",
   },
   {
-    id: "waves",
-    label: "Waves",
-    className: "bg-waves",
+    id: "isometric",
+    label: "Isometric",
+    className: "bg-isometric",
     previewLight:
-      "repeating-radial-gradient(circle at 50% 100%, oklch(0.92 0.03 220) 0px, oklch(0.92 0.03 220) 10px, oklch(0.96 0.01 220) 10px, oklch(0.96 0.01 220) 20px)",
+      "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
     previewDark:
-      "repeating-radial-gradient(circle at 50% 100%, oklch(0.28 0.03 220) 0px, oklch(0.28 0.03 220) 10px, oklch(0.22 0.01 220) 10px, oklch(0.22 0.01 220) 20px)",
+      "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
   },
   {
-    id: "noise",
-    label: "Noise",
-    className: "bg-noise",
-    previewLight: "oklch(0.94 0.01 240)",
-    previewDark: "oklch(0.22 0.01 240)",
+    id: "lines",
+    label: "Lines",
+    className: "bg-lines",
+    previewLight: "linear-gradient(0deg, var(--bg-pattern-base) 50%, var(--bg-pattern-accent) 50%)",
+    previewDark: "linear-gradient(0deg, var(--bg-pattern-base) 50%, var(--bg-pattern-accent) 50%)",
   },
   {
-    id: "crosshatch",
-    label: "Crosshatch",
-    className: "bg-crosshatch",
+    id: "lines-2",
+    label: "Lines 2",
+    className: "bg-lines-2",
     previewLight:
-      "linear-gradient(45deg, oklch(0.88 0.02 240) 25%, transparent 25%, transparent 75%, oklch(0.88 0.02 240) 75%), linear-gradient(-45deg, oklch(0.88 0.02 240) 25%, transparent 25%, transparent 75%, oklch(0.88 0.02 240) 75%), oklch(0.96 0.005 240)",
+      "linear-gradient(to right, var(--bg-pattern-accent), var(--bg-pattern-accent) 5px, var(--bg-pattern-base) 5px, var(--bg-pattern-base))",
     previewDark:
-      "linear-gradient(45deg, oklch(0.32 0.02 240) 25%, transparent 25%, transparent 75%, oklch(0.32 0.02 240) 75%), linear-gradient(-45deg, oklch(0.32 0.02 240) 25%, transparent 25%, transparent 75%, oklch(0.32 0.02 240) 75%), oklch(0.20 0.005 240)",
+      "linear-gradient(to right, var(--bg-pattern-accent), var(--bg-pattern-accent) 5px, var(--bg-pattern-base) 5px, var(--bg-pattern-base))",
   },
-]
+  {
+    id: "lines-3",
+    label: "Lines 3",
+    className: "bg-lines-3",
+    previewLight:
+      "repeating-linear-gradient(0deg, var(--bg-pattern-accent), var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 1px, var(--bg-pattern-base))",
+    previewDark:
+      "repeating-linear-gradient(0deg, var(--bg-pattern-accent), var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 1px, var(--bg-pattern-base))",
+  },
+  {
+    id: "lines-4",
+    label: "Lines 4",
+    className: "bg-lines-4",
+    previewLight:
+      "repeating-linear-gradient(to right, var(--bg-pattern-accent), var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 1px, var(--bg-pattern-base))",
+    previewDark:
+      "repeating-linear-gradient(to right, var(--bg-pattern-accent), var(--bg-pattern-accent) 1px, var(--bg-pattern-base) 1px, var(--bg-pattern-base))",
+  },
+  {
+    id: "moon",
+    label: "Moon",
+    className: "bg-moon",
+    previewLight:
+      "radial-gradient(ellipse farthest-corner at 10px 10px, var(--bg-pattern-accent), var(--bg-pattern-accent) 50%, var(--bg-pattern-base) 50%)",
+    previewDark:
+      "radial-gradient(ellipse farthest-corner at 10px 10px, var(--bg-pattern-accent), var(--bg-pattern-accent) 50%, var(--bg-pattern-base) 50%)",
+  },
+  {
+    id: "paper",
+    label: "Paper",
+    className: "bg-paper",
+    previewLight:
+      "linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px), linear-gradient(90deg, var(--bg-pattern-accent) 2px, transparent 2px)",
+    previewDark:
+      "linear-gradient(var(--bg-pattern-accent) 2px, transparent 2px), linear-gradient(90deg, var(--bg-pattern-accent) 2px, transparent 2px)",
+  },
+  {
+    id: "polka",
+    label: "Polka",
+    className: "bg-polka",
+    previewLight: "radial-gradient(var(--bg-pattern-accent) 0.5px, var(--bg-pattern-base) 0.5px)",
+    previewDark: "radial-gradient(var(--bg-pattern-accent) 0.5px, var(--bg-pattern-base) 0.5px)",
+  },
+  {
+    id: "polka-2",
+    label: "Polka 2",
+    className: "bg-polka-2",
+    previewLight:
+      "radial-gradient(var(--bg-pattern-accent) 0.5px, transparent 0.5px), radial-gradient(var(--bg-pattern-accent) 0.5px, var(--bg-pattern-base) 0.5px)",
+    previewDark:
+      "radial-gradient(var(--bg-pattern-accent) 0.5px, transparent 0.5px), radial-gradient(var(--bg-pattern-accent) 0.5px, var(--bg-pattern-base) 0.5px)",
+  },
+  {
+    id: "rectangles",
+    label: "Rectangles",
+    className: "bg-rectangles",
+    previewLight:
+      "repeating-linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%, transparent 75%, var(--bg-pattern-accent) 75%), repeating-linear-gradient(45deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%, var(--bg-pattern-base) 75%, var(--bg-pattern-accent) 75%)",
+    previewDark:
+      "repeating-linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%, transparent 75%, var(--bg-pattern-accent) 75%), repeating-linear-gradient(45deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%, var(--bg-pattern-base) 75%, var(--bg-pattern-accent) 75%)",
+  },
+  {
+    id: "rhombus",
+    label: "Rhombus",
+    className: "bg-rhombus",
+    previewLight:
+      "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
+    previewDark:
+      "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
+  },
+  {
+    id: "triangles",
+    label: "Triangles",
+    className: "bg-triangles",
+    previewLight:
+      "linear-gradient(45deg, var(--bg-pattern-accent) 50%, var(--bg-pattern-base) 50%)",
+    previewDark: "linear-gradient(45deg, var(--bg-pattern-accent) 50%, var(--bg-pattern-base) 50%)",
+  },
+  {
+    id: "triangles-2",
+    label: "Triangles 2",
+    className: "bg-triangles-2",
+    previewLight:
+      "linear-gradient(-45deg, var(--bg-pattern-base), var(--bg-pattern-base) 50%, var(--bg-pattern-accent) 50%, var(--bg-pattern-accent))",
+    previewDark:
+      "linear-gradient(-45deg, var(--bg-pattern-base), var(--bg-pattern-base) 50%, var(--bg-pattern-accent) 50%, var(--bg-pattern-accent))",
+  },
+  {
+    id: "wavy",
+    label: "Wavy",
+    className: "bg-wavy",
+    previewLight:
+      "repeating-radial-gradient(circle at 0 0, transparent 0, var(--bg-pattern-base) 10px), repeating-linear-gradient(var(--bg-pattern-accent), var(--bg-pattern-accent))",
+    previewDark:
+      "repeating-radial-gradient(circle at 0 0, transparent 0, var(--bg-pattern-base) 10px), repeating-linear-gradient(var(--bg-pattern-accent), var(--bg-pattern-accent))",
+  },
+  {
+    id: "zigzag",
+    label: "Zigzag",
+    className: "bg-zigzag",
+    previewLight:
+      "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
+    previewDark:
+      "linear-gradient(135deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
+  },
+  {
+    id: "zigzag-3d",
+    label: "Zigzag 3D",
+    className: "bg-zigzag-3d",
+    previewLight:
+      "linear-gradient(135deg, color-mix(in srgb, var(--bg-pattern-accent) 33%, transparent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, color-mix(in srgb, var(--bg-pattern-accent) 33%, transparent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
+    previewDark:
+      "linear-gradient(135deg, color-mix(in srgb, var(--bg-pattern-accent) 33%, transparent) 25%, transparent 25%), linear-gradient(225deg, var(--bg-pattern-accent) 25%, transparent 25%), linear-gradient(315deg, color-mix(in srgb, var(--bg-pattern-accent) 33%, transparent) 25%, transparent 25%), linear-gradient(45deg, var(--bg-pattern-accent) 25%, var(--bg-pattern-base) 25%)",
+  },
+];
 
 function sortBackgrounds(backgrounds: typeof BACKGROUNDS) {
   return [...backgrounds].sort((a, b) => {
-    if (a.id === "none") return -1
-    if (b.id === "none") return 1
-    return a.label.localeCompare(b.label)
-  })
+    if (a.id === "none") return -1;
+    if (b.id === "none") return 1;
+    return a.label.localeCompare(b.label);
+  });
 }
 
-export const SORTED_BACKGROUNDS = sortBackgrounds(BACKGROUNDS)
-export const VALID_BACKGROUND_IDS = SORTED_BACKGROUNDS.map((b) => b.id)
+export const SORTED_BACKGROUNDS = sortBackgrounds(BACKGROUNDS);
+export const VALID_BACKGROUND_IDS = SORTED_BACKGROUNDS.map((b) => b.id);

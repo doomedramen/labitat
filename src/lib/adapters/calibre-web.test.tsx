@@ -1,37 +1,37 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { calibreWebDefinition } from "@/lib/adapters/calibre-web"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { calibreWebDefinition } from "@/lib/adapters/calibre-web";
 
 describe("calibre-web definition", () => {
   it("has correct metadata", () => {
-    expect(calibreWebDefinition.id).toBe("calibre-web")
-    expect(calibreWebDefinition.name).toBe("Calibre-Web")
-    expect(calibreWebDefinition.icon).toBe("calibre-web")
-    expect(calibreWebDefinition.category).toBe("productivity")
-    expect(calibreWebDefinition.defaultPollingMs).toBe(30_000)
-  })
+    expect(calibreWebDefinition.id).toBe("calibre-web");
+    expect(calibreWebDefinition.name).toBe("Calibre-Web");
+    expect(calibreWebDefinition.icon).toBe("calibre-web");
+    expect(calibreWebDefinition.category).toBe("productivity");
+    expect(calibreWebDefinition.defaultPollingMs).toBe(30_000);
+  });
 
   it("has configFields defined", () => {
-    expect(calibreWebDefinition.configFields).toBeDefined()
-    expect(calibreWebDefinition.configFields).toHaveLength(3)
-    expect(calibreWebDefinition.configFields[0].key).toBe("url")
-    expect(calibreWebDefinition.configFields[0].type).toBe("url")
-    expect(calibreWebDefinition.configFields[0].required).toBe(true)
-    expect(calibreWebDefinition.configFields[1].key).toBe("username")
-    expect(calibreWebDefinition.configFields[1].type).toBe("text")
-    expect(calibreWebDefinition.configFields[1].required).toBe(true)
-    expect(calibreWebDefinition.configFields[2].key).toBe("password")
-    expect(calibreWebDefinition.configFields[2].type).toBe("password")
-    expect(calibreWebDefinition.configFields[2].required).toBe(true)
-  })
+    expect(calibreWebDefinition.configFields).toBeDefined();
+    expect(calibreWebDefinition.configFields).toHaveLength(3);
+    expect(calibreWebDefinition.configFields[0].key).toBe("url");
+    expect(calibreWebDefinition.configFields[0].type).toBe("url");
+    expect(calibreWebDefinition.configFields[0].required).toBe(true);
+    expect(calibreWebDefinition.configFields[1].key).toBe("username");
+    expect(calibreWebDefinition.configFields[1].type).toBe("text");
+    expect(calibreWebDefinition.configFields[1].required).toBe(true);
+    expect(calibreWebDefinition.configFields[2].key).toBe("password");
+    expect(calibreWebDefinition.configFields[2].type).toBe("password");
+    expect(calibreWebDefinition.configFields[2].required).toBe(true);
+  });
 
   describe("fetchData", () => {
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
+      vi.resetAllMocks();
+    });
 
     afterEach(() => {
-      vi.restoreAllMocks()
-    })
+      vi.restoreAllMocks();
+    });
 
     it("fetches data successfully", async () => {
       const mockFetch = vi.fn((url: string) => {
@@ -39,7 +39,7 @@ describe("calibre-web definition", () => {
           return Promise.resolve({
             ok: true,
             headers: { getSetCookie: () => ["session=abc123"] },
-          })
+          });
         }
         if (url.includes("/opds/stats")) {
           return Promise.resolve({
@@ -51,24 +51,24 @@ describe("calibre-web definition", () => {
                 series: 20,
                 formats: 300,
               }),
-          })
+          });
         }
-        return Promise.reject(new Error("Unexpected URL"))
-      })
-      vi.stubGlobal("fetch", mockFetch)
+        return Promise.reject(new Error("Unexpected URL"));
+      });
+      vi.stubGlobal("fetch", mockFetch);
 
       const result = await calibreWebDefinition.fetchData!({
         url: "https://calibre.example.com/",
         username: "admin",
         password: "secret",
-      })
+      });
 
-      expect(result._status).toBe("ok")
-      expect(result.books).toBe(150)
-      expect(result.authors).toBe(45)
-      expect(result.series).toBe(20)
-      expect(result.formats).toBe(300)
-    })
+      expect(result._status).toBe("ok");
+      expect(result.books).toBe(150);
+      expect(result.authors).toBe(45);
+      expect(result.series).toBe(20);
+      expect(result.formats).toBe(300);
+    });
 
     it("throws on API error after login", async () => {
       const mockFetch = vi.fn((url: string) => {
@@ -76,20 +76,20 @@ describe("calibre-web definition", () => {
           return Promise.resolve({
             ok: true,
             headers: { getSetCookie: () => ["session=abc123"] },
-          })
+          });
         }
-        return Promise.resolve({ ok: false, status: 500 })
-      })
-      vi.stubGlobal("fetch", mockFetch)
+        return Promise.resolve({ ok: false, status: 500 });
+      });
+      vi.stubGlobal("fetch", mockFetch);
 
       await expect(
         calibreWebDefinition.fetchData!({
           url: "https://calibre.example.com",
           username: "admin",
           password: "secret",
-        })
-      ).rejects.toThrow("Calibre-Web stats error: 500")
-    })
+        }),
+      ).rejects.toThrow("Calibre-Web stats error: 500");
+    });
 
     it("handles missing stats with defaults", async () => {
       const mockFetch = vi.fn((url: string) => {
@@ -97,30 +97,30 @@ describe("calibre-web definition", () => {
           return Promise.resolve({
             ok: true,
             headers: { getSetCookie: () => ["session=abc123"] },
-          })
+          });
         }
         if (url.includes("/opds/stats")) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({}),
-          })
+          });
         }
-        return Promise.reject(new Error("Unexpected URL"))
-      })
-      vi.stubGlobal("fetch", mockFetch)
+        return Promise.reject(new Error("Unexpected URL"));
+      });
+      vi.stubGlobal("fetch", mockFetch);
 
       const result = await calibreWebDefinition.fetchData!({
         url: "https://calibre.example.com",
         username: "admin",
         password: "secret",
-      })
+      });
 
-      expect(result.books).toBe(0)
-      expect(result.authors).toBe(0)
-      expect(result.series).toBe(0)
-      expect(result.formats).toBe(0)
-    })
-  })
+      expect(result.books).toBe(0);
+      expect(result.authors).toBe(0);
+      expect(result.series).toBe(0);
+      expect(result.formats).toBe(0);
+    });
+  });
 
   describe("toPayload", () => {
     it("converts data to payload with stats", () => {
@@ -130,17 +130,17 @@ describe("calibre-web definition", () => {
         authors: 45,
         series: 20,
         formats: 300,
-      })
-      expect(payload.stats).toHaveLength(4)
-      expect(payload.stats[0].value).toBe(150)
-      expect(payload.stats[0].label).toBe("Books")
-      expect(payload.stats[1].value).toBe(45)
-      expect(payload.stats[1].label).toBe("Authors")
-      expect(payload.stats[2].value).toBe(20)
-      expect(payload.stats[2].label).toBe("Series")
-      expect(payload.stats[3].value).toBe(300)
-      expect(payload.stats[3].label).toBe("Formats")
-    })
+      });
+      expect(payload.stats).toHaveLength(4);
+      expect(payload.stats[0].value).toBe(150);
+      expect(payload.stats[0].label).toBe("Books");
+      expect(payload.stats[1].value).toBe(45);
+      expect(payload.stats[1].label).toBe("Authors");
+      expect(payload.stats[2].value).toBe(20);
+      expect(payload.stats[2].label).toBe("Series");
+      expect(payload.stats[3].value).toBe(300);
+      expect(payload.stats[3].label).toBe("Formats");
+    });
 
     it("handles zero values", () => {
       const payload = calibreWebDefinition.toPayload!({
@@ -149,8 +149,8 @@ describe("calibre-web definition", () => {
         authors: 0,
         series: 0,
         formats: 0,
-      })
-      expect(payload.stats.every((s) => s.value === 0)).toBe(true)
-    })
-  })
-})
+      });
+      expect(payload.stats.every((s) => s.value === 0)).toBe(true);
+    });
+  });
+});

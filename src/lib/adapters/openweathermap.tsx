@@ -1,24 +1,18 @@
-import type { ServiceDefinition } from "./types"
-import {
-  Thermometer,
-  Droplets,
-  Wind,
-  Cloud,
-  ThermometerSun,
-} from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Thermometer, Droplets, Wind, Cloud, ThermometerSun } from "lucide-react";
 
 type OpenWeatherMapData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  temperature: number
-  humidity: number
-  windSpeed: number
-  description: string
-  feelsLike: number
-  unitSymbol: string
-  speedUnit: string
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  temperature: number;
+  humidity: number;
+  windSpeed: number;
+  description: string;
+  feelsLike: number;
+  unitSymbol: string;
+  speedUnit: string;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function openweathermapToPayload(data: OpenWeatherMapData) {
   return {
@@ -54,7 +48,7 @@ function openweathermapToPayload(data: OpenWeatherMapData) {
         icon: Cloud,
       },
     ],
-  }
+  };
 }
 
 export const openweathermapDefinition: ServiceDefinition<OpenWeatherMapData> = {
@@ -97,15 +91,15 @@ export const openweathermapDefinition: ServiceDefinition<OpenWeatherMapData> = {
     },
   ],
   async fetchData(config) {
-    const units = config.units || "metric"
-    const unitSymbol = units === "imperial" ? "°F" : "°C"
-    const speedUnit = units === "imperial" ? "mph" : "m/s"
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${config.latitude}&lon=${config.longitude}&appid=${config.apiKey}&units=${units}`
+    const units = config.units || "metric";
+    const unitSymbol = units === "imperial" ? "°F" : "°C";
+    const speedUnit = units === "imperial" ? "mph" : "m/s";
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${config.latitude}&lon=${config.longitude}&appid=${config.apiKey}&units=${units}`;
 
-    const res = await fetchWithTimeout(url)
-    if (!res.ok) throw new Error(`OpenWeatherMap error: ${res.status}`)
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error(`OpenWeatherMap error: ${res.status}`);
 
-    const data = await res.json()
+    const data = await res.json();
 
     return {
       _status: "ok",
@@ -116,7 +110,7 @@ export const openweathermapDefinition: ServiceDefinition<OpenWeatherMapData> = {
       feelsLike: Math.round(data.main?.feels_like ?? 0),
       unitSymbol,
       speedUnit,
-    }
+    };
   },
   toPayload: openweathermapToPayload,
-}
+};

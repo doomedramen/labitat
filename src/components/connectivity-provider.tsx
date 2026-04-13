@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useConnectivity } from "@/hooks/use-connectivity"
+import { useConnectivity } from "@/hooks/use-connectivity";
 
 /**
  * Global connectivity monitor.
@@ -10,6 +10,6 @@ import { useConnectivity } from "@/hooks/use-connectivity"
  * - Recovery from either state
  */
 export function ConnectivityProvider() {
-  useConnectivity()
-  return null
+  useConnectivity();
+  return null;
 }

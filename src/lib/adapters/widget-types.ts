@@ -1,5 +1,5 @@
-import type { ReactNode } from "react"
-import type { DownloadItem, ActiveStream, StatItem } from "@/components/widgets"
+import type { ReactNode } from "react";
+import type { DownloadItem, ActiveStream, StatItem } from "@/components/widgets";
 
 /**
  * Standardized widget payload that adapters return.
@@ -8,24 +8,24 @@ import type { DownloadItem, ActiveStream, StatItem } from "@/components/widgets"
  */
 export type WidgetPayload = {
   /** Stats to display in the stat grid */
-  stats: StatItem[]
+  stats: StatItem[];
   /** Active download/import list (Sonarr, Radarr, Transmission, etc.) */
-  downloads?: DownloadItem[]
+  downloads?: DownloadItem[];
   /** Active stream list (Plex, Tautulli, Jellyfin, etc.) */
-  streams?: ActiveStream[]
+  streams?: ActiveStream[];
   /** Custom component rendered below stats (for adapters that need custom UI like ResourceBars, charts, etc.) */
-  customComponent?: ReactNode
+  customComponent?: ReactNode;
   /** Error state - when set, shows error UI instead of content */
-  error?: string | null
+  error?: string | null;
   /** Loading state - when true, shows skeleton loader */
-  loading?: boolean
+  loading?: boolean;
   /**
    * Default active stat card IDs.
    * When set and no user preference exists, only these stats are shown initially.
    * Users can customize via drag-and-drop in edit mode.
    */
-  defaultActiveIds?: string[]
-}
+  defaultActiveIds?: string[];
+};
 
 // Re-export for convenience
-export type { StatItem }
+export type { StatItem };

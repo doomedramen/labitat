@@ -4,9 +4,9 @@ Edge router and reverse proxy.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Traefik dashboard URL |
+| Field | Type | Required | Description           |
+| ----- | ---- | -------- | --------------------- |
+| URL   | URL  | Yes      | Traefik dashboard URL |
 
 ## Setup
 

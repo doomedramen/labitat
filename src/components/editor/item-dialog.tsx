@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import { useForm } from "@tanstack/react-form"
-import { z } from "zod"
-import { formatErrors } from "@/lib/utils"
-import { urlSchema, isValidUrl } from "@/lib/url-utils"
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
+import { formatErrors } from "@/lib/utils";
+import { urlSchema, isValidUrl } from "@/lib/url-utils";
 import {
   Dialog,
   DialogContent,
@@ -12,118 +12,107 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
-import { useWebHaptics } from "web-haptics/react"
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { useWebHaptics } from "web-haptics/react";
 
-import { createItem, updateItem, getItemConfig } from "@/actions/items"
-import { getAllServices } from "@/lib/adapters"
-import type { ServiceDefinition } from "@/lib/adapters"
-import type { ItemWithCache, GroupWithItems } from "@/lib/types"
-import { WidgetDisplayProvider } from "@/components/dashboard/item/widget-display-context"
-import { WidgetContainer } from "@/components/widgets"
-import {
-  parseStatCardOrder,
-  type StatCardOrder,
-} from "@/hooks/use-stat-card-order"
-import { useLiveDataEntry } from "@/hooks/use-live-data"
+import { createItem, updateItem, getItemConfig } from "@/actions/items";
+import { getAllServices } from "@/lib/adapters";
+import type { ServiceDefinition } from "@/lib/adapters";
+import type { ItemWithCache, GroupWithItems } from "@/lib/types";
+import { WidgetDisplayProvider } from "@/components/dashboard/item/widget-display-context";
+import { WidgetContainer } from "@/components/widgets";
+import { parseStatCardOrder, type StatCardOrder } from "@/hooks/use-stat-card-order";
+import { useLiveDataEntry } from "@/hooks/use-live-data";
 
 const itemSchema = z.object({
   label: z.string().min(1, "Label is required."),
   href: urlSchema,
   iconUrl: urlSchema,
   pollingMs: z.number().min(1, "Must be at least 1 second."),
-})
+});
 
 // ── Service type combobox ─────────────────────────────────────────────────────
 
-const comboboxId = "service-type-combobox"
+const comboboxId = "service-type-combobox";
 
 function ServiceCombobox({
   services,
   value,
   onChange,
 }: {
-  services: ServiceDefinition[]
-  value: string
-  onChange: (id: string) => void
+  services: ServiceDefinition[];
+  value: string;
+  onChange: (id: string) => void;
 }) {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState("")
-  const [activeIndex, setActiveIndex] = useState(-1)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const sorted = [...services].sort((a, b) => a.name.localeCompare(b.name))
+  const sorted = [...services].sort((a, b) => a.name.localeCompare(b.name));
   const filtered = query
     ? sorted.filter((s) => s.name.toLowerCase().includes(query.toLowerCase()))
-    : sorted
+    : sorted;
 
   // Build flat option list for keyboard nav (includes "None" when not searching)
-  const options = !query
-    ? [{ id: "", name: "None (link only)" }, ...filtered]
-    : filtered
+  const options = !query ? [{ id: "", name: "None (link only)" }, ...filtered] : filtered;
 
   const selectedName =
-    value === ""
-      ? "None (link only)"
-      : (services.find((s) => s.id === value)?.name ?? value)
+    value === "" ? "None (link only)" : (services.find((s) => s.id === value)?.name ?? value);
 
   // Close on outside click
   useEffect(() => {
-    if (!open) return
+    if (!open) return;
     function handle(e: MouseEvent) {
-      if (!containerRef.current?.contains(e.target as Node)) setOpen(false)
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
     }
-    document.addEventListener("mousedown", handle)
-    return () => document.removeEventListener("mousedown", handle)
-  }, [open])
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open]);
 
   function select(id: string) {
-    onChange(id)
-    setOpen(false)
-    setQuery("")
-    setActiveIndex(-1)
+    onChange(id);
+    setOpen(false);
+    setQuery("");
+    setActiveIndex(-1);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (!open) {
       if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
-        e.preventDefault()
-        setOpen(true)
-        setActiveIndex(0)
+        e.preventDefault();
+        setOpen(true);
+        setActiveIndex(0);
       }
-      return
+      return;
     }
     if (e.key === "Escape") {
-      setOpen(false)
-      setQuery("")
-      setActiveIndex(-1)
+      setOpen(false);
+      setQuery("");
+      setActiveIndex(-1);
     } else if (e.key === "ArrowDown") {
-      e.preventDefault()
-      setActiveIndex((i) => (i < options.length - 1 ? i + 1 : i))
+      e.preventDefault();
+      setActiveIndex((i) => (i < options.length - 1 ? i + 1 : i));
     } else if (e.key === "ArrowUp") {
-      e.preventDefault()
-      setActiveIndex((i) => (i > 0 ? i - 1 : 0))
-    } else if (
-      e.key === "Enter" &&
-      activeIndex >= 0 &&
-      activeIndex < options.length
-    ) {
-      e.preventDefault()
-      select(options[activeIndex].id)
+      e.preventDefault();
+      setActiveIndex((i) => (i > 0 ? i - 1 : 0));
+    } else if (e.key === "Enter" && activeIndex >= 0 && activeIndex < options.length) {
+      e.preventDefault();
+      select(options[activeIndex].id);
     }
   }
 
@@ -140,12 +129,10 @@ function ServiceCombobox({
         className={cn(
           "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs",
           "ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none",
-          "hover:bg-accent/50"
+          "hover:bg-accent/50",
         )}
       >
-        <span className={value === "" ? "text-muted-foreground" : ""}>
-          {selectedName}
-        </span>
+        <span className={value === "" ? "text-muted-foreground" : ""}>{selectedName}</span>
         <svg
           className="h-4 w-4 shrink-0 opacity-50"
           xmlns="http://www.w3.org/2000/svg"
@@ -173,8 +160,8 @@ function ServiceCombobox({
               placeholder="Search services..."
               value={query}
               onChange={(e) => {
-                setQuery(e.target.value)
-                setActiveIndex(0)
+                setQuery(e.target.value);
+                setActiveIndex(0);
               }}
               role="searchbox"
               aria-label="Search services"
@@ -190,19 +177,17 @@ function ServiceCombobox({
                 className={cn(
                   "w-full px-2 py-1.5 text-left text-sm",
                   "hover:bg-accent hover:text-accent-foreground",
-                  value === "" && "bg-accent/50 font-medium"
+                  value === "" && "bg-accent/50 font-medium",
                 )}
               >
                 None (link only)
               </button>
             )}
             {filtered.length === 0 ? (
-              <p className="px-2 py-4 text-center text-sm text-muted-foreground">
-                No results
-              </p>
+              <p className="px-2 py-4 text-center text-sm text-muted-foreground">No results</p>
             ) : (
               filtered.map((s, i) => {
-                const optIndex = !query ? i + 1 : i
+                const optIndex = !query ? i + 1 : i;
                 return (
                   <button
                     key={s.id}
@@ -211,35 +196,34 @@ function ServiceCombobox({
                     aria-selected={value === s.id}
                     tabIndex={activeIndex === optIndex ? 0 : -1}
                     ref={(el) => {
-                      if (activeIndex === optIndex && el)
-                        el.scrollIntoView({ block: "nearest" })
+                      if (activeIndex === optIndex && el) el.scrollIntoView({ block: "nearest" });
                     }}
                     onClick={() => select(s.id)}
                     className={cn(
                       "w-full px-2 py-1.5 text-left text-sm",
                       "hover:bg-accent hover:text-accent-foreground",
                       value === s.id && "bg-accent/50 font-medium",
-                      activeIndex === optIndex && "bg-accent/30"
+                      activeIndex === optIndex && "bg-accent/30",
                     )}
                   >
                     {s.name}
                   </button>
-                )
+                );
               })
             )}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 interface ItemDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  item: ItemWithCache | null
-  groupId: string
-  onGroupsChanged: (groups: GroupWithItems[]) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  item: ItemWithCache | null;
+  groupId: string;
+  onGroupsChanged: (groups: GroupWithItems[]) => void;
 }
 
 export function ItemDialog({
@@ -249,22 +233,23 @@ export function ItemDialog({
   groupId,
   onGroupsChanged,
 }: ItemDialogProps) {
-  const haptic = useWebHaptics()
-  const liveData = useLiveDataEntry(item?.id ?? "")
-  const services = getAllServices()
-  const [serviceType, setServiceType] = useState(item?.serviceType ?? "")
-  const [configFields, setConfigFields] = useState<Record<string, string>>({})
-  const [configLoading, setConfigLoading] = useState(false)
+  const haptic = useWebHaptics();
+  const liveData = useLiveDataEntry(item?.id ?? "");
+  const services = getAllServices();
+  const [serviceType, setServiceType] = useState(item?.serviceType ?? "");
+  const [configFields, setConfigFields] = useState<Record<string, string>>({});
+  const [configLoading, setConfigLoading] = useState(false);
   const [statDisplayMode, setStatDisplayMode] = useState<"icon" | "label">(
-    (item?.statDisplayMode as "icon" | "label") ?? "label"
-  )
-  const [cleanMode, setCleanMode] = useState<boolean>(item?.cleanMode ?? false)
-  const [localStatCardOrder, setLocalStatCardOrder] =
-    useState<StatCardOrder | null>(parseStatCardOrder(item?.statCardOrder))
-  const selectedService = services.find((s) => s.id === serviceType)
+    (item?.statDisplayMode as "icon" | "label") ?? "label",
+  );
+  const [cleanMode, setCleanMode] = useState<boolean>(item?.cleanMode ?? false);
+  const [localStatCardOrder, setLocalStatCardOrder] = useState<StatCardOrder | null>(
+    parseStatCardOrder(item?.statCardOrder),
+  );
+  const selectedService = services.find((s) => s.id === serviceType);
 
   // Get live widget data (from SSE) with fallback to SSR cache
-  const widgetData = liveData.widgetData ?? item?.cachedWidgetData
+  const widgetData = liveData.widgetData ?? item?.cachedWidgetData;
 
   const form = useForm({
     defaultValues: {
@@ -276,145 +261,147 @@ export function ItemDialog({
     validators: {
       onChange: itemSchema,
       onChangeAsync: async ({ value }) => {
-        const result = itemSchema.safeParse(value)
+        const result = itemSchema.safeParse(value);
         if (!result.success) {
           return {
             fields: result.error.flatten().fieldErrors,
-          }
+          };
         }
-        return undefined
+        return undefined;
       },
       onChangeAsyncDebounceMs: 300,
       onBlur: itemSchema,
     },
     onSubmit: async ({ value }) => {
       try {
-        const formData = new FormData()
-        formData.append("label", value.label)
-        formData.append("href", value.href)
-        formData.append("iconUrl", value.iconUrl)
-        formData.append("pollingMs", String(value.pollingMs * 1000))
-        formData.append("serviceType", serviceType)
-        formData.append("displayMode", "label")
-        formData.append("cleanMode", cleanMode ? "true" : "false")
-        formData.append("statDisplayMode", statDisplayMode)
+        const formData = new FormData();
+        formData.append("label", value.label);
+        formData.append("href", value.href);
+        formData.append("iconUrl", value.iconUrl);
+        formData.append("pollingMs", String(value.pollingMs * 1000));
+        formData.append("serviceType", serviceType);
+        formData.append("displayMode", "label");
+        formData.append("cleanMode", cleanMode ? "true" : "false");
+        formData.append("statDisplayMode", statDisplayMode);
+
+        // Add stat card order
+        if (localStatCardOrder) {
+          formData.append("statCardOrder", JSON.stringify(localStatCardOrder));
+        }
 
         // Add config fields
         Object.entries(configFields).forEach(([key, val]) => {
-          formData.append(`config_${key}`, val)
-        })
+          formData.append(`config_${key}`, val);
+        });
 
         if (item) {
-          const updated = await updateItem(item.id, formData)
-          onGroupsChanged(updated)
+          const updated = await updateItem(item.id, formData);
+          onGroupsChanged(updated);
         } else {
-          const updated = await createItem(groupId, formData)
-          onGroupsChanged(updated)
+          const updated = await createItem(groupId, formData);
+          onGroupsChanged(updated);
         }
-        haptic.trigger("success")
-        onOpenChange(false)
+        haptic.trigger("success");
+        onOpenChange(false);
       } catch {
-        toast.error(item ? "Failed to update item" : "Failed to create item")
-        haptic.trigger("error")
+        toast.error(item ? "Failed to update item" : "Failed to create item");
+        haptic.trigger("error");
       }
     },
-  })
+  });
 
   // Sync state when item changes (including when switching from edit to new)
   useEffect(() => {
-    setServiceType(item?.serviceType ?? "")
-    setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label")
-    setCleanMode(item?.cleanMode ?? false)
-    setLocalStatCardOrder(parseStatCardOrder(item?.statCardOrder))
+    setServiceType(item?.serviceType ?? "");
+    setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label");
+    setCleanMode(item?.cleanMode ?? false);
+    setLocalStatCardOrder(parseStatCardOrder(item?.statCardOrder));
     form.reset({
       label: item?.label ?? "",
       href: item?.href ?? "",
       iconUrl: item?.iconUrl ?? "",
       pollingMs: item?.pollingMs ? item.pollingMs / 1000 : 10,
-    })
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
-  }, [item?.id, item, open])
+  }, [item?.id, item, open]);
 
   // Reset form and local state when dialog closes
   useEffect(() => {
     if (!open) {
-      setServiceType("")
-      setConfigFields({})
-      setStatDisplayMode("label")
-      setCleanMode(false)
-      setLocalStatCardOrder(null)
+      setServiceType("");
+      setConfigFields({});
+      setStatDisplayMode("label");
+      setCleanMode(false);
+      setLocalStatCardOrder(null);
       form.reset({
         label: "",
         href: "",
         iconUrl: "",
         pollingMs: 10,
-      })
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
-  }, [open])
+  }, [open]);
 
   // Auto-set label based on service type when creating a new item
   useEffect(() => {
     // Only for new items (no existing item)
-    if (item) return
+    if (item) return;
 
     if (selectedService) {
-      const currentLabel = form.getFieldValue("label")
+      const currentLabel = form.getFieldValue("label");
       // Set label to service name if no label is defined
       if (!currentLabel || currentLabel === "") {
-        form.setFieldValue("label", selectedService.name)
+        form.setFieldValue("label", selectedService.name);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when serviceType changes
-  }, [item, serviceType])
+  }, [item, serviceType]);
 
   // Load config when editing an existing item
   useEffect(() => {
     if (item?.id) {
-      setConfigLoading(true)
+      setConfigLoading(true);
       getItemConfig(item.id)
         .then((stored) => {
           if (selectedService) {
-            const merged = { ...stored }
+            const merged = { ...stored };
             for (const field of selectedService.configFields) {
               if (field.type === "boolean" && merged[field.key] === undefined) {
-                merged[field.key] = field.defaultChecked ? "true" : "false"
+                merged[field.key] = field.defaultChecked ? "true" : "false";
               }
             }
-            setConfigFields(merged)
+            setConfigFields(merged);
           } else {
-            setConfigFields(stored)
+            setConfigFields(stored);
           }
         })
-        .finally(() => setConfigLoading(false))
+        .finally(() => setConfigLoading(false));
     } else {
       // New item — apply defaults for the selected service
       if (selectedService) {
-        const defaults: Record<string, string> = {}
+        const defaults: Record<string, string> = {};
         for (const field of selectedService.configFields) {
           if (field.type === "boolean") {
-            defaults[field.key] = field.defaultChecked ? "true" : "false"
+            defaults[field.key] = field.defaultChecked ? "true" : "false";
           }
         }
-        setConfigFields(defaults)
+        setConfigFields(defaults);
       } else {
-        setConfigFields({})
+        setConfigFields({});
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item?.id, serviceType])
+  }, [item?.id, serviceType]);
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          key={item?.id ?? "new"}
-          className="max-h-[80vh] overflow-y-auto"
-        >
+        <DialogContent key={item?.id ?? "new"} className="max-h-[80vh] overflow-y-auto">
           <form
             onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit()
+              e.preventDefault();
+              form.handleSubmit();
             }}
           >
             <DialogHeader>
@@ -430,8 +417,7 @@ export function ItemDialog({
               <form.Field name="label">
                 {(field) => {
                   const isInvalid =
-                    field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0
+                    field.state.meta.isTouched && field.state.meta.errors.length > 0;
                   return (
                     <div className="space-y-2">
                       <Label htmlFor={field.name}>Label</Label>
@@ -449,15 +435,14 @@ export function ItemDialog({
                         </p>
                       )}
                     </div>
-                  )
+                  );
                 }}
               </form.Field>
 
               <form.Field name="href">
                 {(field) => {
                   const isInvalid =
-                    field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0
+                    field.state.meta.isTouched && field.state.meta.errors.length > 0;
                   return (
                     <div className="space-y-2">
                       <Label htmlFor={field.name}>URL</Label>
@@ -475,15 +460,14 @@ export function ItemDialog({
                         </p>
                       )}
                     </div>
-                  )
+                  );
                 }}
               </form.Field>
 
               <form.Field name="iconUrl">
                 {(field) => {
                   const isInvalid =
-                    field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0
+                    field.state.meta.isTouched && field.state.meta.errors.length > 0;
                   return (
                     <div className="space-y-2">
                       <Label htmlFor={field.name}>Icon URL</Label>
@@ -501,7 +485,7 @@ export function ItemDialog({
                         </p>
                       )}
                     </div>
-                  )
+                  );
                 }}
               </form.Field>
 
@@ -518,9 +502,7 @@ export function ItemDialog({
               {/* Service config fields */}
               {selectedService && (
                 <div className="space-y-3 rounded-lg border p-3">
-                  <p className="text-sm font-medium">
-                    {selectedService.name} Config
-                  </p>
+                  <p className="text-sm font-medium">{selectedService.name} Config</p>
                   {configLoading ? (
                     <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
                       <Loader2 className="size-4 animate-spin" />
@@ -528,12 +510,10 @@ export function ItemDialog({
                     </div>
                   ) : (
                     selectedService.configFields.map((field) => {
-                      const fieldValue = configFields[field.key]
+                      const fieldValue = configFields[field.key];
                       return (
                         <div key={field.key} className="space-y-1">
-                          <Label htmlFor={`config_${field.key}`}>
-                            {field.label}
-                          </Label>
+                          <Label htmlFor={`config_${field.key}`}>{field.label}</Label>
                           {field.type === "boolean" ? (
                             <div className="flex items-center gap-2">
                               <Switch
@@ -588,7 +568,7 @@ export function ItemDialog({
                               {(configField) => {
                                 const isInvalid =
                                   configField.state.meta.isTouched &&
-                                  !configField.state.meta.isValid
+                                  !configField.state.meta.isValid;
                                 return (
                                   <div className="space-y-1">
                                     <Input
@@ -596,11 +576,11 @@ export function ItemDialog({
                                       type="text"
                                       value={configField.state.value}
                                       onChange={(e) => {
-                                        configField.handleChange(e.target.value)
+                                        configField.handleChange(e.target.value);
                                         setConfigFields((prev) => ({
                                           ...prev,
                                           [field.key]: e.target.value,
-                                        }))
+                                        }));
                                       }}
                                       onBlur={configField.handleBlur}
                                       placeholder={field.placeholder}
@@ -608,13 +588,11 @@ export function ItemDialog({
                                     />
                                     {isInvalid && (
                                       <p className="text-xs text-destructive">
-                                        {formatErrors(
-                                          configField.state.meta.errors
-                                        )}
+                                        {formatErrors(configField.state.meta.errors)}
                                       </p>
                                     )}
                                   </div>
-                                )
+                                );
                               }}
                             </form.Field>
                           ) : (
@@ -640,12 +618,10 @@ export function ItemDialog({
                             </div>
                           )}
                           {field.helperText && (
-                            <p className="text-xs text-muted-foreground">
-                              {field.helperText}
-                            </p>
+                            <p className="text-xs text-muted-foreground">{field.helperText}</p>
                           )}
                         </div>
-                      )
+                      );
                     })
                   )}
                 </div>
@@ -655,20 +631,16 @@ export function ItemDialog({
               <form.Field name="pollingMs">
                 {(field) => {
                   const isInvalid =
-                    field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0
+                    field.state.meta.isTouched && field.state.meta.errors.length > 0;
                   return (
                     <div className="space-y-2">
-                      <Label htmlFor={field.name}>
-                        Polling Interval (seconds)
-                      </Label>
+                      <Label htmlFor={field.name}>Polling Interval (seconds)</Label>
                       <Input
                         id={field.name}
                         value={String(field.state.value)}
                         onChange={(e) => {
-                          const val =
-                            e.target.value === "" ? "" : Number(e.target.value)
-                          field.handleChange(typeof val === "number" ? val : 0)
+                          const val = e.target.value === "" ? "" : Number(e.target.value);
+                          field.handleChange(typeof val === "number" ? val : 0);
                         }}
                         onBlur={field.handleBlur}
                         type="number"
@@ -681,17 +653,13 @@ export function ItemDialog({
                         </p>
                       )}
                     </div>
-                  )
+                  );
                 }}
               </form.Field>
 
               {/* Clean mode */}
               <div className="flex items-center gap-2">
-                <Switch
-                  id="cleanMode"
-                  checked={cleanMode}
-                  onCheckedChange={setCleanMode}
-                />
+                <Switch id="cleanMode" checked={cleanMode} onCheckedChange={setCleanMode} />
                 <Label htmlFor="cleanMode">Clean mode (minimal display)</Label>
               </div>
 
@@ -707,9 +675,7 @@ export function ItemDialog({
                   <Switch
                     id="statDisplayMode"
                     checked={statDisplayMode === "icon"}
-                    onCheckedChange={(checked) =>
-                      setStatDisplayMode(checked ? "icon" : "label")
-                    }
+                    onCheckedChange={(checked) => setStatDisplayMode(checked ? "icon" : "label")}
                   />
                 </div>
               )}
@@ -735,20 +701,14 @@ export function ItemDialog({
                       }}
                     >
                       {selectedService.toPayload && widgetData ? (
-                        <WidgetContainer
-                          payload={selectedService.toPayload(widgetData)}
-                        />
+                        <WidgetContainer payload={selectedService.toPayload(widgetData)} />
                       ) : null}
                     </WidgetDisplayProvider>
                   </div>
                 )}
             </div>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit">{item ? "Update" : "Create"}</Button>
@@ -757,5 +717,5 @@ export function ItemDialog({
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

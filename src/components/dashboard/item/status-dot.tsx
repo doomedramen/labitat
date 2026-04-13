@@ -1,15 +1,11 @@
-"use client"
+"use client";
 
-import { cn } from "@/lib/utils"
-import type { ServiceStatus } from "@/lib/adapters/types"
-import {
-  HoverCard,
-  HoverCardTrigger,
-  HoverCardContent,
-} from "@/components/ui/hover-card"
+import { cn } from "@/lib/utils";
+import type { ServiceStatus } from "@/lib/adapters/types";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
 interface StatusDotProps {
-  status: ServiceStatus
+  status: ServiceStatus;
 }
 
 export function StatusDot({ status }: StatusDotProps) {
@@ -21,7 +17,7 @@ export function StatusDot({ status }: StatusDotProps) {
     unreachable: "bg-red-500",
     slow: "bg-amber-500",
     error: "bg-red-500",
-  }
+  };
 
   const labels = {
     unknown: "Status unknown",
@@ -31,21 +27,19 @@ export function StatusDot({ status }: StatusDotProps) {
     unreachable: "Unreachable",
     slow: "Slow response",
     error: "Error",
-  }
+  };
 
   const reason =
     status.state === "unreachable" || status.state === "error"
       ? status.reason
       : status.state === "slow"
         ? `${status.reason} (${status.timeoutMs} ms)`
-        : undefined
+        : undefined;
 
   const dot = (
     <div
       role="status"
-      aria-label={
-        reason ? `${labels[status.state]}: ${reason}` : labels[status.state]
-      }
+      aria-label={reason ? `${labels[status.state]}: ${reason}` : labels[status.state]}
       className={cn(
         "h-2.5 w-2.5 rounded-full transition-all duration-300",
         colors[status.state],
@@ -53,10 +47,10 @@ export function StatusDot({ status }: StatusDotProps) {
           status.state === "error" ||
           status.state === "degraded" ||
           status.state === "slow") &&
-          "animate-pulse"
+          "animate-pulse",
       )}
     />
-  )
+  );
 
   if (reason) {
     return (
@@ -66,8 +60,8 @@ export function StatusDot({ status }: StatusDotProps) {
           {reason}
         </HoverCardContent>
       </HoverCard>
-    )
+    );
   }
 
-  return dot
+  return dot;
 }

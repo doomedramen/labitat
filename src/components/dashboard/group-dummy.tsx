@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
 /**
  * Simplified GroupCard for edit mode.
  * Shows group name + simplified item cards with drag handles and edit/delete buttons.
  */
 
-import { useSortable } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
-import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable"
-import { cn } from "@/lib/utils"
-import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types"
-import { ItemCardDummy } from "./item/item-card-dummy"
-import { Pencil, Trash2, GripVertical, Plus } from "lucide-react"
-import { useState } from "react"
-import { ConfirmDialog } from "@/components/confirm-dialog"
-import { deleteGroup } from "@/actions/groups"
-import { deleteItem } from "@/actions/items"
-import { toast } from "sonner"
-import { useWebHaptics } from "web-haptics/react"
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
+import { cn } from "@/lib/utils";
+import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types";
+import { ItemCardDummy } from "./item/item-card-dummy";
+import { Pencil, Trash2, GripVertical, Plus } from "lucide-react";
+import { useState } from "react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { deleteGroup } from "@/actions/groups";
+import { deleteItem } from "@/actions/items";
+import { toast } from "sonner";
+import { useWebHaptics } from "web-haptics/react";
 
 interface GroupCardDummyProps {
-  group: GroupWithCache
-  editMode: boolean
-  onEditGroup: () => void
-  onAddItem: () => void
-  onEditItem: (item: ItemWithCache) => void
-  onGroupsChanged: (groups: GroupWithItems[]) => void
+  group: GroupWithCache;
+  editMode: boolean;
+  onEditGroup: () => void;
+  onAddItem: () => void;
+  onEditItem: (item: ItemWithCache) => void;
+  onGroupsChanged: (groups: GroupWithItems[]) => void;
 }
 
 export function GroupCardDummy({
@@ -36,38 +36,31 @@ export function GroupCardDummy({
   onEditItem,
   onGroupsChanged,
 }: GroupCardDummyProps) {
-  const haptic = useWebHaptics()
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const haptic = useWebHaptics();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const handleDeleteItem = async (id: string) => {
     try {
-      const updated = await deleteItem(id)
-      onGroupsChanged(updated)
-      haptic.trigger("warning")
+      const updated = await deleteItem(id);
+      onGroupsChanged(updated);
+      haptic.trigger("warning");
     } catch {
-      toast.error("Failed to delete item")
-      haptic.trigger("error")
+      toast.error("Failed to delete item");
+      haptic.trigger("error");
     }
-  }
+  };
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: group.id,
     data: { type: "group" },
     disabled: !editMode,
-  })
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.35 : undefined,
-  }
+  };
 
   return (
     <>
@@ -104,14 +97,11 @@ export function GroupCardDummy({
         </div>
 
         {/* Items grid */}
-        <SortableContext
-          items={group.items.map((i) => i.id)}
-          strategy={rectSortingStrategy}
-        >
+        <SortableContext items={group.items.map((i) => i.id)} strategy={rectSortingStrategy}>
           <div
             className={cn(
               "grid items-start gap-3",
-              "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
             )}
           >
             {group.items.map((item) => (
@@ -142,16 +132,16 @@ export function GroupCardDummy({
         description={`Are you sure you want to delete "${group.name}"? All items inside will also be deleted. This cannot be undone.`}
         onConfirm={async () => {
           try {
-            const updated = await deleteGroup(group.id)
-            onGroupsChanged(updated)
-            haptic.trigger("warning")
+            const updated = await deleteGroup(group.id);
+            onGroupsChanged(updated);
+            haptic.trigger("warning");
           } catch {
-            toast.error("Failed to delete group")
-            haptic.trigger("error")
+            toast.error("Failed to delete group");
+            haptic.trigger("error");
           }
-          setDeleteConfirmOpen(false)
+          setDeleteConfirmOpen(false);
         }}
       />
     </>
-  )
+  );
 }

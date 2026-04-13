@@ -1,20 +1,20 @@
-import type { ServiceDefinition } from "./types"
-import { formatBytes, formatDuration } from "@/lib/utils/format"
-import { ResourceBar } from "@/components/widgets"
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
-import { ArrowDownUp, Activity, Clock } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { formatBytes, formatDuration } from "@/lib/utils/format";
+import { ResourceBar } from "@/components/widgets";
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid";
+import { ArrowDownUp, Activity, Clock } from "lucide-react";
 
 type GlancesData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  cpuPercent: number
-  memPercent: number
-  memUsed: string
-  swapPercent: number
-  load1: number
-  uptime: string
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  cpuPercent: number;
+  memPercent: number;
+  memUsed: string;
+  swapPercent: number;
+  load1: number;
+  uptime: string;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function GlancesWidget({
   cpuPercent,
@@ -24,10 +24,10 @@ function GlancesWidget({
   load1,
   uptime,
 }: GlancesData) {
-  const cpu = cpuPercent ?? 0
-  const mem = memPercent ?? 0
-  const swap = swapPercent ?? 0
-  const load = load1 ?? 0
+  const cpu = cpuPercent ?? 0;
+  const mem = memPercent ?? 0;
+  const swap = swapPercent ?? 0;
+  const load = load1 ?? 0;
 
   return (
     <div className="flex flex-col gap-2 text-xs">
@@ -56,7 +56,7 @@ function GlancesWidget({
         ]}
       />
     </div>
-  )
+  );
 }
 
 export const glancesDefinition: ServiceDefinition<GlancesData> = {
@@ -89,41 +89,39 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const headers: Record<string, string> = {}
+    const baseUrl = config.url.replace(/\/$/, "");
+    const headers: Record<string, string> = {};
 
     if (config.username && config.password) {
-      headers["Authorization"] =
-        `Basic ${btoa(`${config.username}:${config.password}`)}`
+      headers["Authorization"] = `Basic ${btoa(`${config.username}:${config.password}`)}`;
     }
 
     const [quickRes, memRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/api/4/quicklook`, { headers }),
       fetchWithTimeout(`${baseUrl}/api/4/mem`, { headers }),
-    ])
+    ]);
 
-    if (!quickRes.ok) throw new Error(`Glances error: ${quickRes.status}`)
+    if (!quickRes.ok) throw new Error(`Glances error: ${quickRes.status}`);
 
-    const data = await quickRes.json()
-    const memData = memRes.ok ? await memRes.json() : {}
+    const data = await quickRes.json();
+    const memData = memRes.ok ? await memRes.json() : {};
 
     // Memory used: prefer /api/4/mem, fall back to quicklook calculation
     const memUsedBytes =
-      memData.used ??
-      (data.memory_total ? ((data.mem ?? 0) * data.memory_total) / 100 : 0)
+      memData.used ?? (data.memory_total ? ((data.mem ?? 0) * data.memory_total) / 100 : 0);
 
     // Load: quicklook may return an object {min1, cpucore} or a bare number
-    const loadRaw = data.load ?? 0
-    const loadMin1 = typeof loadRaw === "object" ? (loadRaw.min1 ?? 0) : loadRaw
-    const loadCores = typeof loadRaw === "object" ? (loadRaw.cpucore ?? 1) : 1
-    const load1 = loadCores > 1 ? loadMin1 / loadCores : loadMin1
+    const loadRaw = data.load ?? 0;
+    const loadMin1 = typeof loadRaw === "object" ? (loadRaw.min1 ?? 0) : loadRaw;
+    const loadCores = typeof loadRaw === "object" ? (loadRaw.cpucore ?? 1) : 1;
+    const load1 = loadCores > 1 ? loadMin1 / loadCores : loadMin1;
 
     // Uptime: may be seconds (number) or a pre-formatted string
-    const uptimeRaw = data.uptime ?? 0
+    const uptimeRaw = data.uptime ?? 0;
     const uptime =
       typeof uptimeRaw === "string"
         ? uptimeRaw.replace(/^"|"$/g, "").trim() || "—"
-        : formatDuration(uptimeRaw)
+        : formatDuration(uptimeRaw);
 
     return {
       _status: "ok",
@@ -133,7 +131,7 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
       swapPercent: Math.round(data.swap ?? 0),
       load1,
       uptime,
-    }
+    };
   },
   renderWidget: GlancesWidget,
-}
+};

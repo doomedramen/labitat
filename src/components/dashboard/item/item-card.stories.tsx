@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite"
-import { ItemCard } from "./item-card"
-import type { ItemWithCache } from "@/lib/types"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { ItemCard } from "./item-card";
+import type { ItemWithCache } from "@/lib/types";
 
 const meta: Meta<typeof ItemCard> = {
   title: "Dashboard/ItemCard",
@@ -17,11 +17,11 @@ const meta: Meta<typeof ItemCard> = {
       </div>
     ),
   ],
-}
+};
 
-export default meta
+export default meta;
 
-type Story = StoryObj<typeof ItemCard>
+type Story = StoryObj<typeof ItemCard>;
 
 const baseItem: ItemWithCache = {
   id: "test-item",
@@ -41,7 +41,7 @@ const baseItem: ItemWithCache = {
   createdAt: new Date().toISOString(),
   cachedWidgetData: null,
   cachedPingStatus: { state: "reachable" },
-}
+};
 
 export const Website: Story = {
   args: {
@@ -53,7 +53,7 @@ export const Website: Story = {
     },
     editMode: false,
   },
-}
+};
 
 export const Sonarr: Story = {
   args: {
@@ -80,7 +80,7 @@ export const Sonarr: Story = {
     },
     editMode: false,
   },
-}
+};
 
 export const Plex: Story = {
   args: {
@@ -105,7 +105,7 @@ export const Plex: Story = {
     },
     editMode: false,
   },
-}
+};
 
 export const Proxmox: Story = {
   args: {
@@ -125,7 +125,7 @@ export const Proxmox: Story = {
     },
     editMode: false,
   },
-}
+};
 
 export const Offline: Story = {
   args: {
@@ -136,7 +136,7 @@ export const Offline: Story = {
     },
     editMode: false,
   },
-}
+};
 
 export const EditMode: Story = {
   args: {
@@ -147,4 +147,4 @@ export const EditMode: Story = {
     },
     editMode: true,
   },
-}
+};

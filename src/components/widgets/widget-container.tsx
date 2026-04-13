@@ -7,20 +7,20 @@
  * In edit mode: uses EditableStatGrid for drag-to-reorder and unused area.
  */
 
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid"
-import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid"
-import { Skeleton } from "@/components/ui/skeleton"
-import { AlertCircle } from "lucide-react"
-import type { WidgetPayload } from "@/lib/adapters/widget-types"
-import { useWidgetDisplay } from "@/components/dashboard/item/widget-display-context"
+import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid";
+import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AlertCircle } from "lucide-react";
+import type { WidgetPayload } from "@/lib/adapters/widget-types";
+import { useWidgetDisplay } from "@/components/dashboard/item/widget-display-context";
 
 interface WidgetContainerProps {
-  payload: WidgetPayload
+  payload: WidgetPayload;
 }
 
 export function WidgetContainer({ payload }: WidgetContainerProps) {
-  const displaySettings = useWidgetDisplay()
-  const isEditMode = displaySettings?.editMode ?? false
+  const displaySettings = useWidgetDisplay();
+  const isEditMode = displaySettings?.editMode ?? false;
 
   // Show loading skeleton when loading
   if (payload.loading) {
@@ -30,7 +30,7 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
           <Skeleton key={i} className="h-[52px] rounded-md" />
         ))}
       </div>
-    )
+    );
   }
 
   // Show error state
@@ -40,23 +40,23 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
         <AlertCircle className="h-5 w-5 text-destructive" />
         <p className="text-xs text-destructive">{payload.error}</p>
       </div>
-    )
+    );
   }
 
-  const hasStats = payload.stats.length > 0
-  const hasStreams = payload.streams && payload.streams.length > 0
-  const hasDownloads = payload.downloads && payload.downloads.length > 0
-  const hasCustom = !!payload.customComponent
+  const hasStats = payload.stats.length > 0;
+  const hasStreams = payload.streams && payload.streams.length > 0;
+  const hasDownloads = payload.downloads && payload.downloads.length > 0;
+  const hasCustom = !!payload.customComponent;
 
   if (!hasStats && !hasStreams && !hasDownloads && !hasCustom) {
-    return null
+    return null;
   }
 
   // Filter out unused stat cards when not in edit mode
-  const unusedIds = new Set(displaySettings?.statCardOrder?.unused ?? [])
+  const unusedIds = new Set(displaySettings?.statCardOrder?.unused ?? []);
   const visibleStats = isEditMode
     ? payload.stats
-    : payload.stats.filter((stat) => !unusedIds.has(stat.id))
+    : payload.stats.filter((stat) => !unusedIds.has(stat.id));
 
   return (
     <div className="space-y-2">
@@ -78,25 +78,25 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
 
       {payload.customComponent}
     </div>
-  )
+  );
 }
 
 // Minimal server-compatible versions of stream/download lists
 // These are simple renders — full interactivity comes from client hydration
 function ActiveStreamList({ streams }: { streams: unknown[] }) {
-  if (!streams.length) return null
+  if (!streams.length) return null;
   return (
     <div className="text-xs text-muted-foreground">
       {streams.length} active stream{streams.length !== 1 ? "s" : ""}
     </div>
-  )
+  );
 }
 
 function DownloadList({ downloads }: { downloads: unknown[] }) {
-  if (!downloads.length) return null
+  if (!downloads.length) return null;
   return (
     <div className="text-xs text-muted-foreground">
       {downloads.length} download{downloads.length !== 1 ? "s" : ""}
     </div>
-  )
+  );
 }

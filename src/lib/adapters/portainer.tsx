@@ -1,14 +1,14 @@
-import type { ServiceDefinition } from "./types"
-import { Play, Square, Layers } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Play, Square, Layers } from "lucide-react";
 
 type PortainerData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  running: number
-  stopped: number
-  total: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  running: number;
+  stopped: number;
+  total: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function portainerToPayload(data: PortainerData) {
   return {
@@ -32,7 +32,7 @@ function portainerToPayload(data: PortainerData) {
         icon: Layers,
       },
     ],
-  }
+  };
 }
 
 export const portainerDefinition: ServiceDefinition<PortainerData> = {
@@ -76,8 +76,8 @@ export const portainerDefinition: ServiceDefinition<PortainerData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const endpointId = config.endpointId ?? 1
+    const baseUrl = config.url.replace(/\/$/, "");
+    const endpointId = config.endpointId ?? 1;
 
     // First, authenticate to get a JWT token
     const authRes = await fetchWithTimeout(`${baseUrl}/api/auth`, {
@@ -87,45 +87,38 @@ export const portainerDefinition: ServiceDefinition<PortainerData> = {
         username: config.username,
         password: config.password,
       }),
-    })
+    });
 
     if (!authRes.ok) {
-      if (authRes.status === 400)
-        throw new Error("Invalid username or password")
-      if (authRes.status === 404)
-        throw new Error("Portainer not found at this URL")
-      throw new Error(`Portainer auth error: ${authRes.status}`)
+      if (authRes.status === 400) throw new Error("Invalid username or password");
+      if (authRes.status === 404) throw new Error("Portainer not found at this URL");
+      throw new Error(`Portainer auth error: ${authRes.status}`);
     }
 
-    const authData = await authRes.json()
-    const token = authData.jwt
-    if (!token)
-      throw new Error("Portainer auth succeeded but no JWT token returned")
+    const authData = await authRes.json();
+    const token = authData.jwt;
+    if (!token) throw new Error("Portainer auth succeeded but no JWT token returned");
 
-    const headers = { Authorization: `Bearer ${token}` }
+    const headers = { Authorization: `Bearer ${token}` };
 
     // Fetch containers from configured endpoint (like Homepage)
     const containersRes = await fetchWithTimeout(
       `${baseUrl}/api/endpoints/${endpointId}/docker/containers/json?all=1`,
-      { headers }
-    )
+      { headers },
+    );
 
-    const containersData = containersRes.ok ? await containersRes.json() : []
+    const containersData = containersRes.ok ? await containersRes.json() : [];
 
-    const running = containersData.filter(
-      (c: { State: string }) => c.State === "running"
-    ).length
-    const stopped = containersData.filter(
-      (c: { State: string }) => c.State === "exited"
-    ).length
+    const running = containersData.filter((c: { State: string }) => c.State === "running").length;
+    const stopped = containersData.filter((c: { State: string }) => c.State === "exited").length;
 
     return {
       _status: "ok" as const,
       running,
       stopped,
       total: containersData.length,
-    }
+    };
   },
 
   toPayload: portainerToPayload,
-}
+};

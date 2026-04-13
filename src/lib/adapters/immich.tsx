@@ -1,27 +1,27 @@
-import type { ServiceDefinition } from "./types"
-import { Users, Image as ImageIcon, Video, HardDrive } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Users, Image as ImageIcon, Video, HardDrive } from "lucide-react";
 
 type ImmichData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  users: number
-  photos: number
-  videos: number
-  storage: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  users: number;
+  photos: number;
+  videos: number;
+  storage: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function formatStorage(bytes: number): string {
   if (bytes >= 1_000_000_000_000) {
-    return `${(bytes / 1_000_000_000_000).toFixed(1)} TB`
+    return `${(bytes / 1_000_000_000_000).toFixed(1)} TB`;
   }
   if (bytes >= 1_000_000_000) {
-    return `${(bytes / 1_000_000_000).toFixed(1)} GB`
+    return `${(bytes / 1_000_000_000).toFixed(1)} GB`;
   }
   if (bytes >= 1_000_000) {
-    return `${(bytes / 1_000_000).toFixed(1)} MB`
+    return `${(bytes / 1_000_000).toFixed(1)} MB`;
   }
-  return `${(bytes / 1_000).toFixed(0)} KB`
+  return `${(bytes / 1_000).toFixed(0)} KB`;
 }
 
 function immichToPayload(data: ImmichData) {
@@ -52,7 +52,7 @@ function immichToPayload(data: ImmichData) {
         icon: HardDrive,
       },
     ],
-  }
+  };
 }
 
 export const immichDefinition: ServiceDefinition<ImmichData> = {
@@ -92,49 +92,41 @@ export const immichDefinition: ServiceDefinition<ImmichData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const version = config.version ?? "1"
+    const baseUrl = config.url.replace(/\/$/, "");
+    const version = config.version ?? "1";
     const headers = {
       "x-api-key": config.apiKey,
       "Content-Type": "application/json",
-    }
+    };
 
     // Get version to determine correct stats endpoint
-    const versionEndpoint =
-      version === "2" ? "/server/version" : "/server-info/version"
-    const versionRes = await fetchWithTimeout(
-      `${baseUrl}/api${versionEndpoint}`,
-      {
-        headers,
-      }
-    )
+    const versionEndpoint = version === "2" ? "/server/version" : "/server-info/version";
+    const versionRes = await fetchWithTimeout(`${baseUrl}/api${versionEndpoint}`, {
+      headers,
+    });
 
-    let statsEndpoint = "/server-info/stats"
+    let statsEndpoint = "/server-info/stats";
     if (version === "1" && versionRes.ok) {
-      const versionData = await versionRes.json()
+      const versionData = await versionRes.json();
       // Use statistics endpoint for Immich > 1.84
-      if (
-        versionData?.major > 1 ||
-        (versionData?.major === 1 && versionData?.minor > 84)
-      ) {
-        statsEndpoint = "/server-info/statistics"
+      if (versionData?.major > 1 || (versionData?.major === 1 && versionData?.minor > 84)) {
+        statsEndpoint = "/server-info/statistics";
       }
     } else if (version === "2") {
-      statsEndpoint = "/server/statistics"
+      statsEndpoint = "/server/statistics";
     }
 
     const statsRes = await fetchWithTimeout(`${baseUrl}/api${statsEndpoint}`, {
       headers,
-    })
+    });
 
     if (!statsRes.ok) {
-      if (statsRes.status === 401) throw new Error("Invalid API key")
-      if (statsRes.status === 404)
-        throw new Error("Immich not found at this URL")
-      throw new Error(`Immich error: ${statsRes.status}`)
+      if (statsRes.status === 401) throw new Error("Invalid API key");
+      if (statsRes.status === 404) throw new Error("Immich not found at this URL");
+      throw new Error(`Immich error: ${statsRes.status}`);
     }
 
-    const statsData = await statsRes.json()
+    const statsData = await statsRes.json();
 
     return {
       _status: "ok" as const,
@@ -142,8 +134,8 @@ export const immichDefinition: ServiceDefinition<ImmichData> = {
       photos: statsData.photos ?? 0,
       videos: statsData.videos ?? 0,
       storage: statsData.usage ?? 0,
-    }
+    };
   },
 
   toPayload: immichToPayload,
-}
+};

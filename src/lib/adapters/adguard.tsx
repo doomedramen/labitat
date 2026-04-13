@@ -1,18 +1,18 @@
-import type { ServiceDefinition } from "./types"
-import { validateResponse } from "./validate"
-import { Globe, Ban, Percent, Shield, Search, Clock } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { validateResponse } from "./validate";
+import { Globe, Ban, Percent, Shield, Search, Clock } from "lucide-react";
 
 type AdGuardData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  queries: number
-  blocked: number
-  blockedPercent: number
-  parentalBlocked: number
-  safeSearchBlocked: number
-  latency: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  queries: number;
+  blocked: number;
+  blockedPercent: number;
+  parentalBlocked: number;
+  safeSearchBlocked: number;
+  latency: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function adguardToPayload(data: AdGuardData) {
   return {
@@ -54,7 +54,7 @@ function adguardToPayload(data: AdGuardData) {
         icon: Clock,
       },
     ],
-  }
+  };
 }
 
 export const adguardDefinition: ServiceDefinition<AdGuardData> = {
@@ -87,34 +87,30 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const auth = btoa(`${config.username}:${config.password}`)
-    const headers = { Authorization: `Basic ${auth}` }
+    const baseUrl = config.url.replace(/\/$/, "");
+    const auth = btoa(`${config.username}:${config.password}`);
+    const headers = { Authorization: `Basic ${auth}` };
 
-    const startTime = Date.now()
+    const startTime = Date.now();
     const statsRes = await fetchWithTimeout(`${baseUrl}/control/stats`, {
       headers,
-    })
-    const latency = Date.now() - startTime
+    });
+    const latency = Date.now() - startTime;
 
-    if (!statsRes.ok) throw new Error(`AdGuard error: ${statsRes.status}`)
+    if (!statsRes.ok) throw new Error(`AdGuard error: ${statsRes.status}`);
 
     const stats = validateResponse<{
-      num_dns_queries?: number
-      num_blocked_filtering?: number
-      num_blocked_parental?: number
-      num_blocked_safe_search?: number
-    }>(
-      await statsRes.json(),
-      ["num_dns_queries", "num_blocked_filtering"],
-      [],
-      { adapter: "adguard" }
-    )
+      num_dns_queries?: number;
+      num_blocked_filtering?: number;
+      num_blocked_parental?: number;
+      num_blocked_safe_search?: number;
+    }>(await statsRes.json(), ["num_dns_queries", "num_blocked_filtering"], [], {
+      adapter: "adguard",
+    });
 
-    const totalQueries = stats.num_dns_queries ?? 0
-    const totalBlocked = stats.num_blocked_filtering ?? 0
-    const blockedPercent =
-      totalQueries > 0 ? (totalBlocked / totalQueries) * 100 : 0
+    const totalQueries = stats.num_dns_queries ?? 0;
+    const totalBlocked = stats.num_blocked_filtering ?? 0;
+    const blockedPercent = totalQueries > 0 ? (totalBlocked / totalQueries) * 100 : 0;
 
     return {
       _status: "ok",
@@ -124,7 +120,7 @@ export const adguardDefinition: ServiceDefinition<AdGuardData> = {
       parentalBlocked: stats.num_blocked_parental ?? 0,
       safeSearchBlocked: stats.num_blocked_safe_search ?? 0,
       latency,
-    }
+    };
   },
   toPayload: adguardToPayload,
-}
+};

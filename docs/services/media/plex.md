@@ -4,10 +4,10 @@ Media server.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Plex server URL |
-| API Key (X-Plex-Token) | Password | Yes | Plex authentication token |
+| Field                  | Type     | Required | Description               |
+| ---------------------- | -------- | -------- | ------------------------- |
+| URL                    | URL      | Yes      | Plex server URL           |
+| API Key (X-Plex-Token) | Password | Yes      | Plex authentication token |
 
 ## Finding Your API Key
 

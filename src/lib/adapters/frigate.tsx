@@ -1,28 +1,28 @@
-import type { ServiceDefinition } from "./types"
-import { formatDuration, formatTimeAgo } from "@/lib/utils/format"
-import { Camera, Clock, Tag } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { formatDuration, formatTimeAgo } from "@/lib/utils/format";
+import { Camera, Clock, Tag } from "lucide-react";
 
 type FrigateEvent = {
-  id: string
-  camera: string
-  label: string
-  score: number
-  startTime: number
-  endTime?: number
-  thumbnail?: string
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
-import { parseBool } from "./validate"
+  id: string;
+  camera: string;
+  label: string;
+  score: number;
+  startTime: number;
+  endTime?: number;
+  thumbnail?: string;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
+import { parseBool } from "./validate";
 
 type FrigateData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  cameras: number
-  uptime: number
-  version: string
-  showRecentEvents?: boolean
-  recentEvents?: FrigateEvent[]
-}
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  cameras: number;
+  uptime: number;
+  version: string;
+  showRecentEvents?: boolean;
+  recentEvents?: FrigateEvent[];
+};
 
 function frigateToPayload(data: FrigateData) {
   return {
@@ -59,7 +59,7 @@ function frigateToPayload(data: FrigateData) {
             transcoding: undefined,
           }))
         : undefined,
-  }
+  };
 }
 
 export const frigateDefinition: ServiceDefinition<FrigateData> = {
@@ -102,11 +102,11 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const showRecentEvents = parseBool(config.showRecentEvents)
+    const baseUrl = config.url.replace(/\/$/, "");
+    const showRecentEvents = parseBool(config.showRecentEvents);
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-    }
+    };
 
     // If credentials provided, login first
     if (config.username && config.password) {
@@ -119,15 +119,15 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
           user: config.username,
           password: config.password,
         }),
-      })
+      });
 
       if (!loginRes.ok) {
-        throw new Error("Failed to authenticate with Frigate")
+        throw new Error("Failed to authenticate with Frigate");
       }
 
-      const cookie = loginRes.headers.get("set-cookie")
+      const cookie = loginRes.headers.get("set-cookie");
       if (cookie) {
-        headers.Cookie = cookie
+        headers.Cookie = cookie;
       }
     }
 
@@ -135,28 +135,24 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
     const [statsRes, eventsRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/api/stats`, { headers }),
       showRecentEvents
-        ? fetchWithTimeout(
-            `${baseUrl}/api/events?include_thumbnails=0&limit=5`,
-            {
-              headers,
-            }
-          )
+        ? fetchWithTimeout(`${baseUrl}/api/events?include_thumbnails=0&limit=5`, {
+            headers,
+          })
         : Promise.resolve(null),
-    ])
+    ]);
 
     if (!statsRes.ok) {
-      if (statsRes.status === 401) throw new Error("Invalid credentials")
-      if (statsRes.status === 404)
-        throw new Error("Frigate not found at this URL")
-      throw new Error(`Frigate error: ${statsRes.status}`)
+      if (statsRes.status === 401) throw new Error("Invalid credentials");
+      if (statsRes.status === 404) throw new Error("Frigate not found at this URL");
+      throw new Error(`Frigate error: ${statsRes.status}`);
     }
 
-    const statsData = await statsRes.json()
+    const statsData = await statsRes.json();
 
     // Parse recent events
-    const recentEvents: FrigateEvent[] = []
+    const recentEvents: FrigateEvent[] = [];
     if (eventsRes && eventsRes.ok) {
-      const eventsData = await eventsRes.json()
+      const eventsData = await eventsRes.json();
       if (Array.isArray(eventsData)) {
         for (const event of eventsData) {
           recentEvents.push({
@@ -167,23 +163,20 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
             startTime: event.start_time ?? 0,
             endTime: event.end_time,
             thumbnail: event.thumbnail,
-          })
+          });
         }
       }
     }
 
     return {
       _status: "ok" as const,
-      cameras:
-        statsData?.cameras !== undefined
-          ? Object.keys(statsData.cameras).length
-          : 0,
+      cameras: statsData?.cameras !== undefined ? Object.keys(statsData.cameras).length : 0,
       uptime: statsData?.service?.uptime ?? 0,
       version: statsData?.service?.version ?? "unknown",
       showRecentEvents,
       recentEvents,
-    }
+    };
   },
 
   toPayload: frigateToPayload,
-}
+};

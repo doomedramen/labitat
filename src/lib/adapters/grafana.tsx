@@ -1,15 +1,15 @@
-import type { ServiceDefinition } from "./types"
-import { LayoutDashboard, Database, Bell, AlertTriangle } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { LayoutDashboard, Database, Bell, AlertTriangle } from "lucide-react";
 
 type GrafanaData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  dashboards: number
-  datasources: number
-  totalAlerts: number
-  alertsTriggered: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  dashboards: number;
+  datasources: number;
+  totalAlerts: number;
+  alertsTriggered: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function grafanaToPayload(data: GrafanaData) {
   return {
@@ -39,7 +39,7 @@ function grafanaToPayload(data: GrafanaData) {
         icon: AlertTriangle,
       },
     ],
-  }
+  };
 }
 
 export const grafanaDefinition: ServiceDefinition<GrafanaData> = {
@@ -69,32 +69,31 @@ export const grafanaDefinition: ServiceDefinition<GrafanaData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
+    const baseUrl = config.url.replace(/\/$/, "");
     const headers = {
       Authorization: `Bearer ${config.apiKey}`,
       "Content-Type": "application/json",
-    }
+    };
 
     // Fetch stats and alerts (like Homepage)
     const [statsRes, alertsRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/api/admin/stats`, { headers }),
       fetchWithTimeout(`${baseUrl}/api/alerts`, { headers }),
-    ])
+    ]);
 
     if (!statsRes.ok) {
-      if (statsRes.status === 401) throw new Error("Invalid API key")
-      if (statsRes.status === 404)
-        throw new Error("Grafana not found at this URL")
-      throw new Error(`Grafana error: ${statsRes.status}`)
+      if (statsRes.status === 401) throw new Error("Invalid API key");
+      if (statsRes.status === 404) throw new Error("Grafana not found at this URL");
+      throw new Error(`Grafana error: ${statsRes.status}`);
     }
 
-    const statsData = await statsRes.json()
-    const alertsData = alertsRes.ok ? await alertsRes.json() : []
+    const statsData = await statsRes.json();
+    const alertsData = alertsRes.ok ? await alertsRes.json() : [];
 
     // Count alerts in alerting state (matching Homepage)
     const alertsTriggered = alertsData.filter(
-      (a: { state: string }) => a.state === "alerting"
-    ).length
+      (a: { state: string }) => a.state === "alerting",
+    ).length;
 
     return {
       _status: "ok" as const,
@@ -102,8 +101,8 @@ export const grafanaDefinition: ServiceDefinition<GrafanaData> = {
       datasources: statsData.datasources ?? 0,
       totalAlerts: statsData.alerts ?? 0,
       alertsTriggered,
-    }
+    };
   },
 
   toPayload: grafanaToPayload,
-}
+};

@@ -1,26 +1,26 @@
-"use server"
+"use server";
 
-import { revalidatePath } from "next/cache"
-import { getSession } from "@/lib/auth"
-import { db } from "@/lib/db"
-import { settings } from "@/lib/db/schema"
-import { refreshSettingCache } from "@/lib/structural-cache"
+import { revalidatePath } from "next/cache";
+import { getSession } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { settings } from "@/lib/db/schema";
+import { refreshSettingCache } from "@/lib/structural-cache";
 
 export async function updateDashboardTitle(title: string) {
-  const session = await getSession()
+  const session = await getSession();
   if (!session.loggedIn) {
-    throw new Error("Unauthorized")
+    throw new Error("Unauthorized");
   }
 
   if (!title || typeof title !== "string") {
-    throw new Error("Invalid title")
+    throw new Error("Invalid title");
   }
 
   await db
     .insert(settings)
     .values({ key: "dashboardTitle", value: title })
-    .onConflictDoUpdate({ target: settings.key, set: { value: title } })
+    .onConflictDoUpdate({ target: settings.key, set: { value: title } });
 
-  await refreshSettingCache()
-  revalidatePath("/")
+  await refreshSettingCache();
+  revalidatePath("/");
 }

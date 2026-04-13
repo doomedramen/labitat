@@ -12,15 +12,15 @@ export const PALETTES = [
   { id: "mist-green", label: "Mist Green" },
   { id: "vintage-paper", label: "Vintage Paper" },
   { id: "sakura-blossom-neon", label: "Sakura Blossom Neon" },
-]
+];
 
 function sortPalettes(palettes: typeof PALETTES) {
   return [...palettes].sort((a, b) => {
-    if (a.id === "default") return -1
-    if (b.id === "default") return 1
-    return a.label.localeCompare(b.label)
-  })
+    if (a.id === "default") return -1;
+    if (b.id === "default") return 1;
+    return a.label.localeCompare(b.label);
+  });
 }
 
-export const SORTED_PALETTES = sortPalettes(PALETTES)
-export const VALID_PALETTE_IDS = SORTED_PALETTES.map((p) => p.id)
+export const SORTED_PALETTES = sortPalettes(PALETTES);
+export const VALID_PALETTE_IDS = SORTED_PALETTES.map((p) => p.id);

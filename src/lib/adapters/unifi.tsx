@@ -1,6 +1,6 @@
-import type { ServiceDefinition } from "./types"
-import type { StatItem } from "@/components/widgets"
-import { formatDuration } from "@/lib/utils/format"
+import type { ServiceDefinition } from "./types";
+import type { StatItem } from "@/components/widgets";
+import { formatDuration } from "@/lib/utils/format";
 import {
   Users,
   UserPlus,
@@ -11,22 +11,22 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
-} from "lucide-react"
+} from "lucide-react";
 
 type UnifiData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  users: number
-  guests: number
-  devices: number
-  sites: number
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  users: number;
+  guests: number;
+  devices: number;
+  sites: number;
   // Network health stats (from stat/sites endpoint)
-  wanStatus?: "up" | "down" | null
-  lanUsers?: number
-  wlanUsers?: number
-  gatewayUptime?: string // human readable (e.g., "15.3 days")
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  wanStatus?: "up" | "down" | null;
+  lanUsers?: number;
+  wlanUsers?: number;
+  gatewayUptime?: string; // human readable (e.g., "15.3 days")
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function unifiToPayload(data: UnifiData) {
   const stats: StatItem[] = [
@@ -54,7 +54,7 @@ function unifiToPayload(data: UnifiData) {
       label: "Sites",
       icon: Globe,
     },
-  ]
+  ];
 
   // Add network health stats if available
   if (data.gatewayUptime) {
@@ -63,7 +63,7 @@ function unifiToPayload(data: UnifiData) {
       value: data.gatewayUptime,
       label: "Uptime",
       icon: Clock,
-    })
+    });
   }
 
   if (data.wanStatus !== undefined && data.wanStatus !== null) {
@@ -72,7 +72,7 @@ function unifiToPayload(data: UnifiData) {
       value: data.wanStatus === "up" ? "Up" : "Down",
       label: "WAN",
       icon: data.wanStatus === "up" ? ArrowUpRight : ArrowDownRight,
-    })
+    });
   }
 
   if (data.lanUsers !== undefined) {
@@ -81,7 +81,7 @@ function unifiToPayload(data: UnifiData) {
       value: data.lanUsers,
       label: "LAN",
       icon: EthernetPort,
-    })
+    });
   }
 
   if (data.wlanUsers !== undefined) {
@@ -90,14 +90,14 @@ function unifiToPayload(data: UnifiData) {
       value: data.wlanUsers,
       label: "WLAN",
       icon: Wifi,
-    })
+    });
   }
 
   return {
     stats,
     // Default to 4 stats: hide Users, Guests, Sites, Uptime
     defaultActiveIds: ["devices", "wan", "lan", "wlan"],
-  }
+  };
 }
 
 export const unifiDefinition: ServiceDefinition<UnifiData> = {
@@ -138,8 +138,8 @@ export const unifiDefinition: ServiceDefinition<UnifiData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const siteName = config.site ?? "default"
+    const baseUrl = config.url.replace(/\/$/, "");
+    const siteName = config.site ?? "default";
 
     // Login
     const loginRes = await fetchWithTimeout(`${baseUrl}/api/login`, {
@@ -149,60 +149,49 @@ export const unifiDefinition: ServiceDefinition<UnifiData> = {
         username: config.username,
         password: config.password,
       }),
-    })
+    });
 
-    if (!loginRes.ok) throw new Error(`UniFi login failed: ${loginRes.status}`)
+    if (!loginRes.ok) throw new Error(`UniFi login failed: ${loginRes.status}`);
 
-    const cookie = loginRes.headers.getSetCookie?.().join("; ") ?? ""
-    const headers = { Cookie: cookie }
+    const cookie = loginRes.headers.getSetCookie?.().join("; ") ?? "";
+    const headers = { Cookie: cookie };
 
     // Get site health data (matches Homepage's approach)
-    const sitesRes = await fetchWithTimeout(
-      `${baseUrl}/api/s/default/stat/sites`,
-      {
-        headers,
-      }
-    )
+    const sitesRes = await fetchWithTimeout(`${baseUrl}/api/s/default/stat/sites`, {
+      headers,
+    });
 
-    if (!sitesRes.ok) throw new Error(`UniFi error: ${sitesRes.status}`)
+    if (!sitesRes.ok) throw new Error(`UniFi error: ${sitesRes.status}`);
 
-    const sitesData = await sitesRes.json()
-    const site = sitesData.data?.find(
-      (s: { name: string }) => s.name === siteName
-    )
+    const sitesData = await sitesRes.json();
+    const site = sitesData.data?.find((s: { name: string }) => s.name === siteName);
 
     // Extract network health from site data
-    let wanStatus: "up" | "down" | null = null
-    let lanUsers: number | undefined
-    let wlanUsers: number | undefined
-    let gatewayUptime: string | undefined
+    let wanStatus: "up" | "down" | null = null;
+    let lanUsers: number | undefined;
+    let wlanUsers: number | undefined;
+    let gatewayUptime: string | undefined;
 
     if (site?.health) {
-      const wan = site.health.find(
-        (h: { subsystem: string }) => h.subsystem === "wan"
-      )
-      const lan = site.health.find(
-        (h: { subsystem: string }) => h.subsystem === "lan"
-      )
-      const wlan = site.health.find(
-        (h: { subsystem: string }) => h.subsystem === "wlan"
-      )
+      const wan = site.health.find((h: { subsystem: string }) => h.subsystem === "wan");
+      const lan = site.health.find((h: { subsystem: string }) => h.subsystem === "lan");
+      const wlan = site.health.find((h: { subsystem: string }) => h.subsystem === "wlan");
 
       if (wan && wan.status !== "unknown") {
-        wanStatus = wan.status === "ok" ? "up" : "down"
+        wanStatus = wan.status === "ok" ? "up" : "down";
       }
 
       if (lan && lan.status !== "unknown") {
-        lanUsers = lan.num_user ?? 0
+        lanUsers = lan.num_user ?? 0;
       }
 
       if (wlan && wlan.status !== "unknown") {
-        wlanUsers = wlan.num_user ?? 0
+        wlanUsers = wlan.num_user ?? 0;
       }
 
       // Gateway uptime
       if (wan?.["gw_system-stats"]?.uptime) {
-        gatewayUptime = formatDuration(wan["gw_system-stats"].uptime)
+        gatewayUptime = formatDuration(wan["gw_system-stats"].uptime);
       }
     }
 
@@ -210,16 +199,13 @@ export const unifiDefinition: ServiceDefinition<UnifiData> = {
     const [clientsRes, devicesRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/api/s/default/stat/sta/all`, { headers }),
       fetchWithTimeout(`${baseUrl}/api/s/default/rest/device`, { headers }),
-    ])
+    ]);
 
-    const clients = clientsRes.ok ? await clientsRes.json() : { data: [] }
-    const devices = devicesRes.ok ? await devicesRes.json() : { data: [] }
+    const clients = clientsRes.ok ? await clientsRes.json() : { data: [] };
+    const devices = devicesRes.ok ? await devicesRes.json() : { data: [] };
 
-    const users =
-      clients.data?.filter((c: { is_guest: boolean }) => !c.is_guest).length ??
-      0
-    const guests =
-      clients.data?.filter((c: { is_guest: boolean }) => c.is_guest).length ?? 0
+    const users = clients.data?.filter((c: { is_guest: boolean }) => !c.is_guest).length ?? 0;
+    const guests = clients.data?.filter((c: { is_guest: boolean }) => c.is_guest).length ?? 0;
 
     return {
       _status: "ok",
@@ -231,7 +217,7 @@ export const unifiDefinition: ServiceDefinition<UnifiData> = {
       lanUsers,
       wlanUsers,
       gatewayUptime,
-    }
+    };
   },
   toPayload: unifiToPayload,
-}
+};

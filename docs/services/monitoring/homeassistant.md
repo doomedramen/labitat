@@ -4,10 +4,10 @@ Home automation platform.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Home Assistant URL |
-| API Key (Long-lived token) | Password | Yes | Long-lived access token |
+| Field                      | Type     | Required | Description             |
+| -------------------------- | -------- | -------- | ----------------------- |
+| URL                        | URL      | Yes      | Home Assistant URL      |
+| API Key (Long-lived token) | Password | Yes      | Long-lived access token |
 
 ## Finding Your API Key
 

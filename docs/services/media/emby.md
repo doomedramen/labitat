@@ -4,10 +4,10 @@ Media server.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Emby server URL |
-| API Key | Password | Yes | Emby API key |
+| Field   | Type     | Required | Description     |
+| ------- | -------- | -------- | --------------- |
+| URL     | URL      | Yes      | Emby server URL |
+| API Key | Password | Yes      | Emby API key    |
 
 ## Finding Your API Key
 

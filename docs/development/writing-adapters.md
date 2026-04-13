@@ -47,18 +47,18 @@ src/lib/adapters/glances-timeseries-widget.tsx ← Widget component ("use client
 ```tsx
 // src/lib/adapters/my-service.tsx  ← NO "use client"
 
-import type { ServiceDefinition } from "./types"
-import { MyServiceWidget } from "./my-service-widget" // if client-side
+import type { ServiceDefinition } from "./types";
+import { MyServiceWidget } from "./my-service-widget"; // if client-side
 
 // ── Data shape ──────────────────────────────────────────────
 
 type MyServiceData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
   // Your widget data fields here
-  count: number
-  status: string
-}
+  count: number;
+  status: string;
+};
 
 // ── Adapter definition ──────────────────────────────────────
 
@@ -91,23 +91,23 @@ export const myServiceDefinition: ServiceDefinition<MyServiceData> = {
 
   async fetchData(config) {
     // config is Record<string, string> — all values are strings
-    const baseUrl = config.url.replace(/\/$/, "")
-    const headers = { "X-Api-Key": config.apiKey }
+    const baseUrl = config.url.replace(/\/$/, "");
+    const headers = { "X-Api-Key": config.apiKey };
 
-    const res = await fetch(`${baseUrl}/api/status`, { headers })
-    if (!res.ok) throw new Error(`Error: ${res.status}`)
+    const res = await fetch(`${baseUrl}/api/status`, { headers });
+    if (!res.ok) throw new Error(`Error: ${res.status}`);
 
-    const data = await res.json()
+    const data = await res.json();
 
     return {
       _status: "ok" as const,
       count: data.count ?? 0,
       status: data.status ?? "unknown",
-    }
+    };
   },
 
   Widget: MyServiceWidget,
-}
+};
 ```
 
 ## Client-Side Widget Template
@@ -115,23 +115,23 @@ export const myServiceDefinition: ServiceDefinition<MyServiceData> = {
 ```tsx
 // src/lib/adapters/my-service-widget.tsx  ← "use client" REQUIRED
 
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import type { MyServiceData } from "./my-service"
+import { useEffect, useState } from "react";
+import type { MyServiceData } from "./my-service";
 
 export function MyServiceWidget({ count, status }: MyServiceData) {
-  const [localState, setLocalState] = useState(count)
+  const [localState, setLocalState] = useState(count);
 
   useEffect(() => {
-    setLocalState(count)
-  }, [count])
+    setLocalState(count);
+  }, [count]);
 
   return (
     <div>
       {localState} items — {status}
     </div>
-  )
+  );
 }
 ```
 
@@ -166,12 +166,12 @@ handles this by reading boolean values from React state and injecting them into
 ```ts
 // src/lib/adapters/index.ts
 
-import { myServiceDefinition } from "./my-service"
+import { myServiceDefinition } from "./my-service";
 
 export const registry = {
   // ... existing entries
   [myServiceDefinition.id]: myServiceDefinition,
-}
+};
 ```
 
 ## Service Categories
@@ -211,9 +211,9 @@ Throw descriptive errors — they become `_statusText` in the UI:
 
 ```ts
 if (!res.ok) {
-  if (res.status === 401) throw new Error("Invalid API key")
-  if (res.status === 404) throw new Error("Service not found")
-  throw new Error(`Service error: ${res.status}`)
+  if (res.status === 401) throw new Error("Invalid API key");
+  if (res.status === 404) throw new Error("Service not found");
+  throw new Error(`Service error: ${res.status}`);
 }
 ```
 

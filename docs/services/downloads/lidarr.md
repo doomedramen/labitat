@@ -4,10 +4,10 @@ Music collection manager.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Lidarr server URL |
-| API Key | Password | Yes | Lidarr API key |
+| Field   | Type     | Required | Description       |
+| ------- | -------- | -------- | ----------------- |
+| URL     | URL      | Yes      | Lidarr server URL |
+| API Key | Password | Yes      | Lidarr API key    |
 
 ## Finding Your API Key
 

@@ -1,4 +1,4 @@
-const DEFAULT_TIMEOUT_MS = 10_000
+const DEFAULT_TIMEOUT_MS = 10_000;
 
 /**
  * Wrapper around global fetch with a request timeout.
@@ -8,43 +8,43 @@ const DEFAULT_TIMEOUT_MS = 10_000
 export async function fetchWithTimeout(
   input: RequestInfo | URL,
   init?: RequestInit,
-  timeoutMs: number = DEFAULT_TIMEOUT_MS
+  timeoutMs: number = DEFAULT_TIMEOUT_MS,
 ): Promise<Response> {
-  const controller = new AbortController()
-  let timedOut = false
+  const controller = new AbortController();
+  let timedOut = false;
   const timeoutId = setTimeout(() => {
-    timedOut = true
-    controller.abort()
-  }, timeoutMs)
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
 
-  let signal: AbortSignal
+  let signal: AbortSignal;
   if (init?.signal) {
     if (AbortSignal.any) {
-      signal = AbortSignal.any([init.signal, controller.signal])
+      signal = AbortSignal.any([init.signal, controller.signal]);
     } else {
       // Fallback: forward abort from the caller's signal to our controller
       init.signal.addEventListener("abort", () => controller.abort(), {
         once: true,
-      })
-      signal = controller.signal
+      });
+      signal = controller.signal;
     }
   } else {
-    signal = controller.signal
+    signal = controller.signal;
   }
 
   try {
-    return await globalThis.fetch(input, { ...init, signal })
+    return await globalThis.fetch(input, { ...init, signal });
   } catch (err) {
     // Handle timeout from our own AbortController
     if (timedOut && err instanceof DOMException && err.name === "AbortError") {
-      throw new DOMException("Request timed out", "TimeoutError")
+      throw new DOMException("Request timed out", "TimeoutError");
     }
     // Handle native TimeoutError (some runtimes throw this directly)
     if (err instanceof DOMException && err.name === "TimeoutError") {
-      throw new DOMException("Request timed out", "TimeoutError")
+      throw new DOMException("Request timed out", "TimeoutError");
     }
-    throw err
+    throw err;
   } finally {
-    clearTimeout(timeoutId)
+    clearTimeout(timeoutId);
   }
 }

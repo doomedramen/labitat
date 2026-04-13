@@ -9,12 +9,12 @@ export function BlockLinkPropagation({
   children,
   className,
 }: {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }) {
   return (
     <div className={className} onClick={(e) => e.preventDefault()}>
       {children}
     </div>
-  )
+  );
 }

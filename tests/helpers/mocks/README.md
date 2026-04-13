@@ -35,9 +35,9 @@ Comprehensive mock data generators and request handlers for all service adapters
 #### Basic Usage
 
 ```typescript
-import { describe, it, expect } from "vitest"
-import { radarrDefinition } from "@/lib/adapters/radarr"
-import { mocks, withMockAdapter } from "@/tests/helpers/mocks"
+import { describe, it, expect } from "vitest";
+import { radarrDefinition } from "@/lib/adapters/radarr";
+import { mocks, withMockAdapter } from "@/tests/helpers/mocks";
 
 describe("radarr adapter", () => {
   it("fetches data successfully", async () => {
@@ -45,57 +45,54 @@ describe("radarr adapter", () => {
       const result = await radarrDefinition.fetchData!({
         url: "https://radarr.example.com",
         apiKey: "test-api-key",
-      })
+      });
 
-      expect(result._status).toBe("ok")
-      expect(result.queued).toBe(5)
-      expect(result.movies).toBe(10)
-    })
-  })
+      expect(result._status).toBe("ok");
+      expect(result.queued).toBe(5);
+      expect(result.movies).toBe(10);
+    });
+  });
 
   it("handles empty state", async () => {
     await withMockAdapter(mocks.radarr.empty(), async () => {
       const result = await radarrDefinition.fetchData!({
         url: "https://radarr.example.com",
         apiKey: "test-api-key",
-      })
+      });
 
-      expect(result.queued).toBe(0)
-      expect(result.movies).toBe(0)
-    })
-  })
+      expect(result.queued).toBe(0);
+      expect(result.movies).toBe(0);
+    });
+  });
 
   it("handles error responses", async () => {
-    await withMockAdapter(
-      mocks.radarr.error("https://radarr.example.com", 500),
-      async () => {
-        await expect(
-          radarrDefinition.fetchData!({
-            url: "https://radarr.example.com",
-            apiKey: "bad-key",
-          })
-        ).rejects.toThrow("Radarr error: 500")
-      }
-    )
-  })
-})
+    await withMockAdapter(mocks.radarr.error("https://radarr.example.com", 500), async () => {
+      await expect(
+        radarrDefinition.fetchData!({
+          url: "https://radarr.example.com",
+          apiKey: "bad-key",
+        }),
+      ).rejects.toThrow("Radarr error: 500");
+    });
+  });
+});
 ```
 
 #### Using Mock Adapter Instance
 
 ```typescript
-import { createMockAdapter, mocks } from "@/tests/helpers/mocks"
+import { createMockAdapter, mocks } from "@/tests/helpers/mocks";
 
 describe("radarr with manual mock", () => {
-  let mockAdapter: ReturnType<typeof createMockAdapter>
+  let mockAdapter: ReturnType<typeof createMockAdapter>;
 
   beforeEach(() => {
-    mockAdapter = createMockAdapter()
-  })
+    mockAdapter = createMockAdapter();
+  });
 
   afterEach(() => {
-    mockAdapter.teardown()
-  })
+    mockAdapter.teardown();
+  });
 
   it("fetches active downloads", async () => {
     mockAdapter.setup(
@@ -106,54 +103,52 @@ describe("radarr with manual mock", () => {
             title: "The Matrix (1999)",
             size: 2147483648,
             sizeleft: 1073741824,
-            estimatedCompletionTime: new Date(
-              Date.now() + 45 * 60 * 1000
-            ).toISOString(),
+            estimatedCompletionTime: new Date(Date.now() + 45 * 60 * 1000).toISOString(),
             trackedDownloadState: "downloading",
           },
         ],
-      })
-    )
+      }),
+    );
 
     const result = await radarrDefinition.fetchData!({
       url: "https://radarr.example.com",
       apiKey: "test-key",
       showActiveDownloads: "true",
-    })
+    });
 
-    expect(result.downloads).toHaveLength(1)
-    expect(result.downloads![0].progress).toBe(50)
-  })
-})
+    expect(result.downloads).toHaveLength(1);
+    expect(result.downloads![0].progress).toBe(50);
+  });
+});
 ```
 
 ### E2E Tests (Playwright)
 
 ```typescript
-import { test, expect } from "@playwright/test"
-import { createPlaywrightMockAdapter, mocks } from "@/tests/helpers/mocks"
+import { test, expect } from "@playwright/test";
+import { createPlaywrightMockAdapter, mocks } from "@/tests/helpers/mocks";
 
 test("dashboard loads with radarr widget", async ({ page }) => {
-  const mockAdapter = createPlaywrightMockAdapter(page)
-  mockAdapter.setup(...mocks.radarr.success("https://radarr.test"))
+  const mockAdapter = createPlaywrightMockAdapter(page);
+  mockAdapter.setup(...mocks.radarr.success("https://radarr.test"));
 
   // Navigate to dashboard - radarr widget will use mocked API
-  await page.goto("/dashboard")
+  await page.goto("/dashboard");
 
   // Verify widget appears with mocked data
-  await expect(page.getByText("Queued")).toBeVisible()
-  await expect(page.getByText("5")).toBeVisible()
-})
+  await expect(page.getByText("Queued")).toBeVisible();
+  await expect(page.getByText("5")).toBeVisible();
+});
 
 test("shows error state when API fails", async ({ page }) => {
-  const mockAdapter = createPlaywrightMockAdapter(page)
-  mockAdapter.setup(...mocks.radarr.error("https://radarr.test", 500))
+  const mockAdapter = createPlaywrightMockAdapter(page);
+  mockAdapter.setup(...mocks.radarr.error("https://radarr.test", 500));
 
-  await page.goto("/dashboard")
+  await page.goto("/dashboard");
 
   // Verify error state is shown
-  await expect(page.getByText(/error/i)).toBeVisible()
-})
+  await expect(page.getByText(/error/i)).toBeVisible();
+});
 ```
 
 ---
@@ -165,100 +160,93 @@ test("shows error state when API fails", async ({ page }) => {
 ```typescript
 type MockResponse = {
   /** URL pattern to match (string or regex) */
-  urlPattern: string | RegExp
+  urlPattern: string | RegExp;
   /** HTTP status code */
-  status?: number
+  status?: number;
   /** Response body (will be JSON stringified if object) */
-  body: unknown
+  body: unknown;
   /** Response headers */
-  headers?: Record<string, string>
+  headers?: Record<string, string>;
   /** Simulate network error instead of returning a response */
-  networkError?: boolean
-}
+  networkError?: boolean;
+};
 ```
 
 ### URL Pattern Matchers
 
 ```typescript
-import { urlPatterns } from "@/tests/helpers/mocks"
+import { urlPatterns } from "@/tests/helpers/mocks";
 
 // Match base URL with optional trailing slash
-urlPatterns.base("https://radarr.example.com")
+urlPatterns.base("https://radarr.example.com");
 // => /^https:\/\/radarr\.example\.com\/?/
 
 // Match API endpoint with path segments
-urlPatterns.api("https://radarr.example.com", "/api/v3/queue")
+urlPatterns.api("https://radarr.example.com", "/api/v3/queue");
 // => /^https:\/\/radarr\.example\.com\/api\/v3\/queue/
 
 // Match with query parameters (partial match)
-urlPatterns.withQuery("https://api.example.com", "/data", { key: "value" })
+urlPatterns.withQuery("https://api.example.com", "/data", { key: "value" });
 // => /https:\/\/api\.example\.com\/data.*key=value/
 
 // Match any URL containing a substring
-urlPatterns.contains("/api/v3/")
+urlPatterns.contains("/api/v3/");
 // => /\/api\/v3\//
 
 // Match exact URL
-urlPatterns.exact("https://example.com/api")
+urlPatterns.exact("https://example.com/api");
 // => /^https:\/\/example\.com\/api$/
 ```
 
 ### Response Builders
 
 ```typescript
-import {
-  successResponse,
-  errorResponse,
-  networkErrorResponse,
-} from "@/tests/helpers/mocks"
+import { successResponse, errorResponse, networkErrorResponse } from "@/tests/helpers/mocks";
 
 // Successful JSON response
-successResponse(
-  urlPatterns.contains("/api/v3/queue"),
-  { totalRecords: 5, records: [] },
-  200,
-  { "Content-Type": "application/json" }
-)
+successResponse(urlPatterns.contains("/api/v3/queue"), { totalRecords: 5, records: [] }, 200, {
+  "Content-Type": "application/json",
+});
 
 // Error response
 errorResponse(urlPatterns.contains("/api/v3/queue"), 500, {
   error: "Internal server error",
-})
+});
 
 // Network error (simulates fetch rejection)
-networkErrorResponse(urlPatterns.contains("/api/v3/queue"))
+networkErrorResponse(urlPatterns.contains("/api/v3/queue"));
 ```
 
 ### Vitest Mock Adapter
 
 ```typescript
-import { createMockAdapter, withMockAdapter } from "@/tests/helpers/mocks"
+import { createMockAdapter, withMockAdapter } from "@/tests/helpers/mocks";
 
 // Manual setup/teardown
-const mockAdapter = createMockAdapter()
-mockAdapter.setup(...responses)
+const mockAdapter = createMockAdapter();
+mockAdapter.setup(...responses);
 // ... run tests
-mockAdapter.teardown()
+mockAdapter.teardown();
 
 // Automatic setup/teardown with wrapper
 await withMockAdapter(responses, async () => {
   // ... run tests
-})
+});
 ```
 
 ### Playwright Mock Adapter
 
 ```typescript
-import { createPlaywrightMockAdapter } from "@/tests/helpers/mocks"
+import { createPlaywrightMockAdapter } from "@/tests/helpers/mocks";
 
 test("example test", async ({ page }) => {
-  const mockAdapter = createPlaywrightMockAdapter(page)
-  mockAdapter.setup(...responses)
+  const mockAdapter = createPlaywrightMockAdapter(page);
+  mockAdapter.setup(...responses);
 
   // ... run test
 
-  mockAdapter.teardown() // Optional: auto-cleaned on test end
-})
+  mockAdapter.teardown(); // Optional: auto-cleaned on test end
+});
 ```
 
 ---
@@ -301,7 +289,7 @@ mocks.plex.success("https://plex.example.com", {
       state: "playing",
     },
   ],
-})
+});
 ```
 
 #### Jellyfin / Emby
@@ -324,7 +312,7 @@ mocks.jellyfin.success("https://jellyfin.example.com", {
       userName: "Martin",
     },
   ],
-})
+});
 ```
 
 #### Tautulli
@@ -343,7 +331,7 @@ mocks.tautulli.success("https://tautulli.example.com", {
       state: "playing",
     },
   ],
-})
+});
 ```
 
 ### Download Managers
@@ -361,13 +349,11 @@ mocks.radarr.success("https://radarr.example.com", {
       title: "The Matrix (1999)",
       size: 2147483648,
       sizeleft: 1073741824,
-      estimatedCompletionTime: new Date(
-        Date.now() + 45 * 60 * 1000
-      ).toISOString(),
+      estimatedCompletionTime: new Date(Date.now() + 45 * 60 * 1000).toISOString(),
       trackedDownloadState: "downloading",
     },
   ],
-})
+});
 ```
 
 #### Sonarr
@@ -388,7 +374,7 @@ mocks.sonarr.success("https://sonarr.example.com", {
       trackedDownloadState: "downloading",
     },
   ],
-})
+});
 ```
 
 #### SABnzbd
@@ -407,7 +393,7 @@ mocks.sabnzbd.success("https://sabnzbd.example.com", {
       mb: "4096",
     },
   ],
-})
+});
 ```
 
 #### qBittorrent
@@ -426,7 +412,7 @@ mocks.qbittorrent.success("https://qbittorrent.example.com", {
       size: 4294967296,
     },
   ],
-})
+});
 ```
 
 ### Networking & Security
@@ -439,7 +425,7 @@ mocks.adguard.success("https://adguard.example.com", {
   blocked: 2345,
   parentalBlocked: 120,
   safeSearchBlocked: 45,
-})
+});
 ```
 
 #### Pi-hole
@@ -450,7 +436,7 @@ mocks.pihole.success("https://pihole.example.com", {
   blocked: 1234,
   percentage: 14.07,
   domainsBeingBlocked: 125432,
-})
+});
 ```
 
 #### UniFi
@@ -462,7 +448,7 @@ mocks.unifi.success("https://unifi.example.com", {
   wlanBytes: 268435456,
   userCount: 25,
   guestCount: 5,
-})
+});
 ```
 
 ### Infrastructure
@@ -492,7 +478,7 @@ mocks.proxmox.success("https://proxmox.example.com", {
       maxmem: 1073741824,
     },
   ],
-})
+});
 ```
 
 #### Portainer
@@ -503,7 +489,7 @@ mocks.portainer.success("https://portainer.example.com", {
   stacks: 3,
   containers: 10,
   runningContainers: 8,
-})
+});
 ```
 
 #### Grafana
@@ -513,7 +499,7 @@ mocks.grafana.success("https://grafana.example.com", {
   dashboards: 15,
   alerts: 5,
   alertsFiring: 2,
-})
+});
 ```
 
 ### Monitoring & Weather
@@ -531,7 +517,7 @@ mocks.glances.success("https://glances.example.com", {
   diskWriteRate: 524288,
   networkRx: 1073741824,
   networkTx: 536870912,
-})
+});
 ```
 
 #### OpenMeteo
@@ -544,7 +530,7 @@ mocks.openmeteo.success({
   humidity: 65,
   windSpeed: 12.3,
   weatherCode: 2, // Partly cloudy
-})
+});
 ```
 
 ### Other Services
@@ -564,7 +550,7 @@ mocks.immich.success("https://immich.example.com", {
       usage: 53687091200,
     },
   ],
-})
+});
 ```
 
 #### Frigate
@@ -583,7 +569,7 @@ mocks.frigate.success("https://frigate.example.com", {
       detectionEnabled: true,
     },
   ],
-})
+});
 ```
 
 ---
@@ -612,7 +598,7 @@ mocks.radarr.success("https://radarr.example.com", {
       trackedDownloadState: "failedpending",
     },
   ],
-})
+});
 ```
 
 ### Multiple Adapters
@@ -620,9 +606,9 @@ mocks.radarr.success("https://radarr.example.com", {
 Setup mocks for multiple adapters in a single test:
 
 ```typescript
-import { createMockAdapter, setupMultipleMocks } from "@/tests/helpers/mocks"
+import { createMockAdapter, setupMultipleMocks } from "@/tests/helpers/mocks";
 
-const mockAdapter = createMockAdapter()
+const mockAdapter = createMockAdapter();
 
 setupMultipleMocks(mockAdapter, [
   {
@@ -643,7 +629,7 @@ setupMultipleMocks(mockAdapter, [
     baseUrl: "https://plex.test",
     options: { streams: 2 },
   },
-])
+]);
 ```
 
 ### Error Scenarios
@@ -652,30 +638,19 @@ Test various error conditions:
 
 ```typescript
 // HTTP 500 error
-await withMockAdapter(
-  mocks.radarr.error("https://radarr.example.com", 500),
-  async () => {
-    await expect(radarrDefinition.fetchData!(config)).rejects.toThrow(
-      "Radarr error: 500"
-    )
-  }
-)
+await withMockAdapter(mocks.radarr.error("https://radarr.example.com", 500), async () => {
+  await expect(radarrDefinition.fetchData!(config)).rejects.toThrow("Radarr error: 500");
+});
 
 // Unauthorized (401)
-await withMockAdapter(
-  mocks.radarr.unauthorized("https://radarr.example.com"),
-  async () => {
-    await expect(radarrDefinition.fetchData!(config)).rejects.toThrow()
-  }
-)
+await withMockAdapter(mocks.radarr.unauthorized("https://radarr.example.com"), async () => {
+  await expect(radarrDefinition.fetchData!(config)).rejects.toThrow();
+});
 
 // Network error (timeout, refused, DNS failure)
-await withMockAdapter(
-  mocks.genericPing.networkError("https://example.com"),
-  async () => {
-    await expect(someFetchFunction()).rejects.toThrow("Network request failed")
-  }
-)
+await withMockAdapter(mocks.genericPing.networkError("https://example.com"), async () => {
+  await expect(someFetchFunction()).rejects.toThrow("Network request failed");
+});
 ```
 
 ### Recording Requests
@@ -683,23 +658,23 @@ await withMockAdapter(
 Track which requests were made during a test:
 
 ```typescript
-const mockAdapter = createMockAdapter()
-mockAdapter.setup(...mocks.radarr.success())
+const mockAdapter = createMockAdapter();
+mockAdapter.setup(...mocks.radarr.success());
 
 // Run your test
-await radarrDefinition.fetchData!(config)
+await radarrDefinition.fetchData!(config);
 
 // Inspect recorded requests
-const requests = mockAdapter.getRequests()
-expect(requests).toHaveLength(4)
-expect(requests[0].url).toContain("/api/v3/queue")
-expect(requests[0].method).toBe("GET")
+const requests = mockAdapter.getRequests();
+expect(requests).toHaveLength(4);
+expect(requests[0].url).toContain("/api/v3/queue");
+expect(requests[0].method).toBe("GET");
 expect(requests[0].headers).toEqual({
   "X-Api-Key": "test-key",
-})
+});
 
 // Clear requests for next test phase
-mockAdapter.clearRequests()
+mockAdapter.clearRequests();
 ```
 
 ---
@@ -770,28 +745,28 @@ it("fetches data", async () => {
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ totalRecords: 5, records: [] }),
-      })
+      });
     }
     // ... more manual URL matching
-  })
-  vi.stubGlobal("fetch", mockFetch)
+  });
+  vi.stubGlobal("fetch", mockFetch);
 
-  const result = await radarrDefinition.fetchData!(config)
+  const result = await radarrDefinition.fetchData!(config);
   // ... assertions
-})
+});
 ```
 
 **After:**
 
 ```typescript
-import { withMockAdapter, mocks } from "@/tests/helpers/mocks"
+import { withMockAdapter, mocks } from "@/tests/helpers/mocks";
 
 it("fetches data", async () => {
   await withMockAdapter(mocks.radarr.success(), async () => {
-    const result = await radarrDefinition.fetchData!(config)
-    expect(result.queued).toBe(5)
-  })
-})
+    const result = await radarrDefinition.fetchData!(config);
+    expect(result.queued).toBe(5);
+  });
+});
 ```
 
 Benefits:

@@ -1,20 +1,20 @@
-import type { ServiceDefinition } from "./types"
-import type { DownloadItem } from "@/components/widgets"
-import { formatBytes, formatDuration } from "@/lib/utils/format"
-import { ArrowDown, ArrowUp, Download, Upload } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import type { DownloadItem } from "@/components/widgets";
+import { formatBytes, formatDuration } from "@/lib/utils/format";
+import { ArrowDown, ArrowUp, Download, Upload } from "lucide-react";
 
 type TransmissionData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  leech: number
-  download: number
-  seed: number
-  upload: number
-  showDownloads?: boolean
-  downloads?: DownloadItem[]
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
-import { parseBool } from "./validate"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  leech: number;
+  download: number;
+  seed: number;
+  upload: number;
+  showDownloads?: boolean;
+  downloads?: DownloadItem[];
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
+import { parseBool } from "./validate";
 
 function transmissionToPayload(data: TransmissionData) {
   return {
@@ -44,9 +44,8 @@ function transmissionToPayload(data: TransmissionData) {
         icon: ArrowUp,
       },
     ],
-    downloads:
-      data.showDownloads && data.downloads?.length ? data.downloads : undefined,
-  }
+    downloads: data.showDownloads && data.downloads?.length ? data.downloads : undefined,
+  };
 }
 
 export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
@@ -96,17 +95,15 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const rpcUrl = config.rpcUrl ?? "/transmission/"
-    const rpcEndpoint = `${baseUrl}${rpcUrl}rpc`
-    const showDownloads = parseBool(config.showDownloads, true)
+    const baseUrl = config.url.replace(/\/$/, "");
+    const rpcUrl = config.rpcUrl ?? "/transmission/";
+    const rpcEndpoint = `${baseUrl}${rpcUrl}rpc`;
+    const showDownloads = parseBool(config.showDownloads, true);
 
-    const auth = Buffer.from(`${config.username}:${config.password}`).toString(
-      "base64"
-    )
+    const auth = Buffer.from(`${config.username}:${config.password}`).toString("base64");
 
     // First request to get CSRF token (Transmission returns 409 with token)
-    let csrfToken = ""
+    let csrfToken = "";
     try {
       const initRes = await fetchWithTimeout(rpcEndpoint, {
         method: "POST",
@@ -128,10 +125,10 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
             ],
           },
         }),
-      })
+      });
 
       // Transmission returns 409 with the CSRF token in header
-      csrfToken = initRes.headers.get("X-Transmission-Session-Id") ?? ""
+      csrfToken = initRes.headers.get("X-Transmission-Session-Id") ?? "";
     } catch {
       // Ignore initial error, we'll retry with token
     }
@@ -158,41 +155,34 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
           ],
         },
       }),
-    })
+    });
 
     if (!res.ok) {
-      if (res.status === 401) throw new Error("Invalid username or password")
-      if (res.status === 404)
-        throw new Error("Transmission not found at this URL")
-      throw new Error(`Transmission error: ${res.status}`)
+      if (res.status === 401) throw new Error("Invalid username or password");
+      if (res.status === 404) throw new Error("Transmission not found at this URL");
+      throw new Error(`Transmission error: ${res.status}`);
     }
 
-    const data = await res.json()
-    const torrents = data.arguments?.torrents ?? []
+    const data = await res.json();
+    const torrents = data.arguments?.torrents ?? [];
 
     // Calculate stats (matching Homepage logic)
     const rateDl = torrents.reduce(
       (acc: number, t: { rateDownload: number }) => acc + (t.rateDownload ?? 0),
-      0
-    )
+      0,
+    );
     const rateUl = torrents.reduce(
       (acc: number, t: { rateUpload: number }) => acc + (t.rateUpload ?? 0),
-      0
-    )
-    const completed = torrents.filter(
-      (t: { percentDone: number }) => t.percentDone === 1
-    ).length
-    const leech = torrents.length - completed
+      0,
+    );
+    const completed = torrents.filter((t: { percentDone: number }) => t.percentDone === 1).length;
+    const leech = torrents.length - completed;
 
     // Build download list for active torrents (not completed, not stalled)
     const downloads: DownloadItem[] = torrents
-      .filter(
-        (t: { percentDone: number; left: number }) =>
-          t.percentDone < 1 && t.left > 0
-      )
+      .filter((t: { percentDone: number; left: number }) => t.percentDone < 1 && t.left > 0)
       .sort(
-        (a: { percentDone: number }, b: { percentDone: number }) =>
-          a.percentDone - b.percentDone
+        (a: { percentDone: number }, b: { percentDone: number }) => a.percentDone - b.percentDone,
       )
       .map((t: Record<string, unknown>) => ({
         title: (t.name as string) ?? "Unknown",
@@ -200,7 +190,7 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
         timeLeft: formatDuration((t.eta as number) ?? -1),
         activity: "downloading",
         size: formatBytes((t.sizeWhenDone as number) ?? 0),
-      }))
+      }));
 
     return {
       _status: "ok" as const,
@@ -210,8 +200,8 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       upload: rateUl,
       showDownloads,
       downloads: showDownloads ? downloads : [],
-    }
+    };
   },
 
   toPayload: transmissionToPayload,
-}
+};

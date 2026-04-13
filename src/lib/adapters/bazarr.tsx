@@ -1,13 +1,13 @@
-import type { ServiceDefinition } from "./types"
-import { Film, Tv } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Film, Tv } from "lucide-react";
 
 type BazarrData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  missingMovies: number
-  missingEpisodes: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  missingMovies: number;
+  missingEpisodes: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function bazarrToPayload(data: BazarrData) {
   return {
@@ -25,7 +25,7 @@ function bazarrToPayload(data: BazarrData) {
         icon: Tv,
       },
     ],
-  }
+  };
 }
 
 export const bazarrDefinition: ServiceDefinition<BazarrData> = {
@@ -51,20 +51,20 @@ export const bazarrDefinition: ServiceDefinition<BazarrData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const headers = { "X-Api-Key": config.apiKey }
+    const baseUrl = config.url.replace(/\/$/, "");
+    const headers = { "X-Api-Key": config.apiKey };
 
-    const res = await fetchWithTimeout(`${baseUrl}/api/badges`, { headers })
+    const res = await fetchWithTimeout(`${baseUrl}/api/badges`, { headers });
 
-    if (!res.ok) throw new Error(`Bazarr error: ${res.status}`)
+    if (!res.ok) throw new Error(`Bazarr error: ${res.status}`);
 
-    const data = await res.json()
+    const data = await res.json();
 
     return {
       _status: "ok",
       missingMovies: data.movies ?? 0,
       missingEpisodes: data.episodes ?? 0,
-    }
+    };
   },
   toPayload: bazarrToPayload,
-}
+};

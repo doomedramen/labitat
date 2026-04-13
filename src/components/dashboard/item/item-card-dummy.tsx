@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * Simplified ItemCard for edit mode.
@@ -6,49 +6,37 @@
  * Adds drag handle and edit/delete buttons.
  */
 
-import { useSortable } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
-import { cn } from "@/lib/utils"
-import { getService } from "@/lib/adapters"
-import type { ItemWithCache } from "@/lib/types"
-import { Pencil, Trash2, GripVertical } from "lucide-react"
-import { useState } from "react"
-import { ConfirmDialog } from "@/components/confirm-dialog"
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { cn } from "@/lib/utils";
+import { getService } from "@/lib/adapters";
+import type { ItemWithCache } from "@/lib/types";
+import { Pencil, Trash2, GripVertical } from "lucide-react";
+import { useState } from "react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface ItemCardDummyProps {
-  item: ItemWithCache
-  editMode: boolean
-  onEdit: (item: ItemWithCache) => void
-  onDeleted: (itemId: string) => void
+  item: ItemWithCache;
+  editMode: boolean;
+  onEdit: (item: ItemWithCache) => void;
+  onDeleted: (itemId: string) => void;
 }
 
-export function ItemCardDummy({
-  item,
-  editMode,
-  onEdit,
-  onDeleted,
-}: ItemCardDummyProps) {
-  const serviceDef = item.serviceType ? getService(item.serviceType) : null
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDummyProps) {
+  const serviceDef = item.serviceType ? getService(item.serviceType) : null;
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
     data: { type: "item" },
     disabled: !editMode,
-  })
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.35 : undefined,
-  }
+  };
 
   return (
     <>
@@ -57,7 +45,7 @@ export function ItemCardDummy({
         style={style}
         className={cn(
           "group/item relative overflow-hidden rounded-xl border-2 border-ring/50 bg-card",
-          isDragging && "rotate-2 shadow-2xl ring-2 ring-ring/20"
+          isDragging && "rotate-2 shadow-2xl ring-2 ring-ring/20",
         )}
         data-testid="item-card"
         data-item-id={item.id}
@@ -97,8 +85,7 @@ export function ItemCardDummy({
             {serviceDef && <span>{serviceDef.name}</span>}
             {item.href && <span className="truncate">{item.href}</span>}
             <span>
-              {(item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000) /
-                1000}
+              {(item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000) / 1000}
               s poll
             </span>
           </div>
@@ -111,10 +98,10 @@ export function ItemCardDummy({
         title="Delete item"
         description={`Are you sure you want to delete "${item.label}"? This cannot be undone.`}
         onConfirm={() => {
-          onDeleted(item.id)
-          setDeleteConfirmOpen(false)
+          onDeleted(item.id);
+          setDeleteConfirmOpen(false);
         }}
       />
     </>
-  )
+  );
 }

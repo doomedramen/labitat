@@ -1,15 +1,15 @@
-import type { ServiceDefinition } from "./types"
-import { validateResponse, validateArrayResponse } from "./validate"
-import { Search, Download, List } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { validateResponse, validateArrayResponse } from "./validate";
+import { Search, Download, List } from "lucide-react";
 
 type ProwlarrData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  queries: number
-  grabs: number
-  indexers: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  queries: number;
+  grabs: number;
+  indexers: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function prowlarrToPayload(data: ProwlarrData) {
   return {
@@ -33,7 +33,7 @@ function prowlarrToPayload(data: ProwlarrData) {
         icon: List,
       },
     ],
-  }
+  };
 }
 
 export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
@@ -59,52 +59,46 @@ export const prowlarrDefinition: ServiceDefinition<ProwlarrData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const headers = { "X-Api-Key": config.apiKey }
+    const baseUrl = config.url.replace(/\/$/, "");
+    const headers = { "X-Api-Key": config.apiKey };
 
     const [indexerRes, statsRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/api/v1/indexer`, { headers }),
       fetchWithTimeout(`${baseUrl}/api/v1/indexerstats`, { headers }),
-    ])
+    ]);
 
-    if (!indexerRes.ok) throw new Error(`Prowlarr error: ${indexerRes.status}`)
+    if (!indexerRes.ok) throw new Error(`Prowlarr error: ${indexerRes.status}`);
 
     const indexers = validateArrayResponse(await indexerRes.json(), {
       adapter: "prowlarr",
-    })
+    });
     const stats = statsRes.ok
       ? validateResponse<{
           indexers?: Array<{
-            numberOfQueries?: number
-            numberOfGrabs?: number
-          }>
+            numberOfQueries?: number;
+            numberOfGrabs?: number;
+          }>;
         }>(await statsRes.json(), [], [{ path: "indexers", type: "array" }], {
           adapter: "prowlarr",
           optional: true,
         })
-      : {}
+      : {};
 
     // indexerstats returns { indexers: [...], userAgents: [...] }
     // each indexer has numberOfQueries and numberOfGrabs
     const indexerStats: Array<{
-      numberOfQueries?: number
-      numberOfGrabs?: number
-    }> = stats.indexers ?? []
-    const queries = indexerStats.reduce(
-      (sum, i) => sum + (i.numberOfQueries ?? 0),
-      0
-    )
-    const grabs = indexerStats.reduce(
-      (sum, i) => sum + (i.numberOfGrabs ?? 0),
-      0
-    )
+      numberOfQueries?: number;
+      numberOfGrabs?: number;
+    }> = stats.indexers ?? [];
+    const queries = indexerStats.reduce((sum, i) => sum + (i.numberOfQueries ?? 0), 0);
+    const grabs = indexerStats.reduce((sum, i) => sum + (i.numberOfGrabs ?? 0), 0);
 
     return {
       _status: "ok",
       queries,
       grabs,
       indexers: Array.isArray(indexers) ? indexers.length : 0,
-    }
+    };
   },
   toPayload: prowlarrToPayload,
-}
+};

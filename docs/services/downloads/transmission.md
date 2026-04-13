@@ -4,11 +4,11 @@ BitTorrent client.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Transmission RPC URL |
-| Username | Text | No | Transmission username |
-| Password | Password | No | Transmission password |
+| Field    | Type     | Required | Description           |
+| -------- | -------- | -------- | --------------------- |
+| URL      | URL      | Yes      | Transmission RPC URL  |
+| Username | Text     | No       | Transmission username |
+| Password | Password | No       | Transmission password |
 
 ## Setup
 

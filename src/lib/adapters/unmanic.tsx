@@ -1,16 +1,16 @@
-import type { ServiceDefinition } from "./types"
-import { Loader, List, CheckCircle, Trophy, Users } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Loader, List, CheckCircle, Trophy, Users } from "lucide-react";
 
 type UnmanicData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  activeWorkers: number
-  totalWorkers: number
-  queuedItems: number
-  completedToday: number
-  totalCompleted: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  activeWorkers: number;
+  totalWorkers: number;
+  queuedItems: number;
+  completedToday: number;
+  totalCompleted: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function unmanicToPayload(data: UnmanicData) {
   return {
@@ -46,7 +46,7 @@ function unmanicToPayload(data: UnmanicData) {
         icon: Trophy,
       },
     ],
-  }
+  };
 }
 
 export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
@@ -72,12 +72,12 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
+    const baseUrl = config.url.replace(/\/$/, "");
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-    }
+    };
     if (config.apiKey) {
-      headers["X-API-Key"] = config.apiKey
+      headers["X-API-Key"] = config.apiKey;
     }
 
     const [workersRes, pendingRes] = await Promise.all([
@@ -87,22 +87,18 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
         headers,
         body: JSON.stringify({}),
       }),
-    ])
+    ]);
 
     if (!workersRes.ok || !pendingRes.ok) {
-      throw new Error(
-        `Unmanic error: workers=${workersRes.status}, pending=${pendingRes.status}`
-      )
+      throw new Error(`Unmanic error: workers=${workersRes.status}, pending=${pendingRes.status}`);
     }
 
-    const workersData = await workersRes.json()
-    const pendingData = await pendingRes.json()
+    const workersData = await workersRes.json();
+    const pendingData = await pendingRes.json();
 
-    const workersStatus = workersData.workers_status ?? []
-    const totalWorkers = workersStatus.length
-    const activeWorkers = workersStatus.filter(
-      (w: { idle?: boolean }) => !w.idle
-    ).length
+    const workersStatus = workersData.workers_status ?? [];
+    const totalWorkers = workersStatus.length;
+    const activeWorkers = workersStatus.filter((w: { idle?: boolean }) => !w.idle).length;
 
     return {
       _status: "ok",
@@ -111,7 +107,7 @@ export const unmanicDefinition: ServiceDefinition<UnmanicData> = {
       queuedItems: pendingData.recordsTotal ?? 0,
       completedToday: 0,
       totalCompleted: 0,
-    }
+    };
   },
   toPayload: unmanicToPayload,
-}
+};

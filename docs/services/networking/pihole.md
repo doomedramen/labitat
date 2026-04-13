@@ -4,10 +4,10 @@ Network-wide ad and tracker blocking.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Pi-hole admin URL |
-| API Key (Password) | Password | Yes | Pi-hole web password |
+| Field              | Type     | Required | Description          |
+| ------------------ | -------- | -------- | -------------------- |
+| URL                | URL      | Yes      | Pi-hole admin URL    |
+| API Key (Password) | Password | Yes      | Pi-hole web password |
 
 ## Widget Displays
 

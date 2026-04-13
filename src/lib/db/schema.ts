@@ -1,5 +1,5 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
-import { sql, relations } from "drizzle-orm"
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { sql, relations } from "drizzle-orm";
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
@@ -9,7 +9,7 @@ export const users = sqliteTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("admin"),
   createdAt: text("created_at").default(sql`(current_timestamp)`),
-})
+});
 
 // ── Groups ────────────────────────────────────────────────────────────────────
 
@@ -18,7 +18,7 @@ export const groups = sqliteTable("groups", {
   name: text("name").notNull(),
   order: integer("order").notNull(),
   createdAt: text("created_at").default(sql`(current_timestamp)`),
-})
+});
 
 // ── Items ─────────────────────────────────────────────────────────────────────
 
@@ -46,15 +46,15 @@ export const items = sqliteTable(
     statCardOrder: text("stat_card_order", { mode: "json" }),
     createdAt: text("created_at").default(sql`(current_timestamp)`),
   },
-  (table) => [index("items_group_id_idx").on(table.groupId)]
-)
+  (table) => [index("items_group_id_idx").on(table.groupId)],
+);
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
-})
+});
 
 // ── Widget Cache ──────────────────────────────────────────────────────────────
 
@@ -63,14 +63,14 @@ export const widgetCache = sqliteTable("widget_cache", {
   widgetData: text("widget_data", { mode: "json" }),
   pingStatus: text("ping_status", { mode: "json" }),
   updatedAt: text("updated_at").default(sql`(current_timestamp)`),
-})
+});
 
 // ── Relations ─────────────────────────────────────────────────────────────────
 
 export const groupsRelations = relations(groups, ({ many }) => ({
   items: many(items),
-}))
+}));
 
 export const itemsRelations = relations(items, ({ one }) => ({
   group: one(groups, { fields: [items.groupId], references: [groups.id] }),
-}))
+}));

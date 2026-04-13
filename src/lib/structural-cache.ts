@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm"
-import { db } from "@/lib/db"
-import { settings } from "@/lib/db/schema"
-import type { GroupWithItems } from "@/lib/types"
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { settings } from "@/lib/db/schema";
+import type { GroupWithItems } from "@/lib/types";
 
 async function queryGroupsWithItems(): Promise<GroupWithItems[]> {
   return db.query.groups.findMany({
@@ -11,7 +11,7 @@ async function queryGroupsWithItems(): Promise<GroupWithItems[]> {
         orderBy: (i, { asc }) => [asc(i.order)],
       },
     },
-  })
+  });
 }
 
 /** Get groups directly from DB — caching causes stale-data races in dev mode.
@@ -25,17 +25,17 @@ async function queryGroupsWithItems(): Promise<GroupWithItems[]> {
  * The groups table is tiny (a handful of rows) so a direct query is cheap.
  */
 export async function getOrSeedGroups(): Promise<GroupWithItems[]> {
-  return queryGroupsWithItems()
+  return queryGroupsWithItems();
 }
 
 /** Re-query DB and overwrite groups cache. Returns updated groups. */
 export async function refreshGroupsCache(): Promise<GroupWithItems[]> {
-  return queryGroupsWithItems()
+  return queryGroupsWithItems();
 }
 
 interface SettingRow {
-  key: string
-  value: string
+  key: string;
+  value: string;
 }
 
 /** Get a setting directly from DB — caching causes stale-data races in dev mode.
@@ -44,13 +44,11 @@ interface SettingRow {
  * each hold their own memoryCache, so a reset + re-seed in one test can leave
  * stale setting values visible to the SSR worker.
  */
-export async function getOrSeedSetting(
-  key: string
-): Promise<SettingRow | null> {
+export async function getOrSeedSetting(key: string): Promise<SettingRow | null> {
   const row = await db.query.settings.findFirst({
     where: eq(settings.key, key),
-  })
-  return row ?? null
+  });
+  return row ?? null;
 }
 
 /** Write a setting value to cache. Call after mutations. */

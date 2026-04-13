@@ -1,20 +1,20 @@
-import "@testing-library/jest-dom"
-import { cleanup } from "@testing-library/react"
-import { afterEach, beforeAll, afterAll, vi } from "vitest"
-import { server } from "../src/tests/mocks/node"
+import "@testing-library/jest-dom";
+import { cleanup } from "@testing-library/react";
+import { afterEach, beforeAll, afterAll, vi } from "vitest";
+import { server } from "../src/tests/mocks/node";
 
 // Start MSW server before all tests
-beforeAll(() => server.listen({ onUnhandledRequest: "warn" }))
+beforeAll(() => server.listen({ onUnhandledRequest: "warn" }));
 
 // Auto-cleanup after each test
 afterEach(() => {
-  cleanup()
-  vi.unstubAllGlobals()
-  server.resetHandlers() // Reset any dynamic handlers after each test
-})
+  cleanup();
+  vi.unstubAllGlobals();
+  server.resetHandlers(); // Reset any dynamic handlers after each test
+});
 
 // Close MSW server after all tests
-afterAll(() => server.close())
+afterAll(() => server.close());
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -27,7 +27,7 @@ vi.mock("next/navigation", () => ({
   }),
   usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
-}))
+}));
 
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {
@@ -42,4 +42,4 @@ Object.defineProperty(window, "matchMedia", {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-})
+});

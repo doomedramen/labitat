@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useCallback } from "react"
+import { useEffect, useRef, useCallback } from "react";
 
 /**
  * Hook that detects when the app resumes from background (PWA resume).
@@ -8,38 +8,38 @@ import { useEffect, useRef, useCallback } from "react"
  * Does NOT trigger on initial mount.
  */
 export function useOnAppResume(callback: () => void) {
-  const callbackRef = useRef(callback)
-  const isHiddenRef = useRef(false)
+  const callbackRef = useRef(callback);
+  const isHiddenRef = useRef(false);
 
   // Keep callback ref in sync
   useEffect(() => {
-    callbackRef.current = callback
-  }, [callback])
+    callbackRef.current = callback;
+  }, [callback]);
 
   useEffect(() => {
-    if (typeof document === "undefined") return
+    if (typeof document === "undefined") return;
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         // Only trigger if the app was previously hidden (not on initial mount)
         if (isHiddenRef.current) {
-          callbackRef.current()
+          callbackRef.current();
         }
-        isHiddenRef.current = false
+        isHiddenRef.current = false;
       } else {
-        isHiddenRef.current = true
+        isHiddenRef.current = true;
       }
-    }
+    };
 
     // Set initial state
-    isHiddenRef.current = document.visibilityState === "hidden"
+    isHiddenRef.current = document.visibilityState === "hidden";
 
-    document.addEventListener("visibilitychange", handleVisibilityChange)
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
-    }
-  }, [])
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 }
 
 /**
@@ -47,27 +47,27 @@ export function useOnAppResume(callback: () => void) {
  * Useful for components that need to trigger revalidation programmatically.
  */
 export function useAppResumeTrigger(): { triggerResume: () => void } {
-  const listenersRef = useRef<Set<() => void>>(new Set())
+  const listenersRef = useRef<Set<() => void>>(new Set());
 
   const triggerResume = useCallback(() => {
-    listenersRef.current.forEach((listener) => listener())
-  }, [])
+    listenersRef.current.forEach((listener) => listener());
+  }, []);
 
   useEffect(() => {
-    if (typeof document === "undefined") return
+    if (typeof document === "undefined") return;
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        listenersRef.current.forEach((listener) => listener())
+        listenersRef.current.forEach((listener) => listener());
       }
-    }
+    };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange)
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
-    }
-  }, [])
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
-  return { triggerResume }
+  return { triggerResume };
 }

@@ -1,19 +1,19 @@
-import type { ServiceDefinition } from "./types"
-import type { DownloadItem } from "@/components/widgets"
-import { validateResponse, parseBool } from "./validate"
-import { ArrowDown, Clock, List } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import type { DownloadItem } from "@/components/widgets";
+import { validateResponse, parseBool } from "./validate";
+import { ArrowDown, Clock, List } from "lucide-react";
 
 type SABnzbdData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  speed: string
-  remaining: string
-  queueSize: number
-  downloading: boolean
-  showDownloads?: boolean
-  downloads?: DownloadItem[]
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  speed: string;
+  remaining: string;
+  queueSize: number;
+  downloading: boolean;
+  showDownloads?: boolean;
+  downloads?: DownloadItem[];
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function sabnzbdToPayload(data: SABnzbdData) {
   return {
@@ -37,9 +37,8 @@ function sabnzbdToPayload(data: SABnzbdData) {
         icon: List,
       },
     ],
-    downloads:
-      data.showDownloads && data.downloads?.length ? data.downloads : undefined,
-  }
+    downloads: data.showDownloads && data.downloads?.length ? data.downloads : undefined,
+  };
 }
 
 export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
@@ -71,34 +70,34 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const showDownloads = parseBool(config.showDownloads, true)
-    const url = `${baseUrl}/api?output=json&apikey=${config.apiKey}&mode=queue`
+    const baseUrl = config.url.replace(/\/$/, "");
+    const showDownloads = parseBool(config.showDownloads, true);
+    const url = `${baseUrl}/api?output=json&apikey=${config.apiKey}&mode=queue`;
 
-    const res = await fetchWithTimeout(url)
-    if (!res.ok) throw new Error(`SABnzbd error: ${res.status}`)
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error(`SABnzbd error: ${res.status}`);
 
     type SABQueue = {
-      speed?: string
-      timeleft?: string
-      noofslots?: number
-      status?: string
+      speed?: string;
+      timeleft?: string;
+      noofslots?: number;
+      status?: string;
       slots?: Array<{
-        filename: string
-        percentage: string
-        timeleft: string
-        mb: string
-        mbleft: string
-      }>
-    }
+        filename: string;
+        percentage: string;
+        timeleft: string;
+        mb: string;
+        mbleft: string;
+      }>;
+    };
     const data = validateResponse<{ queue?: SABQueue }>(
       await res.json(),
       ["queue"],
       [{ path: "queue", type: "object" }],
-      { adapter: "sabnzbd" }
-    )
-    const queue = data.queue ?? {}
-    const slots = queue.slots ?? []
+      { adapter: "sabnzbd" },
+    );
+    const queue = data.queue ?? {};
+    const slots = queue.slots ?? [];
 
     const downloads: DownloadItem[] = slots.slice(0, 3).map((slot) => ({
       title: slot.filename,
@@ -106,7 +105,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
       timeLeft: slot.timeleft,
       activity: "downloading",
       size: slot.mb ? `${parseFloat(slot.mb).toFixed(0)} MB` : undefined,
-    }))
+    }));
 
     return {
       _status: "ok",
@@ -116,7 +115,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
       downloading: queue.status === "Downloading",
       showDownloads,
       downloads: showDownloads ? downloads : [],
-    }
+    };
   },
   toPayload: sabnzbdToPayload,
-}
+};

@@ -1,8 +1,8 @@
-import withBundleAnalyzer from "@next/bundle-analyzer"
+import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const analyze = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
-})
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -37,6 +37,6 @@ const nextConfig = {
       "recharts",
     ],
   },
-}
+};
 
-export default analyze(nextConfig)
+export default analyze(nextConfig);

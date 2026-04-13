@@ -1,42 +1,42 @@
-import { test as base, expect } from "@playwright/test"
+import { test as base, expect } from "@playwright/test";
 
-const TEST_SECRET = "e2e-test-reset-token"
+const TEST_SECRET = "e2e-test-reset-token";
 
 type Fixtures = {
-  authenticatedPage: typeof base
-}
+  authenticatedPage: typeof base;
+};
 
 export const test = base.extend<Fixtures>({
   // Auto-reset DB before every test
   page: async ({ page }, use) => {
     await page.request.post("/api/test/reset-db", {
       headers: { "x-test-secret": TEST_SECRET },
-    })
+    });
     /* eslint-disable-next-line react-hooks/rules-of-hooks -- Playwright fixture API, not React */
-    await use(page)
+    await use(page);
   },
-})
+});
 
-export { expect, TEST_SECRET }
+export { expect, TEST_SECRET };
 
 /** Seed the database and authenticate via API (bypasses login form) */
 export async function seedAndAuth(
   page: import("@playwright/test").Page,
   opts?: {
-    admin?: { email: string; password: string }
-    settings?: Record<string, string>
+    admin?: { email: string; password: string };
+    settings?: Record<string, string>;
     groups?: Array<{
-      name: string
+      name: string;
       items?: Array<{
-        label: string
-        href?: string
-        iconUrl?: string
-        serviceType?: string
-        serviceUrl?: string
-        cachedWidgetData?: Record<string, unknown>
-      }>
-    }>
-  }
+        label: string;
+        href?: string;
+        iconUrl?: string;
+        serviceType?: string;
+        serviceUrl?: string;
+        cachedWidgetData?: Record<string, unknown>;
+      }>;
+    }>;
+  },
 ) {
   const response = await page.request.post("/api/test/seed", {
     headers: { "x-test-secret": TEST_SECRET },
@@ -48,51 +48,47 @@ export async function seedAndAuth(
       settings: opts?.settings,
       groups: opts?.groups,
     },
-  })
+  });
 
   // Extract session cookie from response and add to browser context
-  const setCookieHeaders = response.headers()["set-cookie"]
+  const setCookieHeaders = response.headers()["set-cookie"];
   if (setCookieHeaders) {
-    const cookies = Array.isArray(setCookieHeaders)
-      ? setCookieHeaders
-      : [setCookieHeaders]
+    const cookies = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
 
     const parsedCookies = cookies.map((cookieStr) => {
-      const [nameValue, ...attrs] = cookieStr
-        .split(";")
-        .map((s: string) => s.trim())
-      const [name, value] = nameValue.split("=")
+      const [nameValue, ...attrs] = cookieStr.split(";").map((s: string) => s.trim());
+      const [name, value] = nameValue.split("=");
       const cookie: {
-        name: string
-        value: string
-        domain?: string
-        path?: string
-        secure?: boolean
-        httpOnly?: boolean
-        sameSite?: "Strict" | "Lax" | "None"
+        name: string;
+        value: string;
+        domain?: string;
+        path?: string;
+        secure?: boolean;
+        httpOnly?: boolean;
+        sameSite?: "Strict" | "Lax" | "None";
       } = {
         name,
         value,
         domain: "localhost",
         path: "/",
-      }
+      };
 
       for (const attr of attrs) {
-        const lower = attr.toLowerCase()
-        if (lower === "secure") cookie.secure = true
-        else if (lower === "httponly") cookie.httpOnly = true
+        const lower = attr.toLowerCase();
+        if (lower === "secure") cookie.secure = true;
+        else if (lower === "httponly") cookie.httpOnly = true;
         else if (lower.startsWith("samesite=")) {
-          const val = attr.split("=")[1]?.trim()
+          const val = attr.split("=")[1]?.trim();
           if (val === "Strict" || val === "Lax" || val === "None") {
-            cookie.sameSite = val
+            cookie.sameSite = val;
           }
         }
       }
 
-      return cookie
-    })
+      return cookie;
+    });
 
-    await page.context().addCookies(parsedCookies)
+    await page.context().addCookies(parsedCookies);
   }
 }
 
@@ -109,4 +105,4 @@ export const SEED_GROUPS = [
     name: "Media",
     items: [{ label: "Jellyfin", href: "https://jellyfin.test" }],
   },
-]
+];

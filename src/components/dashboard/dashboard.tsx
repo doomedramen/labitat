@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * Client Dashboard component.
@@ -6,10 +6,10 @@
  * During non-edit mode, renders server-compatible components for hydration match.
  */
 
-import { useEffect, useMemo, useState } from "react"
-import React from "react"
-import { useForm } from "@tanstack/react-form"
-import { z } from "zod"
+import { useEffect, useMemo, useState } from "react";
+import React from "react";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 import {
   DndContext,
   DragOverlay,
@@ -21,27 +21,22 @@ import {
   type DragStartEvent,
   type DragOverEvent,
   type DragEndEvent,
-} from "@dnd-kit/core"
+} from "@dnd-kit/core";
 import {
   SortableContext,
   arrayMove,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { Palette, LogIn, Loader2, Image } from "lucide-react"
-import { toast } from "sonner"
-import { useWebHaptics } from "web-haptics/react"
+} from "@dnd-kit/sortable";
+import { Palette, LogIn, Loader2, Image } from "lucide-react";
+import { toast } from "sonner";
+import { useWebHaptics } from "web-haptics/react";
 
-import { cn } from "@/lib/utils"
-import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { cn } from "@/lib/utils";
+import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,227 +44,221 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { PaletteSwitcher } from "@/components/palette-switcher"
-import { BackgroundSwitcher } from "@/components/background-switcher"
-import { useBackground } from "@/hooks/use-background"
-import { SORTED_BACKGROUNDS } from "@/lib/backgrounds"
-import { LoginForm } from "@/components/auth/login-form"
-import { GroupCard } from "./group"
-import { GroupCardDummy } from "./group-dummy"
-import { EditBar } from "./edit-bar"
-import { GroupDialog } from "@/components/editor/group-dialog"
-import { ItemDialog } from "@/components/editor/item-dialog"
-import { ItemCardDragPreview } from "./item/item-card"
-import { reorderGroups } from "@/actions/groups"
-import { reorderItems } from "@/actions/items"
-import { updateDashboardTitle } from "@/actions/settings"
-import { LiveDataProvider, useSseState } from "@/hooks/use-live-data"
+} from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { PaletteSwitcher } from "@/components/palette-switcher";
+import { BackgroundSwitcher } from "@/components/background-switcher";
+import { useBackground } from "@/hooks/use-background";
+import { SORTED_BACKGROUNDS } from "@/lib/backgrounds";
+import { LoginForm } from "@/components/auth/login-form";
+import { GroupCard } from "./group";
+import { GroupCardDummy } from "./group-dummy";
+import { EditBar } from "./edit-bar";
+import { GroupDialog } from "@/components/editor/group-dialog";
+import { ItemDialog } from "@/components/editor/item-dialog";
+import { ItemCardDragPreview } from "./item/item-card";
+import { reorderGroups } from "@/actions/groups";
+import { reorderItems } from "@/actions/items";
+import { updateDashboardTitle } from "@/actions/settings";
+import { LiveDataProvider, useSseState } from "@/hooks/use-live-data";
 
 interface DashboardProps {
-  groups: GroupWithCache[]
-  isLoggedIn: boolean
-  title: string
+  groups: GroupWithCache[];
+  isLoggedIn: boolean;
+  title: string;
 }
 
 export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
-  const haptic = useWebHaptics()
-  const { background } = useBackground()
-  const [editMode, setEditMode] = useState(false)
-  const [localTitle, setLocalTitle] = useState<string | null>(null)
-  const [loginOpen, setLoginOpen] = useState(false)
-  const [groupDialogOpen, setGroupDialogOpen] = useState(false)
-  const [itemDialogOpen, setItemDialogOpen] = useState(false)
-  const [editingGroup, setEditingGroup] = useState<GroupWithCache | null>(null)
-  const [editingItem, setEditingItem] = useState<ItemWithCache | null>(null)
-  const [targetGroupId, setTargetGroupId] = useState<string | null>(null)
+  const haptic = useWebHaptics();
+  const { background } = useBackground();
+  const [editMode, setEditMode] = useState(false);
+  const [localTitle, setLocalTitle] = useState<string | null>(null);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [groupDialogOpen, setGroupDialogOpen] = useState(false);
+  const [itemDialogOpen, setItemDialogOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<GroupWithCache | null>(null);
+  const [editingItem, setEditingItem] = useState<ItemWithCache | null>(null);
+  const [targetGroupId, setTargetGroupId] = useState<string | null>(null);
 
   // Optimistic state for DnD
-  const [localGroups, setLocalGroups] = useState<GroupWithCache[]>(groups)
+  const [localGroups, setLocalGroups] = useState<GroupWithCache[]>(groups);
   useEffect(() => {
-    setLocalGroups(groups)
-  }, [groups])
+    setLocalGroups(groups);
+  }, [groups]);
 
   function handleGroupsUpdated(newGroups: GroupWithItems[]) {
     const cacheMap = new Map<
       string,
       {
-        widgetData: ItemWithCache["cachedWidgetData"]
-        pingStatus: ItemWithCache["cachedPingStatus"]
+        widgetData: ItemWithCache["cachedWidgetData"];
+        pingStatus: ItemWithCache["cachedPingStatus"];
       }
-    >()
+    >();
     for (const g of localGroups) {
       for (const item of g.items) {
         cacheMap.set(item.id, {
           widgetData: item.cachedWidgetData,
           pingStatus: item.cachedPingStatus,
-        })
+        });
       }
     }
     const enriched: GroupWithCache[] = newGroups.map((group) => ({
       ...group,
       items: group.items.map((item) => {
-        const cached = cacheMap.get(item.id)
+        const cached = cacheMap.get(item.id);
         return {
           ...item,
           cachedWidgetData: cached?.widgetData ?? null,
           cachedPingStatus: cached?.pingStatus ?? null,
-        } as ItemWithCache
+        } as ItemWithCache;
       }),
-    }))
-    setLocalGroups(enriched)
+    }));
+    setLocalGroups(enriched);
   }
 
-  const [activeId, setActiveId] = useState<string | null>(null)
-  const [dragStartGroupId, setDragStartGroupId] = useState<string | null>(null)
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [dragStartGroupId, setDragStartGroupId] = useState<string | null>(null);
 
   const { activeItem, activeGroup } = useMemo(() => {
-    if (!activeId) return { activeItem: null, activeGroup: null }
-    const item =
-      localGroups.flatMap((g) => g.items).find((i) => i.id === activeId) ?? null
-    const group = !item
-      ? (localGroups.find((g) => g.id === activeId) ?? null)
-      : null
-    return { activeItem: item, activeGroup: group }
-  }, [activeId, localGroups])
+    if (!activeId) return { activeItem: null, activeGroup: null };
+    const item = localGroups.flatMap((g) => g.items).find((i) => i.id === activeId) ?? null;
+    const group = !item ? (localGroups.find((g) => g.id === activeId) ?? null) : null;
+    return { activeItem: item, activeGroup: group };
+  }, [activeId, localGroups]);
 
-  const dashboardTitle = localTitle ?? title
+  const dashboardTitle = localTitle ?? title;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  )
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   function findItemGroupId(itemId: string, from = localGroups) {
-    return from.find((g) => g.items.some((i) => i.id === itemId))?.id
+    return from.find((g) => g.items.some((i) => i.id === itemId))?.id;
   }
 
   function handleDragStart(event: DragStartEvent) {
-    const id = event.active.id as string
-    setActiveId(id)
+    const id = event.active.id as string;
+    setActiveId(id);
     if (event.active.data.current?.type === "item") {
-      setDragStartGroupId(findItemGroupId(id) ?? null)
+      setDragStartGroupId(findItemGroupId(id) ?? null);
     }
   }
 
   function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event
-    if (!over || active.data.current?.type !== "item") return
+    const { active, over } = event;
+    if (!over || active.data.current?.type !== "item") return;
 
-    const activeId = active.id as string
-    const overId = over.id as string
+    const activeId = active.id as string;
+    const overId = over.id as string;
 
-    const activeGroupId = findItemGroupId(activeId)
+    const activeGroupId = findItemGroupId(activeId);
     const overGroupId =
-      findItemGroupId(overId) ??
-      (localGroups.some((g) => g.id === overId) ? overId : undefined)
+      findItemGroupId(overId) ?? (localGroups.some((g) => g.id === overId) ? overId : undefined);
 
-    if (!activeGroupId || !overGroupId || activeGroupId === overGroupId) return
+    if (!activeGroupId || !overGroupId || activeGroupId === overGroupId) return;
 
     setLocalGroups((prev) => {
-      const srcGroup = prev.find((g) => g.id === activeGroupId)!
-      const item = srcGroup.items.find((i) => i.id === activeId)!
+      const srcGroup = prev.find((g) => g.id === activeGroupId)!;
+      const item = srcGroup.items.find((i) => i.id === activeId)!;
       return prev.map((g) => {
         if (g.id === activeGroupId)
-          return { ...g, items: g.items.filter((i) => i.id !== activeId) }
-        if (g.id === overGroupId) return { ...g, items: [...g.items, item] }
-        return g
-      })
-    })
+          return { ...g, items: g.items.filter((i) => i.id !== activeId) };
+        if (g.id === overGroupId) return { ...g, items: [...g.items, item] };
+        return g;
+      });
+    });
   }
 
   function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    setActiveId(null)
+    const { active, over } = event;
+    setActiveId(null);
 
     if (!over) {
-      setLocalGroups(groups)
-      setDragStartGroupId(null)
-      return
+      setLocalGroups(groups);
+      setDragStartGroupId(null);
+      return;
     }
 
-    haptic.trigger("medium")
+    haptic.trigger("medium");
 
-    const activeId = active.id as string
-    const overId = over.id as string
-    const type = active.data.current?.type
+    const activeId = active.id as string;
+    const overId = over.id as string;
+    const type = active.data.current?.type;
 
     if (type === "group") {
-      const oldIndex = localGroups.findIndex((g) => g.id === activeId)
-      const newIndex = localGroups.findIndex((g) => g.id === overId)
+      const oldIndex = localGroups.findIndex((g) => g.id === activeId);
+      const newIndex = localGroups.findIndex((g) => g.id === overId);
       if (oldIndex !== newIndex) {
-        const reordered = arrayMove(localGroups, oldIndex, newIndex)
-        const snapshot = localGroups
-        setLocalGroups(reordered)
+        const reordered = arrayMove(localGroups, oldIndex, newIndex);
+        const snapshot = localGroups;
+        setLocalGroups(reordered);
         reorderGroups(reordered.map((g) => g.id)).catch(() => {
-          setLocalGroups(snapshot)
-          toast.error("Failed to reorder groups")
-        })
+          setLocalGroups(snapshot);
+          toast.error("Failed to reorder groups");
+        });
       }
     } else if (type === "item") {
-      const currentGroupId = findItemGroupId(activeId)
+      const currentGroupId = findItemGroupId(activeId);
       if (!currentGroupId) {
-        setDragStartGroupId(null)
-        return
+        setDragStartGroupId(null);
+        return;
       }
 
-      const currentGroup = localGroups.find((g) => g.id === currentGroupId)!
-      const activeIdx = currentGroup.items.findIndex((i) => i.id === activeId)
-      const overIdx = currentGroup.items.findIndex((i) => i.id === overId)
+      const currentGroup = localGroups.find((g) => g.id === currentGroupId)!;
+      const activeIdx = currentGroup.items.findIndex((i) => i.id === activeId);
+      const overIdx = currentGroup.items.findIndex((i) => i.id === overId);
 
-      let finalItems = currentGroup.items
+      let finalItems = currentGroup.items;
       if (overIdx !== -1 && activeIdx !== overIdx) {
-        finalItems = arrayMove(currentGroup.items, activeIdx, overIdx)
-        const snapshot = localGroups
+        finalItems = arrayMove(currentGroup.items, activeIdx, overIdx);
+        const snapshot = localGroups;
         setLocalGroups((prev) =>
-          prev.map((g) =>
-            g.id === currentGroupId ? { ...g, items: finalItems } : g
-          )
-        )
+          prev.map((g) => (g.id === currentGroupId ? { ...g, items: finalItems } : g)),
+        );
         reorderItems(
           currentGroupId,
-          finalItems.map((i) => i.id)
+          finalItems.map((i) => i.id),
         ).catch(() => {
-          setLocalGroups(snapshot)
-          toast.error("Failed to reorder items")
-        })
+          setLocalGroups(snapshot);
+          toast.error("Failed to reorder items");
+        });
       } else {
         reorderItems(
           currentGroupId,
-          finalItems.map((i) => i.id)
+          finalItems.map((i) => i.id),
         ).catch(() => {
-          toast.error("Failed to save item order")
-        })
+          toast.error("Failed to save item order");
+        });
       }
 
       if (dragStartGroupId && dragStartGroupId !== currentGroupId) {
-        const srcGroup = localGroups.find((g) => g.id === dragStartGroupId)
+        const srcGroup = localGroups.find((g) => g.id === dragStartGroupId);
         if (srcGroup)
           reorderItems(
             dragStartGroupId,
-            srcGroup.items.map((i) => i.id)
-          )
+            srcGroup.items.map((i) => i.id),
+          );
       }
     }
 
-    setDragStartGroupId(null)
+    setDragStartGroupId(null);
   }
 
-  const [savingTitle, setSavingTitle] = useState(false)
+  const [savingTitle, setSavingTitle] = useState(false);
 
   async function handleSaveTitle() {
     if (localTitle && localTitle.trim()) {
-      setSavingTitle(true)
+      setSavingTitle(true);
       try {
-        await updateDashboardTitle(localTitle.trim())
-        toast.success("Dashboard saved")
-        haptic.trigger("success")
+        await updateDashboardTitle(localTitle.trim());
+        toast.success("Dashboard saved");
+        haptic.trigger("success");
       } catch {
-        toast.error("Failed to save title")
-        haptic.trigger("error")
+        toast.error("Failed to save title");
+        haptic.trigger("error");
       } finally {
-        setSavingTitle(false)
+        setSavingTitle(false);
       }
     }
   }
@@ -281,22 +270,15 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         title: z.string().min(1, "Title is required."),
       }),
     },
-  })
+  });
 
   useEffect(() => {
-    titleForm.setFieldValue("title", localTitle ?? title)
+    titleForm.setFieldValue("title", localTitle ?? title);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localTitle, title])
+  }, [localTitle, title]);
 
   return (
-    <div
-      className={cn(
-        "min-h-svh p-6",
-        background === "none" && "bg-background",
-        SORTED_BACKGROUNDS.find((b) => b.id === background)?.className,
-        editMode && "pb-24"
-      )}
-    >
+    <div className={cn("min-h-svh p-6", editMode && "pb-24")}>
       <LiveDataProvider>
         <SseReconnectBanner />
 
@@ -305,35 +287,34 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           {editMode ? (
             <form
               onSubmit={(e) => {
-                e.preventDefault()
-                titleForm.handleSubmit()
+                e.preventDefault();
+                titleForm.handleSubmit();
               }}
               className="w-full max-w-xs"
             >
               <titleForm.Field name="title">
                 {(field) => {
                   const isInvalid =
-                    field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0
+                    field.state.meta.isTouched && field.state.meta.errors.length > 0;
                   return (
                     <div className="relative">
                       <Input
                         value={field.state.value}
                         onChange={(e) => {
-                          field.handleChange(e.target.value)
-                          setLocalTitle(e.target.value)
+                          field.handleChange(e.target.value);
+                          setLocalTitle(e.target.value);
                         }}
                         onBlur={field.handleBlur}
                         className={cn("h-8", savingTitle && "pr-8")}
                         disabled={savingTitle}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            e.preventDefault()
-                            titleForm.handleSubmit()
+                            e.preventDefault();
+                            titleForm.handleSubmit();
                           }
                           if (e.key === "Escape") {
-                            setLocalTitle(null)
-                            setEditMode(false)
+                            setLocalTitle(null);
+                            setEditMode(false);
                           }
                         }}
                         aria-invalid={isInvalid || undefined}
@@ -343,7 +324,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                         <Loader2 className="absolute top-1/2 right-2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
                       )}
                     </div>
-                  )
+                  );
                 }}
               </titleForm.Field>
             </form>
@@ -379,7 +360,7 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                   <span className="sr-only">Background settings</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[288px]">
+              <DropdownMenuContent align="end" className="w-[240px]">
                 <BackgroundSwitcher />
               </DropdownMenuContent>
             </DropdownMenu>
@@ -390,19 +371,15 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setEditMode(true)
-                    haptic.trigger("light")
+                    setEditMode(true);
+                    haptic.trigger("light");
                   }}
                 >
                   Edit
                 </Button>
               ) : null
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLoginOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setLoginOpen(true)}>
                 <LogIn className="mr-1.5 h-3.5 w-3.5" />
                 Sign in
               </Button>
@@ -430,18 +407,18 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
                     group={group}
                     editMode={editMode}
                     onEditGroup={() => {
-                      setEditingGroup(group)
-                      setGroupDialogOpen(true)
+                      setEditingGroup(group);
+                      setGroupDialogOpen(true);
                     }}
                     onAddItem={() => {
-                      setEditingItem(null)
-                      setTargetGroupId(group.id)
-                      setItemDialogOpen(true)
+                      setEditingItem(null);
+                      setTargetGroupId(group.id);
+                      setItemDialogOpen(true);
                     }}
                     onEditItem={(item) => {
-                      setEditingItem(item)
-                      setTargetGroupId(group.id)
-                      setItemDialogOpen(true)
+                      setEditingItem(item);
+                      setTargetGroupId(group.id);
+                      setItemDialogOpen(true);
                     }}
                     onGroupsChanged={handleGroupsUpdated}
                   />
@@ -471,8 +448,8 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
           <button
             type="button"
             onClick={() => {
-              setEditingGroup(null)
-              setGroupDialogOpen(true)
+              setEditingGroup(null);
+              setGroupDialogOpen(true);
             }}
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/50 py-4 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
           >
@@ -483,9 +460,9 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         {editMode && isLoggedIn && (
           <EditBar
             onDone={async () => {
-              await handleSaveTitle()
-              setEditMode(false)
-              haptic.trigger("light")
+              await handleSaveTitle();
+              setEditMode(false);
+              haptic.trigger("light");
             }}
           />
         )}
@@ -513,26 +490,26 @@ export function Dashboard({ groups, isLoggedIn, title }: DashboardProps) {
         </Dialog>
       </LiveDataProvider>
     </div>
-  )
+  );
 }
 
 function SseReconnectBanner() {
-  const sseState = useSseState()
-  const [visible, setVisible] = React.useState(false)
-  const hasConnectedRef = React.useRef(false)
+  const sseState = useSseState();
+  const [visible, setVisible] = React.useState(false);
+  const hasConnectedRef = React.useRef(false);
 
   React.useEffect(() => {
     if (sseState === "connected") {
-      hasConnectedRef.current = true
-      setVisible(false)
-      return
+      hasConnectedRef.current = true;
+      setVisible(false);
+      return;
     }
-    if (!hasConnectedRef.current) return
-    const timer = setTimeout(() => setVisible(true), 3000)
-    return () => clearTimeout(timer)
-  }, [sseState])
+    if (!hasConnectedRef.current) return;
+    const timer = setTimeout(() => setVisible(true), 3000);
+    return () => clearTimeout(timer);
+  }, [sseState]);
 
-  if (!visible) return null
+  if (!visible) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center">
@@ -540,5 +517,5 @@ function SseReconnectBanner() {
         Reconnecting...
       </div>
     </div>
-  )
+  );
 }

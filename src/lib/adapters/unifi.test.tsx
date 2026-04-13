@@ -1,40 +1,40 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { unifiDefinition } from "@/lib/adapters/unifi"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { unifiDefinition } from "@/lib/adapters/unifi";
 
 describe("unifi definition", () => {
   it("has correct metadata", () => {
-    expect(unifiDefinition.id).toBe("unifi")
-    expect(unifiDefinition.name).toBe("UniFi")
-    expect(unifiDefinition.icon).toBe("unifi")
-    expect(unifiDefinition.category).toBe("monitoring")
-    expect(unifiDefinition.defaultPollingMs).toBe(15_000)
-  })
+    expect(unifiDefinition.id).toBe("unifi");
+    expect(unifiDefinition.name).toBe("UniFi");
+    expect(unifiDefinition.icon).toBe("unifi");
+    expect(unifiDefinition.category).toBe("monitoring");
+    expect(unifiDefinition.defaultPollingMs).toBe(15_000);
+  });
 
   it("has configFields defined", () => {
-    expect(unifiDefinition.configFields).toBeDefined()
-    expect(unifiDefinition.configFields).toHaveLength(4)
-    expect(unifiDefinition.configFields[0].key).toBe("url")
-    expect(unifiDefinition.configFields[0].type).toBe("url")
-    expect(unifiDefinition.configFields[0].required).toBe(true)
-    expect(unifiDefinition.configFields[1].key).toBe("username")
-    expect(unifiDefinition.configFields[1].type).toBe("text")
-    expect(unifiDefinition.configFields[1].required).toBe(true)
-    expect(unifiDefinition.configFields[2].key).toBe("password")
-    expect(unifiDefinition.configFields[2].type).toBe("password")
-    expect(unifiDefinition.configFields[2].required).toBe(true)
-    expect(unifiDefinition.configFields[3].key).toBe("site")
-    expect(unifiDefinition.configFields[3].type).toBe("text")
-    expect(unifiDefinition.configFields[3].required).toBe(false)
-  })
+    expect(unifiDefinition.configFields).toBeDefined();
+    expect(unifiDefinition.configFields).toHaveLength(4);
+    expect(unifiDefinition.configFields[0].key).toBe("url");
+    expect(unifiDefinition.configFields[0].type).toBe("url");
+    expect(unifiDefinition.configFields[0].required).toBe(true);
+    expect(unifiDefinition.configFields[1].key).toBe("username");
+    expect(unifiDefinition.configFields[1].type).toBe("text");
+    expect(unifiDefinition.configFields[1].required).toBe(true);
+    expect(unifiDefinition.configFields[2].key).toBe("password");
+    expect(unifiDefinition.configFields[2].type).toBe("password");
+    expect(unifiDefinition.configFields[2].required).toBe(true);
+    expect(unifiDefinition.configFields[3].key).toBe("site");
+    expect(unifiDefinition.configFields[3].type).toBe("text");
+    expect(unifiDefinition.configFields[3].required).toBe(false);
+  });
 
   describe("fetchData", () => {
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
+      vi.resetAllMocks();
+    });
 
     afterEach(() => {
-      vi.restoreAllMocks()
-    })
+      vi.restoreAllMocks();
+    });
 
     it("fetches data successfully", async () => {
       const mockFetch = vi.fn((url: string) => {
@@ -42,7 +42,7 @@ describe("unifi definition", () => {
           return Promise.resolve({
             ok: true,
             headers: { getSetCookie: () => ["TOKEN=abc123"] },
-          })
+          });
         }
         if (url.includes("/stat/sites")) {
           return Promise.resolve({
@@ -72,7 +72,7 @@ describe("unifi definition", () => {
                   },
                 ],
               }),
-          })
+          });
         }
         if (url.includes("/stat/sta/all")) {
           return Promise.resolve({
@@ -87,7 +87,7 @@ describe("unifi definition", () => {
                   { is_guest: true },
                 ],
               }),
-          })
+          });
         }
         if (url.includes("/rest/device")) {
           return Promise.resolve({
@@ -96,40 +96,40 @@ describe("unifi definition", () => {
               Promise.resolve({
                 data: [{}, {}, {}],
               }),
-          })
+          });
         }
-        return Promise.reject(new Error("Unexpected URL"))
-      })
-      vi.stubGlobal("fetch", mockFetch)
+        return Promise.reject(new Error("Unexpected URL"));
+      });
+      vi.stubGlobal("fetch", mockFetch);
 
       const result = await unifiDefinition.fetchData!({
         url: "https://unifi.example.com/",
         username: "admin",
         password: "secret",
-      })
+      });
 
-      expect(result._status).toBe("ok")
-      expect(result.users).toBe(2)
-      expect(result.guests).toBe(3)
-      expect(result.devices).toBe(3)
-      expect(result.sites).toBe(1)
-      expect(result.wanStatus).toBe("up")
-      expect(result.lanUsers).toBe(8)
-      expect(result.wlanUsers).toBe(12)
-      expect(result.gatewayUptime).toBe("15d 0h")
-    })
+      expect(result._status).toBe("ok");
+      expect(result.users).toBe(2);
+      expect(result.guests).toBe(3);
+      expect(result.devices).toBe(3);
+      expect(result.sites).toBe(1);
+      expect(result.wanStatus).toBe("up");
+      expect(result.lanUsers).toBe(8);
+      expect(result.wlanUsers).toBe(12);
+      expect(result.gatewayUptime).toBe("15d 0h");
+    });
 
     it("throws on login failure", async () => {
-      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 401 }))
+      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 401 }));
 
       await expect(
         unifiDefinition.fetchData!({
           url: "https://unifi.example.com",
           username: "admin",
           password: "wrong",
-        })
-      ).rejects.toThrow("UniFi login failed: 401")
-    })
+        }),
+      ).rejects.toThrow("UniFi login failed: 401");
+    });
 
     it("throws on API error after login", async () => {
       const mockFetch = vi.fn((url: string) => {
@@ -137,20 +137,20 @@ describe("unifi definition", () => {
           return Promise.resolve({
             ok: true,
             headers: { getSetCookie: () => ["TOKEN=abc123"] },
-          })
+          });
         }
-        return Promise.resolve({ ok: false, status: 500 })
-      })
-      vi.stubGlobal("fetch", mockFetch)
+        return Promise.resolve({ ok: false, status: 500 });
+      });
+      vi.stubGlobal("fetch", mockFetch);
 
       await expect(
         unifiDefinition.fetchData!({
           url: "https://unifi.example.com",
           username: "admin",
           password: "secret",
-        })
-      ).rejects.toThrow("UniFi error: 500")
-    })
+        }),
+      ).rejects.toThrow("UniFi error: 500");
+    });
 
     it("handles empty data gracefully", async () => {
       const mockFetch = vi.fn((url: string) => {
@@ -158,45 +158,45 @@ describe("unifi definition", () => {
           return Promise.resolve({
             ok: true,
             headers: { getSetCookie: () => ["TOKEN=abc123"] },
-          })
+          });
         }
         if (url.includes("/stat/sites")) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ data: [] }),
-          })
+          });
         }
         if (url.includes("/stat/sta/all")) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ data: [] }),
-          })
+          });
         }
         if (url.includes("/rest/device")) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ data: [] }),
-          })
+          });
         }
-        return Promise.reject(new Error("Unexpected URL"))
-      })
-      vi.stubGlobal("fetch", mockFetch)
+        return Promise.reject(new Error("Unexpected URL"));
+      });
+      vi.stubGlobal("fetch", mockFetch);
 
       const result = await unifiDefinition.fetchData!({
         url: "https://unifi.example.com",
         username: "admin",
         password: "secret",
-      })
+      });
 
-      expect(result.users).toBe(0)
-      expect(result.guests).toBe(0)
-      expect(result.devices).toBe(0)
-      expect(result.wanStatus).toBeNull()
-      expect(result.lanUsers).toBeUndefined()
-      expect(result.wlanUsers).toBeUndefined()
-      expect(result.gatewayUptime).toBeUndefined()
-    })
-  })
+      expect(result.users).toBe(0);
+      expect(result.guests).toBe(0);
+      expect(result.devices).toBe(0);
+      expect(result.wanStatus).toBeNull();
+      expect(result.lanUsers).toBeUndefined();
+      expect(result.wlanUsers).toBeUndefined();
+      expect(result.gatewayUptime).toBeUndefined();
+    });
+  });
 
   describe("toPayload", () => {
     it("converts data to payload with stats", () => {
@@ -210,25 +210,25 @@ describe("unifi definition", () => {
         lanUsers: 8,
         wlanUsers: 12,
         gatewayUptime: "15.0 days",
-      })
-      expect(payload.stats).toHaveLength(8)
-      expect(payload.stats[0].value).toBe(10)
-      expect(payload.stats[0].label).toBe("Users")
-      expect(payload.stats[1].value).toBe(5)
-      expect(payload.stats[1].label).toBe("Guests")
-      expect(payload.stats[2].value).toBe(3)
-      expect(payload.stats[2].label).toBe("Devices")
-      expect(payload.stats[3].value).toBe(1)
-      expect(payload.stats[3].label).toBe("Sites")
-      expect(payload.stats[4].value).toBe("15.0 days")
-      expect(payload.stats[4].label).toBe("Uptime")
-      expect(payload.stats[5].value).toBe("Up")
-      expect(payload.stats[5].label).toBe("WAN")
-      expect(payload.stats[6].value).toBe(8)
-      expect(payload.stats[6].label).toBe("LAN")
-      expect(payload.stats[7].value).toBe(12)
-      expect(payload.stats[7].label).toBe("WLAN")
-    })
+      });
+      expect(payload.stats).toHaveLength(8);
+      expect(payload.stats[0].value).toBe(10);
+      expect(payload.stats[0].label).toBe("Users");
+      expect(payload.stats[1].value).toBe(5);
+      expect(payload.stats[1].label).toBe("Guests");
+      expect(payload.stats[2].value).toBe(3);
+      expect(payload.stats[2].label).toBe("Devices");
+      expect(payload.stats[3].value).toBe(1);
+      expect(payload.stats[3].label).toBe("Sites");
+      expect(payload.stats[4].value).toBe("15.0 days");
+      expect(payload.stats[4].label).toBe("Uptime");
+      expect(payload.stats[5].value).toBe("Up");
+      expect(payload.stats[5].label).toBe("WAN");
+      expect(payload.stats[6].value).toBe(8);
+      expect(payload.stats[6].label).toBe("LAN");
+      expect(payload.stats[7].value).toBe(12);
+      expect(payload.stats[7].label).toBe("WLAN");
+    });
 
     it("handles zero values", () => {
       const payload = unifiDefinition.toPayload!({
@@ -237,12 +237,12 @@ describe("unifi definition", () => {
         guests: 0,
         devices: 0,
         sites: 0,
-      })
-      expect(payload.stats[0].value).toBe(0)
-      expect(payload.stats[1].value).toBe(0)
-      expect(payload.stats[2].value).toBe(0)
-      expect(payload.stats[3].value).toBe(0)
-    })
+      });
+      expect(payload.stats[0].value).toBe(0);
+      expect(payload.stats[1].value).toBe(0);
+      expect(payload.stats[2].value).toBe(0);
+      expect(payload.stats[3].value).toBe(0);
+    });
 
     it("only includes network health stats when available", () => {
       const payload = unifiDefinition.toPayload!({
@@ -251,8 +251,8 @@ describe("unifi definition", () => {
         guests: 5,
         devices: 3,
         sites: 1,
-      })
-      expect(payload.stats).toHaveLength(4)
-    })
-  })
-})
+      });
+      expect(payload.stats).toHaveLength(4);
+    });
+  });
+});

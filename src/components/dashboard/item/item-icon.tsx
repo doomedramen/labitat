@@ -1,32 +1,28 @@
-"use client"
+"use client";
 
-import { memo, useState } from "react"
-import Image from "next/image"
-import { resolveIconUrl } from "@/lib/icons"
+import { memo, useState } from "react";
+import Image from "next/image";
+import { resolveIconUrl } from "@/lib/icons";
 
 interface ItemIconProps {
-  iconUrl: string | null
-  label: string
-  serviceIcon?: string | null // Service definition icon (fallback)
+  iconUrl: string | null;
+  label: string;
+  serviceIcon?: string | null; // Service definition icon (fallback)
 }
 
 function toProxyUrl(src: string): string | null {
-  if (!src || src.trim() === "") return null
-  if (!src.startsWith("http://") && !src.startsWith("https://")) return src
-  return `/api/icon?url=${encodeURIComponent(src)}`
+  if (!src || src.trim() === "") return null;
+  if (!src.startsWith("http://") && !src.startsWith("https://")) return src;
+  return `/api/icon?url=${encodeURIComponent(src)}`;
 }
 
-export const ItemIcon = memo(function ItemIcon({
-  iconUrl,
-  label,
-  serviceIcon,
-}: ItemIconProps) {
-  const [hasError, setHasError] = useState(false)
+export const ItemIcon = memo(function ItemIcon({ iconUrl, label, serviceIcon }: ItemIconProps) {
+  const [hasError, setHasError] = useState(false);
 
   // Use custom iconUrl if provided, otherwise fall back to service icon
-  const rawIcon = iconUrl || serviceIcon || null
-  const resolvedUrl = resolveIconUrl(rawIcon)
-  const iconSrc = resolvedUrl ? toProxyUrl(resolvedUrl) : null
+  const rawIcon = iconUrl || serviceIcon || null;
+  const resolvedUrl = resolveIconUrl(rawIcon);
+  const iconSrc = resolvedUrl ? toProxyUrl(resolvedUrl) : null;
 
   // Show fallback if image failed to load or no icon available
   if (hasError || !iconSrc) {
@@ -36,7 +32,7 @@ export const ItemIcon = memo(function ItemIcon({
           {label.charAt(0).toUpperCase()}
         </span>
       </div>
-    )
+    );
   }
 
   return (
@@ -52,5 +48,5 @@ export const ItemIcon = memo(function ItemIcon({
         onError={() => setHasError(true)}
       />
     </div>
-  )
-})
+  );
+});

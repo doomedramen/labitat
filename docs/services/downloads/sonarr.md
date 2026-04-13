@@ -4,10 +4,10 @@ TV series collection manager.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Sonarr server URL |
-| API Key | Password | Yes | Sonarr API key |
+| Field   | Type     | Required | Description       |
+| ------- | -------- | -------- | ----------------- |
+| URL     | URL      | Yes      | Sonarr server URL |
+| API Key | Password | Yes      | Sonarr API key    |
 
 ## Finding Your API Key
 

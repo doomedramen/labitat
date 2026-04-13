@@ -1,15 +1,15 @@
-import type { ServiceDefinition } from "./types"
-import { Clock, Check, Package, RefreshCw } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Clock, Check, Package, RefreshCw } from "lucide-react";
 
 type SeerrData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  pending: number
-  approved: number
-  available: number
-  processing: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  pending: number;
+  approved: number;
+  available: number;
+  processing: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function seerrToPayload(data: SeerrData) {
   return {
@@ -39,7 +39,7 @@ function seerrToPayload(data: SeerrData) {
         icon: RefreshCw,
       },
     ],
-  }
+  };
 }
 
 export const seerrDefinition: ServiceDefinition<SeerrData> = {
@@ -65,15 +65,15 @@ export const seerrDefinition: ServiceDefinition<SeerrData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const headers = { "X-Api-Key": config.apiKey }
+    const baseUrl = config.url.replace(/\/$/, "");
+    const headers = { "X-Api-Key": config.apiKey };
 
     const res = await fetchWithTimeout(`${baseUrl}/api/v1/request/count`, {
       headers,
-    })
-    if (!res.ok) throw new Error(`Overseerr error: ${res.status}`)
+    });
+    if (!res.ok) throw new Error(`Overseerr error: ${res.status}`);
 
-    const counts = await res.json()
+    const counts = await res.json();
 
     return {
       _status: "ok",
@@ -81,7 +81,7 @@ export const seerrDefinition: ServiceDefinition<SeerrData> = {
       approved: counts.approved ?? 0,
       available: counts.available ?? 0,
       processing: counts.processing ?? 0,
-    }
+    };
   },
   toPayload: seerrToPayload,
-}
+};

@@ -4,11 +4,11 @@ BitTorrent client.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | qBittorrent Web UI URL |
-| Username | Text | Yes | qBittorrent username |
-| Password | Password | Yes | qBittorrent password |
+| Field    | Type     | Required | Description            |
+| -------- | -------- | -------- | ---------------------- |
+| URL      | URL      | Yes      | qBittorrent Web UI URL |
+| Username | Text     | Yes      | qBittorrent username   |
+| Password | Password | Yes      | qBittorrent password   |
 
 ## Setup
 

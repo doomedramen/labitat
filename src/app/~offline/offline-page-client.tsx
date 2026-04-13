@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
-const HEALTH_CHECK_INTERVAL = 3_000
+const HEALTH_CHECK_INTERVAL = 3_000;
 
 export default function OfflinePageClient() {
-  const [isDown, setIsDown] = useState(true)
+  const [isDown, setIsDown] = useState(true);
 
   useEffect(() => {
     const check = async () => {
       try {
-        const res = await fetch("/api/health")
+        const res = await fetch("/api/health");
         if (res.ok) {
-          window.location.href = "/"
-          return
+          window.location.href = "/";
+          return;
         }
       } catch {
         // server unreachable
       }
-      setIsDown(true)
-    }
+      setIsDown(true);
+    };
 
-    check()
-    const id = setInterval(check, HEALTH_CHECK_INTERVAL)
-    return () => clearInterval(id)
-  }, [])
+    check();
+    const id = setInterval(check, HEALTH_CHECK_INTERVAL);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
@@ -36,5 +36,5 @@ export default function OfflinePageClient() {
           : "Reconnecting..."}
       </p>
     </div>
-  )
+  );
 }

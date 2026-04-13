@@ -1,37 +1,37 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { glancesDefinition } from "@/lib/adapters/glances"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { glancesDefinition } from "@/lib/adapters/glances";
 
 describe("glances definition", () => {
   it("has correct metadata", () => {
-    expect(glancesDefinition.id).toBe("glances")
-    expect(glancesDefinition.name).toBe("Glances")
-    expect(glancesDefinition.icon).toBe("glances")
-    expect(glancesDefinition.category).toBe("monitoring")
-    expect(glancesDefinition.defaultPollingMs).toBe(10_000)
-  })
+    expect(glancesDefinition.id).toBe("glances");
+    expect(glancesDefinition.name).toBe("Glances");
+    expect(glancesDefinition.icon).toBe("glances");
+    expect(glancesDefinition.category).toBe("monitoring");
+    expect(glancesDefinition.defaultPollingMs).toBe(10_000);
+  });
 
   it("has configFields defined", () => {
-    expect(glancesDefinition.configFields).toBeDefined()
-    expect(glancesDefinition.configFields).toHaveLength(3)
-    expect(glancesDefinition.configFields[0].key).toBe("url")
-    expect(glancesDefinition.configFields[0].type).toBe("url")
-    expect(glancesDefinition.configFields[0].required).toBe(true)
-    expect(glancesDefinition.configFields[1].key).toBe("username")
-    expect(glancesDefinition.configFields[1].type).toBe("text")
-    expect(glancesDefinition.configFields[1].required).toBe(false)
-    expect(glancesDefinition.configFields[2].key).toBe("password")
-    expect(glancesDefinition.configFields[2].type).toBe("password")
-    expect(glancesDefinition.configFields[2].required).toBe(false)
-  })
+    expect(glancesDefinition.configFields).toBeDefined();
+    expect(glancesDefinition.configFields).toHaveLength(3);
+    expect(glancesDefinition.configFields[0].key).toBe("url");
+    expect(glancesDefinition.configFields[0].type).toBe("url");
+    expect(glancesDefinition.configFields[0].required).toBe(true);
+    expect(glancesDefinition.configFields[1].key).toBe("username");
+    expect(glancesDefinition.configFields[1].type).toBe("text");
+    expect(glancesDefinition.configFields[1].required).toBe(false);
+    expect(glancesDefinition.configFields[2].key).toBe("password");
+    expect(glancesDefinition.configFields[2].type).toBe("password");
+    expect(glancesDefinition.configFields[2].required).toBe(false);
+  });
 
   describe("fetchData", () => {
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
+      vi.resetAllMocks();
+    });
 
     afterEach(() => {
-      vi.restoreAllMocks()
-    })
+      vi.restoreAllMocks();
+    });
 
     it("fetches data successfully", async () => {
       vi.stubGlobal("fetch", () =>
@@ -46,64 +46,64 @@ describe("glances definition", () => {
               load: { min1: 1.5, cpucore: 4 },
               uptime: 86400,
             }),
-        })
-      )
+        }),
+      );
 
       const result = await glancesDefinition.fetchData!({
         url: "https://glances.example.com/",
-      })
+      });
 
-      expect(result._status).toBe("ok")
-      expect(result.cpuPercent).toBe(46)
-      expect(result.memPercent).toBe(62)
-      expect(result.swapPercent).toBe(10)
-      expect(result.load1).toBe(0.375)
-      expect(result.uptime).toBe("1d 0h")
-    })
+      expect(result._status).toBe("ok");
+      expect(result.cpuPercent).toBe(46);
+      expect(result.memPercent).toBe(62);
+      expect(result.swapPercent).toBe(10);
+      expect(result.load1).toBe(0.375);
+      expect(result.uptime).toBe("1d 0h");
+    });
 
     it("throws on error response", async () => {
-      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 500 }))
+      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 500 }));
 
       await expect(
         glancesDefinition.fetchData!({
           url: "https://glances.example.com",
-        })
-      ).rejects.toThrow("Glances error: 500")
-    })
+        }),
+      ).rejects.toThrow("Glances error: 500");
+    });
 
     it("handles missing data with defaults", async () => {
       vi.stubGlobal("fetch", () =>
         Promise.resolve({
           ok: true,
           json: () => Promise.resolve({}),
-        })
-      )
+        }),
+      );
 
       const result = await glancesDefinition.fetchData!({
         url: "https://glances.example.com",
-      })
+      });
 
-      expect(result.cpuPercent).toBe(0)
-      expect(result.memPercent).toBe(0)
-      expect(result.swapPercent).toBe(0)
-      expect(result.load1).toBe(0)
-      expect(result.uptime).toBe("0m")
-    })
+      expect(result.cpuPercent).toBe(0);
+      expect(result.memPercent).toBe(0);
+      expect(result.swapPercent).toBe(0);
+      expect(result.load1).toBe(0);
+      expect(result.uptime).toBe("0m");
+    });
 
     it("uses Basic auth when credentials provided", async () => {
       const mockFetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
           json: () => Promise.resolve({}),
-        })
-      )
-      vi.stubGlobal("fetch", mockFetch)
+        }),
+      );
+      vi.stubGlobal("fetch", mockFetch);
 
       await glancesDefinition.fetchData!({
         url: "https://glances.example.com",
         username: "admin",
         password: "secret",
-      })
+      });
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://glances.example.com/api/4/quicklook",
@@ -111,9 +111,9 @@ describe("glances definition", () => {
           headers: {
             Authorization: `Basic ${btoa("admin:secret")}`,
           },
-        })
-      )
-    })
+        }),
+      );
+    });
 
     it("calculates load per CPU core when available", async () => {
       vi.stubGlobal("fetch", () =>
@@ -128,21 +128,21 @@ describe("glances definition", () => {
               load: { min1: 4, cpucore: 2 },
               uptime: 3600,
             }),
-        })
-      )
+        }),
+      );
 
       const result = await glancesDefinition.fetchData!({
         url: "https://glances.example.com",
-      })
+      });
 
-      expect(result.load1).toBe(2)
-    })
-  })
+      expect(result.load1).toBe(2);
+    });
+  });
 
   describe("renderWidget", () => {
     it("is defined", () => {
-      expect(glancesDefinition.renderWidget).toBeDefined()
-      expect(typeof glancesDefinition.renderWidget).toBe("function")
-    })
-  })
-})
+      expect(glancesDefinition.renderWidget).toBeDefined();
+      expect(typeof glancesDefinition.renderWidget).toBe("function");
+    });
+  });
+});

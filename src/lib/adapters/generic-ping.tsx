@@ -1,16 +1,16 @@
-import type { ServiceDefinition } from "./types"
-import { CheckCircle, XCircle } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { CheckCircle, XCircle } from "lucide-react";
 
 type GenericPingData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  status: "up" | "down"
-  responseTime: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  status: "up" | "down";
+  responseTime: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function genericPingToPayload(data: GenericPingData) {
-  const isOnline = data.status === "up"
+  const isOnline = data.status === "up";
   return {
     stats: [
       {
@@ -27,7 +27,7 @@ function genericPingToPayload(data: GenericPingData) {
         valueClassName: isOnline ? undefined : "text-destructive",
       },
     ],
-  }
+  };
 }
 
 export const genericPingDefinition: ServiceDefinition<GenericPingData> = {
@@ -57,34 +57,30 @@ export const genericPingDefinition: ServiceDefinition<GenericPingData> = {
   ],
 
   async fetchData(config) {
-    const url = config.url
-    const timeout = parseInt(config.timeout || "5000", 10)
+    const url = config.url;
+    const timeout = parseInt(config.timeout || "5000", 10);
 
-    const startTime = Date.now()
+    const startTime = Date.now();
 
     try {
-      await fetchWithTimeout(
-        url,
-        { method: "HEAD", cache: "no-cache" },
-        timeout
-      )
+      await fetchWithTimeout(url, { method: "HEAD", cache: "no-cache" }, timeout);
 
-      const responseTime = Date.now() - startTime
+      const responseTime = Date.now() - startTime;
 
       return {
         _status: "ok" as const,
         status: "up" as const,
         responseTime,
-      }
+      };
     } catch (err) {
       return {
         _status: "error" as const,
         _statusText: err instanceof Error ? err.message : "Host unreachable",
         status: "down" as const,
         responseTime: 0,
-      }
+      };
     }
   },
 
   toPayload: genericPingToPayload,
-}
+};

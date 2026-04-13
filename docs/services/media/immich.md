@@ -4,10 +4,10 @@ High-performance photo and video backup.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Immich server URL |
-| API Key | Password | Yes | Immich API key |
+| Field   | Type     | Required | Description       |
+| ------- | -------- | -------- | ----------------- |
+| URL     | URL      | Yes      | Immich server URL |
+| API Key | Password | Yes      | Immich API key    |
 
 ## Finding Your API Key
 

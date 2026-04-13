@@ -4,10 +4,10 @@ Container management UI.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Portainer server URL |
-| API Key | Password | Yes | Portainer API key |
+| Field   | Type     | Required | Description          |
+| ------- | -------- | -------- | -------------------- |
+| URL     | URL      | Yes      | Portainer server URL |
+| API Key | Password | Yes      | Portainer API key    |
 
 ## Finding Your API Key
 

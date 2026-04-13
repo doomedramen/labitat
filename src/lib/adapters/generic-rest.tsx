@@ -1,20 +1,18 @@
-import type { ServiceDefinition } from "./types"
-import { Activity } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Activity } from "lucide-react";
 
 type GenericRestData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  value: string
-  label: string
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  value: string;
+  label: string;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function genericRestToPayload(data: GenericRestData) {
   return {
-    stats: [
-      { id: "value", value: data.value, label: data.label, icon: Activity },
-    ],
-  }
+    stats: [{ id: "value", value: data.value, label: data.label, icon: Activity }],
+  };
 }
 
 export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
@@ -49,8 +47,7 @@ export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
       type: "text",
       required: false,
       placeholder: "status",
-      helperText:
-        "Simple dot-notation path to extract value (e.g., data.status)",
+      helperText: "Simple dot-notation path to extract value (e.g., data.status)",
     },
     {
       key: "label",
@@ -69,17 +66,17 @@ export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
   ],
 
   async fetchData(config) {
-    const url = config.url
-    const method = config.method || "GET"
-    const jsonPath = config.jsonPath || ""
-    const label = config.label || "Value"
+    const url = config.url;
+    const method = config.method || "GET";
+    const jsonPath = config.jsonPath || "";
+    const label = config.label || "Value";
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-    }
+    };
 
     if (config.apiKey) {
-      headers.Authorization = `Bearer ${config.apiKey}`
+      headers.Authorization = `Bearer ${config.apiKey}`;
     }
 
     try {
@@ -87,44 +84,44 @@ export const genericRestDefinition: ServiceDefinition<GenericRestData> = {
         method,
         headers,
         body: method === "POST" ? "{}" : undefined,
-      })
+      });
 
       if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`)
+        throw new Error(`HTTP ${res.status}`);
       }
 
-      const data = await res.json()
+      const data = await res.json();
 
       // Simple dot-notation JSON path extraction
-      let value: string | number = "OK"
+      let value: string | number = "OK";
       if (jsonPath) {
-        const keys = jsonPath.split(".")
-        let result: unknown = data
+        const keys = jsonPath.split(".");
+        let result: unknown = data;
         for (const key of keys) {
           if (result && typeof result === "object" && key in result) {
-            result = (result as Record<string, unknown>)[key]
+            result = (result as Record<string, unknown>)[key];
           } else {
-            result = undefined
-            break
+            result = undefined;
+            break;
           }
         }
-        value = result !== undefined ? String(result) : "N/A"
+        value = result !== undefined ? String(result) : "N/A";
       }
 
       return {
         _status: "ok" as const,
         value,
         label,
-      }
+      };
     } catch (err) {
       return {
         _status: "error" as const,
         _statusText: err instanceof Error ? err.message : "Failed to fetch",
         value: "Error",
         label,
-      }
+      };
     }
   },
 
   toPayload: genericRestToPayload,
-}
+};

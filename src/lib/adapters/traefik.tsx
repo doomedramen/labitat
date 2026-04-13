@@ -1,14 +1,14 @@
-import type { ServiceDefinition } from "./types"
-import { Route, Server, Shield } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Route, Server, Shield } from "lucide-react";
 
 type TraefikData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  routers: number
-  services: number
-  middlewares: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  routers: number;
+  services: number;
+  middlewares: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function traefikToPayload(data: TraefikData) {
   return {
@@ -32,7 +32,7 @@ function traefikToPayload(data: TraefikData) {
         icon: Shield,
       },
     ],
-  }
+  };
 }
 
 export const traefikDefinition: ServiceDefinition<TraefikData> = {
@@ -68,39 +68,36 @@ export const traefikDefinition: ServiceDefinition<TraefikData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
+    const baseUrl = config.url.replace(/\/$/, "");
 
-    const headers: Record<string, string> = {}
+    const headers: Record<string, string> = {};
 
     // Add basic auth if credentials provided
     if (config.username && config.password) {
-      const auth = Buffer.from(
-        `${config.username}:${config.password}`
-      ).toString("base64")
-      headers.Authorization = `Basic ${auth}`
+      const auth = Buffer.from(`${config.username}:${config.password}`).toString("base64");
+      headers.Authorization = `Basic ${auth}`;
     }
 
     // Fetch Traefik overview endpoint
     const overviewRes = await fetchWithTimeout(`${baseUrl}/api/overview`, {
       headers,
-    })
+    });
 
     if (!overviewRes.ok) {
-      if (overviewRes.status === 401) throw new Error("Invalid credentials")
-      if (overviewRes.status === 404)
-        throw new Error("Traefik not found at this URL")
-      throw new Error(`Traefik error: ${overviewRes.status}`)
+      if (overviewRes.status === 401) throw new Error("Invalid credentials");
+      if (overviewRes.status === 404) throw new Error("Traefik not found at this URL");
+      throw new Error(`Traefik error: ${overviewRes.status}`);
     }
 
-    const overviewData = await overviewRes.json()
+    const overviewData = await overviewRes.json();
 
     return {
       _status: "ok" as const,
       routers: overviewData.http?.routers?.total ?? 0,
       services: overviewData.http?.services?.total ?? 0,
       middlewares: overviewData.http?.middlewares?.total ?? 0,
-    }
+    };
   },
 
   toPayload: traefikToPayload,
-}
+};

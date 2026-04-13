@@ -4,12 +4,12 @@ Custom HTTP endpoint monitoring.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Endpoint URL |
-| Method | Select | No | HTTP method (default: GET) |
-| Headers | Text | No | Custom headers (JSON) |
-| Response Path | Text | No | JSON path to extract value |
+| Field         | Type   | Required | Description                |
+| ------------- | ------ | -------- | -------------------------- |
+| URL           | URL    | Yes      | Endpoint URL               |
+| Method        | Select | No       | HTTP method (default: GET) |
+| Headers       | Text   | No       | Custom headers (JSON)      |
+| Response Path | Text   | No       | JSON path to extract value |
 
 ## Use Cases
 

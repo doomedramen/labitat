@@ -1,21 +1,14 @@
-"use client"
+"use client";
 
-import type { GlancesTimeseriesData } from "@/lib/adapters/glances-timeseries"
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts"
+import type { GlancesTimeseriesData } from "@/lib/adapters/glances-timeseries";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 type MetricConfig = {
-  key: string
-  label: string
-  color: string
-  gradientId: string
-}
+  key: string;
+  label: string;
+  color: string;
+  gradientId: string;
+};
 
 const DEFAULT_METRICS: MetricConfig[] = [
   {
@@ -30,16 +23,16 @@ const DEFAULT_METRICS: MetricConfig[] = [
     color: "var(--chart-2)",
     gradientId: "fillMem",
   },
-]
+];
 
 function ChartTooltip({
   active,
   payload,
 }: {
-  active?: boolean
-  payload?: { name: string; value: number; color: string }[]
+  active?: boolean;
+  payload?: { name: string; value: number; color: string }[];
 }) {
-  if (!active || !payload?.length) return null
+  if (!active || !payload?.length) return null;
   return (
     <div className="rounded-md border border-border bg-popover px-2 py-1 text-xs shadow-sm">
       {payload.map((p) => (
@@ -53,7 +46,7 @@ function ChartTooltip({
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 export function GlancesTimeseriesWidget({
@@ -67,7 +60,7 @@ export function GlancesTimeseriesWidget({
       <div className="flex h-full items-center justify-center text-sm text-destructive">
         {_statusText ?? "Error fetching data"}
       </div>
-    )
+    );
   }
 
   if (!history || history.length === 0) {
@@ -75,21 +68,19 @@ export function GlancesTimeseriesWidget({
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         Waiting for data...
       </div>
-    )
+    );
   }
 
-  const activeMetrics = metrics ?? DEFAULT_METRICS
-  const last = history[history.length - 1]
+  const activeMetrics = metrics ?? DEFAULT_METRICS;
+  const last = history[history.length - 1];
 
   // Scale to the highest value in the window, rounded up to the nearest 10
   const rawMax = Math.max(
-    ...history.flatMap((d) =>
-      activeMetrics.map((m) => (d[m.key] as number) ?? 0)
-    ),
-    1
-  )
-  const domainMax = Math.ceil(rawMax / 10) * 10
-  const midLabel = Math.round(domainMax / 2)
+    ...history.flatMap((d) => activeMetrics.map((m) => (d[m.key] as number) ?? 0)),
+    1,
+  );
+  const domainMax = Math.ceil(rawMax / 10) * 10;
+  const midLabel = Math.round(domainMax / 2);
 
   return (
     <div className="flex flex-col gap-1" style={{ minHeight: "150px" }}>
@@ -101,10 +92,7 @@ export function GlancesTimeseriesWidget({
           <span>0</span>
         </div>
         <ResponsiveContainer width="100%" height={130}>
-          <AreaChart
-            data={history}
-            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
-          >
+          <AreaChart data={history} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
               {activeMetrics.map((metric) => (
                 <linearGradient
@@ -115,11 +103,7 @@ export function GlancesTimeseriesWidget({
                   x2="0"
                   y2="1"
                 >
-                  <stop
-                    offset="5%"
-                    stopColor={metric.color}
-                    stopOpacity={0.5}
-                  />
+                  <stop offset="5%" stopColor={metric.color} stopOpacity={0.5} />
                   <stop offset="95%" stopColor={metric.color} stopOpacity={0} />
                 </linearGradient>
               ))}
@@ -159,13 +143,11 @@ export function GlancesTimeseriesWidget({
             />
             {metric.label}
             {last && (last[metric.key] as number) != null && (
-              <span className="font-medium text-foreground tabular-nums">
-                {last[metric.key]}%
-              </span>
+              <span className="font-medium text-foreground tabular-nums">{last[metric.key]}%</span>
             )}
           </span>
         ))}
       </div>
     </div>
-  )
+  );
 }

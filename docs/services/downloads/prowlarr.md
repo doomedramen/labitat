@@ -1,13 +1,13 @@
 # Prowlarr
 
-Indexer manager for *arr applications.
+Indexer manager for \*arr applications.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Prowlarr server URL |
-| API Key | Password | Yes | Prowlarr API key |
+| Field   | Type     | Required | Description         |
+| ------- | -------- | -------- | ------------------- |
+| URL     | URL      | Yes      | Prowlarr server URL |
+| API Key | Password | Yes      | Prowlarr API key    |
 
 ## Finding Your API Key
 

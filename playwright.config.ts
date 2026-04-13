@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test"
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -24,7 +24,7 @@ export default defineConfig({
 
   webServer: {
     command:
-      "node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm dev",
+      "node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm dev",
     url: "http://localhost:3000",
     reuseExistingServer: false,
     timeout: 120 * 1000,
@@ -36,4 +36,4 @@ export default defineConfig({
       TEST_SECRET: "e2e-test-reset-token",
     },
   },
-})
+});

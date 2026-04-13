@@ -4,10 +4,10 @@ Metrics dashboard and visualization.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Grafana server URL |
-| API Key | Password | Yes | Grafana service account token |
+| Field   | Type     | Required | Description                   |
+| ------- | -------- | -------- | ----------------------------- |
+| URL     | URL      | Yes      | Grafana server URL            |
+| API Key | Password | Yes      | Grafana service account token |
 
 ## Finding Your API Key
 

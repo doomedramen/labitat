@@ -1,13 +1,13 @@
-import type { ServiceDefinition } from "./types"
-import { Settings, AlertCircle } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Settings, AlertCircle } from "lucide-react";
 
 type JackettData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  configured: number
-  errored: number
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  configured: number;
+  errored: number;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function jackettToPayload(data: JackettData) {
   return {
@@ -25,7 +25,7 @@ function jackettToPayload(data: JackettData) {
         icon: AlertCircle,
       },
     ],
-  }
+  };
 }
 
 export const jackettDefinition: ServiceDefinition<JackettData> = {
@@ -61,58 +61,55 @@ export const jackettDefinition: ServiceDefinition<JackettData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
+    const baseUrl = config.url.replace(/\/$/, "");
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-    }
+    };
 
     // If password is set, we need to authenticate first to get cookie
     if (config.password) {
-      const loginUrl = `${baseUrl}/UI/Dashboard`
+      const loginUrl = `${baseUrl}/UI/Dashboard`;
       const loginRes = await fetchWithTimeout(loginUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: `password=${encodeURIComponent(config.password)}`,
-      })
+      });
 
       if (!loginRes.ok) {
-        throw new Error("Failed to authenticate with Jackett")
+        throw new Error("Failed to authenticate with Jackett");
       }
 
-      const cookie = loginRes.headers.get("set-cookie")
+      const cookie = loginRes.headers.get("set-cookie");
       if (cookie) {
-        headers.Cookie = cookie
+        headers.Cookie = cookie;
       }
     }
 
     // Fetch configured indexers
     const indexersRes = await fetchWithTimeout(
       `${baseUrl}/api/v2.0/indexers?apikey=${config.apiKey}&configured=true`,
-      { headers }
-    )
+      { headers },
+    );
 
     if (!indexersRes.ok) {
-      if (indexersRes.status === 401) throw new Error("Invalid API key")
-      if (indexersRes.status === 404)
-        throw new Error("Jackett not found at this URL")
-      throw new Error(`Jackett error: ${indexersRes.status}`)
+      if (indexersRes.status === 401) throw new Error("Invalid API key");
+      if (indexersRes.status === 404) throw new Error("Jackett not found at this URL");
+      throw new Error(`Jackett error: ${indexersRes.status}`);
     }
 
-    const indexersData = await indexersRes.json()
+    const indexersData = await indexersRes.json();
 
     // Count errored indexers (those with last_error set)
-    const errored = indexersData.filter(
-      (i: { last_error: unknown }) => i.last_error
-    ).length
+    const errored = indexersData.filter((i: { last_error: unknown }) => i.last_error).length;
 
     return {
       _status: "ok" as const,
       configured: indexersData.length ?? 0,
       errored,
-    }
+    };
   },
 
   toPayload: jackettToPayload,
-}
+};

@@ -1,41 +1,39 @@
-import { defineConfig, DefaultTheme } from "vitepress"
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
+import { defineConfig, DefaultTheme } from "vitepress";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const docsDir = path.resolve(__dirname, "../")
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const docsDir = path.resolve(__dirname, "../");
 
 function slugToTitle(slug: string): string {
-  return slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  return slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function getMarkdownFiles(dir: string): string[] {
-  if (!fs.existsSync(dir)) return []
+  if (!fs.existsSync(dir)) return [];
   return fs
     .readdirSync(dir)
     .filter((f) => f.endsWith(".md") && f !== "index.md")
     .map((f) => f.replace(".md", ""))
-    .sort()
+    .sort();
 }
 
 function getSubdirs(dir: string): string[] {
-  if (!fs.existsSync(dir)) return []
+  if (!fs.existsSync(dir)) return [];
   return fs
     .readdirSync(dir)
     .filter((f) => fs.statSync(path.join(dir, f)).isDirectory())
-    .sort()
+    .sort();
 }
 
 function buildServicesSidebar(): DefaultTheme.SidebarItem[] {
-  const servicesDir = path.join(docsDir, "services")
-  const items: DefaultTheme.SidebarItem[] = [
-    { text: "Overview", link: "/services/" },
-  ]
+  const servicesDir = path.join(docsDir, "services");
+  const items: DefaultTheme.SidebarItem[] = [{ text: "Overview", link: "/services/" }];
 
-  const subdirs = getSubdirs(servicesDir)
+  const subdirs = getSubdirs(servicesDir);
   for (const subdir of subdirs) {
-    const files = getMarkdownFiles(path.join(servicesDir, subdir))
+    const files = getMarkdownFiles(path.join(servicesDir, subdir));
     if (files.length > 0) {
       items.push({
         text: slugToTitle(subdir),
@@ -44,41 +42,39 @@ function buildServicesSidebar(): DefaultTheme.SidebarItem[] {
           text: slugToTitle(f),
           link: `/services/${subdir}/${f}`,
         })),
-      })
+      });
     }
   }
 
   // Also pick up any loose .md files in the services root
-  const rootFiles = getMarkdownFiles(servicesDir)
+  const rootFiles = getMarkdownFiles(servicesDir);
   if (rootFiles.length > 0) {
     items.push(
       ...rootFiles.map((f) => ({
         text: slugToTitle(f),
         link: `/services/${f}`,
-      }))
-    )
+      })),
+    );
   }
 
-  return items
+  return items;
 }
 
 function buildInstallationSidebar(): DefaultTheme.SidebarItem[] {
-  const installDir = path.join(docsDir, "installation")
-  const items: DefaultTheme.SidebarItem[] = [
-    { text: "Overview", link: "/installation/" },
-  ]
+  const installDir = path.join(docsDir, "installation");
+  const items: DefaultTheme.SidebarItem[] = [{ text: "Overview", link: "/installation/" }];
 
-  const files = getMarkdownFiles(installDir)
+  const files = getMarkdownFiles(installDir);
   if (files.length > 0) {
     items.push(
       ...files.map((f) => ({
         text: slugToTitle(f),
         link: `/installation/${f}`,
-      }))
-    )
+      })),
+    );
   }
 
-  return items
+  return items;
 }
 
 function buildSidebar() {
@@ -108,7 +104,7 @@ function buildSidebar() {
         ],
       },
     ],
-  }
+  };
 }
 
 export default defineConfig({
@@ -194,4 +190,4 @@ export default defineConfig({
   markdown: {
     lineNumbers: true,
   },
-})
+});

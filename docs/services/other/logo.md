@@ -4,9 +4,9 @@ Custom logo display widget.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| Image URL | URL | Yes | URL to your logo image |
+| Field     | Type | Required | Description            |
+| --------- | ---- | -------- | ---------------------- |
+| Image URL | URL  | Yes      | URL to your logo image |
 
 ## Tips
 

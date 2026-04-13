@@ -4,10 +4,10 @@ Weather display using the free [Open-Meteo](https://open-meteo.com/) API. No API
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| Latitude | Number | Yes | Location latitude |
-| Longitude | Number | Yes | Location longitude |
+| Field     | Type   | Required | Description        |
+| --------- | ------ | -------- | ------------------ |
+| Latitude  | Number | Yes      | Location latitude  |
+| Longitude | Number | Yes      | Location longitude |
 
 ## Finding Your Coordinates
 

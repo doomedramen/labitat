@@ -1,40 +1,38 @@
-import { describe, it, expect } from "vitest"
-import { dataToStatus } from "@/lib/adapters/types"
-import type { ServiceData, ServiceDefinition } from "@/lib/adapters/types"
+import { describe, it, expect } from "vitest";
+import { dataToStatus } from "@/lib/adapters/types";
+import type { ServiceData, ServiceDefinition } from "@/lib/adapters/types";
 
 describe("dataToStatus", () => {
   it("returns unknown for missing status", () => {
-    expect(dataToStatus({} as ServiceData)).toEqual({ state: "unknown" })
-  })
+    expect(dataToStatus({} as ServiceData)).toEqual({ state: "unknown" });
+  });
 
   it("returns unknown for 'none' status", () => {
-    expect(dataToStatus({ _status: "none" })).toEqual({ state: "unknown" })
-  })
+    expect(dataToStatus({ _status: "none" })).toEqual({ state: "unknown" });
+  });
 
   it("returns healthy for 'ok' status", () => {
-    expect(dataToStatus({ _status: "ok" })).toEqual({ state: "healthy" })
-  })
+    expect(dataToStatus({ _status: "ok" })).toEqual({ state: "healthy" });
+  });
 
   it("returns degraded for 'warn' status", () => {
-    expect(dataToStatus({ _status: "warn" })).toEqual({ state: "degraded" })
-  })
+    expect(dataToStatus({ _status: "warn" })).toEqual({ state: "degraded" });
+  });
 
   it("returns error with reason for 'error' status", () => {
-    expect(
-      dataToStatus({ _status: "error", _statusText: "Something broke" })
-    ).toEqual({
+    expect(dataToStatus({ _status: "error", _statusText: "Something broke" })).toEqual({
       state: "error",
       reason: "Something broke",
-    })
-  })
+    });
+  });
 
   it("uses default reason when _statusText is missing", () => {
     expect(dataToStatus({ _status: "error" })).toEqual({
       state: "error",
       reason: "Service error",
-    })
-  })
-})
+    });
+  });
+});
 
 describe("ServiceDefinition type", () => {
   it("allows valid service definitions", () => {
@@ -45,10 +43,10 @@ describe("ServiceDefinition type", () => {
       category: "info",
       configFields: [{ key: "url", label: "URL", type: "url", required: true }],
       renderWidget: () => null,
-    }
-    expect(def.id).toBe("test-service")
-    expect(def.configFields).toHaveLength(1)
-  })
+    };
+    expect(def.id).toBe("test-service");
+    expect(def.configFields).toHaveLength(1);
+  });
 
   it("supports fetchData function", async () => {
     const def: ServiceDefinition = {
@@ -62,12 +60,12 @@ describe("ServiceDefinition type", () => {
         value: parseInt(config.multiplier, 10) * 2,
       }),
       renderWidget: () => null,
-    }
+    };
 
-    const result = await def.fetchData!({ multiplier: "5" })
-    expect(result._status).toBe("ok")
-    expect(result.value).toBe(10)
-  })
+    const result = await def.fetchData!({ multiplier: "5" });
+    expect(result._status).toBe("ok");
+    expect(result.value).toBe(10);
+  });
 
   it("supports clientSide flag", () => {
     const def: ServiceDefinition = {
@@ -78,9 +76,9 @@ describe("ServiceDefinition type", () => {
       configFields: [],
       clientSide: true,
       renderWidget: () => null,
-    }
-    expect(def.clientSide).toBe(true)
-  })
+    };
+    expect(def.clientSide).toBe(true);
+  });
 
   it("supports defaultPollingMs", () => {
     const def: ServiceDefinition = {
@@ -91,10 +89,10 @@ describe("ServiceDefinition type", () => {
       configFields: [],
       defaultPollingMs: 5000,
       renderWidget: () => null,
-    }
-    expect(def.defaultPollingMs).toBe(5000)
-  })
-})
+    };
+    expect(def.defaultPollingMs).toBe(5000);
+  });
+});
 
 describe("FieldDef types", () => {
   it("supports all field types", () => {
@@ -105,8 +103,8 @@ describe("FieldDef types", () => {
       { key: "num", type: "number" as const, label: "Number" },
       { key: "sel", type: "select" as const, label: "Select" },
       { key: "bool", type: "boolean" as const, label: "Boolean" },
-    ]
-    expect(fields).toHaveLength(6)
+    ];
+    expect(fields).toHaveLength(6);
     expect(fields.map((f) => f.type)).toEqual([
       "url",
       "password",
@@ -114,8 +112,8 @@ describe("FieldDef types", () => {
       "number",
       "select",
       "boolean",
-    ])
-  })
+    ]);
+  });
 
   it("supports select options", () => {
     const field = {
@@ -126,10 +124,10 @@ describe("FieldDef types", () => {
         { label: "Light", value: "light" },
         { label: "Dark", value: "dark" },
       ],
-    }
-    expect(field.options).toHaveLength(2)
-    expect(field.options?.[0].label).toBe("Light")
-  })
+    };
+    expect(field.options).toHaveLength(2);
+    expect(field.options?.[0].label).toBe("Light");
+  });
 
   it("supports boolean defaultChecked", () => {
     const field = {
@@ -137,10 +135,10 @@ describe("FieldDef types", () => {
       label: "Enabled",
       type: "boolean" as const,
       defaultChecked: true,
-    }
-    expect(field.defaultChecked).toBe(true)
-  })
-})
+    };
+    expect(field.defaultChecked).toBe(true);
+  });
+});
 
 describe("ServiceCategory", () => {
   it("includes all expected categories", () => {
@@ -155,7 +153,7 @@ describe("ServiceCategory", () => {
       "finance",
       "productivity",
       "info",
-    ]
-    expect(categories).toHaveLength(10)
-  })
-})
+    ];
+    expect(categories).toHaveLength(10);
+  });
+});

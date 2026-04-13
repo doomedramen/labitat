@@ -1,21 +1,21 @@
-import type { ServiceDefinition } from "./types"
-import type { ActiveStream } from "@/components/widgets"
-import { Play, Film, Tv, Layers, Music } from "lucide-react"
-import { buildStreamsTooltip, formatMediaTitle } from "@/lib/utils/format-media"
+import type { ServiceDefinition } from "./types";
+import type { ActiveStream } from "@/components/widgets";
+import { Play, Film, Tv, Layers, Music } from "lucide-react";
+import { buildStreamsTooltip, formatMediaTitle } from "@/lib/utils/format-media";
 
 type JellyfinData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  activeStreams: number
-  movies: number
-  shows: number
-  episodes: number
-  songs: number
-  showActiveStreams?: boolean
-  sessions?: ActiveStream[]
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
-import { parseBool } from "./validate"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  activeStreams: number;
+  movies: number;
+  shows: number;
+  episodes: number;
+  songs: number;
+  showActiveStreams?: boolean;
+  sessions?: ActiveStream[];
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
+import { parseBool } from "./validate";
 
 function jellyfinToPayload(data: JellyfinData) {
   return {
@@ -52,13 +52,10 @@ function jellyfinToPayload(data: JellyfinData) {
         icon: Music,
       },
     ],
-    streams:
-      data.showActiveStreams && data.sessions?.length
-        ? data.sessions
-        : undefined,
+    streams: data.showActiveStreams && data.sessions?.length ? data.sessions : undefined,
     // Default to 4 stats: hide Active Streams
     defaultActiveIds: ["movies", "shows", "episodes", "songs"],
-  }
+  };
 }
 
 export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
@@ -94,47 +91,44 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
   ],
 
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const showActiveStreams = parseBool(config.showActiveStreams)
+    const baseUrl = config.url.replace(/\/$/, "");
+    const showActiveStreams = parseBool(config.showActiveStreams);
 
     // Jellyfin uses MediaBrowser auth header format
-    const deviceId = encodeURIComponent(
-      `labitat-${config.url.replace(/^https?:\/\//, "")}`
-    )
-    const authHeader = `MediaBrowser Token="${encodeURIComponent(config.apiKey)}", Client="Labitat", Device="Labitat", DeviceId="${deviceId}", Version="1.0.0"`
-    const headers = { Authorization: authHeader }
+    const deviceId = encodeURIComponent(`labitat-${config.url.replace(/^https?:\/\//, "")}`);
+    const authHeader = `MediaBrowser Token="${encodeURIComponent(config.apiKey)}", Client="Labitat", Device="Labitat", DeviceId="${deviceId}", Version="1.0.0"`;
+    const headers = { Authorization: authHeader };
 
     const [sessionsRes, countsRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/Sessions?ActiveWithinSeconds=120`, {
         headers,
       }),
       fetchWithTimeout(`${baseUrl}/Items/Counts`, { headers }),
-    ])
+    ]);
 
     if (!sessionsRes.ok) {
-      if (sessionsRes.status === 401) throw new Error("Invalid API key")
-      if (sessionsRes.status === 404)
-        throw new Error("Jellyfin not found at this URL")
-      throw new Error(`Jellyfin error: ${sessionsRes.status}`)
+      if (sessionsRes.status === 401) throw new Error("Invalid API key");
+      if (sessionsRes.status === 404) throw new Error("Jellyfin not found at this URL");
+      throw new Error(`Jellyfin error: ${sessionsRes.status}`);
     }
 
-    const sessionsData = await sessionsRes.json()
-    const countsData = await countsRes.json()
+    const sessionsData = await sessionsRes.json();
+    const countsData = await countsRes.json();
 
     // Count active streams and build session list
-    const sessions: ActiveStream[] = []
-    let activeStreams = 0
+    const sessions: ActiveStream[] = [];
+    let activeStreams = 0;
 
     if (Array.isArray(sessionsData)) {
       for (const session of sessionsData) {
-        if (!session.NowPlayingItem) continue
+        if (!session.NowPlayingItem) continue;
 
-        const isPaused = session.PlayState?.IsPaused ?? false
-        if (!isPaused) activeStreams++
+        const isPaused = session.PlayState?.IsPaused ?? false;
+        if (!isPaused) activeStreams++;
 
         if (showActiveStreams) {
-          const nowPlaying = session.NowPlayingItem
-          const playState = session.PlayState || {}
+          const nowPlaying = session.NowPlayingItem;
+          const playState = session.PlayState || {};
 
           // Use shared formatMediaTitle for consistent formatting across all media adapters
           const { title: formattedTitle, subtitle } = formatMediaTitle(
@@ -146,28 +140,26 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
               episode: nowPlaying.IndexNumber,
               albumArtist: nowPlaying.AlbumArtist,
               album: nowPlaying.Album,
-            }
-          )
+            },
+          );
 
           // Get user name
-          const user = session.UserName ?? "Unknown"
+          const user = session.UserName ?? "Unknown";
 
           // Calculate progress (ticks to seconds)
-          const positionTicks = playState.PositionTicks ?? 0
-          const runTimeTicks = nowPlaying.RunTimeTicks ?? 0
-          const duration = runTimeTicks > 0 ? runTimeTicks / 10000000 : 0
-          const progressSeconds = positionTicks / 10000000
+          const positionTicks = playState.PositionTicks ?? 0;
+          const runTimeTicks = nowPlaying.RunTimeTicks ?? 0;
+          const duration = runTimeTicks > 0 ? runTimeTicks / 10000000 : 0;
+          const progressSeconds = positionTicks / 10000000;
 
           // Get transcoding info
           const transcodingInfo = session.TranscodingInfo
             ? {
                 isDirect: session.TranscodingInfo.IsVideoDirect ?? false,
-                hardwareDecoding:
-                  session.TranscodingInfo.HardwareDecoding ?? false,
-                hardwareEncoding:
-                  session.TranscodingInfo.HardwareEncoding ?? false,
+                hardwareDecoding: session.TranscodingInfo.HardwareDecoding ?? false,
+                hardwareEncoding: session.TranscodingInfo.HardwareEncoding ?? false,
               }
-            : undefined
+            : undefined;
 
           sessions.push({
             title: formattedTitle,
@@ -178,7 +170,7 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
             state: isPaused ? "paused" : "playing",
             streamId: session.Id,
             transcoding: transcodingInfo,
-          })
+          });
         }
       }
     }
@@ -192,8 +184,8 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
       songs: countsData.SongCount ?? 0,
       showActiveStreams,
       sessions,
-    }
+    };
   },
 
   toPayload: jellyfinToPayload,
-}
+};

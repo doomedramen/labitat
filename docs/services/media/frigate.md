@@ -4,9 +4,9 @@ NVR with real-time object detection.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Frigate server URL |
+| Field | Type | Required | Description        |
+| ----- | ---- | -------- | ------------------ |
+| URL   | URL  | Yes      | Frigate server URL |
 
 ## Widget Displays
 

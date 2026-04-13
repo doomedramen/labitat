@@ -4,10 +4,10 @@ Movie collection manager.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Radarr server URL |
-| API Key | Password | Yes | Radarr API key |
+| Field   | Type     | Required | Description       |
+| ------- | -------- | -------- | ----------------- |
+| URL     | URL      | Yes      | Radarr server URL |
+| API Key | Password | Yes      | Radarr API key    |
 
 ## Finding Your API Key
 

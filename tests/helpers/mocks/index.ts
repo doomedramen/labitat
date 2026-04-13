@@ -108,16 +108,12 @@ export {
   networkErrorResponse,
   mockApi,
   mockParallel,
-} from "../adapter-mocks"
+} from "../adapter-mocks";
 
-export type {
-  MockResponse,
-  MockAdapter,
-  RecordedRequest,
-} from "../adapter-mocks"
+export type { MockResponse, MockAdapter, RecordedRequest } from "../adapter-mocks";
 
 // Import types for internal use
-import type { MockResponse, MockAdapter } from "../adapter-mocks"
+import type { MockResponse, MockAdapter } from "../adapter-mocks";
 
 // Export all adapter mocks
 export {
@@ -127,7 +123,7 @@ export {
   lidarrMocks,
   readarrMocks,
   prowlarrMocks,
-} from "./arr-adapters"
+} from "./arr-adapters";
 
 export {
   // Download & media
@@ -138,7 +134,7 @@ export {
   tautulliMocks,
   bazarrMocks,
   jackettMocks,
-} from "./download-media-adapters"
+} from "./download-media-adapters";
 
 export {
   // Network & monitoring
@@ -149,7 +145,7 @@ export {
   openweathermapMocks,
   unifiMocks,
   apcupsMocks,
-} from "./network-monitoring-adapters"
+} from "./network-monitoring-adapters";
 
 export {
   // Infrastructure
@@ -161,7 +157,7 @@ export {
   seerrMocks,
   calibreWebMocks,
   unmanicMocks,
-} from "./infrastructure-adapters"
+} from "./infrastructure-adapters";
 
 export {
   // Specialized
@@ -178,7 +174,7 @@ export {
   pipesMocks,
   genericPingMocks,
   genericRestMocks,
-} from "./specialized-adapters"
+} from "./specialized-adapters";
 
 // ── Unified Mock Registry ───────────────────────────────────────────────────────
 
@@ -201,29 +197,21 @@ export const mocks = {
   unmanic: (await import("./infrastructure-adapters")).unmanicMocks,
   apcups: (await import("./network-monitoring-adapters")).apcupsMocks,
   unifi: (await import("./network-monitoring-adapters")).unifiMocks,
-  "nginx-proxy-manager": (await import("./infrastructure-adapters"))
-    .nginxProxyManagerMocks,
+  "nginx-proxy-manager": (await import("./infrastructure-adapters")).nginxProxyManagerMocks,
   proxmox: (await import("./infrastructure-adapters")).proxmoxMocks,
-  "proxmox-backup-server": (await import("./infrastructure-adapters"))
-    .proxmoxBackupServerMocks,
+  "proxmox-backup-server": (await import("./infrastructure-adapters")).proxmoxBackupServerMocks,
   "calibre-web": (await import("./infrastructure-adapters")).calibreWebMocks,
 
   // General widgets
   openmeteo: (await import("./network-monitoring-adapters")).openmeteoMocks,
   datetime: (await import("./specialized-adapters")).datetimeMocks,
   glances: (await import("./network-monitoring-adapters")).glancesMocks,
-  "glances-timeseries": (await import("./network-monitoring-adapters"))
-    .glancesMocks,
-  "glances-percpu": (await import("./network-monitoring-adapters"))
-    .glancesMocks,
-  "glances-processes": (await import("./network-monitoring-adapters"))
-    .glancesMocks,
-  "glances-sensors": (await import("./network-monitoring-adapters"))
-    .glancesMocks,
-  "glances-diskusage": (await import("./network-monitoring-adapters"))
-    .glancesMocks,
-  openweathermap: (await import("./network-monitoring-adapters"))
-    .openweathermapMocks,
+  "glances-timeseries": (await import("./network-monitoring-adapters")).glancesMocks,
+  "glances-percpu": (await import("./network-monitoring-adapters")).glancesMocks,
+  "glances-processes": (await import("./network-monitoring-adapters")).glancesMocks,
+  "glances-sensors": (await import("./network-monitoring-adapters")).glancesMocks,
+  "glances-diskusage": (await import("./network-monitoring-adapters")).glancesMocks,
+  openweathermap: (await import("./network-monitoring-adapters")).openweathermapMocks,
   search: (await import("./specialized-adapters")).searchMocks,
   matrix: (await import("./specialized-adapters")).matrixMocks,
   pipes: (await import("./specialized-adapters")).pipesMocks,
@@ -245,7 +233,7 @@ export const mocks = {
   jackett: (await import("./download-media-adapters")).jackettMocks,
   frigate: (await import("./specialized-adapters")).frigateMocks,
   homeassistant: (await import("./specialized-adapters")).homeassistantMocks,
-} as const
+} as const;
 
 // ── Helper Functions ─────────────────────────────────────────────────────────────
 
@@ -266,23 +254,20 @@ export function getMocksForAdapter(
   adapterId: keyof typeof mocks,
   state: "success" | "empty" | "error" | "unauthorized" = "success",
   baseUrl = "https://example.com",
-  options?: Record<string, unknown>
+  options?: Record<string, unknown>,
 ): MockResponse[] {
-  const adapterMocks = mocks[adapterId] as Record<
-    string,
-    (...args: unknown[]) => MockResponse[]
-  >
+  const adapterMocks = mocks[adapterId] as Record<string, (...args: unknown[]) => MockResponse[]>;
 
   if (!adapterMocks) {
-    throw new Error(`No mocks found for adapter: ${adapterId}`)
+    throw new Error(`No mocks found for adapter: ${adapterId}`);
   }
 
-  const mockFn = adapterMocks[state]
+  const mockFn = adapterMocks[state];
   if (!mockFn) {
-    throw new Error(`No '${state}' mock found for adapter: ${adapterId}`)
+    throw new Error(`No '${state}' mock found for adapter: ${adapterId}`);
   }
 
-  return mockFn(baseUrl, options) as MockResponse[]
+  return mockFn(baseUrl, options) as MockResponse[];
 }
 
 /**
@@ -303,23 +288,23 @@ export function getMocksForAdapter(
 export function setupMultipleMocks(
   mockAdapter: MockAdapter,
   configs: Array<{
-    adapterId: keyof typeof mocks
-    state?: "success" | "empty" | "error" | "unauthorized"
-    baseUrl?: string
-    options?: Record<string, unknown>
-  }>
+    adapterId: keyof typeof mocks;
+    state?: "success" | "empty" | "error" | "unauthorized";
+    baseUrl?: string;
+    options?: Record<string, unknown>;
+  }>,
 ): void {
-  const allResponses: MockResponse[] = []
+  const allResponses: MockResponse[] = [];
 
   for (const config of configs) {
     const responses = getMocksForAdapter(
       config.adapterId,
       config.state || "success",
       config.baseUrl || "https://example.com",
-      config.options
-    )
-    allResponses.push(...responses)
+      config.options,
+    );
+    allResponses.push(...responses);
   }
 
-  mockAdapter.setup(...allResponses)
+  mockAdapter.setup(...allResponses);
 }

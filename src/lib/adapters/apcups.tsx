@@ -1,20 +1,20 @@
-import type { ServiceDefinition } from "./types"
-import { Zap, Battery, Clock, Thermometer } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { Zap, Battery, Clock, Thermometer } from "lucide-react";
 
 type APCUPSData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  loadPercent: number
-  batteryCharge: number
-  timeLeft: number
-  temperature: number
-  status: string
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  loadPercent: number;
+  batteryCharge: number;
+  timeLeft: number;
+  temperature: number;
+  status: string;
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function apcupsToPayload(data: APCUPSData) {
-  const time = data.timeLeft ?? 0
-  const timeLeftMin = time > 60 ? `${(time / 60).toFixed(0)}m` : `${time}s`
+  const time = data.timeLeft ?? 0;
+  const timeLeftMin = time > 60 ? `${(time / 60).toFixed(0)}m` : `${time}s`;
 
   return {
     stats: [
@@ -43,7 +43,7 @@ function apcupsToPayload(data: APCUPSData) {
         icon: Thermometer,
       },
     ],
-  }
+  };
 }
 
 export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
@@ -62,8 +62,7 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
         { value: "tcp", label: "TCP Daemon (port 3551)" },
         { value: "http", label: "HTTP CGI (multimon.cgi)" },
       ],
-      helperText:
-        "TCP Daemon is recommended — most users don't have the CGI web interface enabled",
+      helperText: "TCP Daemon is recommended — most users don't have the CGI web interface enabled",
     },
     {
       key: "host",
@@ -91,77 +90,73 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
     },
   ],
   async fetchData(config) {
-    const connectionType = config.connectionType ?? "tcp"
+    const connectionType = config.connectionType ?? "tcp";
 
     if (connectionType === "tcp") {
       // TCP daemon connection (recommended)
-      const host = config.host
-      const port = parseInt(config.port ?? "3551", 10)
+      const host = config.host;
+      const port = parseInt(config.port ?? "3551", 10);
 
       if (!host) {
-        throw new Error("Host is required for TCP connection")
+        throw new Error("Host is required for TCP connection");
       }
 
       try {
         // Import server-only TCP utility
-        const { fetchApcupsTcpStatus } = await import("@/lib/apcups-tcp")
+        const { fetchApcupsTcpStatus } = await import("@/lib/apcups-tcp");
         const { loadPercent, batteryCharge, timeLeft, temperature, status } =
-          await fetchApcupsTcpStatus(host, port)
+          await fetchApcupsTcpStatus(host, port);
 
         return {
           _status: status.includes("ONLINE") ? "ok" : "warn",
-          _statusText: status.includes("ONLINE")
-            ? undefined
-            : `UPS Status: ${status}`,
+          _statusText: status.includes("ONLINE") ? undefined : `UPS Status: ${status}`,
           loadPercent,
           batteryCharge,
           timeLeft,
           temperature,
           status,
-        }
+        };
       } catch (error) {
         throw new Error(
-          `TCP connection to ${host}:${port} failed: ${error instanceof Error ? error.message : "Unknown error"}`
-        )
+          `TCP connection to ${host}:${port} failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
       }
     } else {
       // HTTP CGI fallback (original method)
-      const baseUrl = (config.url ?? "").replace(/\/$/, "")
+      const baseUrl = (config.url ?? "").replace(/\/$/, "");
 
       if (!baseUrl) {
-        throw new Error("URL is required for HTTP CGI connection")
+        throw new Error("URL is required for HTTP CGI connection");
       }
 
-      const res = await fetchWithTimeout(`${baseUrl}/multimon.cgi`)
+      const res = await fetchWithTimeout(`${baseUrl}/multimon.cgi`);
 
-      if (!res.ok) throw new Error(`APC UPS error: ${res.status}`)
+      if (!res.ok) throw new Error(`APC UPS error: ${res.status}`);
 
-      const html = await res.text()
+      const html = await res.text();
 
       const extractValue = (label: string): string => {
-        const regex = new RegExp(`${label}[^<]*<[^>]*>([^<]+)</`, "i")
-        const match = html.match(regex)
-        return match?.[1]?.trim() ?? ""
-      }
+        const regex = new RegExp(`${label}[^<]*<[^>]*>([^<]+)</`, "i");
+        const match = html.match(regex);
+        return match?.[1]?.trim() ?? "";
+      };
 
-      const loadPercent = parseFloat(extractValue("LOADPCT")) || 0
-      const batteryCharge = parseFloat(extractValue("BCHARGE")) || 0
-      const timeLeft = parseFloat(extractValue("TIMELEFT")) || 0
-      const temperature = parseFloat(extractValue("ITEMP")) || 0
-      const status = extractValue("STATUS") || "Unknown"
+      const loadPercent = parseFloat(extractValue("LOADPCT")) || 0;
+      const batteryCharge = parseFloat(extractValue("BCHARGE")) || 0;
+      const timeLeft = parseFloat(extractValue("TIMELEFT")) || 0;
+      const temperature = parseFloat(extractValue("ITEMP")) || 0;
+      const status = extractValue("STATUS") || "Unknown";
 
       return {
         _status: status.includes("ONLINE") ? "ok" : "warn",
-        _statusText: status.includes("ONLINE")
-          ? undefined
-          : `UPS Status: ${status}`,
+        _statusText: status.includes("ONLINE") ? undefined : `UPS Status: ${status}`,
         loadPercent,
         batteryCharge,
         timeLeft,
         temperature,
         status,
-      }
+      };
     }
   },
   toPayload: apcupsToPayload,
-}
+};

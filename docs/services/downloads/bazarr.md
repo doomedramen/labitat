@@ -4,10 +4,10 @@ Subtitle manager for Sonarr and Radarr.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Bazarr server URL |
-| API Key | Password | Yes | Bazarr API key |
+| Field   | Type     | Required | Description       |
+| ------- | -------- | -------- | ----------------- |
+| URL     | URL      | Yes      | Bazarr server URL |
+| API Key | Password | Yes      | Bazarr API key    |
 
 ## Finding Your API Key
 

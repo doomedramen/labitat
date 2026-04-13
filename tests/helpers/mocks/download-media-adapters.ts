@@ -2,8 +2,8 @@
  * Mock data for download and media adapters (SABnzbd, qBittorrent, Transmission, Plex, Tautulli, Bazarr, Jackett)
  */
 
-import type { MockResponse } from "../adapter-mocks"
-import { successResponse, urlPatterns } from "../adapter-mocks"
+import type { MockResponse } from "../adapter-mocks";
+import { successResponse, urlPatterns } from "../adapter-mocks";
 
 // ── SABnzbd Mocks ───────────────────────────────────────────────────────────────
 
@@ -11,17 +11,17 @@ export const sabnzbdMocks = {
   success: (
     baseUrl = "https://sabnzbd.example.com",
     opts?: {
-      speed?: string
-      timeleft?: string
-      queueSize?: number
-      downloading?: boolean
+      speed?: string;
+      timeleft?: string;
+      queueSize?: number;
+      downloading?: boolean;
       slots?: Array<{
-        filename: string
-        percentage: number
-        timeleft: string
-        mb: string
-      }>
-    }
+        filename: string;
+        percentage: number;
+        timeleft: string;
+        mb: string;
+      }>;
+    },
   ): MockResponse[] => {
     const slots = opts?.slots || [
       {
@@ -36,7 +36,7 @@ export const sabnzbdMocks = {
         timeleft: "00:00:00",
         mb: "25",
       },
-    ]
+    ];
 
     return [
       successResponse(urlPatterns.api(baseUrl, "/api"), {
@@ -54,7 +54,7 @@ export const sabnzbdMocks = {
           })),
         },
       }),
-    ]
+    ];
   },
 
   empty: (baseUrl = "https://sabnzbd.example.com"): MockResponse[] => [
@@ -69,16 +69,13 @@ export const sabnzbdMocks = {
     }),
   ],
 
-  error: (
-    baseUrl = "https://sabnzbd.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://sabnzbd.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/api"),
       { error: `SABnzbd error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── qBittorrent Mocks ───────────────────────────────────────────────────────────
 
@@ -87,16 +84,16 @@ export const qbittorrentMocks = {
     baseUrl = "https://qbittorrent.example.com",
     opts?: {
       downloads?: Array<{
-        name: string
-        progress: number
-        dlspeed: number
-        eta: number
-        state: string
-        size: number
-      }>
-      globalDlSpeed?: number
-      globalUpSpeed?: number
-    }
+        name: string;
+        progress: number;
+        dlspeed: number;
+        eta: number;
+        state: string;
+        size: number;
+      }>;
+      globalDlSpeed?: number;
+      globalUpSpeed?: number;
+    },
   ): MockResponse[] => {
     const downloads = opts?.downloads || [
       {
@@ -107,7 +104,7 @@ export const qbittorrentMocks = {
         state: "downloading",
         size: 4294967296,
       },
-    ]
+    ];
 
     return [
       // Login
@@ -122,14 +119,14 @@ export const qbittorrentMocks = {
           eta: d.eta,
           state: d.state,
           size: d.size,
-        }))
+        })),
       ),
       // Global transfer info
       successResponse(urlPatterns.api(baseUrl, "/api/v2/transfer/info"), {
         dl_info_speed: opts?.globalDlSpeed ?? 5242880,
         up_info_speed: 1048576,
       }),
-    ]
+    ];
   },
 
   empty: (baseUrl = "https://qbittorrent.example.com"): MockResponse[] => [
@@ -141,16 +138,9 @@ export const qbittorrentMocks = {
     }),
   ],
 
-  error: (
-    baseUrl = "https://qbittorrent.example.com",
-    status = 403
-  ): MockResponse =>
-    successResponse(
-      urlPatterns.api(baseUrl, "/api/v2/auth/login"),
-      "Fails.",
-      status
-    ),
-}
+  error: (baseUrl = "https://qbittorrent.example.com", status = 403): MockResponse =>
+    successResponse(urlPatterns.api(baseUrl, "/api/v2/auth/login"), "Fails.", status),
+};
 
 // ── Transmission Mocks ──────────────────────────────────────────────────────────
 
@@ -159,14 +149,14 @@ export const transmissionMocks = {
     baseUrl = "https://transmission.example.com",
     opts?: {
       downloads?: Array<{
-        name: string
-        percentDone: number
-        rateDownload: number
-        eta: number
-        status: number
-        sizeWhenDone: number
-      }>
-    }
+        name: string;
+        percentDone: number;
+        rateDownload: number;
+        eta: number;
+        status: number;
+        sizeWhenDone: number;
+      }>;
+    },
   ): MockResponse[] => {
     const downloads = opts?.downloads || [
       {
@@ -177,7 +167,7 @@ export const transmissionMocks = {
         status: 4, // downloading
         sizeWhenDone: 3758096384,
       },
-    ]
+    ];
 
     return [
       // Session ID request (returns 409 with session ID in header)
@@ -185,7 +175,7 @@ export const transmissionMocks = {
         urlPatterns.api(baseUrl, "/transmission/rpc"),
         "<html><p>409: Conflict</p></html>",
         409,
-        { "X-Transmission-Session-Id": "test-session-id-12345" }
+        { "X-Transmission-Session-Id": "test-session-id-12345" },
       ),
       // Actual API call
       successResponse(
@@ -204,9 +194,9 @@ export const transmissionMocks = {
           },
         },
         200,
-        { "Content-Type": "application/json" }
+        { "Content-Type": "application/json" },
       ),
-    ]
+    ];
   },
 
   empty: (baseUrl = "https://transmission.example.com"): MockResponse[] => [
@@ -214,26 +204,23 @@ export const transmissionMocks = {
       urlPatterns.api(baseUrl, "/transmission/rpc"),
       "<html><p>409: Conflict</p></html>",
       409,
-      { "X-Transmission-Session-Id": "test-session-id-12345" }
+      { "X-Transmission-Session-Id": "test-session-id-12345" },
     ),
     successResponse(
       urlPatterns.api(baseUrl, "/transmission/rpc"),
       { result: "success", arguments: { torrents: [] } },
       200,
-      { "Content-Type": "application/json" }
+      { "Content-Type": "application/json" },
     ),
   ],
 
-  error: (
-    baseUrl = "https://transmission.example.com",
-    status = 401
-  ): MockResponse =>
+  error: (baseUrl = "https://transmission.example.com", status = 401): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/transmission/rpc"),
       { error: "Unauthorized" },
-      status
+      status,
     ),
-}
+};
 
 // ── Plex Mocks ──────────────────────────────────────────────────────────────────
 
@@ -241,22 +228,22 @@ export const plexMocks = {
   success: (
     baseUrl = "https://plex.example.com",
     opts?: {
-      streams?: number
-      albums?: number
-      movies?: number
-      tvShows?: number
+      streams?: number;
+      albums?: number;
+      movies?: number;
+      tvShows?: number;
       sessions?: Array<{
-        title: string
-        grandparentTitle?: string
-        type: string
-        viewOffset: number
-        duration: number
-        user: string
-        state: string
-      }>
-    }
+        title: string;
+        grandparentTitle?: string;
+        type: string;
+        viewOffset: number;
+        duration: number;
+        user: string;
+        state: string;
+      }>;
+    },
   ): MockResponse[] => {
-    const sessions = opts?.sessions || []
+    const sessions = opts?.sessions || [];
     const sessionsXml =
       sessions.length > 0
         ? `<?xml version="1.0" encoding="UTF-8"?>
@@ -274,20 +261,17 @@ export const plexMocks = {
     <User title="${s.user}" />
     <Player state="${s.state}" />
   </Video>
-  `
+  `,
     )
     .join("\n")}
 </MediaContainer>`
         : `<?xml version="1.0" encoding="UTF-8"?>
-<MediaContainer size="${opts?.streams ?? 0}"></MediaContainer>`
+<MediaContainer size="${opts?.streams ?? 0}"></MediaContainer>`;
 
     return [
-      successResponse(
-        urlPatterns.api(baseUrl, "/status/sessions"),
-        sessionsXml,
-        200,
-        { "Content-Type": "text/xml" }
-      ),
+      successResponse(urlPatterns.api(baseUrl, "/status/sessions"), sessionsXml, 200, {
+        "Content-Type": "text/xml",
+      }),
       successResponse(
         urlPatterns.api(baseUrl, "/library/sections"),
         `<?xml version="1.0" encoding="UTF-8"?>
@@ -297,27 +281,27 @@ export const plexMocks = {
   <Directory key="3" type="artist" title="Music" />
 </MediaContainer>`,
         200,
-        { "Content-Type": "text/xml" }
+        { "Content-Type": "text/xml" },
       ),
       successResponse(
         urlPatterns.api(baseUrl, "/library/sections/1/all"),
         `<MediaContainer totalSize="${opts?.movies ?? 50}"></MediaContainer>`,
         200,
-        { "Content-Type": "text/xml" }
+        { "Content-Type": "text/xml" },
       ),
       successResponse(
         urlPatterns.api(baseUrl, "/library/sections/2/all"),
         `<MediaContainer totalSize="${opts?.tvShows ?? 20}"></MediaContainer>`,
         200,
-        { "Content-Type": "text/xml" }
+        { "Content-Type": "text/xml" },
       ),
       successResponse(
         urlPatterns.api(baseUrl, "/library/sections/3/albums"),
         `<MediaContainer totalSize="${opts?.albums ?? 30}"></MediaContainer>`,
         200,
-        { "Content-Type": "text/xml" }
+        { "Content-Type": "text/xml" },
       ),
-    ]
+    ];
   },
 
   empty: (baseUrl = "https://plex.example.com"): MockResponse[] => [
@@ -325,23 +309,19 @@ export const plexMocks = {
       urlPatterns.api(baseUrl, "/status/sessions"),
       '<MediaContainer size="0"></MediaContainer>',
       200,
-      { "Content-Type": "text/xml" }
+      { "Content-Type": "text/xml" },
     ),
     successResponse(
       urlPatterns.api(baseUrl, "/library/sections"),
       "<MediaContainer></MediaContainer>",
       200,
-      { "Content-Type": "text/xml" }
+      { "Content-Type": "text/xml" },
     ),
   ],
 
   unauthorized: (baseUrl = "https://plex.example.com"): MockResponse =>
-    successResponse(
-      urlPatterns.api(baseUrl, "/status/sessions"),
-      { error: "Unauthorized" },
-      401
-    ),
-}
+    successResponse(urlPatterns.api(baseUrl, "/status/sessions"), { error: "Unauthorized" }, 401),
+};
 
 // ── Tautulli Mocks ──────────────────────────────────────────────────────────────
 
@@ -349,97 +329,80 @@ export const tautulliMocks = {
   success: (
     baseUrl = "https://tautulli.example.com",
     opts?: {
-      streamCount?: number
+      streamCount?: number;
       streams?: Array<{
-        title: string
-        grandparentTitle?: string
-        media_type: string
-        progress_percent: number
-        user: string
-        state: string
-      }>
-      totalPlays?: number
-      playsThisMonth?: number
-    }
+        title: string;
+        grandparentTitle?: string;
+        media_type: string;
+        progress_percent: number;
+        user: string;
+        state: string;
+      }>;
+      totalPlays?: number;
+      playsThisMonth?: number;
+    },
   ): MockResponse[] => {
-    const streams = opts?.streams || []
+    const streams = opts?.streams || [];
 
     return [
-      successResponse(
-        urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_activity" }),
-        {
-          response: {
-            result: "success",
-            data: {
-              stream_count: opts?.streamCount ?? streams.length,
-              sessions: streams.map((s) => ({
-                title: s.title,
-                grandparent_title: s.grandparentTitle,
-                media_type: s.media_type,
-                progress_percent: s.progress_percent,
-                user: s.user,
-                state: s.state,
-              })),
-            },
+      successResponse(urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_activity" }), {
+        response: {
+          result: "success",
+          data: {
+            stream_count: opts?.streamCount ?? streams.length,
+            sessions: streams.map((s) => ({
+              title: s.title,
+              grandparent_title: s.grandparentTitle,
+              media_type: s.media_type,
+              progress_percent: s.progress_percent,
+              user: s.user,
+              state: s.state,
+            })),
           },
-        }
-      ),
-      successResponse(
-        urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_history" }),
-        {
-          response: {
-            result: "success",
-            data: {
-              recordsFiltered: opts?.totalPlays ?? 1234,
-              draw: 1,
-            },
+        },
+      }),
+      successResponse(urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_history" }), {
+        response: {
+          result: "success",
+          data: {
+            recordsFiltered: opts?.totalPlays ?? 1234,
+            draw: 1,
           },
-        }
-      ),
-      successResponse(
-        urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_monthly_plays" }),
-        {
-          response: {
-            result: "success",
-            data: {
-              plays: opts?.playsThisMonth ?? 156,
-            },
+        },
+      }),
+      successResponse(urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_monthly_plays" }), {
+        response: {
+          result: "success",
+          data: {
+            plays: opts?.playsThisMonth ?? 156,
           },
-        }
-      ),
-    ]
+        },
+      }),
+    ];
   },
 
   empty: (baseUrl = "https://tautulli.example.com"): MockResponse[] => [
-    successResponse(
-      urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_activity" }),
-      {
-        response: {
-          result: "success",
-          data: { stream_count: 0, sessions: [] },
-        },
-      }
-    ),
-    successResponse(
-      urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_history" }),
-      { response: { result: "success", data: { recordsFiltered: 0, draw: 1 } } }
-    ),
-    successResponse(
-      urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_monthly_plays" }),
-      { response: { result: "success", data: { plays: 0 } } }
-    ),
+    successResponse(urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_activity" }), {
+      response: {
+        result: "success",
+        data: { stream_count: 0, sessions: [] },
+      },
+    }),
+    successResponse(urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_history" }), {
+      response: { result: "success", data: { recordsFiltered: 0, draw: 1 } },
+    }),
+    successResponse(urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_monthly_plays" }), {
+      response: { result: "success", data: { plays: 0 } },
+    }),
   ],
 
-  error: (
-    baseUrl = "https://tautulli.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://tautulli.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.withQuery(baseUrl, "/api/v2", { cmd: "get_activity" }),
       { error: `Tautulli error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── Bazarr Mocks ────────────────────────────────────────────────────────────────
 
@@ -447,11 +410,11 @@ export const bazarrMocks = {
   success: (
     baseUrl = "https://bazarr.example.com",
     opts?: {
-      wanted?: number
-      missing?: number
-      series?: number
-      movies?: number
-    }
+      wanted?: number;
+      missing?: number;
+      series?: number;
+      movies?: number;
+    },
   ): MockResponse[] => [
     successResponse(
       urlPatterns.withQuery(baseUrl, "/api/episodes", {
@@ -463,7 +426,7 @@ export const bazarrMocks = {
         recordsTotal: 0,
         recordsFiltered: opts?.wanted ?? 25,
         draw: 1,
-      }
+      },
     ),
     successResponse(
       urlPatterns.withQuery(baseUrl, "/api/movies", {
@@ -475,7 +438,7 @@ export const bazarrMocks = {
         recordsTotal: 0,
         recordsFiltered: opts?.missing ?? 10,
         draw: 1,
-      }
+      },
     ),
     successResponse(
       urlPatterns.withQuery(baseUrl, "/api/series", {
@@ -487,17 +450,14 @@ export const bazarrMocks = {
         recordsTotal: 0,
         recordsFiltered: opts?.series ?? 15,
         draw: 1,
-      }
+      },
     ),
-    successResponse(
-      urlPatterns.withQuery(baseUrl, "/api/movies?start=0&length=1", {}),
-      {
-        data: [],
-        recordsTotal: 0,
-        recordsFiltered: opts?.movies ?? 8,
-        draw: 1,
-      }
-    ),
+    successResponse(urlPatterns.withQuery(baseUrl, "/api/movies?start=0&length=1", {}), {
+      data: [],
+      recordsTotal: 0,
+      recordsFiltered: opts?.movies ?? 8,
+      draw: 1,
+    }),
   ],
 
   empty: (baseUrl = "https://bazarr.example.com"): MockResponse[] => [
@@ -525,9 +485,9 @@ export const bazarrMocks = {
     successResponse(
       urlPatterns.api(baseUrl, "/api/episodes"),
       { error: `Bazarr error: ${status}` },
-      status
+      status,
     ),
-}
+};
 
 // ── Jackett Mocks ───────────────────────────────────────────────────────────────
 
@@ -535,9 +495,9 @@ export const jackettMocks = {
   success: (
     baseUrl = "https://jackett.example.com",
     opts?: {
-      indexers?: number
-      configuredIndexers?: number
-    }
+      indexers?: number;
+      configuredIndexers?: number;
+    },
   ): MockResponse[] => [
     successResponse(
       urlPatterns.withQuery(baseUrl, "/api/v2.0/indexers", {
@@ -548,7 +508,7 @@ export const jackettMocks = {
         name: `Indexer ${i}`,
         configured: true,
         status: "OK",
-      }))
+      })),
     ),
     successResponse(
       urlPatterns.api(baseUrl, "/api/v2.0/indexers"),
@@ -557,7 +517,7 @@ export const jackettMocks = {
         name: `Indexer ${i}`,
         configured: i < (opts?.configuredIndexers ?? 5),
         status: i < (opts?.configuredIndexers ?? 5) ? "OK" : "Error",
-      }))
+      })),
     ),
   ],
 
@@ -565,13 +525,10 @@ export const jackettMocks = {
     successResponse(urlPatterns.api(baseUrl, "/api/v2.0/indexers"), []),
   ],
 
-  error: (
-    baseUrl = "https://jackett.example.com",
-    status = 500
-  ): MockResponse =>
+  error: (baseUrl = "https://jackett.example.com", status = 500): MockResponse =>
     successResponse(
       urlPatterns.api(baseUrl, "/api/v2.0/indexers"),
       { error: `Jackett error: ${status}` },
-      status
+      status,
     ),
-}
+};

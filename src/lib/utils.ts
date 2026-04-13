@@ -1,18 +1,16 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /** Format TanStack Form / Zod error objects into a readable string */
 export function formatErrors(errors: unknown[]): string {
   const messages = errors.map((e) =>
-    typeof e === "string"
-      ? e
-      : ((e as { message?: string }).message ?? String(e))
-  )
-  return [...new Set(messages)].join(", ")
+    typeof e === "string" ? e : ((e as { message?: string }).message ?? String(e)),
+  );
+  return [...new Set(messages)].join(", ");
 }
 
 /**
@@ -22,16 +20,16 @@ export function formatErrors(errors: unknown[]): string {
  * Supports various extensions and defaults to PNG.
  */
 export function resolveIconUrl(icon: string | null | undefined): string {
-  if (!icon) return ""
+  if (!icon) return "";
 
   // Already a full URL
   if (icon.startsWith("http://") || icon.startsWith("https://")) {
-    return icon
+    return icon;
   }
 
   // Remove file extension if present
-  const slug = icon.replace(/\.(png|svg|webp)$/i, "")
+  const slug = icon.replace(/\.(png|svg|webp)$/i, "");
 
   // Return PNG format from selfh.st CDN
-  return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${slug}.png`
+  return `https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/${slug}.png`;
 }

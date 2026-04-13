@@ -1,21 +1,21 @@
-import type { ServiceDefinition } from "./types"
-import { formatBytes } from "@/lib/utils/format"
-import { Server, Monitor, Container, Cpu, MemoryStick } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import { formatBytes } from "@/lib/utils/format";
+import { Server, Monitor, Container, Cpu, MemoryStick } from "lucide-react";
 
 type ProxmoxData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  nodes: number
-  vms: number
-  containers: number
-  runningVMs: number
-  runningContainers: number
-  cpuUsage: number // percentage 0-100
-  memoryUsage: number // percentage 0-100
-  memoryUsed: string // human readable
-  memoryTotal: string // human readable
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  nodes: number;
+  vms: number;
+  containers: number;
+  runningVMs: number;
+  runningContainers: number;
+  cpuUsage: number; // percentage 0-100
+  memoryUsage: number; // percentage 0-100
+  memoryUsed: string; // human readable
+  memoryTotal: string; // human readable
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function proxmoxToPayload(data: ProxmoxData) {
   return {
@@ -52,7 +52,7 @@ function proxmoxToPayload(data: ProxmoxData) {
         tooltip: `${data.memoryUsed ?? "0 B"} / ${data.memoryTotal ?? "0 B"}`,
       },
     ],
-  }
+  };
 }
 
 export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
@@ -93,96 +93,76 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
+    const baseUrl = config.url.replace(/\/$/, "");
 
     // Login
-    const loginRes = await fetchWithTimeout(
-      `${baseUrl}/api2/json/access/ticket`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: config.username,
-          password: config.password,
-        }),
-      }
-    )
+    const loginRes = await fetchWithTimeout(`${baseUrl}/api2/json/access/ticket`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: config.username,
+        password: config.password,
+      }),
+    });
 
-    if (!loginRes.ok)
-      throw new Error(`Proxmox login failed: ${loginRes.status}`)
+    if (!loginRes.ok) throw new Error(`Proxmox login failed: ${loginRes.status}`);
 
-    const loginData = await loginRes.json()
-    const ticket = loginData.data?.ticket
-    const csrfToken = loginData.data?.CSRFPreventionToken
-    if (!ticket)
-      throw new Error("Proxmox login succeeded but no ticket returned")
+    const loginData = await loginRes.json();
+    const ticket = loginData.data?.ticket;
+    const csrfToken = loginData.data?.CSRFPreventionToken;
+    if (!ticket) throw new Error("Proxmox login succeeded but no ticket returned");
 
     // Get cluster resources
-    const res = await fetchWithTimeout(
-      `${baseUrl}/api2/json/cluster/resources`,
-      {
-        headers: {
-          Cookie: `PVEAuthCookie=${ticket}`,
-          CSRFPreventionToken: csrfToken,
-        },
-      }
-    )
+    const res = await fetchWithTimeout(`${baseUrl}/api2/json/cluster/resources`, {
+      headers: {
+        Cookie: `PVEAuthCookie=${ticket}`,
+        CSRFPreventionToken: csrfToken,
+      },
+    });
 
-    if (!res.ok) throw new Error(`Proxmox error: ${res.status}`)
+    if (!res.ok) throw new Error(`Proxmox error: ${res.status}`);
 
-    const data = await res.json()
-    const allResources = data.data ?? []
-    const selectedNode = config.node?.trim()
+    const data = await res.json();
+    const allResources = data.data ?? [];
+    const selectedNode = config.node?.trim();
 
     // Filter resources by node if specified
     const resources = selectedNode
       ? allResources.filter((r: { node?: string }) => r.node === selectedNode)
-      : allResources
+      : allResources;
 
     const nodes = selectedNode
       ? 1
-      : resources.filter((r: { type: string }) => r.type === "node").length
-    const vms = resources.filter(
-      (r: { type: string }) => r.type === "qemu"
-    ).length
-    const containers = resources.filter(
-      (r: { type: string }) => r.type === "lxc"
-    ).length
+      : resources.filter((r: { type: string }) => r.type === "node").length;
+    const vms = resources.filter((r: { type: string }) => r.type === "qemu").length;
+    const containers = resources.filter((r: { type: string }) => r.type === "lxc").length;
     const runningVMs = resources.filter(
-      (r: { type: string; status: string }) =>
-        r.type === "qemu" && r.status === "running"
-    ).length
+      (r: { type: string; status: string }) => r.type === "qemu" && r.status === "running",
+    ).length;
     const runningContainers = resources.filter(
-      (r: { type: string; status: string }) =>
-        r.type === "lxc" && r.status === "running"
-    ).length
+      (r: { type: string; status: string }) => r.type === "lxc" && r.status === "running",
+    ).length;
 
     // Calculate CPU and memory utilization from node-level resources only
     // Using node-level data avoids double-counting (VMs/containers run on nodes)
-    let totalCpu = 0
-    let totalCpuMax = 0
-    let totalMem = 0
-    let totalMemMax = 0
+    let totalCpu = 0;
+    let totalCpuMax = 0;
+    let totalMem = 0;
+    let totalMemMax = 0;
 
     resources.forEach(
-      (r: {
-        type: string
-        cpu?: number
-        maxcpu?: number
-        mem?: number
-        maxmem?: number
-      }) => {
+      (r: { type: string; cpu?: number; maxcpu?: number; mem?: number; maxmem?: number }) => {
         if (r.type === "node") {
-          totalCpu += r.cpu ?? 0
-          totalCpuMax += r.maxcpu ?? 0
-          totalMem += r.mem ?? 0
-          totalMemMax += r.maxmem ?? 0
+          totalCpu += r.cpu ?? 0;
+          totalCpuMax += r.maxcpu ?? 0;
+          totalMem += r.mem ?? 0;
+          totalMemMax += r.maxmem ?? 0;
         }
-      }
-    )
+      },
+    );
 
-    const cpuUsage = totalCpuMax > 0 ? (totalCpu / totalCpuMax) * 100 : 0
-    const memoryUsage = totalMemMax > 0 ? (totalMem / totalMemMax) * 100 : 0
+    const cpuUsage = totalCpuMax > 0 ? (totalCpu / totalCpuMax) * 100 : 0;
+    const memoryUsage = totalMemMax > 0 ? (totalMem / totalMemMax) * 100 : 0;
 
     return {
       _status: "ok",
@@ -195,7 +175,7 @@ export const proxmoxDefinition: ServiceDefinition<ProxmoxData> = {
       memoryUsage,
       memoryUsed: formatBytes(totalMem),
       memoryTotal: formatBytes(totalMemMax),
-    }
+    };
   },
   toPayload: proxmoxToPayload,
-}
+};

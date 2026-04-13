@@ -1,26 +1,20 @@
-import type { FC } from "react"
-import type { WidgetPayload } from "./widget-types"
+import type { FC } from "react";
+import type { WidgetPayload } from "./widget-types";
 
 // ── Field types ───────────────────────────────────────────────────────────────
 
-export type FieldType =
-  | "url"
-  | "password"
-  | "text"
-  | "number"
-  | "select"
-  | "boolean"
+export type FieldType = "url" | "password" | "text" | "number" | "select" | "boolean";
 
 export type FieldDef = {
-  key: string
-  label: string
-  type: FieldType
-  required?: boolean
-  placeholder?: string
-  helperText?: string
-  options?: { label: string; value: string }[] // for 'select' type
-  defaultChecked?: boolean // for 'boolean' type — initial checked state
-}
+  key: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  placeholder?: string;
+  helperText?: string;
+  options?: { label: string; value: string }[]; // for 'select' type
+  defaultChecked?: boolean; // for 'boolean' type — initial checked state
+};
 
 // ── Service categories ─────────────────────────────────────────────────────────
 
@@ -34,7 +28,7 @@ export type ServiceCategory =
   | "security"
   | "finance"
   | "productivity"
-  | "info"
+  | "info";
 
 // ── Service status ──────────────────────────────────────────────────────────────
 
@@ -45,32 +39,32 @@ export type ServiceStatus =
   | { state: "reachable" } // HTTP 200 but no service adapter
   | { state: "unreachable"; reason: string } // Network error (refused, DNS failure, etc.)
   | { state: "slow"; reason: string; timeoutMs: number } // Request exceeded timeout — service may still be working
-  | { state: "error"; reason: string; httpStatus?: number } // HTTP 4xx/5xx or adapter error
+  | { state: "error"; reason: string; httpStatus?: number }; // HTTP 4xx/5xx or adapter error
 
 // Convert legacy ServiceData._status to new ServiceStatus
 export function dataToStatus(data: ServiceData): ServiceStatus {
-  const status = data._status
+  const status = data._status;
 
   if (!status || status === "none") {
-    return { state: "unknown" }
+    return { state: "unknown" };
   }
 
   if (status === "ok") {
-    return { state: "healthy" }
+    return { state: "healthy" };
   }
 
   if (status === "warn") {
-    return { state: "degraded" }
+    return { state: "degraded" };
   }
 
   if (status === "error") {
     return {
       state: "error",
       reason: data._statusText || "Service error",
-    }
+    };
   }
 
-  return { state: "unknown" }
+  return { state: "unknown" };
 }
 
 // ── Service data ──────────────────────────────────────────────────────────────
@@ -81,10 +75,10 @@ export function dataToStatus(data: ServiceData): ServiceStatus {
  * _status and _statusText are optional — adapters set them to indicate health.
  */
 export type ServiceData = {
-  _status?: "ok" | "warn" | "error" | "none"
-  _statusText?: string
-  [key: string]: unknown
-}
+  _status?: "ok" | "warn" | "error" | "none";
+  _statusText?: string;
+  [key: string]: unknown;
+};
 
 // ── Service definition ─────────────────────────────────────────────────────────
 
@@ -114,41 +108,41 @@ export type ServiceData = {
  * - Just an icon + label + href
  */
 export type ServiceDefinition<TData extends ServiceData = ServiceData> = {
-  id: string
-  name: string
-  icon: string // selfh.st slug or full URL
-  category: ServiceCategory
-  configFields: FieldDef[]
-  defaultPollingMs?: number
+  id: string;
+  name: string;
+  icon: string; // selfh.st slug or full URL
+  category: ServiceCategory;
+  configFields: FieldDef[];
+  defaultPollingMs?: number;
 
   /**
    * Server-side data fetcher.
    * Receives decrypted config, returns typed data.
    * Omit for client-side widgets or static links.
    */
-  fetchData?: (config: Record<string, string>) => Promise<TData>
+  fetchData?: (config: Record<string, string>) => Promise<TData>;
 
   /**
    * Mark as client-side widget.
    * Widget handles its own data fetching.
    */
-  clientSide?: boolean
+  clientSide?: boolean;
 
   /**
    * Convert fetched data to standardized widget payload.
    * WidgetContainer renders this automatically.
    * Use this for standard stat grids + optional lists.
    */
-  toPayload?: (data: TData) => WidgetPayload
+  toPayload?: (data: TData) => WidgetPayload;
 
   /**
    * Custom widget renderer.
    * For fully custom UI that bypasses WidgetContainer (e.g. Matrix Rain, Pipes, Search).
    * If both toPayload and renderWidget are defined, renderWidget takes precedence.
    */
-  renderWidget?: FC<TData>
-}
+  renderWidget?: FC<TData>;
+};
 
 // ── Registry type ─────────────────────────────────────────────────────────────
 
-export type ServiceRegistry = Record<string, ServiceDefinition<ServiceData>>
+export type ServiceRegistry = Record<string, ServiceDefinition<ServiceData>>;

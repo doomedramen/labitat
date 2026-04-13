@@ -54,16 +54,16 @@ The adapter pattern is the heart of Labitat's extensibility. Each service (Radar
 ```typescript
 // src/lib/adapters/types.ts
 type ServiceDefinition<TData> = {
-  id: string // Unique identifier (e.g., "radarr")
-  name: string // Display name
-  icon: string // selfh.st icon slug or URL
-  category: ServiceCategory // For grouping in UI
-  configFields: FieldDef[] // Form fields for credentials
-  defaultPollingMs?: number // How often to fetch data
-  fetchData?: (config) => Promise<TData> // Server-side data fetch
-  Widget: FC<TData> // React component to render the widget
-  clientSide?: boolean // Widget handles its own fetching
-}
+  id: string; // Unique identifier (e.g., "radarr")
+  name: string; // Display name
+  icon: string; // selfh.st icon slug or URL
+  category: ServiceCategory; // For grouping in UI
+  configFields: FieldDef[]; // Form fields for credentials
+  defaultPollingMs?: number; // How often to fetch data
+  fetchData?: (config) => Promise<TData>; // Server-side data fetch
+  Widget: FC<TData>; // React component to render the widget
+  clientSide?: boolean; // Widget handles its own fetching
+};
 ```
 
 **Why this pattern?**
@@ -78,18 +78,18 @@ type ServiceDefinition<TData> = {
 ```typescript
 // src/lib/adapters/index.ts
 function buildRegistry(definitions: unknown[]): ServiceRegistry {
-  const registry: Record<string, ServiceDefinition> = {}
+  const registry: Record<string, ServiceDefinition> = {};
   for (const def of definitions as ServiceDefinition[]) {
-    registry[def.id] = def
+    registry[def.id] = def;
   }
-  return registry as ServiceRegistry
+  return registry as ServiceRegistry;
 }
 
 export const registry = buildRegistry([
   radarrDefinition,
   sonarrDefinition,
   // ... 30+ adapters
-])
+]);
 ```
 
 **Note on Type Assertion**: The `as ServiceRegistry` assertion is required due to TypeScript's contravariance for function types. `FC<TData>` is contravariant in `TData`, preventing direct assignment of `ServiceDefinition<RadarrData>` to `ServiceDefinition<ServiceData>`. This is safe because type safety is enforced at each adapter's definition site where `Widget: FC<TData>` must match the `TData` returned by `fetchData()`.

@@ -1,42 +1,36 @@
-"use client"
+"use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react"
-import type { ServiceData, ServiceStatus } from "@/lib/adapters/types"
+import { useCallback, useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
+import type { ServiceData, ServiceStatus } from "@/lib/adapters/types";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface LiveDataEntry {
-  widgetData: ServiceData | null
-  pingStatus: ServiceStatus | null
+  widgetData: ServiceData | null;
+  pingStatus: ServiceStatus | null;
 }
 
-export type SseState = "connected" | "disconnected"
+export type SseState = "connected" | "disconnected";
 
 // ── Module-level store (used by useSyncExternalStore) ───────────────────────────
 
-const DEFAULT_ENTRY: LiveDataEntry = { widgetData: null, pingStatus: null }
+const DEFAULT_ENTRY: LiveDataEntry = { widgetData: null, pingStatus: null };
 
 class LiveDataStore {
-  private cache = new Map<string, LiveDataEntry>()
-  private listeners = new Set<() => void>()
-  private _sseState: SseState = "disconnected"
-  private sseListeners = new Set<() => void>()
+  private cache = new Map<string, LiveDataEntry>();
+  private listeners = new Set<() => void>();
+  private _sseState: SseState = "disconnected";
+  private sseListeners = new Set<() => void>();
 
   get(itemId: string): LiveDataEntry {
-    return this.cache.get(itemId) ?? DEFAULT_ENTRY
+    return this.cache.get(itemId) ?? DEFAULT_ENTRY;
   }
 
   set(itemId: string, data: LiveDataEntry): void {
-    this.cache.set(itemId, data)
+    this.cache.set(itemId, data);
     for (const l of this.listeners) {
       try {
-        l()
+        l();
       } catch {
         /* listener removed mid-iteration */
       }
@@ -44,15 +38,15 @@ class LiveDataStore {
   }
 
   get sseState(): SseState {
-    return this._sseState
+    return this._sseState;
   }
 
   setSseState(state: SseState): void {
-    if (this._sseState === state) return
-    this._sseState = state
+    if (this._sseState === state) return;
+    this._sseState = state;
     for (const l of this.sseListeners) {
       try {
-        l()
+        l();
       } catch {
         /* listener removed mid-iteration */
       }
@@ -60,21 +54,21 @@ class LiveDataStore {
   }
 
   subscribe = (listener: () => void): (() => void) => {
-    this.listeners.add(listener)
+    this.listeners.add(listener);
     return () => {
-      this.listeners.delete(listener)
-    }
-  }
+      this.listeners.delete(listener);
+    };
+  };
 
   subscribeSse = (listener: () => void): (() => void) => {
-    this.sseListeners.add(listener)
+    this.sseListeners.add(listener);
     return () => {
-      this.sseListeners.delete(listener)
-    }
-  }
+      this.sseListeners.delete(listener);
+    };
+  };
 }
 
-const liveDataStore = new LiveDataStore()
+const liveDataStore = new LiveDataStore();
 
 // ── Hooks ──────────────────────────────────────────────────────────────────────
 
@@ -86,8 +80,8 @@ export function useLiveDataEntry(itemId: string): LiveDataEntry {
   return useSyncExternalStore(
     liveDataStore.subscribe,
     () => liveDataStore.get(itemId),
-    () => DEFAULT_ENTRY // server snapshot — no live data during SSR
-  )
+    () => DEFAULT_ENTRY, // server snapshot — no live data during SSR
+  );
 }
 
 /**
@@ -97,19 +91,19 @@ export function useSseState(): SseState {
   return useSyncExternalStore(
     liveDataStore.subscribeSse,
     () => liveDataStore.sseState,
-    () => "disconnected" as SseState // server snapshot — SSE is client-only
-  )
+    () => "disconnected" as SseState, // server snapshot — SSE is client-only
+  );
 }
 
 // ── Provider (manages SSE connection lifecycle) ────────────────────────────────
 
-const MAX_BACKOFF = 30_000
+const MAX_BACKOFF = 30_000;
 
 interface SseMessage {
-  type: string
-  itemId?: string
-  widgetData?: ServiceData | null
-  pingStatus?: ServiceStatus | null
+  type: string;
+  itemId?: string;
+  widgetData?: ServiceData | null;
+  pingStatus?: ServiceStatus | null;
 }
 
 /**
@@ -117,71 +111,71 @@ interface SseMessage {
  * and writes updates to the module-level LiveDataStore.
  */
 export function LiveDataProvider({ children }: { children: ReactNode }) {
-  const esRef = useRef<EventSource | null>(null)
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const connectRef = useRef<(() => void) | null>(null)
-  const backoffRef = useRef(1000)
+  const esRef = useRef<EventSource | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const connectRef = useRef<(() => void) | null>(null);
+  const backoffRef = useRef(1000);
 
   const doConnect = useCallback(() => {
-    if (typeof window === "undefined") return
-    if (esRef.current?.readyState === EventSource.CONNECTING) return
+    if (typeof window === "undefined") return;
+    if (esRef.current?.readyState === EventSource.CONNECTING) return;
 
-    const es = new EventSource("/api/events")
-    esRef.current = es
+    const es = new EventSource("/api/events");
+    esRef.current = es;
 
     es.onopen = () => {
-      backoffRef.current = 1000
-      liveDataStore.setSseState("connected")
-    }
+      backoffRef.current = 1000;
+      liveDataStore.setSseState("connected");
+    };
 
     es.onmessage = (event) => {
       try {
-        const msg: SseMessage = JSON.parse(event.data)
+        const msg: SseMessage = JSON.parse(event.data);
         if (msg.type === "reconnect") {
           // Server requested clean reconnect — close and let backoff handle reconnection
-          es.close()
-          return
+          es.close();
+          return;
         }
         if (msg.type === "update" && msg.itemId) {
           liveDataStore.set(msg.itemId, {
             widgetData: msg.widgetData ?? null,
             pingStatus: msg.pingStatus ?? null,
-          })
+          });
         }
       } catch {
         // ignore malformed messages
       }
-    }
+    };
 
     es.onerror = () => {
-      es.close()
-      liveDataStore.setSseState("disconnected")
-      const delay = backoffRef.current
-      backoffRef.current = Math.min(delay * 2, MAX_BACKOFF)
+      es.close();
+      liveDataStore.setSseState("disconnected");
+      const delay = backoffRef.current;
+      backoffRef.current = Math.min(delay * 2, MAX_BACKOFF);
       reconnectTimerRef.current = setTimeout(() => {
-        connectRef.current?.()
-      }, delay)
-    }
-  }, [])
+        connectRef.current?.();
+      }, delay);
+    };
+  }, []);
 
   useEffect(() => {
-    connectRef.current = doConnect
-  }, [doConnect])
+    connectRef.current = doConnect;
+  }, [doConnect]);
 
   useEffect(() => {
-    doConnect()
+    doConnect();
     return () => {
       if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current)
-        reconnectTimerRef.current = null
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
       }
       if (esRef.current) {
-        esRef.current.close()
-        esRef.current = null
+        esRef.current.close();
+        esRef.current = null;
       }
-      liveDataStore.setSseState("disconnected")
-    }
-  }, [doConnect])
+      liveDataStore.setSseState("disconnected");
+    };
+  }, [doConnect]);
 
-  return <>{children}</>
+  return <>{children}</>;
 }

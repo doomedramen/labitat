@@ -1,21 +1,15 @@
-"use client"
+"use client";
 
-import { cn } from "@/lib/utils"
-import type { GroupWithCache } from "@/lib/types"
-import { ItemCard } from "./item/item-card"
+import { cn } from "@/lib/utils";
+import type { GroupWithCache } from "@/lib/types";
+import { ItemCard } from "./item/item-card";
 
 /**
  * Server-compatible GroupCard.
  * Renders group name and items during SSR.
  * For edit mode, use GroupCardDummy instead.
  */
-export function GroupCard({
-  group,
-  editMode,
-}: {
-  group: GroupWithCache
-  editMode: boolean
-}) {
+export function GroupCard({ group, editMode }: { group: GroupWithCache; editMode: boolean }) {
   return (
     <div className="group/group relative">
       {/* Group header */}
@@ -29,7 +23,7 @@ export function GroupCard({
       <div
         className={cn(
           "grid items-start gap-3",
-          "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
         )}
       >
         {group.items.map((item) => (
@@ -37,5 +31,5 @@ export function GroupCard({
         ))}
       </div>
     </div>
-  )
+  );
 }

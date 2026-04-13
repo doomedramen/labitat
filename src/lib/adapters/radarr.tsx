@@ -1,21 +1,21 @@
-import type { ServiceDefinition } from "./types"
-import type { DownloadItem } from "@/components/widgets"
-import { formatBytes, formatTimeLeft } from "@/lib/utils/format"
-import { validateResponse, validateArrayResponse, parseBool } from "./validate"
-import { Film, Download, AlertTriangle, Search } from "lucide-react"
+import type { ServiceDefinition } from "./types";
+import type { DownloadItem } from "@/components/widgets";
+import { formatBytes, formatTimeLeft } from "@/lib/utils/format";
+import { validateResponse, validateArrayResponse, parseBool } from "./validate";
+import { Film, Download, AlertTriangle, Search } from "lucide-react";
 
 type RadarrData = {
-  _status?: "ok" | "warn" | "error"
-  _statusText?: string
-  queued: number
-  missing: number
-  wanted: number
-  movies: number
-  showActiveDownloads?: boolean
-  enableQueue?: boolean
-  downloads?: DownloadItem[]
-}
-import { fetchWithTimeout } from "./fetch-with-timeout"
+  _status?: "ok" | "warn" | "error";
+  _statusText?: string;
+  queued: number;
+  missing: number;
+  wanted: number;
+  movies: number;
+  showActiveDownloads?: boolean;
+  enableQueue?: boolean;
+  downloads?: DownloadItem[];
+};
+import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function radarrToPayload(data: RadarrData) {
   return {
@@ -49,7 +49,7 @@ function radarrToPayload(data: RadarrData) {
       data.enableQueue && data.showActiveDownloads && data.downloads?.length
         ? data.downloads
         : undefined,
-  }
+  };
 }
 
 export const radarrDefinition: ServiceDefinition<RadarrData> = {
@@ -90,18 +90,15 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     },
   ],
   async fetchData(config) {
-    const baseUrl = config.url.replace(/\/$/, "")
-    const headers = { "X-Api-Key": config.apiKey }
-    const showActiveDownloads = parseBool(config.showActiveDownloads)
-    const enableQueue = parseBool(config.enableQueue, true)
+    const baseUrl = config.url.replace(/\/$/, "");
+    const headers = { "X-Api-Key": config.apiKey };
+    const showActiveDownloads = parseBool(config.showActiveDownloads);
+    const enableQueue = parseBool(config.enableQueue, true);
 
     const [queueRes, movieRes, missingRes, cutoffRes] = await Promise.all([
-      fetchWithTimeout(
-        `${baseUrl}/api/v3/queue?pageSize=50&includeMovie=true`,
-        {
-          headers,
-        }
-      ),
+      fetchWithTimeout(`${baseUrl}/api/v3/queue?pageSize=50&includeMovie=true`, {
+        headers,
+      }),
       fetchWithTimeout(`${baseUrl}/api/v3/movie`, { headers }),
       fetchWithTimeout(`${baseUrl}/api/v3/wanted/missing?pageSize=1`, {
         headers,
@@ -109,96 +106,91 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
       fetchWithTimeout(`${baseUrl}/api/v3/wanted/cutoff?pageSize=1`, {
         headers,
       }),
-    ])
+    ]);
 
-    if (!queueRes.ok) throw new Error(`Radarr error: ${queueRes.status}`)
-    if (!movieRes.ok) throw new Error(`Radarr error: ${movieRes.status}`)
-    if (!missingRes.ok) throw new Error(`Radarr error: ${missingRes.status}`)
+    if (!queueRes.ok) throw new Error(`Radarr error: ${queueRes.status}`);
+    if (!movieRes.ok) throw new Error(`Radarr error: ${movieRes.status}`);
+    if (!missingRes.ok) throw new Error(`Radarr error: ${missingRes.status}`);
 
     type QueueRecord = {
-      size?: number
-      sizeleft?: number
-      estimatedCompletionTime?: string
-      trackedDownloadState?: string
-      status?: string
-      movie?: { title?: string }
-      title?: string
-    }
+      size?: number;
+      sizeleft?: number;
+      estimatedCompletionTime?: string;
+      trackedDownloadState?: string;
+      status?: string;
+      movie?: { title?: string };
+      title?: string;
+    };
     const queue = validateResponse<{
-      totalRecords?: number
-      records?: QueueRecord[]
-    }>(
-      await queueRes.json(),
-      ["totalRecords"],
-      [{ path: "records", type: "array" }],
-      { adapter: "radarr" }
-    )
+      totalRecords?: number;
+      records?: QueueRecord[];
+    }>(await queueRes.json(), ["totalRecords"], [{ path: "records", type: "array" }], {
+      adapter: "radarr",
+    });
     const movies = validateArrayResponse(await movieRes.json(), {
       adapter: "radarr",
-    })
+    });
     const missing = validateResponse<{ totalRecords?: number }>(
       await missingRes.json(),
       ["totalRecords"],
       [],
-      { adapter: "radarr" }
-    )
+      { adapter: "radarr" },
+    );
     const cutoff = cutoffRes.ok
-      ? validateResponse<{ totalRecords?: number }>(
-          await cutoffRes.json(),
-          ["totalRecords"],
-          [],
-          { adapter: "radarr", optional: true }
-        )
-      : { totalRecords: 0 }
+      ? validateResponse<{ totalRecords?: number }>(await cutoffRes.json(), ["totalRecords"], [], {
+          adapter: "radarr",
+          optional: true,
+        })
+      : { totalRecords: 0 };
 
-    const downloads: DownloadItem[] = []
+    const downloads: DownloadItem[] = [];
     if (enableQueue && showActiveDownloads && queue.records) {
       for (const record of queue.records) {
-        const size = record.size ?? 0
-        const sizeleft = record.sizeleft ?? size
-        const downloaded = size - sizeleft
-        const progress = size > 0 ? (downloaded / size) * 100 : 0
+        const size = record.size ?? 0;
+        const sizeleft = record.sizeleft ?? size;
+        const downloaded = size - sizeleft;
+        const progress = size > 0 ? (downloaded / size) * 100 : 0;
 
         // Calculate time left from estimatedCompletionTime
-        let timeLeft: string | undefined
+        let timeLeft: string | undefined;
         if (record.estimatedCompletionTime) {
-          const eta = new Date(record.estimatedCompletionTime).getTime()
-          const now = Date.now()
-          const minutesLeft = (eta - now) / 1000 / 60
+          const eta = new Date(record.estimatedCompletionTime).getTime();
+          const now = Date.now();
+          const minutesLeft = (eta - now) / 1000 / 60;
           if (minutesLeft > 0) {
-            timeLeft = formatTimeLeft(minutesLeft)
+            timeLeft = formatTimeLeft(minutesLeft);
           }
         }
 
         // Determine activity state from trackedDownloadState
         // Matches Homepage's formatDownloadState function
-        const state = record.trackedDownloadState?.toLowerCase() ?? ""
-        let activity: string | undefined
+        const state = record.trackedDownloadState?.toLowerCase() ?? "";
+        let activity: string | undefined;
         if (state === "importpending") {
-          activity = "Import pending"
+          activity = "Import pending";
         } else if (state === "failedpending") {
-          activity = "Failed pending"
+          activity = "Failed pending";
         } else if (state.includes("import")) {
-          activity = "Importing"
+          activity = "Importing";
         } else if (state.includes("download")) {
-          activity = "Downloading"
+          activity = "Downloading";
         } else if (state.includes("fail")) {
-          activity = "Failed"
+          activity = "Failed";
         } else if (record.status === "paused") {
-          activity = "Paused"
+          activity = "Paused";
         } else if (record.status === "queued") {
-          activity = "Queued"
+          activity = "Queued";
         }
 
         // Build title with movie name if available
-        const movieName = record.movie?.title ?? record.title
+        const movieName = record.movie?.title ?? record.title;
         downloads.push({
           title: movieName ?? "Unknown",
           progress,
           timeLeft,
           activity,
           size: size > 0 ? formatBytes(size) : undefined,
-        })
+        });
       }
     }
 
@@ -211,7 +203,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
       showActiveDownloads,
       enableQueue,
       downloads,
-    }
+    };
   },
   toPayload: radarrToPayload,
-}
+};

@@ -4,10 +4,10 @@ Book and ebook collection manager.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Readarr server URL |
-| API Key | Password | Yes | Readarr API key |
+| Field   | Type     | Required | Description        |
+| ------- | -------- | -------- | ------------------ |
+| URL     | URL      | Yes      | Readarr server URL |
+| API Key | Password | Yes      | Readarr API key    |
 
 ## Finding Your API Key
 

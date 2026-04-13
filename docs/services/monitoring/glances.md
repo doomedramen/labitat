@@ -4,11 +4,11 @@ Cross-platform system monitoring.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| URL | URL | Yes | Glances API URL |
-| Username | Text | No | Glances username |
-| Password | Password | No | Glances password |
+| Field    | Type     | Required | Description      |
+| -------- | -------- | -------- | ---------------- |
+| URL      | URL      | Yes      | Glances API URL  |
+| Username | Text     | No       | Glances username |
+| Password | Password | No       | Glances password |
 
 ## Widget Displays
 

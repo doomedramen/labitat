@@ -4,11 +4,11 @@ Weather display using OpenWeatherMap.
 
 ## Configuration
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| API Key | Password | Yes | OpenWeatherMap API key |
-| Latitude | Number | Yes | Location latitude |
-| Longitude | Number | Yes | Location longitude |
+| Field     | Type     | Required | Description            |
+| --------- | -------- | -------- | ---------------------- |
+| API Key   | Password | Yes      | OpenWeatherMap API key |
+| Latitude  | Number   | Yes      | Location latitude      |
+| Longitude | Number   | Yes      | Location longitude     |
 
 ## Getting an API Key
 

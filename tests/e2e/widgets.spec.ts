@@ -1,6 +1,6 @@
-import { test, expect, seedAndAuth } from "../fixtures"
+import { test, expect, seedAndAuth } from "../fixtures";
 
-const RADARR_URL = "https://radarr.test"
+const RADARR_URL = "https://radarr.test";
 
 test.describe("Widget Rendering", () => {
   test("renders stat cards for a Radarr item", async ({ page }) => {
@@ -24,26 +24,26 @@ test.describe("Widget Rendering", () => {
           ],
         },
       ],
-    })
-    await page.goto("/")
+    });
+    await page.goto("/");
 
     // The item label should be visible
-    await expect(page.getByText("Radarr")).toBeVisible()
+    await expect(page.getByText("Radarr")).toBeVisible();
 
     // Stat cards should render with the cached values.
     // The server action will fail (radarr.test is unreachable) but useItemData
     // falls back to the initial cached data, preserving the stat values.
-    await expect(page.getByText("5").first()).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByText("3").first()).toBeVisible()
-    await expect(page.getByText("7").first()).toBeVisible()
-    await expect(page.getByText("42").first()).toBeVisible()
+    await expect(page.getByText("5").first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("3").first()).toBeVisible();
+    await expect(page.getByText("7").first()).toBeVisible();
+    await expect(page.getByText("42").first()).toBeVisible();
 
     // Stat labels should be present
-    await expect(page.getByText("Queued")).toBeVisible()
-    await expect(page.getByText("Missing")).toBeVisible()
-    await expect(page.getByText("Wanted")).toBeVisible()
-    await expect(page.getByText("Movies")).toBeVisible()
-  })
+    await expect(page.getByText("Queued")).toBeVisible();
+    await expect(page.getByText("Missing")).toBeVisible();
+    await expect(page.getByText("Wanted")).toBeVisible();
+    await expect(page.getByText("Movies")).toBeVisible();
+  });
 
   test("shows error state when service is unreachable", async ({ page }) => {
     await seedAndAuth(page, {
@@ -64,17 +64,17 @@ test.describe("Widget Rendering", () => {
           ],
         },
       ],
-    })
-    await page.goto("/")
+    });
+    await page.goto("/");
 
     // The item should still appear
-    await expect(page.getByText("Radarr")).toBeVisible()
+    await expect(page.getByText("Radarr")).toBeVisible();
 
     // An error status dot (red) should appear
-    const statusDot = page.locator('[role="status"].rounded-full')
-    await expect(statusDot).toBeVisible({ timeout: 15_000 })
-    await expect(statusDot).toHaveClass(/bg-red-500/)
-  })
+    const statusDot = page.locator('[role="status"].rounded-full');
+    await expect(statusDot).toBeVisible({ timeout: 15_000 });
+    await expect(statusDot).toHaveClass(/bg-red-500/);
+  });
 
   test("renders empty state with zero values", async ({ page }) => {
     await seedAndAuth(page, {
@@ -97,17 +97,17 @@ test.describe("Widget Rendering", () => {
           ],
         },
       ],
-    })
-    await page.goto("/")
+    });
+    await page.goto("/");
 
-    await expect(page.getByText("Radarr")).toBeVisible()
+    await expect(page.getByText("Radarr")).toBeVisible();
 
     // Stat labels should still render with zero values
-    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByText("Queued")).toBeVisible()
-    await expect(page.getByText("Missing")).toBeVisible()
-    await expect(page.getByText("Wanted")).toBeVisible()
-  })
+    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("Queued")).toBeVisible();
+    await expect(page.getByText("Missing")).toBeVisible();
+    await expect(page.getByText("Wanted")).toBeVisible();
+  });
 
   test("renders multiple service widgets independently", async ({ page }) => {
     await seedAndAuth(page, {
@@ -142,26 +142,22 @@ test.describe("Widget Rendering", () => {
           ],
         },
       ],
-    })
-    await page.goto("/")
+    });
+    await page.goto("/");
 
     // Both items should render
-    await expect(page.getByText("Radarr")).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByText("Sonarr")).toBeVisible()
+    await expect(page.getByText("Radarr")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("Sonarr")).toBeVisible();
 
     // Each item should render its own stat labels
-    const radarrCard = page
-      .getByTestId("item-card")
-      .filter({ hasText: "Radarr" })
-    const sonarrCard = page
-      .getByTestId("item-card")
-      .filter({ hasText: "Sonarr" })
+    const radarrCard = page.getByTestId("item-card").filter({ hasText: "Radarr" });
+    const sonarrCard = page.getByTestId("item-card").filter({ hasText: "Sonarr" });
 
     // Radarr-specific stat (unique to Radarr)
-    await expect(radarrCard.getByText("Movies")).toBeVisible()
+    await expect(radarrCard.getByText("Movies")).toBeVisible();
     // Sonarr-specific stat (unique to Sonarr)
-    await expect(sonarrCard.getByText("Series")).toBeVisible()
-  })
+    await expect(sonarrCard.getByText("Series")).toBeVisible();
+  });
 
   test("renders link-only item without service widget", async ({ page }) => {
     await seedAndAuth(page, {
@@ -176,19 +172,19 @@ test.describe("Widget Rendering", () => {
           ],
         },
       ],
-    })
-    await page.goto("/")
+    });
+    await page.goto("/");
 
     // Item should appear as a simple link card — no service type, no widget
-    await expect(page.getByText("My Link")).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText("My Link")).toBeVisible({ timeout: 15_000 });
 
     // No stat labels should appear
-    await expect(page.getByText("Queued")).not.toBeVisible()
+    await expect(page.getByText("Queued")).not.toBeVisible();
 
     // Should be a clickable link
-    const link = page.locator("a", { hasText: "My Link" })
-    await expect(link).toBeVisible()
-  })
+    const link = page.locator("a", { hasText: "My Link" });
+    await expect(link).toBeVisible();
+  });
 
   test("hides widgets and status dots in edit mode", async ({ page }) => {
     await seedAndAuth(page, {
@@ -211,24 +207,24 @@ test.describe("Widget Rendering", () => {
           ],
         },
       ],
-    })
-    await page.goto("/")
+    });
+    await page.goto("/");
 
     // Wait for data to load
-    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
 
     // Enter edit mode
-    await page.getByRole("button", { name: "Edit" }).click()
+    await page.getByRole("button", { name: "Edit" }).click();
 
     // Stat labels should be hidden in edit mode
-    await expect(page.getByText("Movies")).not.toBeVisible()
-    await expect(page.getByText("Queued")).not.toBeVisible()
+    await expect(page.getByText("Movies")).not.toBeVisible();
+    await expect(page.getByText("Queued")).not.toBeVisible();
 
     // Status dot should be hidden
-    const statusDot = page.locator('[role="status"].rounded-full')
-    await expect(statusDot).not.toBeVisible()
+    const statusDot = page.locator('[role="status"].rounded-full');
+    await expect(statusDot).not.toBeVisible();
 
     // Edit controls should appear
-    await expect(page.getByText("Done")).toBeVisible()
-  })
-})
+    await expect(page.getByText("Done")).toBeVisible();
+  });
+});
