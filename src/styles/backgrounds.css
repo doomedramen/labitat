@@ -37,8 +37,15 @@ html[data-background="gradient"] body {
 html[data-background="boxes"] body {
   background-color: var(--background);
   background-image:
-    linear-gradient(color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 1px, transparent 1px),
-    linear-gradient(to right, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 1px, var(--background) 1px);
+    linear-gradient(
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 1px,
+      var(--background) 1px
+    );
   background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
 }
 
@@ -57,7 +64,8 @@ html[data-background="circles"] body {
   background-color: var(--background);
   background-image: radial-gradient(
     circle at center center,
-    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(2px * var(--bg-scale)),
+    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+      calc(2px * var(--bg-scale)),
     transparent calc(2px * var(--bg-scale))
   );
   background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
@@ -67,10 +75,34 @@ html[data-background="circles"] body {
 .bg-crosses {
   background-color: var(--background);
   background:
-    radial-gradient(circle, transparent 20%, var(--background) 20%, var(--background) 80%, transparent 80%, transparent),
-    radial-gradient(circle, transparent 20%, var(--background) 20%, var(--background) 80%, transparent 80%, transparent) calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
-    linear-gradient(var(--primary) calc(2px * var(--bg-scale)), transparent calc(2px * var(--bg-scale))) 0 calc(-1px * var(--bg-scale)),
-    linear-gradient(90deg, var(--primary) calc(2px * var(--bg-scale)), var(--background) calc(2px * var(--bg-scale))) calc(-1px * var(--bg-scale)) 0;
+    radial-gradient(
+      circle,
+      transparent 20%,
+      var(--background) 20%,
+      var(--background) 80%,
+      transparent 80%,
+      transparent
+    ),
+    radial-gradient(
+        circle,
+        transparent 20%,
+        var(--background) 20%,
+        var(--background) 80%,
+        transparent 80%,
+        transparent
+      )
+      calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
+    linear-gradient(
+        var(--primary) calc(2px * var(--bg-scale)),
+        transparent calc(2px * var(--bg-scale))
+      )
+      0 calc(-1px * var(--bg-scale)),
+    linear-gradient(
+        90deg,
+        var(--primary) calc(2px * var(--bg-scale)),
+        var(--background) calc(2px * var(--bg-scale))
+      )
+      calc(-1px * var(--bg-scale)) 0;
   background-size:
     calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
     calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
@@ -81,10 +113,36 @@ html[data-background="circles"] body {
 html[data-background="crosses"] body {
   background-color: var(--background);
   background:
-    radial-gradient(circle, transparent 20%, var(--background) 20%, var(--background) 80%, transparent 80%, transparent),
-    radial-gradient(circle, transparent 20%, var(--background) 20%, var(--background) 80%, transparent 80%, transparent) calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
-    linear-gradient(color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(2px * var(--bg-scale)), transparent calc(2px * var(--bg-scale))) 0 calc(-1px * var(--bg-scale)),
-    linear-gradient(90deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(2px * var(--bg-scale)), var(--background) calc(2px * var(--bg-scale))) calc(-1px * var(--bg-scale)) 0;
+    radial-gradient(
+      circle,
+      transparent 20%,
+      var(--background) 20%,
+      var(--background) 80%,
+      transparent 80%,
+      transparent
+    ),
+    radial-gradient(
+        circle,
+        transparent 20%,
+        var(--background) 20%,
+        var(--background) 80%,
+        transparent 80%,
+        transparent
+      )
+      calc(25px * var(--bg-scale)) calc(25px * var(--bg-scale)),
+    linear-gradient(
+        color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+          calc(2px * var(--bg-scale)),
+        transparent calc(2px * var(--bg-scale))
+      )
+      0 calc(-1px * var(--bg-scale)),
+    linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+          calc(2px * var(--bg-scale)),
+        var(--background) calc(2px * var(--bg-scale))
+      )
+      calc(-1px * var(--bg-scale)) 0;
   background-size:
     calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
     calc(50px * var(--bg-scale)) calc(50px * var(--bg-scale)),
@@ -109,7 +167,8 @@ html[data-background="diagonal"] body {
   background: repeating-linear-gradient(
     45deg,
     color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)),
-    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(5px * var(--bg-scale)),
+    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+      calc(5px * var(--bg-scale)),
     var(--background) calc(5px * var(--bg-scale)),
     var(--background) calc(25px * var(--bg-scale))
   );
@@ -134,7 +193,8 @@ html[data-background="diagonal-2"] body {
   background-image: repeating-linear-gradient(
     45deg,
     color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 0,
-    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(1px * var(--bg-scale)),
+    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+      calc(1px * var(--bg-scale)),
     var(--background) 0,
     var(--background) 50%
   );
@@ -272,7 +332,11 @@ html[data-background="diagonal-3"] body {
 
 html[data-background="lines"] body {
   background-color: var(--background);
-  background-image: linear-gradient(0deg, var(--background) 50%, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 50%);
+  background-image: linear-gradient(
+    0deg,
+    var(--background) 50%,
+    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 50%
+  );
   background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
 }
 
@@ -294,7 +358,8 @@ html[data-background="lines-2"] body {
   background-image: linear-gradient(
     to right,
     color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)),
-    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(5px * var(--bg-scale)),
+    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+      calc(5px * var(--bg-scale)),
     var(--background) calc(5px * var(--bg-scale)),
     var(--background)
   );
@@ -320,7 +385,8 @@ html[data-background="lines-3"] body {
   background-image: repeating-linear-gradient(
     0deg,
     color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)),
-    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(1px * var(--bg-scale)),
+    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+      calc(1px * var(--bg-scale)),
     var(--background) calc(1px * var(--bg-scale)),
     var(--background)
   );
@@ -345,7 +411,8 @@ html[data-background="lines-4"] body {
   background-image: repeating-linear-gradient(
     to right,
     color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)),
-    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(1px * var(--bg-scale)),
+    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+      calc(1px * var(--bg-scale)),
     var(--background) calc(1px * var(--bg-scale)),
     var(--background)
   );
@@ -389,21 +456,25 @@ html[data-background="paper"] body {
   background-color: var(--background);
   background-image:
     linear-gradient(
-      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(2px * var(--bg-scale)),
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+        calc(2px * var(--bg-scale)),
       transparent calc(2px * var(--bg-scale))
     ),
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(2px * var(--bg-scale)),
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+        calc(2px * var(--bg-scale)),
       transparent calc(2px * var(--bg-scale))
     ),
     linear-gradient(
-      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(1px * var(--bg-scale)),
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+        calc(1px * var(--bg-scale)),
       transparent calc(1px * var(--bg-scale))
     ),
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(1px * var(--bg-scale)),
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+        calc(1px * var(--bg-scale)),
       var(--background) calc(1px * var(--bg-scale))
     );
   background-size:
@@ -431,7 +502,8 @@ html[data-background="paper"] body {
 html[data-background="polka"] body {
   background-color: var(--background);
   background-image: radial-gradient(
-    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(0.5px * var(--bg-scale)),
+    color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+      calc(0.5px * var(--bg-scale)),
     var(--background) calc(0.5px * var(--bg-scale))
   );
   background-size: calc(10px * var(--bg-scale)) calc(10px * var(--bg-scale));
@@ -459,11 +531,13 @@ html[data-background="polka-2"] body {
   background-color: var(--background);
   background-image:
     radial-gradient(
-      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(0.5px * var(--bg-scale)),
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+        calc(0.5px * var(--bg-scale)),
       transparent calc(0.5px * var(--bg-scale))
     ),
     radial-gradient(
-      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) calc(0.5px * var(--bg-scale)),
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+        calc(0.5px * var(--bg-scale)),
       var(--background) calc(0.5px * var(--bg-scale))
     );
   background-size: calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
@@ -492,10 +566,26 @@ html[data-background="polka-2"] body {
 html[data-background="rhombus"] body {
   background-color: var(--background);
   background-image:
-    linear-gradient(135deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, transparent 25%),
-    linear-gradient(225deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, transparent 25%),
-    linear-gradient(45deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, transparent 25%),
-    linear-gradient(315deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, var(--background) 25%);
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      225deg,
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      315deg,
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+      var(--background) 25%
+    );
   background-position:
     calc(10px * var(--bg-scale)) 0,
     calc(10px * var(--bg-scale)) 0,
@@ -525,7 +615,10 @@ html[data-background="wavy"] body {
       transparent 0,
       var(--background) calc(10px * var(--bg-scale))
     ),
-    repeating-linear-gradient(color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)), color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)));
+    repeating-linear-gradient(
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)),
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background))
+    );
 }
 
 /* ── Zigzag ── */
@@ -548,10 +641,26 @@ html[data-background="wavy"] body {
 html[data-background="zigzag"] body {
   background-color: var(--background);
   background-image:
-    linear-gradient(135deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, transparent 25%),
-    linear-gradient(225deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, transparent 25%),
-    linear-gradient(45deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, transparent 25%),
-    linear-gradient(315deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, var(--background) 25%);
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      225deg,
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      315deg,
+      color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+      var(--background) 25%
+    );
   background-position:
     calc(10px * var(--bg-scale)) 0,
     calc(10px * var(--bg-scale)) 0,
@@ -571,8 +680,8 @@ html[data-background="zigzag"] body {
         transparent 25%
       )
       calc(-10px * var(--bg-scale)) 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
-    linear-gradient(225deg, var(--primary) 25%, transparent 25%)
-      calc(-10px * var(--bg-scale)) 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
+    linear-gradient(225deg, var(--primary) 25%, transparent 25%) calc(-10px * var(--bg-scale)) 0 /
+      calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
     linear-gradient(
         315deg,
         color-mix(in srgb, var(--primary) 33%, var(--background)) 25%,
@@ -592,7 +701,11 @@ html[data-background="zigzag-3d"] body {
         transparent 25%
       )
       calc(-10px * var(--bg-scale)) 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
-    linear-gradient(225deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, transparent 25%)
+    linear-gradient(
+        225deg,
+        color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+        transparent 25%
+      )
       calc(-10px * var(--bg-scale)) 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
     linear-gradient(
         315deg,
@@ -600,6 +713,10 @@ html[data-background="zigzag-3d"] body {
         transparent 25%
       )
       0px 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale)),
-    linear-gradient(45deg, color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%, var(--background) 25%) 0px 0 /
-      calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
+    linear-gradient(
+        45deg,
+        color-mix(in srgb, var(--primary) calc(var(--bg-opacity) * 100%), var(--background)) 25%,
+        var(--background) 25%
+      )
+      0px 0 / calc(20px * var(--bg-scale)) calc(20px * var(--bg-scale));
 }

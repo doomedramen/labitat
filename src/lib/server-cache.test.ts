@@ -64,12 +64,12 @@ describe("server-cache", () => {
 
       serverCache.set("test-item", {
         widgetData: { status: "ok", stats: [] },
-        pingStatus: "online",
+        pingStatus: { state: "healthy" },
       });
 
       const result = serverCache.get("test-item");
       expect(result).not.toBeNull();
-      expect(result?.pingStatus).toBe("online");
+      expect(result?.pingStatus?.state).toBe("healthy");
       expect(result?.lastFetchedAt).toBeGreaterThan(0);
     });
   });
