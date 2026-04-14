@@ -3,7 +3,7 @@ name: Release
 on:
   workflow_run:
     workflows: ["CI/CD"]
-    branches: [main]
+    branches: [dev, main]
     types: [completed]
 
 concurrency:
@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: main
+          ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -58,7 +58,11 @@ jobs:
           pnpm auto-changelog -p --commit-limit false
 
           VERSION="$(node -p "require('./package.json').version")"
-          TAG="v${VERSION}"
+          if [ "${{ github.event.workflow_run.head_branch }}" = "main" ]; then
+            TAG="v${VERSION}"
+          else
+            TAG="${{ github.event.workflow_run.head_branch }}-v${VERSION}"
+          fi
 
           if git rev-parse "${TAG}" >/dev/null 2>&1; then
             echo "Tag ${TAG} already exists; refusing to overwrite it."
@@ -74,7 +78,7 @@ jobs:
 
       - name: Push release commit and tag
         run: |
-          git push origin HEAD:main
+          git push origin HEAD:${{ github.event.workflow_run.head_branch }}
           git push origin "${{ steps.version.outputs.tag }}"
 
       - uses: docker/setup-buildx-action@v4
@@ -90,10 +94,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest
-            type=semver,pattern={{version}},value=${{ steps.version.outputs.tag }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ steps.version.outputs.tag }}
-            type=semver,pattern={{major}},value=${{ steps.version.outputs.tag }}
+            type=raw,value=latest,enable=${{ github.event.workflow_run.head_branch == 'main' }}
+            type=raw,value=dev,enable=${{ github.event.workflow_run.head_branch == 'dev' }}
+            type=raw,value=${{ github.event.workflow_run.head_branch }}
+            type=raw,value=${{ steps.version.outputs.tag }}
             type=sha,prefix=
 
       - uses: docker/build-push-action@v6
