@@ -223,8 +223,7 @@ describe("server cache freshness", () => {
   });
 
   it("does not hit SQLite again on every getAllFresh call", async () => {
-    const originalNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
     let dbSelectCalls = 0;
 
     vi.doMock("@/lib/db", () => ({
@@ -252,15 +251,11 @@ describe("server cache freshness", () => {
       },
     }));
 
-    try {
-      const { serverCache } = await import("@/lib/server-cache");
-      serverCache.clear();
+    const { serverCache } = await import("@/lib/server-cache");
+    serverCache.clear();
 
-      expect(serverCache.getAllFresh()).toHaveLength(1);
-      expect(serverCache.getAllFresh()).toHaveLength(1);
-      expect(dbSelectCalls).toBe(1);
-    } finally {
-      process.env.NODE_ENV = originalNodeEnv;
-    }
+    expect(serverCache.getAllFresh()).toHaveLength(1);
+    expect(serverCache.getAllFresh()).toHaveLength(1);
+    expect(dbSelectCalls).toBe(1);
   });
 });
