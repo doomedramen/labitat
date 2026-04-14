@@ -154,16 +154,24 @@ const SPLASH_SCREENS = [
 function getGradientStops(svgPath) {
   const svg = readFileSync(svgPath, "utf8");
 
-  // Extract gradient orientation from <linearGradient>
-  const lgMatch = svg.match(
-    /<linearGradient[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"/,
-  );
+  // Find the linearGradient with id="bg"
+  const bgMatch = svg.match(/<linearGradient[^>]*id="bg"[^>]*>([\s\S]*?)<\/linearGradient>/);
+  if (!bgMatch) {
+    console.error(`Warning: Could not find linearGradient with id="bg" in ${svgPath}`);
+    return { stops: [], orientation: { x1: "0", y1: "0", x2: "1", y2: "1" } };
+  }
+
+  const bgTag = bgMatch[0];
+  const bgContent = bgMatch[1];
+
+  // Extract gradient orientation from the bg tag
+  const lgMatch = bgTag.match(/x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"/);
   const orientation = lgMatch
     ? { x1: lgMatch[1], y1: lgMatch[2], x2: lgMatch[3], y2: lgMatch[4] }
     : { x1: "0", y1: "0", x2: "1", y2: "1" };
 
-  // Match each <stop> element
-  const stops = svg.match(/<stop[^>]*\/?>/g) || [];
+  // Match each <stop> element only within the bg linearGradient
+  const stops = bgContent.match(/<stop[^>]*\/?>/g) || [];
   const gradientStops = stops
     .map((stop) => {
       // Prefer style attribute (overrides stop-color)
