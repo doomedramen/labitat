@@ -21,6 +21,8 @@ jobs:
     name: Version, Changelog, Docker, and GitHub Release
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
+    env:
+      LEFTHOOK: 0
     permissions:
       contents: write
       packages: write
