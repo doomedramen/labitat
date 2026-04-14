@@ -23,7 +23,7 @@ The `-v labitat_data:/app/data` flag ensures your settings, dashboard layout, an
 
 ### 2. Access the Dashboard
 
-Visit [http://localhost:3000](http://localhost:3000) in your browser. You will be automatically redirected to the **Setup Wizard**.
+Visit `http://localhost:3000` in your browser. You will be automatically redirected to the **Setup Wizard**.
 
 ### 3. Create Admin Account
 
