@@ -9,7 +9,7 @@
  */
 
 import sharp from "sharp";
-import { mkdirSync, existsSync, copyFileSync } from "fs";
+import { mkdirSync, existsSync, copyFileSync, readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -151,13 +151,43 @@ const SPLASH_SCREENS = [
   { w: 2752, h: 2064, name: "13__iPad_Pro_M4_landscape" },
 ];
 
-function gradientSvg(w, h) {
+function getGradientStops(svgPath) {
+  const svg = readFileSync(svgPath, "utf8");
+
+  // Extract gradient orientation from <linearGradient>
+  const lgMatch = svg.match(
+    /<linearGradient[^>]*x1="([^"]*)"[^>]*y1="([^"]*)"[^>]*x2="([^"]*)"[^>]*y2="([^"]*)"/,
+  );
+  const orientation = lgMatch
+    ? { x1: lgMatch[1], y1: lgMatch[2], x2: lgMatch[3], y2: lgMatch[4] }
+    : { x1: "0", y1: "0", x2: "1", y2: "1" };
+
+  // Match each <stop> element
+  const stops = svg.match(/<stop[^>]*\/?>/g) || [];
+  const gradientStops = stops
+    .map((stop) => {
+      // Prefer style attribute (overrides stop-color)
+      const styleMatch = stop.match(/style="[^"]*stop-color:([^;"]+)/);
+      const color = styleMatch ? styleMatch[1] : (stop.match(/stop-color="([^"]*)"/)?.[1] ?? null);
+      // Parse offset (default to 0 if missing)
+      const offsetMatch = stop.match(/offset="([^"]*)"/);
+      const offset = offsetMatch ? parseFloat(offsetMatch[1]) : 0;
+      return { color, offset };
+    })
+    .filter((s) => s.color !== null);
+
+  return { stops: gradientStops, orientation };
+}
+
+function gradientSvg(w, h, stops, orientation) {
+  const stopTags = stops
+    .map((s) => `          <stop offset="${s.offset}" stop-color="${s.color}"/>`)
+    .join("\n");
   return Buffer.from(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
       <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#0a84ff"/>
-          <stop offset="1" stop-color="#5e5ce6"/>
+        <linearGradient id="g" x1="${orientation.x1}" y1="${orientation.y1}" x2="${orientation.x2}" y2="${orientation.y2}">
+${stopTags}
         </linearGradient>
       </defs>
       <rect width="${w}" height="${h}" fill="url(#g)"/>
@@ -165,7 +195,7 @@ function gradientSvg(w, h) {
   );
 }
 
-async function generateSplash(w, h, name) {
+async function generateSplash(w, h, name, stops, orientation) {
   const outputPath = join(ROOT_DIR, "public/splash_screens", `${name}.png`);
   const relativePath = outputPath.replace(ROOT_DIR + "/", "");
 
@@ -183,7 +213,7 @@ async function generateSplash(w, h, name) {
   const left = Math.round((w - logoSize) / 2);
   const top = Math.round((h - logoSize) / 2);
 
-  await sharp(gradientSvg(w, h))
+  await sharp(gradientSvg(w, h, stops, orientation))
     .composite([{ input: logoPng, left, top }])
     .png()
     .toFile(outputPath);
@@ -231,10 +261,20 @@ async function main() {
 
   console.log("\nGenerating splash screens from logo_transparent.svg...\n");
 
+  const { stops: gradientStops, orientation } = getGradientStops(SOURCE_SVG);
+  if (gradientStops.length < 2) {
+    console.error("Error: Need at least 2 gradient stops in logo.svg");
+    process.exit(1);
+  }
+  const colorDesc = gradientStops.map((s) => s.color).join(" → ");
+  console.log(
+    `Using gradient colors: ${colorDesc} (x1=${orientation.x1} y1=${orientation.y1} x2=${orientation.x2} y2=${orientation.y2})`,
+  );
+
   mkdirSync(join(ROOT_DIR, "public/splash_screens"), { recursive: true });
 
   for (const splash of SPLASH_SCREENS) {
-    await generateSplash(splash.w, splash.h, splash.name);
+    await generateSplash(splash.w, splash.h, splash.name, gradientStops, orientation);
   }
 
   console.log("\nDone!");
