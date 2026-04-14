@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { widgetCache } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import type { ServiceData, ServiceStatus } from "@/lib/adapters/types";
 
 export interface CachedItem {
@@ -28,20 +29,26 @@ class ServerCache {
   private cache = new Map<string, CachedItem>();
   private listeners = new Set<UpdateCallback>();
   private loaded = false;
+  private lastDbLoadAt = 0;
 
   /** Load all cached items from DB into memory. Called lazily on first read. */
-  loadFromDb(): void {
-    if (this.loaded) return;
+  loadFromDb(force = false): void {
+    if (this.loaded && !force) return;
     try {
       const rows = db.select().from(widgetCache).all();
       for (const row of rows) {
-        this.cache.set(row.itemId, {
+        const fromDb = {
           widgetData: (row.widgetData as ServiceData) ?? null,
           pingStatus: (row.pingStatus as ServiceStatus) ?? null,
           lastFetchedAt: row.updatedAt ? new Date(row.updatedAt).getTime() : 0,
-        });
+        };
+        const existing = this.cache.get(row.itemId);
+        if (!existing || existing.lastFetchedAt <= fromDb.lastFetchedAt) {
+          this.cache.set(row.itemId, fromDb);
+        }
       }
       this.loaded = true;
+      this.lastDbLoadAt = Date.now();
       console.log(`[server-cache] Loaded ${rows.length} item(s) from DB`);
     } catch (err) {
       console.error("[server-cache] Failed to load from DB:", err);
@@ -66,6 +73,7 @@ class ServerCache {
       lastFetchedAt: Date.now(),
     };
     this.cache.set(itemId, updated);
+    this.loaded = true;
 
     // Persist to DB (fire-and-forget — don't block the caller)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -108,10 +116,11 @@ class ServerCache {
 
   /** Get items fresh enough for SSR rendering. */
   getAllFresh(maxAgeMs: number = SSR_MAX_AGE_MS): [string, CachedItem][] {
-    // Always reload from DB to ensure we have the latest seeded data
-    this.loaded = false;
-    this.loadFromDb();
     const now = Date.now();
+    const shouldReload = !this.loaded || now - this.lastDbLoadAt >= maxAgeMs;
+    if (shouldReload) {
+      this.loadFromDb(true);
+    }
     return [...this.cache.entries()].filter(([, item]) => now - item.lastFetchedAt < maxAgeMs);
   }
 
@@ -130,6 +139,7 @@ class ServerCache {
       lastFetchedAt: Date.now(),
     };
     this.cache.set(itemId, entry);
+    this.loaded = true;
 
     // Persist to DB synchronously so it's available immediately
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -159,6 +169,16 @@ class ServerCache {
   clear(): void {
     this.cache.clear();
     this.loaded = false; // Force reload from DB on next read
+    this.lastDbLoadAt = 0;
+  }
+
+  async delete(itemId: string): Promise<void> {
+    this.cache.delete(itemId);
+    try {
+      await db.delete(widgetCache).where(eq(widgetCache.itemId, itemId));
+    } catch (err) {
+      console.error("[server-cache] DB delete failed:", err);
+    }
   }
 }
 

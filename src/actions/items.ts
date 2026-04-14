@@ -9,6 +9,7 @@ import { encrypt, decrypt } from "@/lib/crypto";
 import { getService } from "@/lib/adapters";
 import { refreshGroupsCache } from "@/lib/structural-cache";
 import { pollingSup } from "@/lib/polling-supervisor";
+import { serverCache } from "@/lib/server-cache";
 import type { GroupWithItems } from "@/lib/types";
 
 async function buildServiceConfig(
@@ -167,6 +168,7 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
 export async function deleteItem(id: string): Promise<GroupWithItems[]> {
   await requireAuth();
   await db.delete(items).where(eq(items.id, id));
+  await serverCache.delete(id);
   pollingSup.invalidateCache();
   return refreshGroupsCache();
 }

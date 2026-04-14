@@ -116,9 +116,25 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
   const connectRef = useRef<(() => void) | null>(null);
   const backoffRef = useRef(1000);
 
+  const scheduleReconnect = useCallback((delay: number) => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+    }
+    liveDataStore.setSseState("disconnected");
+    reconnectTimerRef.current = setTimeout(() => {
+      reconnectTimerRef.current = null;
+      connectRef.current?.();
+    }, delay);
+  }, []);
+
   const doConnect = useCallback(() => {
     if (typeof window === "undefined") return;
-    if (esRef.current?.readyState === EventSource.CONNECTING) return;
+    if (
+      esRef.current?.readyState === EventSource.CONNECTING ||
+      esRef.current?.readyState === EventSource.OPEN
+    ) {
+      return;
+    }
 
     const es = new EventSource("/api/events");
     esRef.current = es;
@@ -132,8 +148,10 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
       try {
         const msg: SseMessage = JSON.parse(event.data);
         if (msg.type === "reconnect") {
-          // Server requested clean reconnect — close and let backoff handle reconnection
+          // Server requested a clean reconnect without waiting for EventSource.onerror.
           es.close();
+          esRef.current = null;
+          scheduleReconnect(backoffRef.current);
           return;
         }
         if (msg.type === "update" && msg.itemId) {
@@ -149,14 +167,12 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
 
     es.onerror = () => {
       es.close();
-      liveDataStore.setSseState("disconnected");
       const delay = backoffRef.current;
       backoffRef.current = Math.min(delay * 2, MAX_BACKOFF);
-      reconnectTimerRef.current = setTimeout(() => {
-        connectRef.current?.();
-      }, delay);
+      esRef.current = null;
+      scheduleReconnect(delay);
     };
-  }, []);
+  }, [scheduleReconnect]);
 
   useEffect(() => {
     connectRef.current = doConnect;

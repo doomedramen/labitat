@@ -26,6 +26,9 @@ class PollingSupervisor {
   private itemCache: PollingItem[] = [];
   private cacheExpiresAt = 0;
   private running = new Set<string>(); // Prevent concurrent polls on same item
+  private lastPolledAt = new Map<string, number>();
+  private shouldStaggerOnNextStart = false;
+  private hasStartedOnce = false;
 
   /** A client connected — start polling if needed */
   connect(): void {
@@ -58,6 +61,7 @@ class PollingSupervisor {
   /** Start the supervisor — first tick immediately, then reschedule dynamically */
   private start(): void {
     if (this.timer) return;
+    this.hasStartedOnce = true;
     console.log("[polling] Supervisor started");
     this.tick().catch(console.error);
   }
@@ -67,10 +71,10 @@ class PollingSupervisor {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
-      this.itemCache = [];
-      this.cacheExpiresAt = 0;
-      console.log("[polling] Supervisor stopped (no active connections)");
     }
+    this.cacheExpiresAt = 0;
+    this.shouldStaggerOnNextStart = this.hasStartedOnce;
+    console.log("[polling] Supervisor stopped (no active connections)");
   }
 
   /** Invalidate the item cache (call after item create/update/delete) */
@@ -84,7 +88,9 @@ class PollingSupervisor {
     if (now < this.cacheExpiresAt) return this.itemCache;
 
     // Preserve lastPolledAt from existing cache to maintain polling schedule
-    const existingLastPolled = new Map(this.itemCache.map((i) => [i.id, i.lastPolledAt]));
+    const existingLastPolled = new Map(
+      this.itemCache.map((i) => [i.id, this.lastPolledAt.get(i.id) ?? i.lastPolledAt]),
+    );
 
     try {
       const allItems = await db.select().from(items);
@@ -118,18 +124,28 @@ class PollingSupervisor {
     const now = Date.now();
     const items = await this.getItems();
 
+    if (this.shouldStaggerOnNextStart) {
+      this.staggerOverdueItems(items, now);
+      this.shouldStaggerOnNextStart = false;
+    }
+
     let nextDue = Infinity;
 
     for (const item of items) {
       const dueAt = item.lastPolledAt + item.pollingMs;
-      if (dueAt < nextDue) nextDue = dueAt;
+      if (this.running.has(item.id)) {
+        // A long-running poll should not force the scheduler into a tight loop.
+        const runningDueAt = Math.max(dueAt, now + item.pollingMs);
+        if (runningDueAt < nextDue) nextDue = runningDueAt;
+        continue;
+      }
 
-      // Skip if already running for this item
-      if (this.running.has(item.id)) continue;
+      if (dueAt < nextDue) nextDue = dueAt;
 
       if (now >= dueAt) {
         // Mark as polled immediately to prevent double-firing
         item.lastPolledAt = now;
+        this.lastPolledAt.set(item.id, now);
         this.running.add(item.id);
 
         // Fire-and-forget with error handling
@@ -148,6 +164,19 @@ class PollingSupervisor {
     } else {
       this.timer = null;
     }
+  }
+
+  private staggerOverdueItems(items: PollingItem[], now: number): void {
+    const overdueItems = items.filter((item) => now >= item.lastPolledAt + item.pollingMs);
+    if (overdueItems.length <= 1) return;
+
+    overdueItems.forEach((item, index) => {
+      const offset = Math.floor(((index + 1) * item.pollingMs) / (overdueItems.length + 1));
+      const nextDueAt = now + offset;
+      const staggeredLastPolledAt = nextDueAt - item.pollingMs;
+      item.lastPolledAt = staggeredLastPolledAt;
+      this.lastPolledAt.set(item.id, staggeredLastPolledAt);
+    });
   }
 
   /** Execute poll for a single item */
