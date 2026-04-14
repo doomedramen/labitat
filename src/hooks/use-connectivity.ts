@@ -145,7 +145,8 @@ export function useConnectivity() {
         },
       });
       startPolling(() => {
-        recoveringRef.current = false;
+        if (recoveringRef.current) return;
+        recoveringRef.current = true;
         dismissToast();
         toast.success("Server is back online", {
           description: "Everything is running normally.",
