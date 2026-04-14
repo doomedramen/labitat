@@ -117,7 +117,9 @@ class ServerCache {
   /** Get items fresh enough for SSR rendering. */
   getAllFresh(maxAgeMs: number = SSR_MAX_AGE_MS): [string, CachedItem][] {
     const now = Date.now();
-    const shouldReload = !this.loaded || now - this.lastDbLoadAt >= maxAgeMs;
+    const shouldAlwaysReloadForSsr = process.env.NODE_ENV !== "production";
+    const shouldReload =
+      shouldAlwaysReloadForSsr || !this.loaded || now - this.lastDbLoadAt >= maxAgeMs;
     if (shouldReload) {
       this.loadFromDb(true);
     }
