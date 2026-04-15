@@ -71,6 +71,12 @@
     --safe-area-right: env(safe-area-inset-right);
     --safe-area-bottom: env(safe-area-inset-bottom);
     --safe-area-left: env(safe-area-inset-left);
+
+    --app-fixed-gutter: 16px;
+    --app-fixed-top: calc(var(--safe-area-top) + var(--app-fixed-gutter));
+    --app-fixed-right: calc(var(--safe-area-right) + var(--app-fixed-gutter));
+    --app-fixed-bottom: calc(var(--safe-area-bottom) + var(--app-fixed-gutter));
+    --app-fixed-left: calc(var(--safe-area-left) + var(--app-fixed-gutter));
   }
 
   * {
@@ -99,6 +105,46 @@
   }
 }
 
+@layer utilities {
+  .safe-area-inset-top {
+    padding-top: var(--safe-area-top);
+  }
+  .safe-area-inset-right {
+    padding-right: var(--safe-area-right);
+  }
+  .safe-area-inset-bottom {
+    padding-bottom: var(--safe-area-bottom);
+  }
+  .safe-area-inset-left {
+    padding-left: var(--safe-area-left);
+  }
+
+  .safe-area-fixed-top {
+    top: var(--app-fixed-top);
+  }
+  .safe-area-fixed-right {
+    right: var(--app-fixed-right);
+  }
+  .safe-area-fixed-bottom {
+    bottom: var(--app-fixed-bottom);
+  }
+  .safe-area-fixed-left {
+    left: var(--app-fixed-left);
+  }
+
+  .safe-area-pad-top {
+    padding-top: var(--app-fixed-top);
+  }
+  .safe-area-pad-right {
+    padding-right: var(--app-fixed-right);
+  }
+  .safe-area-pad-bottom {
+    padding-bottom: var(--app-fixed-bottom);
+  }
+  .safe-area-pad-left {
+    padding-left: var(--app-fixed-left);
+  }
+}
 @keyframes wiggle {
   0%,
   100% {
