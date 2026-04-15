@@ -1,10 +1,11 @@
 import { Geist_Mono, Inter } from "next/font/google";
 import type { Viewport, Metadata } from "next";
 import { cookies } from "next/headers";
-import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeColorUpdater } from "@/components/theme-color-updater";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
+import { AppToaster } from "@/components/ui/app-toaster";
+import { OverlayHost } from "@/components/ui/overlay-host";
 import { cn } from "@/lib/utils";
 import { db } from "@/lib/db";
 import { SplashScreenLinks } from "@/components/splash-screen-links";
@@ -148,7 +149,8 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
           <ThemeColorUpdater />
           {children}
-          <Toaster richColors position="top-right" />
+          <OverlayHost />
+          <AppToaster />
           <ServiceWorkerRegistrar />
           <ConnectivityProvider />
         </ThemeProvider>

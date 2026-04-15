@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useSseState } from "@/hooks/use-live-data";
+import { OverlayPortal } from "@/components/ui/overlay-portal";
 
 export function SseBanner() {
   const sseState = useSseState();
@@ -22,10 +23,10 @@ export function SseBanner() {
   if (!visible) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center pt-[env(safe-area-inset-top)]">
+    <OverlayPortal slot="top">
       <div className="pointer-events-auto mt-2 rounded-full bg-amber-500/90 px-3 py-1 text-xs font-medium text-white shadow-lg">
         Reconnecting...
       </div>
-    </div>
+    </OverlayPortal>
   );
 }
