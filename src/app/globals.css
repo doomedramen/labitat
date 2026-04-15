@@ -145,6 +145,7 @@
     padding-left: var(--app-fixed-left);
   }
 }
+
 @keyframes wiggle {
   0%,
   100% {
