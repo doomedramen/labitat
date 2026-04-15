@@ -100,7 +100,7 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: {
       capable: true,
       title: title,
-      statusBarStyle: "black-translucent",
+      statusBarStyle: "black",
     },
   };
 }
