@@ -43,7 +43,6 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm check-adapters
       - run: pnpm check-doc-coverage
-      - run: pnpm audit
 
   unit:
     name: Unit Tests

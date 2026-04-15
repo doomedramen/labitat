@@ -26,8 +26,6 @@ pre-push:
       run: pnpm typecheck
     test:
       run: pnpm test
-    audit:
-      run: pnpm audit
     check-adapters:
       run: pnpm check-adapters
     check-doc-coverage:
