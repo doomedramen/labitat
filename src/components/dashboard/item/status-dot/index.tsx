@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import type { ServiceStatus } from "@/lib/adapters/types";
 import { StatusDotClient } from "./status-dot-client";
@@ -7,7 +9,7 @@ interface StatusDotProps {
 }
 
 /**
- * StatusDot - Server component that delegates to client version when tooltip is needed.
+ * StatusDot - shared status indicator that wraps with HoverCard when tooltip is needed.
  * Renders just the dot for simple statuses, wraps with HoverCard for error/degraded/slow states.
  */
 export function StatusDot({ status }: StatusDotProps) {

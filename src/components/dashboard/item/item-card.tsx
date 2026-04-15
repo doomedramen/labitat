@@ -2,11 +2,9 @@ import { cn } from "@/lib/utils";
 import { getService } from "@/lib/adapters";
 import type { ItemWithCache } from "@/lib/types";
 import { ItemIcon } from "./item-icon";
-import { StatusDot } from "./status-dot";
-import { BlockLinkPropagationServer } from "./block-link-propagation-server";
-import type { ServiceStatus, ServiceData } from "@/lib/adapters/types";
-import { dataToStatus } from "@/lib/adapters/types";
+import type { ServiceData } from "@/lib/adapters/types";
 import { ItemCardLive } from "./item-card-live";
+import { ItemStatusDot } from "./item-status-dot";
 
 interface ItemCardProps {
   item: ItemWithCache;
@@ -25,12 +23,6 @@ export function ItemCard({ item, editMode }: ItemCardProps) {
 
   // Use cached data for SSR (only if not clientSide-only service)
   const effectiveData = !editMode && !isClientSide ? item.cachedWidgetData : null;
-  const serviceStatus: ServiceStatus = item.cachedPingStatus
-    ? item.cachedPingStatus
-    : item.cachedWidgetData
-      ? dataToStatus(item.cachedWidgetData)
-      : { state: "unknown" };
-  const hasStatus = !!item.href && !isClientSide;
 
   return (
     <div
@@ -56,8 +48,6 @@ export function ItemCard({ item, editMode }: ItemCardProps) {
             serviceDef={serviceDef}
             effectiveData={effectiveData}
             isClientSide={isClientSide}
-            serviceStatus={serviceStatus}
-            hasStatus={hasStatus}
           />
         </a>
       ) : (
@@ -67,8 +57,6 @@ export function ItemCard({ item, editMode }: ItemCardProps) {
           serviceDef={serviceDef}
           effectiveData={effectiveData}
           isClientSide={isClientSide}
-          serviceStatus={serviceStatus}
-          hasStatus={hasStatus}
         />
       )}
     </div>
@@ -81,16 +69,12 @@ function ItemCardContent({
   serviceDef,
   effectiveData,
   isClientSide,
-  serviceStatus,
-  hasStatus,
 }: {
   item: ItemWithCache;
   editMode: boolean;
   serviceDef: ReturnType<typeof getService> | null;
   effectiveData: ReturnType<typeof getService> extends null ? null : unknown;
   isClientSide: boolean;
-  serviceStatus: ServiceStatus;
-  hasStatus: boolean;
 }) {
   return (
     <div
@@ -101,11 +85,7 @@ function ItemCardContent({
       data-testid="item-card"
       data-item-id={item.id}
     >
-      {!editMode && hasStatus && !item.cleanMode && (
-        <BlockLinkPropagationServer className="absolute top-3 right-3 transition-all duration-300 group-hover/item:scale-110">
-          <StatusDot status={serviceStatus} />
-        </BlockLinkPropagationServer>
-      )}
+      <ItemStatusDot item={item} editMode={editMode} />
 
       {(!item.cleanMode || editMode) && (
         <div className="flex items-center gap-3">
