@@ -17,6 +17,7 @@ interface UseItemDataResult {
   effectiveLoading: boolean;
   serviceStatus: ServiceStatus;
   hasStatus: boolean;
+  isCached: boolean;
   isClientSide: boolean;
 }
 
@@ -25,6 +26,18 @@ export function useItemData({ editMode, item }: UseItemDataOptions): UseItemData
   const isClientSide = serviceDef?.clientSide ?? false;
 
   const liveData = useLiveDataEntry(item.id);
+
+  const isCached = useMemo(() => {
+    if (editMode) return false;
+    if (liveData.pingStatus || liveData.widgetData) return false;
+    return !!(item.cachedPingStatus || item.cachedWidgetData);
+  }, [
+    editMode,
+    liveData.pingStatus,
+    liveData.widgetData,
+    item.cachedPingStatus,
+    item.cachedWidgetData,
+  ]);
 
   // Use live SSE data, fall back to SSR cache
   const effectiveData = useMemo(() => {
@@ -54,6 +67,7 @@ export function useItemData({ editMode, item }: UseItemDataOptions): UseItemData
     effectiveLoading: false, // No loading state — data is always available from cache
     serviceStatus,
     hasStatus,
+    isCached,
     isClientSide,
   };
 }

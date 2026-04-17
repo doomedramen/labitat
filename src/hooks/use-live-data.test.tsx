@@ -104,4 +104,48 @@ describe("LiveDataProvider", () => {
 
     view.unmount();
   });
+
+  it("shows a spinner overlay while status comes from cached data, then removes it on live update", () => {
+    const item: ItemWithCache = {
+      id: "cached-dot-item",
+      groupId: "group-1",
+      label: "Cached Dot",
+      href: "https://cached-dot.test",
+      iconUrl: null,
+      serviceType: "radarr",
+      serviceUrl: "https://cached-dot.test",
+      configEnc: null,
+      order: 0,
+      pollingMs: 10000,
+      cleanMode: false,
+      displayMode: "label",
+      statDisplayMode: "label",
+      statCardOrder: null,
+      createdAt: null,
+      cachedWidgetData: { _status: "ok", movies: 41 },
+      cachedPingStatus: null,
+    };
+
+    const view = render(
+      <LiveDataProvider>
+        <ItemStatusDot item={item} editMode={false} />
+      </LiveDataProvider>,
+    );
+
+    expect(screen.getByTestId("status-dot-cached-spinner")).toBeInTheDocument();
+
+    act(() => {
+      MockEventSource.instances[0].onmessage?.({
+        data: JSON.stringify({
+          type: "update",
+          itemId: item.id,
+          widgetData: { _status: "ok", movies: 42 },
+        }),
+      } as MessageEvent<string>);
+    });
+
+    expect(screen.queryByTestId("status-dot-cached-spinner")).toBeNull();
+
+    view.unmount();
+  });
 });
