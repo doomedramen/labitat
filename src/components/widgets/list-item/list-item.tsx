@@ -83,53 +83,56 @@ const BADGE: Record<
   Importing: {
     icon: "import",
     label: "IMP",
-    className: "bg-chart-2/20 text-chart-2 dark:bg-chart-2/30",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
   },
-  Queued: { icon: "queued", label: "Q", className: "bg-muted text-muted-foreground" },
+  Queued: {
+    icon: "queued",
+    label: "Q",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
+  },
   Stalled: {
     icon: "stalled",
     label: "ST",
-    className: "bg-chart-5/20 text-chart-5 dark:bg-chart-5/30",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
   },
-  Paused: { icon: "pause", label: "⏸", className: "bg-muted text-muted-foreground" },
+  Paused: {
+    icon: "pause",
+    label: "⏸",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
+  },
   "Fetching metadata": {
     icon: "fetch",
     label: "FT",
-    className: "bg-chart-4/20 text-chart-4 dark:bg-chart-4/30",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
   },
   "Import pending": {
     icon: "import",
     label: "IP",
-    className: "bg-chart-2/20 text-chart-2 dark:bg-chart-2/30",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
   },
   "Failed pending": {
     icon: "error",
     label: "FP",
-    className: "bg-destructive/15 text-destructive dark:bg-destructive/25",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
   },
   Failed: {
     icon: "error",
     label: "ERR",
-    className: "bg-destructive/15 text-destructive dark:bg-destructive/25",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
   },
-  playing: { icon: "play", label: "▶", className: "bg-chart-1/20 text-chart-1 dark:bg-chart-1/30" },
-  paused: { icon: "pause", label: "⏸", className: "bg-muted text-muted-foreground" },
+  playing: {
+    icon: "play",
+    label: "▶",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
+  },
+  paused: {
+    icon: "pause",
+    label: "⏸",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
+  },
 };
 
-const PROGRESS_COLOR: Record<string, string> = {
-  Downloading: "bg-primary",
-  "Forced downloading": "bg-primary",
-  Importing: "bg-chart-2",
-  Queued: "bg-muted-foreground/40",
-  Stalled: "bg-chart-5",
-  Paused: "bg-muted-foreground/40",
-  "Fetching metadata": "bg-chart-4",
-  "Import pending": "bg-chart-2",
-  "Failed pending": "bg-destructive",
-  Failed: "bg-destructive",
-  playing: "bg-chart-1",
-  paused: "bg-muted-foreground/40",
-};
+const PROGRESS_COLOR = "bg-primary/50";
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -201,7 +204,7 @@ function TProgress({ pct, colorClass }: { pct: number; colorClass: string }) {
 // ─── Download tooltip ─────────────────────────────────────────────────────────
 
 function DownloadTooltip({ item }: { item: DownloadItem }) {
-  const colorClass = PROGRESS_COLOR[item.activity] ?? "bg-stone-400";
+  const colorClass = PROGRESS_COLOR;
   return (
     <div className="w-[215px] p-0">
       <p className="text-[11.5px] font-medium leading-snug break-all mb-[5px]">{item.title}</p>
@@ -223,7 +226,7 @@ function MediaTooltip({ item }: { item: MediaItem }) {
     ? `${item.subtitle} - ${item.title}`
     : (item.title ?? item.episode);
   const pct = item.duration > 0 ? (item.progress / item.duration) * 100 : 0;
-  const colorClass = PROGRESS_COLOR[item.state];
+  const colorClass = PROGRESS_COLOR;
   const tc = item.transcoding;
   return (
     <div className="w-[215px] p-0">
@@ -271,16 +274,9 @@ export function ListItem({ item }: { item: ListItemData }) {
       : media?.title) ??
     "";
 
-  const tooltipTitle =
-    media?.subtitle && media?.title
-      ? `${media.subtitle} - ${media.title}`
-      : media?.episode
-        ? `${media.subtitle} - ${media.episode}`
-        : (media?.title ?? "");
-
   const statusKey = download?.activity ?? media?.state ?? "Queued";
   const badge = BADGE[statusKey];
-  const progressColor = PROGRESS_COLOR[statusKey] ?? "bg-stone-400";
+  const progressColor = PROGRESS_COLOR;
 
   const progressPct =
     download?.progress ??
@@ -308,7 +304,7 @@ export function ListItem({ item }: { item: ListItemData }) {
       <Tooltip open={isMobile ? tooltipOpen : undefined} onOpenChange={setTooltipOpen}>
         <TooltipTrigger asChild>
           <div
-            className="flex flex-col bg-background border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
+            className="flex flex-col bg-secondary border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
             role="listitem"
             aria-label={displayTitle}
             onClick={(e) => {
