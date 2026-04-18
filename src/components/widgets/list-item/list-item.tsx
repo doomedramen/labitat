@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -98,29 +97,9 @@ function initials(name: string): string {
 // ─── Marquee ──────────────────────────────────────────────────────────────────
 
 function MarqueeText({ text, className }: { text: string; className?: string }) {
-  const clipRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLSpanElement>(null);
-  const [shouldAnimate, setShouldAnimate] = useState(false);
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      const clip = clipRef.current;
-      const inner = innerRef.current;
-      if (!clip || !inner) return;
-      const hasOverflow = inner.scrollWidth > clip.clientWidth;
-      setShouldAnimate(hasOverflow);
-    });
-  }, [text]);
-
   return (
-    <div ref={clipRef} className="overflow-hidden flex-1 min-w-0 flex items-center h-[18px]">
-      <span
-        ref={innerRef}
-        className={cn("inline-block whitespace-nowrap leading-none", className)}
-        style={shouldAnimate ? { animation: "mq-scroll 10s ease-in-out infinite" } : undefined}
-      >
-        {text}
-      </span>
+    <div className={cn("overflow-hidden flex-1 min-w-0", className)}>
+      <span className="truncate block h-[18px] leading-none">{text}</span>
     </div>
   );
 }
