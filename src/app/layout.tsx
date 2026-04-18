@@ -6,6 +6,7 @@ import { ThemeColorUpdater } from "@/components/theme-color-updater";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { AppToaster } from "@/components/ui/app-toaster";
 import { OverlayHost } from "@/components/ui/overlay-host";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { db } from "@/lib/db";
 import { SplashScreenLinks } from "@/components/splash-screen-links";
@@ -148,7 +149,7 @@ export default async function RootLayout({
       <body>
         <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
           <ThemeColorUpdater />
-          {children}
+          <TooltipProvider>{children}</TooltipProvider>
           <OverlayHost />
           <AppToaster />
           <ServiceWorkerRegistrar />

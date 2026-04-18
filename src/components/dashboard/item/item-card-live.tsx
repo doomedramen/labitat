@@ -1,9 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { useItemData } from "@/hooks/use-item-data";
 import { WidgetRenderer } from "./widget-renderer";
-import { getService } from "@/lib/adapters";
 import type { ItemWithCache } from "@/lib/types";
 import type { ServiceDefinition, ServiceData } from "@/lib/adapters/types";
 

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types";
+import type { GroupWithCache } from "@/lib/types";
 import { LiveDataProvider } from "@/hooks/use-live-data";
 import { SseBanner } from "./sse-banner";
 import { DashboardClient } from "./dashboard-client";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyboardSensor,
   PointerSensor,
@@ -13,7 +13,6 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 import { useWebHaptics } from "web-haptics/react";
-import { cn } from "@/lib/utils";
 import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types";
 import { useBackground } from "@/hooks/use-background";
 import { Header } from "./header";

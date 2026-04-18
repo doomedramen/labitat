@@ -180,3 +180,8 @@
   display: inline-block;
   animation: marquee var(--marquee-duration, 20s) linear infinite;
 }
+
+@keyframes mq-scroll {
+  0%, 20% { transform: translateX(0); }
+  80%, 100% { transform: translateX(var(--mq-shift, 0px)); }
+}

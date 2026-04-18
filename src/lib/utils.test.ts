@@ -8,7 +8,13 @@ describe("cn", () => {
   });
 
   it("handles conditional classes", () => {
-    const result = cn("base", true && "conditional", false && "hidden");
+    const shouldInclude = true;
+    const shouldExclude = false;
+    const result = cn(
+      "base",
+      shouldInclude ? "conditional" : undefined,
+      shouldExclude ? "hidden" : undefined,
+    );
     expect(result).toBe("base conditional");
   });
 

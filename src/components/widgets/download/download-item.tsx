@@ -1,12 +1,28 @@
 /**
- * Server-compatible DownloadItem component.
- * Renders a single download with progress, size, activity, and time left.
+ * DownloadItem component using the new unified ListItem design.
  */
 
-import { Clock, Download } from "lucide-react";
-import { ListItem } from "@/components/widgets/list-item";
-import type { ListItemTrailingItem } from "@/components/widgets/list-item/types";
 import type { DownloadItemData } from "./types";
+import { ListItem, type ActivityState } from "@/components/widgets/list-item";
+
+const ACTIVITY_MAP: Record<string, ActivityState> = {
+  downloading: "Downloading",
+  "forced downloading": "Forced downloading",
+  importing: "Importing",
+  queued: "Queued",
+  stalled: "Stalled",
+  paused: "Paused",
+  "fetching metadata": "Fetching metadata",
+  "import pending": "Import pending",
+  "failed pending": "Failed pending",
+  failed: "Failed",
+};
+
+function normalizeActivity(activity?: string): ActivityState {
+  if (!activity) return "Queued";
+  const normalized = activity.toLowerCase();
+  return ACTIVITY_MAP[normalized] ?? "Queued";
+}
 
 export function DownloadItem({
   title,
@@ -16,22 +32,17 @@ export function DownloadItem({
   activity,
   size,
 }: DownloadItemData) {
-  const tooltipText = `${subtitle ? `${subtitle} - ` : ""}${title}${size ? ` - ${size}` : ""}${activity ? ` - ${activity}` : ""}${timeLeft ? ` - ${timeLeft}` : ""}`;
-
-  const trailingItems: ListItemTrailingItem[] = [];
-  if (size) trailingItems.push({ text: size });
-  if (activity) trailingItems.push({ text: activity });
-  if (timeLeft) trailingItems.push({ icon: Clock, text: timeLeft });
-
   return (
     <ListItem
-      title={title}
-      subtitle={subtitle}
-      progress={progress}
-      leading={Download}
-      trailing={trailingItems}
-      tooltip={tooltipText}
-      marquee
+      item={{
+        kind: "download",
+        title,
+        subtitle,
+        progress,
+        timeLeft,
+        activity: normalizeActivity(activity),
+        size,
+      }}
     />
   );
 }

@@ -11,7 +11,7 @@ export { DownloadList, DownloadItem } from "./download";
 export type { DownloadItemData } from "./download";
 
 export { ListItem } from "./list-item";
-export type { ListItemProps, ListItemTrailingItem } from "./list-item";
+export type { ListItemData } from "./list-item";
 
 // Resource bars (server-compatible)
 export { ResourceBar, ResourceBarDual } from "./resource-bar";

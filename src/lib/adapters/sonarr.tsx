@@ -17,34 +17,6 @@ type SonarrData = {
 import { fetchWithTimeout } from "./fetch-with-timeout";
 import { parseBool } from "./validate";
 
-/**
- * Format episode title with SxxEyy format for consistency with media adapters.
- */
-function formatEpisodeTitle(
-  title: string,
-  options: {
-    seriesName?: string;
-    seasonNumber?: number;
-    episodeNumber?: number;
-  } = {},
-): string {
-  const { seriesName, seasonNumber, episodeNumber } = options;
-
-  let formattedTitle = title;
-
-  // Add SXXEYY prefix if we have season and episode numbers
-  if (seasonNumber != null && episodeNumber != null) {
-    formattedTitle = `S${String(seasonNumber).padStart(2, "0")}E${String(episodeNumber).padStart(2, "0")} - ${title}`;
-  }
-
-  // Prepend series name if available
-  if (seriesName) {
-    return `${seriesName}: ${formattedTitle}`;
-  }
-
-  return formattedTitle;
-}
-
 function sonarrToPayload(data: SonarrData) {
   return {
     stats: [

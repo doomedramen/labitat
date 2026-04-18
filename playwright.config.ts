@@ -26,7 +26,7 @@ export default defineConfig({
     command:
       "node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm dev",
     url: "http://localhost:3000",
-    reuseExistingServer: false,
+    reuseExistingServer: true,
     timeout: 120 * 1000,
     env: {
       NODE_ENV: "test",
