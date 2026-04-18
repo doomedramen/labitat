@@ -3,6 +3,7 @@
  * Renders a sorted list of active streams.
  */
 
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ActiveStreamItem } from "./active-stream-item";
 import type { ActiveStream } from "./types";
 
@@ -21,14 +22,16 @@ export function ActiveStreamList({ streams, onTogglePlayback }: ActiveStreamList
   });
 
   return (
-    <div className="flex w-full flex-col gap-0.5">
-      {sorted.map((stream) => (
-        <ActiveStreamItem
-          key={`${stream.title}-${stream.user}`}
-          {...stream}
-          onTogglePlayback={onTogglePlayback}
-        />
-      ))}
-    </div>
+    <TooltipProvider delayDuration={600}>
+      <div className="flex w-full flex-col gap-0.5">
+        {sorted.map((stream) => (
+          <ActiveStreamItem
+            key={`${stream.title}-${stream.user}`}
+            {...stream}
+            onTogglePlayback={onTogglePlayback}
+          />
+        ))}
+      </div>
+    </TooltipProvider>
   );
 }

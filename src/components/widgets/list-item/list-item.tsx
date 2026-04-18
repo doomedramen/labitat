@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -133,15 +133,13 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
   const [shift, setShift] = useState<number | null>(null);
 
   useEffect(() => {
-    const clip = clipRef.current;
-    const inner = innerRef.current;
-    if (!clip || !inner) return;
-    const overflow = inner.scrollWidth - clip.clientWidth;
-    if (overflow > 4) {
-      setShift(overflow + 16);
-    } else {
-      setShift(null);
-    }
+    requestAnimationFrame(() => {
+      const clip = clipRef.current;
+      const inner = innerRef.current;
+      if (!clip || !inner) return;
+      const overflow = inner.scrollWidth - clip.clientWidth;
+      setShift(overflow > 4 ? overflow + 16 : null);
+    });
   }, [text]);
 
   return (
@@ -216,12 +214,7 @@ function MediaTooltip({ item }: { item: MediaItem }) {
     <div className="w-[215px] p-0">
       <p className="text-[11.5px] font-medium leading-snug break-all mb-[5px]">{fullTitle}</p>
       <div className="h-px bg-border my-1" />
-      {item.subtitle && (
-        <TRow
-          label={item.kind === "media" ? "Series / Artist" : "Subtitle"}
-          value={item.subtitle}
-        />
-      )}
+      {item.subtitle && <TRow label="Series / Artist" value={item.subtitle} />}
       <TRow label="User" value={item.user} />
       <TRow label="State" value={item.state === "playing" ? "Playing" : "Paused"} />
       <TRow label="Duration" value={formatTime(item.duration)} />
@@ -249,98 +242,88 @@ function MediaTooltip({ item }: { item: MediaItem }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ListItem({ item }: { item: ListItemData }) {
-  const isDownload = item.kind === "download";
-  const isMedia = item.kind === "media";
+  const download = item.kind === "download" ? item : null;
+  const media = item.kind === "media" ? item : null;
 
-  const titleText = isDownload
-    ? item.subtitle
-      ? `${item.subtitle} ${item.title}`
-      : item.title
-    : item.subtitle
-      ? `${item.subtitle} ${item.title}`
-      : item.title;
+  const titleText = download
+    ? download.subtitle
+      ? `${download.subtitle} ${download.title}`
+      : download.title
+    : media?.subtitle
+      ? `${media.subtitle} ${media.title}`
+      : (media?.title ?? "");
 
-  const statusKey = isDownload ? (item as DownloadItem).activity : (item as MediaItem).state;
+  const statusKey = download?.activity ?? media?.state ?? "Queued";
   const badge = BADGE[statusKey];
   const progressColor = PROGRESS_COLOR[statusKey] ?? "bg-stone-400";
 
-  const progressPct = isDownload
-    ? (item as DownloadItem).progress
-    : (() => {
-        const p = item as MediaItem;
-        return p.duration > 0 ? (p.progress / p.duration) * 100 : 0;
-      })();
+  const progressPct =
+    download?.progress ??
+    (media && media.duration > 0 ? (media.progress / media.duration) * 100 : 0);
 
-  const metaText = isDownload
-    ? [
-        (item as DownloadItem).timeLeft && (item as DownloadItem).timeLeft !== "0m"
-          ? (item as DownloadItem).timeLeft
-          : null,
-        (item as DownloadItem).size,
-      ]
+  const metaText = download
+    ? [download.timeLeft && download.timeLeft !== "0m" ? download.timeLeft : null, download.size]
         .filter(Boolean)
         .join(" · ")
-    : (() => {
-        const p = item as MediaItem;
-        return `${formatTime(p.progress)} / ${formatTime(p.duration)}`;
-      })();
+    : media
+      ? `${formatTime(media.progress)} / ${formatTime(media.duration)}`
+      : "";
 
-  const subText = isDownload ? (item as DownloadItem).activity : null;
+  const subText = download?.activity ?? "";
 
   return (
-    <TooltipProvider delayDuration={600}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex flex-col bg-background border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors">
-            <div className="px-2 pt-[6px] pb-[5px] flex flex-col gap-[3px] overflow-hidden">
-              <div className="flex items-center gap-[5px] h-[18px] min-w-0">
-                <MarqueeText text={titleText} className="text-[12px] font-medium text-foreground" />
-                {badge && (
-                  <span
-                    className={cn(
-                      "text-[9.5px] font-medium px-[5px] py-[2px] rounded-[3px] whitespace-nowrap flex-shrink-0 leading-none",
-                      badge.className,
-                    )}
-                  >
-                    {badge.label}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-[5px] h-[18px] min-w-0">
-                {isMedia && (
-                  <div className="w-[14px] h-[14px] rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 text-[8px] font-medium flex items-center justify-center flex-shrink-0 leading-none">
-                    {initials((item as MediaItem).user)}
-                  </div>
-                )}
-                {isMedia ? (
-                  <MarqueeText
-                    text={(item as MediaItem).user}
-                    className="text-[11px] text-muted-foreground"
-                  />
-                ) : (
-                  <MarqueeText text={subText ?? ""} className="text-[11px] text-muted-foreground" />
-                )}
-                <span className="text-[11px] text-muted-foreground/70 whitespace-nowrap flex-shrink-0 leading-none">
-                  {metaText}
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="flex flex-col bg-background border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
+          role="listitem"
+          aria-label={titleText}
+        >
+          <div className="px-2 pt-[6px] pb-[5px] flex flex-col gap-[3px] overflow-hidden">
+            <div className="flex items-center gap-[5px] h-[18px] min-w-0">
+              <MarqueeText text={titleText} className="text-[12px] font-medium text-foreground" />
+              {badge && (
+                <span
+                  className={cn(
+                    "text-[9.5px] font-medium px-[5px] py-[2px] rounded-[3px] whitespace-nowrap flex-shrink-0 leading-none",
+                    badge.className,
+                  )}
+                >
+                  {badge.label}
                 </span>
-              </div>
+              )}
             </div>
 
-            <div className="h-[3px] bg-border flex-shrink-0">
-              <div className={cn("h-full", progressColor)} style={{ width: `${progressPct}%` }} />
+            <div className="flex items-center gap-[5px] h-[18px] min-w-0">
+              {media && (
+                <div className="w-[14px] h-[14px] rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 text-[8px] font-medium flex items-center justify-center flex-shrink-0 leading-none">
+                  {initials(media.user)}
+                </div>
+              )}
+              {media ? (
+                <MarqueeText text={media.user} className="text-[11px] text-muted-foreground" />
+              ) : (
+                <MarqueeText text={subText} className="text-[11px] text-muted-foreground" />
+              )}
+              <span className="text-[11px] text-muted-foreground/70 whitespace-nowrap flex-shrink-0 leading-none">
+                {metaText}
+              </span>
             </div>
           </div>
-        </TooltipTrigger>
 
-        <TooltipContent side="top" className="p-2 shadow-md">
-          {isDownload ? (
-            <DownloadTooltip item={item as DownloadItem} />
-          ) : (
-            <MediaTooltip item={item as MediaItem} />
-          )}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+          <div className="h-[3px] bg-border flex-shrink-0">
+            <div className={cn("h-full", progressColor)} style={{ width: `${progressPct}%` }} />
+          </div>
+        </div>
+      </TooltipTrigger>
+
+      <TooltipContent side="top" className="p-2 shadow-md">
+        {download ? (
+          <DownloadTooltip item={download} />
+        ) : media ? (
+          <MediaTooltip item={media} />
+        ) : null}
+      </TooltipContent>
+    </Tooltip>
   );
 }

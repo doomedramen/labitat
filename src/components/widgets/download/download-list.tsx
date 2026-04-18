@@ -3,6 +3,7 @@
  * Renders a sorted list of downloads (active downloads first, then by progress).
  */
 
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { DownloadItem } from "./download-item";
 import type { DownloadItemData } from "./types";
 
@@ -28,10 +29,12 @@ export function DownloadList({ downloads }: DownloadListProps) {
   });
 
   return (
-    <div className="flex flex-col gap-0.5">
-      {sorted.map((download) => (
-        <DownloadItem key={download.title} {...download} />
-      ))}
-    </div>
+    <TooltipProvider delayDuration={600}>
+      <div className="flex flex-col gap-0.5">
+        {sorted.map((download) => (
+          <DownloadItem key={download.title} {...download} />
+        ))}
+      </div>
+    </TooltipProvider>
   );
 }
