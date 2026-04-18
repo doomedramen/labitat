@@ -10,7 +10,8 @@ import {
   Hourglass,
   Loader2,
 } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -255,7 +256,10 @@ export function ListItem({ item }: { item: ListItemData }) {
   const download = item.kind === "download" ? item : null;
   const media = item.kind === "media" ? item : null;
 
-  const titleText = download?.title ?? media?.title ?? "";
+  const titleText =
+    download?.title ??
+    (media?.subtitle ? `${media.subtitle} — ${media.title}` : media?.title) ??
+    "";
 
   const statusKey = download?.activity ?? media?.state ?? "Queued";
   const badge = BADGE[statusKey];
@@ -274,68 +278,71 @@ export function ListItem({ item }: { item: ListItemData }) {
       : "";
 
   const subText = download?.activity ?? "";
+  const isMobile = useIsMobile();
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          className="flex flex-col bg-background border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
-          role="listitem"
-          aria-label={titleText}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onPointerDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <div className="px-2 pt-[6px] pb-[5px] flex flex-col gap-[3px] overflow-hidden">
-            <div className="flex items-center gap-[5px] h-[18px] min-w-0">
-              <MarqueeText text={titleText} className="text-[12px] font-medium text-foreground" />
-              {badge && (
-                <span
-                  className={cn(
-                    "w-[18px] h-[18px] flex items-center justify-center rounded-[3px] whitespace-nowrap flex-shrink-0",
-                    badge.className,
-                  )}
-                >
-                  <BadgeIcon icon={badge.icon} className="w-3 h-3" />
+    <TooltipProvider delayDuration={isMobile ? 0 : 600}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className="flex flex-col bg-background border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
+            role="listitem"
+            aria-label={titleText}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <div className="px-2 pt-[6px] pb-[5px] flex flex-col gap-[3px] overflow-hidden">
+              <div className="flex items-center gap-[5px] h-[18px] min-w-0">
+                <MarqueeText text={titleText} className="text-[12px] font-medium text-foreground" />
+                {badge && (
+                  <span
+                    className={cn(
+                      "w-[18px] h-[18px] flex items-center justify-center rounded-[3px] whitespace-nowrap flex-shrink-0",
+                      badge.className,
+                    )}
+                  >
+                    <BadgeIcon icon={badge.icon} className="w-3 h-3" />
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-[5px] h-[18px] min-w-0">
+                {media && (
+                  <div className="w-[14px] h-[14px] rounded-full bg-primary/15 text-primary dark:bg-primary/25 text-[8px] font-medium flex items-center justify-center flex-shrink-0 leading-none self-center">
+                    {initials(media.user)}
+                  </div>
+                )}
+                {media ? (
+                  <MarqueeText text={media.user} className="text-[11px] text-muted-foreground" />
+                ) : (
+                  <MarqueeText text={subText} className="text-[11px] text-muted-foreground" />
+                )}
+                <span className="text-[11px] text-muted-foreground/70 whitespace-nowrap flex-shrink-0 leading-none">
+                  {metaText}
                 </span>
-              )}
+              </div>
             </div>
 
-            <div className="flex items-center gap-[5px] h-[18px] min-w-0">
-              {media && (
-                <div className="w-[14px] h-[14px] rounded-full bg-primary/15 text-primary dark:bg-primary/25 text-[8px] font-medium flex items-center justify-center flex-shrink-0 leading-none self-center">
-                  {initials(media.user)}
-                </div>
-              )}
-              {media ? (
-                <MarqueeText text={media.user} className="text-[11px] text-muted-foreground" />
-              ) : (
-                <MarqueeText text={subText} className="text-[11px] text-muted-foreground" />
-              )}
-              <span className="text-[11px] text-muted-foreground/70 whitespace-nowrap flex-shrink-0 leading-none">
-                {metaText}
-              </span>
+            <div className="h-[3px] bg-transparent flex-shrink-0">
+              <div className={cn("h-full", progressColor)} style={{ width: `${progressPct}%` }} />
             </div>
           </div>
+        </TooltipTrigger>
 
-          <div className="h-[3px] bg-transparent flex-shrink-0">
-            <div className={cn("h-full", progressColor)} style={{ width: `${progressPct}%` }} />
-          </div>
-        </div>
-      </TooltipTrigger>
-
-      <TooltipContent side="top" className="p-2 shadow-md border">
-        {download ? (
-          <DownloadTooltip item={download} />
-        ) : media ? (
-          <MediaTooltip item={media} />
-        ) : null}
-      </TooltipContent>
-    </Tooltip>
+        <TooltipContent side="top" className="p-2 shadow-md border">
+          {download ? (
+            <DownloadTooltip item={download} />
+          ) : media ? (
+            <MediaTooltip item={media} />
+          ) : null}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
