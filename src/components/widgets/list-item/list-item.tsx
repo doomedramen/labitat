@@ -1,5 +1,6 @@
 "use client";
 
+import { Pause, Play } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -49,22 +50,58 @@ export type ListItemData = DownloadItem | MediaItem;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const BADGE: Record<string, { label: string; className: string }> = {
-  Downloading: { label: "DL", className: "bg-primary/15 text-primary dark:bg-primary/25" },
-  "Forced downloading": { label: "DL", className: "bg-primary/15 text-primary dark:bg-primary/25" },
-  Importing: { label: "IMP", className: "bg-chart-2/20 text-chart-2 dark:bg-chart-2/30" },
-  Queued: { label: "Q", className: "bg-muted text-muted-foreground" },
-  Stalled: { label: "ST", className: "bg-chart-5/20 text-chart-5 dark:bg-chart-5/30" },
-  Paused: { label: "⏸", className: "bg-muted text-muted-foreground" },
-  "Fetching metadata": { label: "FT", className: "bg-chart-4/20 text-chart-4 dark:bg-chart-4/30" },
-  "Import pending": { label: "IP", className: "bg-chart-2/20 text-chart-2 dark:bg-chart-2/30" },
+const BADGE: Record<
+  string,
+  {
+    icon: "play" | "pause" | "download" | "import" | "error" | "queued" | "stalled" | "fetch";
+    label: string;
+    className: string;
+  }
+> = {
+  Downloading: {
+    icon: "download",
+    label: "DL",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
+  },
+  "Forced downloading": {
+    icon: "download",
+    label: "DL",
+    className: "bg-primary/15 text-primary dark:bg-primary/25",
+  },
+  Importing: {
+    icon: "import",
+    label: "IMP",
+    className: "bg-chart-2/20 text-chart-2 dark:bg-chart-2/30",
+  },
+  Queued: { icon: "queued", label: "Q", className: "bg-muted text-muted-foreground" },
+  Stalled: {
+    icon: "stalled",
+    label: "ST",
+    className: "bg-chart-5/20 text-chart-5 dark:bg-chart-5/30",
+  },
+  Paused: { icon: "pause", label: "⏸", className: "bg-muted text-muted-foreground" },
+  "Fetching metadata": {
+    icon: "fetch",
+    label: "FT",
+    className: "bg-chart-4/20 text-chart-4 dark:bg-chart-4/30",
+  },
+  "Import pending": {
+    icon: "import",
+    label: "IP",
+    className: "bg-chart-2/20 text-chart-2 dark:bg-chart-2/30",
+  },
   "Failed pending": {
+    icon: "error",
     label: "FP",
     className: "bg-destructive/15 text-destructive dark:bg-destructive/25",
   },
-  Failed: { label: "ERR", className: "bg-destructive/15 text-destructive dark:bg-destructive/25" },
-  playing: { label: "▶", className: "bg-chart-1/20 text-chart-1 dark:bg-chart-1/30" },
-  paused: { label: "⏸", className: "bg-muted text-muted-foreground" },
+  Failed: {
+    icon: "error",
+    label: "ERR",
+    className: "bg-destructive/15 text-destructive dark:bg-destructive/25",
+  },
+  playing: { icon: "play", label: "▶", className: "bg-chart-1/20 text-chart-1 dark:bg-chart-1/30" },
+  paused: { icon: "pause", label: "⏸", className: "bg-muted text-muted-foreground" },
 };
 
 const PROGRESS_COLOR: Record<string, string> = {
@@ -92,6 +129,17 @@ function formatTime(seconds: number): string {
 
 function initials(name: string): string {
   return name.slice(0, 1).toUpperCase();
+}
+
+function BadgeIcon({ icon, className }: { icon: string; className?: string }) {
+  switch (icon) {
+    case "play":
+      return <Play className={cn("w-3 h-3", className)} />;
+    case "pause":
+      return <Pause className={cn("w-3 h-3", className)} />;
+    default:
+      return null;
+  }
 }
 
 // ─── Marquee ──────────────────────────────────────────────────────────────────
@@ -213,6 +261,8 @@ export function ListItem({ item }: { item: ListItemData }) {
           className="flex flex-col bg-background border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
           role="listitem"
           aria-label={titleText}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
         >
           <div className="px-2 pt-[6px] pb-[5px] flex flex-col gap-[3px] overflow-hidden">
             <div className="flex items-center gap-[5px] h-[18px] min-w-0">
@@ -220,11 +270,11 @@ export function ListItem({ item }: { item: ListItemData }) {
               {badge && (
                 <span
                   className={cn(
-                    "text-[9.5px] font-medium px-[5px] py-[2px] rounded-[3px] whitespace-nowrap flex-shrink-0 leading-none",
+                    "w-[18px] h-[18px] flex items-center justify-center rounded-[3px] whitespace-nowrap flex-shrink-0",
                     badge.className,
                   )}
                 >
-                  {badge.label}
+                  <BadgeIcon icon={badge.icon} className="w-3 h-3" />
                 </span>
               )}
             </div>
