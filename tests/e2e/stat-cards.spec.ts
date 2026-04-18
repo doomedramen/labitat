@@ -194,8 +194,8 @@ test.describe("Stat Card Reordering and Visibility", () => {
     const handles = dialog.locator('[aria-label="Drag to reorder stat card"]');
     await dragAndDropInDialog(page, handles.nth(1), handles.nth(0));
 
-    // Save the item
-    await page.getByRole("button", { name: "Update" }).click();
+    // Save the item - use existing dialog to avoid timing issues
+    await dialog.getByRole("button", { name: "Update" }).click();
 
     // Wait for dialog to close
     await expect(page.getByText("Stat Card Layout")).not.toBeVisible();
