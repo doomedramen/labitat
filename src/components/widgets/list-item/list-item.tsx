@@ -117,9 +117,9 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
       <span
         ref={innerRef}
         className={cn("inline-block whitespace-nowrap leading-none", className)}
-        style={shouldAnimate ? { animation: "mq-scroll 8s linear infinite" } : undefined}
+        style={shouldAnimate ? { animation: "mq-scroll 10s ease-in-out infinite" } : undefined}
       >
-        {shouldAnimate ? `${text} · ${text}` : text}
+        {text}
       </span>
     </div>
   );

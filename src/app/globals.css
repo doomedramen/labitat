@@ -182,6 +182,7 @@
 }
 
 @keyframes mq-scroll {
-  0%, 10% { transform: translateX(0); }
-  90%, 100% { transform: translateX(-50%); }
+  0%, 5% { transform: translateX(0); }
+  45%, 55% { transform: translateX(-50%); }
+  95%, 100% { transform: translateX(0); }
 }
