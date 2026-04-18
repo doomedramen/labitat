@@ -14,6 +14,7 @@ import type { ItemWithCache } from "@/lib/types";
 import { Pencil, Trash2, GripVertical } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { ItemIcon } from "./item-icon";
 
 interface ItemCardDummyProps {
   item: ItemWithCache;
@@ -79,15 +80,21 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
         </div>
 
         {/* Content */}
-        <div className="px-3 pt-8 pb-3">
-          <p className="truncate text-sm font-medium">{item.label}</p>
-          <div className="mt-1 flex flex-col text-xs text-muted-foreground">
-            {serviceDef && <span>{serviceDef.name}</span>}
-            {item.href && <span className="truncate">{item.href}</span>}
-            <span>
-              {(item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000) / 1000}
-              s poll
-            </span>
+        <div className="flex items-center gap-3 px-3 pt-8 pb-3">
+          <div className="shrink-0">
+            <ItemIcon
+              iconUrl={item.iconUrl}
+              label={item.label}
+              serviceIcon={serviceDef?.icon ?? null}
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{item.label}</p>
+            <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
+              {serviceDef && <span>{serviceDef.name}</span>}
+              {item.href && <span className="truncate">{item.href}</span>}
+              <span>{(item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000) / 1000}s poll</span>
+            </div>
           </div>
         </div>
       </div>
