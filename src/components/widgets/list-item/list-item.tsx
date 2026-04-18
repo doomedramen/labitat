@@ -173,8 +173,10 @@ function BadgeIcon({ icon, className }: { icon: string; className?: string }) {
 
 function MarqueeText({ text, className }: { text: string; className?: string }) {
   return (
-    <div className={cn("overflow-hidden flex-1 min-w-0 flex items-center", className)}>
-      <span className="truncate block h-[18px]">{text}</span>
+    <div
+      className={cn("overflow-hidden flex-1 min-w-0 flex items-center justify-center", className)}
+    >
+      <span className="truncate block h-[18px] leading-none">{text}</span>
     </div>
   );
 }
@@ -194,7 +196,7 @@ function TProgress({ pct, colorClass }: { pct: number; colorClass: string }) {
   return (
     <div className="mt-[5px] mb-[2px]">
       <TRow label="Progress" value={`${Math.round(pct)}%`} />
-      <div className="h-[3px] bg-border rounded-full overflow-hidden mt-[3px]">
+      <div className="h-[2px] bg-border rounded-full overflow-hidden mt-[3px]">
         <div className={cn("h-full rounded-full", colorClass)} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -249,7 +251,7 @@ function MediaTooltip({ item }: { item: MediaItem }) {
           label="Progress"
           value={`${formatTime(item.progress)} / ${formatTime(item.duration)}`}
         />
-        <div className="h-[3px] bg-border rounded-full overflow-hidden mt-[3px]">
+        <div className="h-[2px] bg-border rounded-full overflow-hidden mt-[3px]">
           <div className={cn("h-full rounded-full", colorClass)} style={{ width: `${pct}%` }} />
         </div>
       </div>
@@ -354,7 +356,7 @@ export function ListItem({ item }: { item: ListItemData }) {
               </div>
             </div>
 
-            <div className="h-[3px] bg-transparent flex-shrink-0">
+            <div className="h-[2px] bg-transparent flex-shrink-0">
               <div className={cn("h-full", progressColor)} style={{ width: `${progressPct}%` }} />
             </div>
           </div>
