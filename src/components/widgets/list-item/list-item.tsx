@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   Pause,
   Play,
@@ -169,8 +170,8 @@ function BadgeIcon({ icon, className }: { icon: string; className?: string }) {
 
 function MarqueeText({ text, className }: { text: string; className?: string }) {
   return (
-    <div className={cn("overflow-hidden flex-1 min-w-0", className)}>
-      <span className="truncate block h-[18px] leading-none">{text}</span>
+    <div className={cn("overflow-hidden flex-1 min-w-0 flex items-center", className)}>
+      <span className="truncate block h-[18px]">{text}</span>
     </div>
   );
 }
@@ -256,6 +257,8 @@ function MediaTooltip({ item }: { item: MediaItem }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ListItem({ item }: { item: ListItemData }) {
+  const [tooltipOpen, setTooltipOpen] = React.useState(false);
+
   const download = item.kind === "download" ? item : null;
   const media = item.kind === "media" ? item : null;
 
@@ -294,9 +297,15 @@ export function ListItem({ item }: { item: ListItemData }) {
   const subText = download?.activity ?? "";
   const isMobile = useIsMobile();
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (isMobile && e.pointerType === "touch") {
+      setTooltipOpen(true);
+    }
+  };
+
   return (
     <TooltipProvider delayDuration={isMobile ? 0 : 600}>
-      <Tooltip>
+      <Tooltip open={isMobile ? tooltipOpen : undefined} onOpenChange={setTooltipOpen}>
         <TooltipTrigger asChild>
           <div
             className="flex flex-col bg-background border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
@@ -306,10 +315,7 @@ export function ListItem({ item }: { item: ListItemData }) {
               e.preventDefault();
               e.stopPropagation();
             }}
-            onPointerDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
+            onPointerDown={handlePointerDown}
           >
             <div className="px-2 pt-[6px] pb-[5px] flex flex-col gap-[3px] overflow-hidden">
               <div className="flex items-center gap-[5px] h-[18px] min-w-0">
@@ -336,9 +342,15 @@ export function ListItem({ item }: { item: ListItemData }) {
                   </div>
                 )}
                 {media ? (
-                  <MarqueeText text={media.user} className="text-[11px] text-muted-foreground" />
+                  <MarqueeText
+                    text={media.user}
+                    className="text-[11px] text-muted-foreground self-center"
+                  />
                 ) : (
-                  <MarqueeText text={subText} className="text-[11px] text-muted-foreground" />
+                  <MarqueeText
+                    text={subText}
+                    className="text-[11px] text-muted-foreground self-center"
+                  />
                 )}
                 <span className="text-[11px] text-muted-foreground/70 whitespace-nowrap flex-shrink-0 leading-none">
                   {metaText}

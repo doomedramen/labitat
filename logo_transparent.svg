@@ -68,14 +68,14 @@
      stroke-linecap="round"
      stroke-linejoin="round"
      id="g3"
-     style="stroke:#ffffff;stroke-opacity:1">
+     style="stroke:#1a1a2e;stroke-opacity:1">
     <path
        d="M 11,20 A 7,7 0 0 1 9.8,6.1 C 15.5,5 17,4.48 19,2 c 1,2 2,4.18 2,8 0,5.5 -4.78,10 -10,10 z"
        id="path2"
-       style="stroke:#ffffff;stroke-opacity:1" />
+       style="stroke:#1a1a2e;stroke-opacity:1" />
     <path
        d="M 2,21 C 2,18 3.85,15.64 7.08,15 9.5,14.52 12,13 13,12"
        id="path3"
-       style="stroke:#ffffff;stroke-opacity:1" />
+       style="stroke:#1a1a2e;stroke-opacity:1" />
   </g>
 </svg>
