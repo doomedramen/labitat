@@ -6,6 +6,7 @@ import { parseBool } from "./validate";
 type PlexSession = {
   title: string;
   subtitle?: string;
+  episode?: string;
   user: string;
   progress: number;
   duration: number;

@@ -7,6 +7,8 @@ export type ActiveStream = {
   title: string;
   /** Series / show name for TV episodes */
   subtitle?: string;
+  /** Episode number in S01E05 format */
+  episode?: string;
   user: string;
   progress: number;
   duration: number;
