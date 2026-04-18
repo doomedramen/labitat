@@ -1,6 +1,15 @@
 "use client";
 
-import { Pause, Play } from "lucide-react";
+import {
+  Pause,
+  Play,
+  Download,
+  Upload,
+  AlertCircle,
+  Clock,
+  Hourglass,
+  Loader2,
+} from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -137,6 +146,18 @@ function BadgeIcon({ icon, className }: { icon: string; className?: string }) {
       return <Play className={cn("w-3 h-3", className)} />;
     case "pause":
       return <Pause className={cn("w-3 h-3", className)} />;
+    case "download":
+      return <Download className={cn("w-3 h-3", className)} />;
+    case "import":
+      return <Upload className={cn("w-3 h-3", className)} />;
+    case "queued":
+      return <Clock className={cn("w-3 h-3", className)} />;
+    case "stalled":
+      return <Hourglass className={cn("w-3 h-3", className)} />;
+    case "fetch":
+      return <Loader2 className={cn("w-3 h-3", className)} />;
+    case "error":
+      return <AlertCircle className={cn("w-3 h-3", className)} />;
     default:
       return null;
   }
