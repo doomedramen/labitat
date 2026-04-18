@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -131,27 +131,18 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
   const clipRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLSpanElement>(null);
   const [shift, setShift] = useState<number | null>(null);
-  const [dur, setDur] = useState(8);
 
-  const measure = useCallback(() => {
+  useEffect(() => {
     const clip = clipRef.current;
     const inner = innerRef.current;
     if (!clip || !inner) return;
     const overflow = inner.scrollWidth - clip.clientWidth;
     if (overflow > 4) {
       setShift(overflow + 16);
-      setDur(Math.max(4, overflow / 30));
     } else {
       setShift(null);
     }
-  }, []);
-
-  useEffect(() => {
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (clipRef.current) ro.observe(clipRef.current);
-    return () => ro.disconnect();
-  }, [measure, text]);
+  }, [text]);
 
   return (
     <div ref={clipRef} className="overflow-hidden flex-1 min-w-0 flex items-center h-[18px]">
@@ -161,7 +152,7 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
         style={
           shift !== null
             ? {
-                animation: `mq-scroll ${dur}s linear 1s infinite`,
+                animation: `mq-scroll 8s ease-in-out infinite`,
                 ["--mq-shift" as string]: `-${shift}px`,
               }
             : undefined
