@@ -12,7 +12,7 @@ describe("nginx-proxy-manager definition", () => {
 
   it("has configFields defined", () => {
     expect(nginxProxyManagerDefinition.configFields).toBeDefined();
-    expect(nginxProxyManagerDefinition.configFields).toHaveLength(3);
+    expect(nginxProxyManagerDefinition.configFields).toHaveLength(4);
     expect(nginxProxyManagerDefinition.configFields[0].key).toBe("url");
     expect(nginxProxyManagerDefinition.configFields[0].type).toBe("url");
     expect(nginxProxyManagerDefinition.configFields[0].required).toBe(true);
@@ -22,6 +22,8 @@ describe("nginx-proxy-manager definition", () => {
     expect(nginxProxyManagerDefinition.configFields[2].key).toBe("password");
     expect(nginxProxyManagerDefinition.configFields[2].type).toBe("password");
     expect(nginxProxyManagerDefinition.configFields[2].required).toBe(true);
+    expect(nginxProxyManagerDefinition.configFields[3].key).toBe("insecure");
+    expect(nginxProxyManagerDefinition.configFields[3].type).toBe("boolean");
   });
 
   describe("fetchData", () => {
