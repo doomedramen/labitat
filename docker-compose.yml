@@ -7,6 +7,8 @@ services:
       - "3000:3000"
     volumes:
       - labitat_data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
     environment:
       # Optional: set your own key, or let Labitat generate one automatically

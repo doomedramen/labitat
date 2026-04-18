@@ -119,10 +119,18 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
       required: true,
       placeholder: "Your NPM password",
     },
+    {
+      key: "insecure",
+      label: "Skip TLS verification",
+      type: "boolean",
+      required: false,
+      helperText: "Enable if using self-signed certificate",
+    },
   ],
   async fetchData(config) {
     const baseUrl = config.url.replace(/\/$/, "");
     const cacheKey = `${baseUrl}:${config.email}`;
+    const insecure = config.insecure === "true";
 
     // Try to get a cached token first
     let token = getCachedToken(cacheKey);
@@ -136,6 +144,7 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
           identity: config.email,
           secret: config.password,
         }),
+        insecure,
       });
 
       if (!loginRes.ok) {
@@ -156,7 +165,7 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
 
     // Get counts with automatic retry on 403 (expired token)
     async function fetchWithRetry(url: string): Promise<number> {
-      const res = await fetchWithTimeout(url, { headers });
+      const res = await fetchWithTimeout(url, { headers, insecure });
 
       // If token expired, re-login and retry
       if (res.status === 403) {
@@ -169,6 +178,7 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
             identity: config.email,
             secret: config.password,
           }),
+          insecure,
         });
 
         if (!loginRes.ok) {

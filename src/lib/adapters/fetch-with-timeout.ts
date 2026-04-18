@@ -7,7 +7,7 @@ const DEFAULT_TIMEOUT_MS = 10_000;
  */
 export async function fetchWithTimeout(
   input: RequestInfo | URL,
-  init?: RequestInit,
+  init?: RequestInit & { insecure?: boolean },
   timeoutMs: number = DEFAULT_TIMEOUT_MS,
 ): Promise<Response> {
   const controller = new AbortController();
@@ -22,7 +22,6 @@ export async function fetchWithTimeout(
     if (AbortSignal.any) {
       signal = AbortSignal.any([init.signal, controller.signal]);
     } else {
-      // Fallback: forward abort from the caller's signal to our controller
       init.signal.addEventListener("abort", () => controller.abort(), {
         once: true,
       });
@@ -33,7 +32,20 @@ export async function fetchWithTimeout(
   }
 
   try {
-    return await globalThis.fetch(input, { ...init, signal });
+    const { insecure, ...fetchInit } = init ?? {};
+    const fetchOptions = { ...fetchInit, signal };
+
+    // Handle insecure TLS for self-signed certificates
+    if (insecure) {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.startsWith("https://")) {
+        const https = await import("https");
+        const agent = new https.Agent({ rejectUnauthorized: false });
+        Object.assign(fetchOptions, { agent, ...fetchInit, signal });
+      }
+    }
+
+    return await globalThis.fetch(input, fetchOptions);
   } catch (err) {
     // Handle timeout from our own AbortController
     if (timedOut && err instanceof DOMException && err.name === "AbortError") {
@@ -47,7 +59,6 @@ export async function fetchWithTimeout(
     if (err instanceof Error) {
       // Provide more context for common fetch failures
       if (err.message.includes("fetch failed")) {
-        // This is the generic Node.js fetch error, usually wrapping a lower-level error
         const cause = (err as any).cause;
         if (cause instanceof Error) {
           throw new Error(`Request failed: ${cause.message}`);
