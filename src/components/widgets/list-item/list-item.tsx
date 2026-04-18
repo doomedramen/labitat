@@ -119,7 +119,7 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
         className={cn("inline-block whitespace-nowrap leading-none", className)}
         style={shouldAnimate ? { animation: "mq-scroll 8s linear infinite" } : undefined}
       >
-        {shouldAnimate ? `${text} ${text}` : text}
+        {shouldAnimate ? `${text} · ${text}` : text}
       </span>
     </div>
   );
@@ -150,11 +150,10 @@ function TProgress({ pct, colorClass }: { pct: number; colorClass: string }) {
 // ─── Download tooltip ─────────────────────────────────────────────────────────
 
 function DownloadTooltip({ item }: { item: DownloadItem }) {
-  const fullTitle = item.subtitle ? `${item.subtitle} — ${item.title}` : item.title;
   const colorClass = PROGRESS_COLOR[item.activity] ?? "bg-stone-400";
   return (
     <div className="w-[215px] p-0">
-      <p className="text-[11.5px] font-medium leading-snug break-all mb-[5px]">{fullTitle}</p>
+      <p className="text-[11.5px] font-medium leading-snug break-all mb-[5px]">{item.title}</p>
       <div className="h-px bg-border my-1" />
       {item.subtitle && <TRow label="Series" value={item.subtitle} />}
       {item.subtitle && <TRow label="Episode" value={item.title} />}
@@ -208,13 +207,7 @@ export function ListItem({ item }: { item: ListItemData }) {
   const download = item.kind === "download" ? item : null;
   const media = item.kind === "media" ? item : null;
 
-  const titleText = download
-    ? download.subtitle
-      ? `${download.subtitle} ${download.title}`
-      : download.title
-    : media?.subtitle
-      ? `${media.subtitle} ${media.title}`
-      : (media?.title ?? "");
+  const titleText = download?.title ?? media?.title ?? "";
 
   const statusKey = download?.activity ?? media?.state ?? "Queued";
   const badge = BADGE[statusKey];
