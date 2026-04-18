@@ -14,7 +14,9 @@ COPY package.json pnpm-lock.yaml* .npmrc* ./
 
 # Install dependencies — skip lifecycle scripts (no git repo in build context)
 # then rebuild native modules (better-sqlite3, sharp, etc.) explicitly
-RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild better-sqlite3 sharp esbuild
+# Use --prefer-offline to utilize any available cache
+RUN pnpm install --frozen-lockfile --ignore-scripts --prefer-offline && \
+    pnpm rebuild better-sqlite3 sharp esbuild
 
 # Copy source code
 COPY . .
