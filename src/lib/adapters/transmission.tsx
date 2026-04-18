@@ -185,7 +185,7 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
         (a: { percentDone: number }, b: { percentDone: number }) => a.percentDone - b.percentDone,
       )
       .map((t: Record<string, unknown>) => ({
-        title: ((t.name as string) ?? "Unknown").replaceAll(".", " "),
+        title: (t.name as string) ?? "Unknown",
         progress: ((t.percentDone as number) ?? 0) * 100,
         timeLeft: formatDuration((t.eta as number) ?? -1),
         activity: "downloading",

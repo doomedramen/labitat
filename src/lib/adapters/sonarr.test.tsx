@@ -171,7 +171,8 @@ describe("sonarr definition", () => {
       });
 
       expect(result.downloads).toHaveLength(1);
-      expect(result.downloads![0].title).toBe("Test Series: S01E01 - Test Episode");
+      expect(result.downloads![0].title).toBe("S01E01 - Test Episode");
+      expect(result.downloads![0].subtitle).toBe("Test Series");
       expect(result.downloads![0].progress).toBe(50);
       expect(result.downloads![0].activity).toBe("Downloading");
       expect(result.downloads![0].size).toBe("1.0 GB");

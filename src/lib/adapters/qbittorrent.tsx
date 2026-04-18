@@ -187,7 +187,7 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
           else if (t.state === "forcedDL") activity = "Forced downloading";
 
           return {
-            title: t.name.replaceAll(".", " "),
+            title: t.name,
             progress: Math.round(t.progress * 100),
             timeLeft: formatDuration(t.eta),
             activity,

@@ -100,7 +100,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
     const slots = queue.slots ?? [];
 
     const downloads: DownloadItemData[] = slots.slice(0, 3).map((slot) => ({
-      title: slot.filename.replaceAll(".", " "),
+      title: slot.filename,
       progress: parseFloat(slot.percentage ?? "0"),
       timeLeft: slot.timeleft,
       activity: "downloading",
