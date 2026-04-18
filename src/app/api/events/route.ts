@@ -12,7 +12,9 @@ export async function GET(request: NextRequest) {
 
   const stream = new ReadableStream({
     start(controller) {
-      pollingSup.connect();
+      if (pollingSup.getConnectionCount() === 0) {
+        pollingSup.connect();
+      }
 
       let closed = false;
 
