@@ -100,15 +100,15 @@ function initials(name: string): string {
 function MarqueeText({ text, className }: { text: string; className?: string }) {
   const clipRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLSpanElement>(null);
-  const [shift, setShift] = useState<number | null>(null);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
 
   useEffect(() => {
     requestAnimationFrame(() => {
       const clip = clipRef.current;
       const inner = innerRef.current;
       if (!clip || !inner) return;
-      const overflow = inner.scrollWidth - clip.clientWidth;
-      setShift(overflow > 4 ? overflow + 16 : null);
+      const hasOverflow = inner.scrollWidth > clip.clientWidth;
+      setShouldAnimate(hasOverflow);
     });
   }, [text]);
 
@@ -117,16 +117,9 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
       <span
         ref={innerRef}
         className={cn("inline-block whitespace-nowrap leading-none", className)}
-        style={
-          shift !== null
-            ? {
-                animation: `mq-scroll 8s ease-in-out infinite`,
-                ["--mq-shift" as string]: `-${shift}px`,
-              }
-            : undefined
-        }
+        style={shouldAnimate ? { animation: "mq-scroll 8s linear infinite" } : undefined}
       >
-        {text}
+        {shouldAnimate ? `${text} ${text}` : text}
       </span>
     </div>
   );
