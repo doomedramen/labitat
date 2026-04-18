@@ -31,6 +31,8 @@ export type ListItemProps = {
   divider?: string;
   /** Tooltip content */
   tooltip?: React.ReactNode;
+  /** Whether to scroll long text (marquee effect) */
+  marquee?: boolean;
   /** Replaces entire inner layout (keeps container + progress bar) */
   children?: React.ReactNode;
   /** Additional className for the container */

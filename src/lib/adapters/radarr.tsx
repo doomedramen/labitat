@@ -186,7 +186,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
         // Build title with movie name if available
         const movieName = record.movie?.title ?? record.title;
         downloads.push({
-          title: movieName ?? "Unknown",
+          title: (movieName ?? "Unknown").replaceAll(".", " "),
           progress,
           timeLeft,
           activity,

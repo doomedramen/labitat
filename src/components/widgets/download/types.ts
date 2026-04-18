@@ -5,6 +5,7 @@
 
 export type DownloadItemData = {
   title: string;
+  subtitle?: string;
   progress: number;
   timeLeft?: string;
   activity?: string;

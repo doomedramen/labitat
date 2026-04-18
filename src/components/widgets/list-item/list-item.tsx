@@ -18,6 +18,7 @@ export function ListItem({
   trailing,
   divider = "·",
   tooltip,
+  marquee,
   children,
   className,
 }: ListItemProps) {
@@ -30,7 +31,7 @@ export function ListItem({
     const visibleItems = trailing.filter((item) => item.icon || item.text);
 
     return (
-      <div className="flex shrink-0 items-center gap-1 font-mono text-secondary-foreground/60 tabular-nums">
+      <div className="flex shrink-0 items-center gap-1.5 font-mono text-[10px] whitespace-nowrap text-secondary-foreground/60 tabular-nums">
         {visibleItems.map((item, i) => {
           const accessibleLabel = item.label ?? item.text ?? item.iconTitle;
           const hasIcon = !!item.icon;
@@ -47,14 +48,14 @@ export function ListItem({
             >
               {hasIcon && Icon && (
                 <Icon
-                  className="h-3 w-3 shrink-0 text-secondary-foreground/50"
+                  className="h-2.5 w-2.5 shrink-0 text-secondary-foreground/40"
                   aria-hidden={hasText ? "true" : undefined}
                   title={item.iconTitle}
                 />
               )}
               {hasText && <span>{item.text}</span>}
               {i < visibleItems.length - 1 && divider && (
-                <span className="text-secondary-foreground/30">{divider}</span>
+                <span className="mx-0.5 text-secondary-foreground/20">{divider}</span>
               )}
             </span>
           );
@@ -80,10 +81,24 @@ export function ListItem({
         </div>
       ) : null}
 
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-        {subtitle && <span className="shrink-0 text-secondary-foreground/50">{subtitle}</span>}
-        {subtitle && <span className="shrink-0 text-secondary-foreground/30">·</span>}
-        <span className="min-w-0 truncate font-medium">{title}</span>
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+        {subtitle && (
+          <span className="min-w-0 max-w-[40%] truncate text-secondary-foreground/50">
+            {subtitle}
+          </span>
+        )}
+        {subtitle && <span className="shrink-0 text-secondary-foreground/20">·</span>}
+        <div className="group relative min-w-0 flex-1 overflow-hidden">
+          <span
+            className={cn(
+              "block truncate font-medium transition-all duration-300",
+              marquee &&
+                "group-hover:animate-marquee group-hover:overflow-visible group-hover:whitespace-nowrap",
+            )}
+          >
+            {title}
+          </span>
+        </div>
       </div>
 
       {renderTrailing()}

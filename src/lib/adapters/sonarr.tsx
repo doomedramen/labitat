@@ -185,25 +185,23 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
         }
 
         // Build title with series info and SXXEYY formatting
-        // Uses seasonNumber/episodeNumber from Sonarr API for consistent formatting
         const seriesName = record.series?.title;
 
         // Extract episode title - strip SXXEYY prefix from record.title if present
-        // since we'll format it ourselves with seasonNumber/episodeNumber
         let episodeTitle = record.episode?.title ?? record.title ?? "Unknown";
         if (record.title && !record.episode?.title) {
-          // Remove leading SXXEYY pattern from record.title (e.g., "S01E01 Test Episode" -> "Test Episode")
           episodeTitle = record.title.replace(/^S\d{2}E\d{2}\s+/, "").trim();
         }
 
-        const displayTitle = formatEpisodeTitle(episodeTitle, {
-          seriesName,
-          seasonNumber: record.seasonNumber,
-          episodeNumber: record.episodeNumber,
-        });
+        // Add SXXEYY prefix if we have season and episode numbers
+        let displayTitle = episodeTitle;
+        if (record.seasonNumber != null && record.episodeNumber != null) {
+          displayTitle = `S${String(record.seasonNumber).padStart(2, "0")}E${String(record.episodeNumber).padStart(2, "0")} - ${episodeTitle}`;
+        }
 
         downloads.push({
-          title: displayTitle ?? "Unknown",
+          title: displayTitle,
+          subtitle: seriesName,
           progress,
           timeLeft,
           activity,
