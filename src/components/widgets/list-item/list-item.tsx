@@ -308,7 +308,7 @@ export function ListItem({ item }: { item: ListItemData }) {
 
             <div className="flex items-center gap-[5px] h-[18px] min-w-0">
               {media && (
-                <div className="w-[14px] h-[14px] rounded-full bg-primary/15 text-primary dark:bg-primary/25 text-[8px] font-medium flex items-center justify-center flex-shrink-0 leading-none">
+                <div className="w-[14px] h-[14px] rounded-full bg-primary/15 text-primary dark:bg-primary/25 text-[8px] font-medium flex items-center justify-center flex-shrink-0 leading-none self-center">
                   {initials(media.user)}
                 </div>
               )}
