@@ -51,66 +51,36 @@ export type ListItemData = DownloadItem | MediaItem;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const BADGE: Record<string, { label: string; className: string }> = {
-  Downloading: {
-    label: "DL",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  },
-  "Forced downloading": {
-    label: "DL",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  },
-  Importing: {
-    label: "IMP",
-    className: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  },
-  Queued: {
-    label: "Q",
-    className: "bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400",
-  },
-  Stalled: {
-    label: "ST",
-    className: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
-  },
-  Paused: {
-    label: "⏸",
-    className: "bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400",
-  },
-  "Fetching metadata": {
-    label: "FT",
-    className: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
-  },
-  "Import pending": {
-    label: "IP",
-    className: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  },
+  Downloading: { label: "DL", className: "bg-primary/15 text-primary dark:bg-primary/25" },
+  "Forced downloading": { label: "DL", className: "bg-primary/15 text-primary dark:bg-primary/25" },
+  Importing: { label: "IMP", className: "bg-chart-2/20 text-chart-2 dark:bg-chart-2/30" },
+  Queued: { label: "Q", className: "bg-muted text-muted-foreground" },
+  Stalled: { label: "ST", className: "bg-chart-5/20 text-chart-5 dark:bg-chart-5/30" },
+  Paused: { label: "⏸", className: "bg-muted text-muted-foreground" },
+  "Fetching metadata": { label: "FT", className: "bg-chart-4/20 text-chart-4 dark:bg-chart-4/30" },
+  "Import pending": { label: "IP", className: "bg-chart-2/20 text-chart-2 dark:bg-chart-2/30" },
   "Failed pending": {
     label: "FP",
-    className: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+    className: "bg-destructive/15 text-destructive dark:bg-destructive/25",
   },
-  Failed: { label: "ERR", className: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300" },
-  playing: {
-    label: "▶",
-    className: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300",
-  },
-  paused: {
-    label: "⏸",
-    className: "bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400",
-  },
+  Failed: { label: "ERR", className: "bg-destructive/15 text-destructive dark:bg-destructive/25" },
+  playing: { label: "▶", className: "bg-chart-1/20 text-chart-1 dark:bg-chart-1/30" },
+  paused: { label: "⏸", className: "bg-muted text-muted-foreground" },
 };
 
 const PROGRESS_COLOR: Record<string, string> = {
-  Downloading: "bg-blue-500",
-  "Forced downloading": "bg-blue-500",
-  Importing: "bg-green-500",
-  Queued: "bg-stone-400",
-  Stalled: "bg-amber-500",
-  Paused: "bg-stone-400",
-  "Fetching metadata": "bg-purple-500",
-  "Import pending": "bg-green-500",
-  "Failed pending": "bg-red-500",
-  Failed: "bg-red-500",
-  playing: "bg-teal-500",
-  paused: "bg-stone-400",
+  Downloading: "bg-primary",
+  "Forced downloading": "bg-primary",
+  Importing: "bg-chart-2",
+  Queued: "bg-muted-foreground/40",
+  Stalled: "bg-chart-5",
+  Paused: "bg-muted-foreground/40",
+  "Fetching metadata": "bg-chart-4",
+  "Import pending": "bg-chart-2",
+  "Failed pending": "bg-destructive",
+  Failed: "bg-destructive",
+  playing: "bg-chart-1",
+  paused: "bg-muted-foreground/40",
 };
 
 function formatTime(seconds: number): string {
@@ -296,7 +266,7 @@ export function ListItem({ item }: { item: ListItemData }) {
 
             <div className="flex items-center gap-[5px] h-[18px] min-w-0">
               {media && (
-                <div className="w-[14px] h-[14px] rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 text-[8px] font-medium flex items-center justify-center flex-shrink-0 leading-none">
+                <div className="w-[14px] h-[14px] rounded-full bg-primary/15 text-primary dark:bg-primary/25 text-[8px] font-medium flex items-center justify-center flex-shrink-0 leading-none">
                   {initials(media.user)}
                 </div>
               )}
