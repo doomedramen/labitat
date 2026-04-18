@@ -217,7 +217,7 @@ function DownloadTooltip({ item }: { item: DownloadItem }) {
 // ─── Media tooltip ─────────────────────────────────────────────────────────────
 
 function MediaTooltip({ item }: { item: MediaItem }) {
-  const fullTitle = item.subtitle ? `${item.subtitle} — ${item.title}` : item.title;
+  const fullTitle = item.subtitle ? `${item.subtitle} - ${item.title}` : item.title;
   const pct = item.duration > 0 ? (item.progress / item.duration) * 100 : 0;
   const colorClass = PROGRESS_COLOR[item.state];
   const tc = item.transcoding;
@@ -258,7 +258,7 @@ export function ListItem({ item }: { item: ListItemData }) {
 
   const titleText =
     download?.title ??
-    (media?.subtitle ? `${media.subtitle} — ${media.title}` : media?.title) ??
+    (media?.subtitle ? `${media.subtitle} - ${media.title}` : media?.title) ??
     "";
 
   const statusKey = download?.activity ?? media?.state ?? "Queued";
