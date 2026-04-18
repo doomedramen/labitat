@@ -45,7 +45,8 @@ export function useItemData({ editMode, item }: UseItemDataOptions): UseItemData
     return liveData.widgetData ?? item.cachedWidgetData ?? null;
   }, [editMode, liveData.widgetData, item.cachedWidgetData]);
 
-  const hasStatus = !!item.href && !isClientSide;
+  // Show status dot if it's a link or a service (and not a client-side-only widget)
+  const hasStatus = (!!item.href || !!item.serviceType) && !isClientSide;
 
   const serviceStatus: ServiceStatus = useMemo(() => {
     if (editMode) return { state: "unknown" };

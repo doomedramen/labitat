@@ -56,7 +56,7 @@ export function StatusDot({ status, cached = false }: StatusDotProps) {
       role="status"
       aria-label={ariaLabel}
       className={cn(
-        "relative h-2.5 w-2.5 rounded-full transition-all duration-300",
+        "relative h-2.5 w-2.5 rounded-full transition-all duration-300 overflow-visible",
         colors[status.state],
         shouldPulse && "animate-pulse",
       )}

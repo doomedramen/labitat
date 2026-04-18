@@ -182,4 +182,34 @@ describe("LiveDataProvider", () => {
       screen.getByRole("status", { name: "Degraded: High latency (cached)" }),
     ).toBeInTheDocument();
   });
+
+  it("shows status dot for services without an href", () => {
+    const item: ItemWithCache = {
+      id: "no-href-service",
+      groupId: "group-1",
+      label: "No Href Service",
+      href: null,
+      iconUrl: null,
+      serviceType: "pihole",
+      serviceUrl: "https://pihole.test",
+      configEnc: null,
+      order: 0,
+      pollingMs: 10000,
+      cleanMode: false,
+      displayMode: "label",
+      statDisplayMode: "label",
+      statCardOrder: null,
+      createdAt: null,
+      cachedWidgetData: { _status: "ok" },
+      cachedPingStatus: null,
+    };
+
+    render(
+      <LiveDataProvider>
+        <ItemStatusDot item={item} editMode={false} />
+      </LiveDataProvider>,
+    );
+
+    expect(screen.getByRole("status", { name: "Healthy (cached)" })).toBeInTheDocument();
+  });
 });
