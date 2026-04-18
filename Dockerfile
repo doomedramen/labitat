@@ -52,7 +52,6 @@ COPY --chown=labitat:nodejs scripts/migrate.js ./scripts/migrate.js
 COPY --from=builder --chown=labitat:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=labitat:nodejs /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
 COPY --from=builder --chown=labitat:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
-COPY --from=builder --chown=labitat:nodejs /app/node_modules/pg ./node_modules/pg
 
 # Create data directory for SQLite database and cache
 RUN mkdir -p /app/data/cache && chown -R labitat:nodejs /app/data
