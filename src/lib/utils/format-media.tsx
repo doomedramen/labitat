@@ -14,16 +14,16 @@ export function formatMediaTitle(
     albumArtist?: string;
     album?: string;
   } = {},
-): { title: string; subtitle?: string } {
+): { title: string; subtitle?: string; episode?: string } {
   const { type, seriesName, season, episode, albumArtist, album } = options;
 
   // TV Episode: S01E05 - Episode Name
   if (type === "episode" && seriesName) {
-    let formattedTitle = title;
+    let episodeString: string | undefined;
     if (season != null && episode != null) {
-      formattedTitle = `S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")} - ${title}`;
+      episodeString = `S${String(season).padStart(2, "0")}E${String(episode).padStart(2, "0")}`;
     }
-    return { title: formattedTitle, subtitle: seriesName };
+    return { title: title || "", subtitle: seriesName, episode: episodeString };
   }
 
   // Audio: Album - Song Name (subtitle = Artist)

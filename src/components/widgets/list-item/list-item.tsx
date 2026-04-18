@@ -49,6 +49,7 @@ export interface MediaItem {
   duration: number;
   state: MediaState;
   streamId?: string;
+  episode?: string;
   transcoding?: {
     isDirect?: boolean;
     hardwareDecoding?: boolean;
@@ -217,7 +218,9 @@ function DownloadTooltip({ item }: { item: DownloadItem }) {
 // ─── Media tooltip ─────────────────────────────────────────────────────────────
 
 function MediaTooltip({ item }: { item: MediaItem }) {
-  const fullTitle = item.subtitle ? `${item.subtitle} - ${item.title}` : item.title;
+  const fullTitle = item.subtitle
+    ? `${item.subtitle} - ${item.title}`
+    : (item.title ?? item.episode);
   const pct = item.duration > 0 ? (item.progress / item.duration) * 100 : 0;
   const colorClass = PROGRESS_COLOR[item.state];
   const tc = item.transcoding;
@@ -256,10 +259,21 @@ export function ListItem({ item }: { item: ListItemData }) {
   const download = item.kind === "download" ? item : null;
   const media = item.kind === "media" ? item : null;
 
-  const titleText =
+  const displayTitle =
     download?.title ??
-    (media?.subtitle ? `${media.subtitle} - ${media.title}` : media?.title) ??
+    (media?.subtitle
+      ? media.title
+        ? `${media.subtitle} - ${media.title}`
+        : media.episode
+      : media?.title) ??
     "";
+
+  const tooltipTitle =
+    media?.subtitle && media?.title
+      ? `${media.subtitle} - ${media.title}`
+      : media?.episode
+        ? `${media.subtitle} - ${media.episode}`
+        : (media?.title ?? "");
 
   const statusKey = download?.activity ?? media?.state ?? "Queued";
   const badge = BADGE[statusKey];
@@ -287,7 +301,7 @@ export function ListItem({ item }: { item: ListItemData }) {
           <div
             className="flex flex-col bg-background border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
             role="listitem"
-            aria-label={titleText}
+            aria-label={displayTitle}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -299,7 +313,10 @@ export function ListItem({ item }: { item: ListItemData }) {
           >
             <div className="px-2 pt-[6px] pb-[5px] flex flex-col gap-[3px] overflow-hidden">
               <div className="flex items-center gap-[5px] h-[18px] min-w-0">
-                <MarqueeText text={titleText} className="text-[12px] font-medium text-foreground" />
+                <MarqueeText
+                  text={displayTitle}
+                  className="text-[12px] font-medium text-foreground"
+                />
                 {badge && (
                   <span
                     className={cn(
