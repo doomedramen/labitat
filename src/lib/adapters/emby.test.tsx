@@ -188,8 +188,9 @@ describe("emby definition", () => {
 
       expect(result.showActiveStreams).toBe(true);
       expect(result.sessions).toHaveLength(1);
-      expect(result.sessions![0].title).toBe("S01E05 - Test Episode");
+      expect(result.sessions![0].title).toBe("Test Episode");
       expect(result.sessions![0].subtitle).toBe("Test Series");
+      expect(result.sessions![0].episode).toBe("S01E05");
       expect(result.sessions![0].user).toBe("TestUser");
       expect(result.sessions![0].state).toBe("playing");
       expect(result.sessions![0].streamId).toBe("session-1");

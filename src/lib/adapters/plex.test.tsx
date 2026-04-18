@@ -125,8 +125,9 @@ describe("plex definition", () => {
       });
 
       expect(result.sessions).toHaveLength(1);
-      expect(result.sessions![0].title).toBe("S01E03 - Law & Order: SVU");
+      expect(result.sessions![0].title).toBe("Law & Order: SVU");
       expect(result.sessions![0].subtitle).toBe("Show Name");
+      expect(result.sessions![0].episode).toBe("S01E03");
       expect(result.sessions![0].user).toBe("user&test");
     });
 
@@ -158,8 +159,9 @@ describe("plex definition", () => {
       });
 
       expect(result.sessions).toHaveLength(1);
-      expect(result.sessions![0].title).toBe("S03E01 - Ándale");
+      expect(result.sessions![0].title).toBe("Ándale");
       expect(result.sessions![0].subtitle).toBe("Euphoria (US)");
+      expect(result.sessions![0].episode).toBe("S03E01");
     });
 
     it("formats TV episodes with SxxEyy", async () => {
@@ -190,8 +192,9 @@ describe("plex definition", () => {
       });
 
       expect(result.sessions).toHaveLength(1);
-      expect(result.sessions![0].title).toBe("S02E05 - Episode Name");
+      expect(result.sessions![0].title).toBe("Episode Name");
       expect(result.sessions![0].subtitle).toBe("Show Name");
+      expect(result.sessions![0].episode).toBe("S02E05");
       expect(result.sessions![0].user).toBe("TestUser");
     });
 

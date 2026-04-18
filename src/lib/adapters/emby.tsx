@@ -127,17 +127,18 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
           const playState = session.PlayState || {};
 
           // Use shared formatMediaTitle for consistent formatting across all media adapters
-          const { title: formattedTitle, subtitle } = formatMediaTitle(
-            nowPlaying.Name ?? "Unknown",
-            {
-              type: nowPlaying.Type?.toLowerCase(),
-              seriesName: nowPlaying.SeriesName,
-              season: nowPlaying.ParentIndexNumber,
-              episode: nowPlaying.IndexNumber,
-              albumArtist: nowPlaying.AlbumArtist,
-              album: nowPlaying.Album,
-            },
-          );
+          const {
+            title: formattedTitle,
+            subtitle,
+            episode,
+          } = formatMediaTitle(nowPlaying.Name ?? "Unknown", {
+            type: nowPlaying.Type?.toLowerCase(),
+            seriesName: nowPlaying.SeriesName,
+            season: nowPlaying.ParentIndexNumber,
+            episode: nowPlaying.IndexNumber,
+            albumArtist: nowPlaying.AlbumArtist,
+            album: nowPlaying.Album,
+          });
 
           // Get user name
           const user = session.UserName ?? "Unknown";
@@ -160,6 +161,7 @@ export const embyDefinition: ServiceDefinition<EmbyData> = {
           sessions.push({
             title: formattedTitle,
             subtitle,
+            episode,
             user,
             progress: progressSeconds,
             duration,

@@ -131,7 +131,11 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
           typeof s.episode_number === "string" ? parseInt(s.episode_number, 10) : s.episode_number;
 
         // Format title with SxxEyy for TV episodes (consistent with Plex/Jellyfin/Emby)
-        const { title: formattedTitle, subtitle } = formatMediaTitle(s.title ?? "Unknown", {
+        const {
+          title: formattedTitle,
+          subtitle,
+          episode,
+        } = formatMediaTitle(s.title ?? "Unknown", {
           type: mediaType === "episode" ? "episode" : undefined,
           seriesName: s.grandparent_title,
           season: seasonNumber,
@@ -164,6 +168,7 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
         return {
           title: formattedTitle,
           subtitle,
+          episode,
           user: s.user ?? "Unknown",
           progress: progressSec,
           duration: durationSec,

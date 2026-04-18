@@ -213,7 +213,11 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
         const episodeNumber = getAttr("index") ? parseInt(getAttr("index")!, 10) : null;
 
         // Use shared formatMediaTitle for consistent formatting across all media adapters
-        const { title: formattedTitle, subtitle } = formatMediaTitle(title, {
+        const {
+          title: formattedTitle,
+          subtitle,
+          episode,
+        } = formatMediaTitle(title, {
           type: type ?? undefined,
           seriesName: grandparentTitle ?? undefined,
           season: seasonNumber,
@@ -260,6 +264,7 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
         sessions.push({
           title: formattedTitle,
           subtitle,
+          episode,
           user,
           progress: safeProgress,
           duration: durationSec,
