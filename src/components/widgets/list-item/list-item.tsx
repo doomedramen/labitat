@@ -282,8 +282,10 @@ export function ListItem({ item }: { item: ListItemData }) {
           className="flex flex-col bg-background border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
           role="listitem"
           aria-label={titleText}
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
         >
           <div className="px-2 pt-[6px] pb-[5px] flex flex-col gap-[3px] overflow-hidden">
             <div className="flex items-center gap-[5px] h-[18px] min-w-0">
