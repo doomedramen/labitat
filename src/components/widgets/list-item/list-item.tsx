@@ -323,7 +323,7 @@ export function ListItem({ item }: { item: ListItemData }) {
             </div>
           </div>
 
-          <div className="h-[3px] bg-border flex-shrink-0">
+          <div className="h-[3px] bg-transparent flex-shrink-0">
             <div className={cn("h-full", progressColor)} style={{ width: `${progressPct}%` }} />
           </div>
         </div>

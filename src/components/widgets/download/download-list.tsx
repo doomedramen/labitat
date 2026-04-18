@@ -1,9 +1,12 @@
+"use client";
+
 /**
  * Server-compatible DownloadList component.
  * Renders a sorted list of downloads (active downloads first, then by progress).
  */
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { DownloadItem } from "./download-item";
 import type { DownloadItemData } from "./types";
 
@@ -14,6 +17,7 @@ interface DownloadListProps {
 export function DownloadList({ downloads }: DownloadListProps) {
   if (downloads.length === 0) return null;
 
+  const isMobile = useIsMobile();
   const sorted = [...downloads].sort((a, b) => {
     const isActiveA =
       a.activity?.toLowerCase().includes("download") ||
@@ -29,7 +33,7 @@ export function DownloadList({ downloads }: DownloadListProps) {
   });
 
   return (
-    <TooltipProvider delayDuration={600}>
+    <TooltipProvider delayDuration={isMobile ? 0 : 600}>
       <div className="flex flex-col gap-0.5">
         {sorted.map((download) => (
           <DownloadItem key={download.title} {...download} />
