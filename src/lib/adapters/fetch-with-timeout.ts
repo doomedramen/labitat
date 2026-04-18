@@ -43,6 +43,19 @@ export async function fetchWithTimeout(
     if (err instanceof DOMException && err.name === "TimeoutError") {
       throw new DOMException("Request timed out", "TimeoutError");
     }
+
+    if (err instanceof Error) {
+      // Provide more context for common fetch failures
+      if (err.message.includes("fetch failed")) {
+        // This is the generic Node.js fetch error, usually wrapping a lower-level error
+        const cause = (err as any).cause;
+        if (cause instanceof Error) {
+          throw new Error(`Request failed: ${cause.message}`);
+        }
+      }
+      throw new Error(`Request failed: ${err.message}`);
+    }
+
     throw err;
   } finally {
     clearTimeout(timeoutId);

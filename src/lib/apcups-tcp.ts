@@ -25,17 +25,48 @@ export async function fetchApcupsTcpStatus(
     }, 5000);
 
     const socket = net.createConnection({ host, port }, () => {
-      socket.write("\n");
+      // apcupsd NIS protocol: 2-byte length prefix + command
+      // "status" command is 6 bytes -> [0, 6, 's', 't', 'a', 't', 'u', 's']
+      const buffer = Buffer.alloc(8);
+      buffer.writeUInt16BE(6, 0);
+      buffer.write("status", 2);
+      socket.write(buffer);
     });
 
     let data = "";
+    let chunkBuffer = Buffer.alloc(0);
 
     socket.on("data", (chunk) => {
-      data += chunk.toString();
+      chunkBuffer = Buffer.concat([chunkBuffer, chunk]);
+
+      // Process all complete packets in the buffer
+      while (chunkBuffer.length >= 2) {
+        const len = chunkBuffer.readUInt16BE(0);
+        if (len === 0) {
+          // End of message marker
+          socket.end();
+          break;
+        }
+
+        if (chunkBuffer.length < 2 + len) {
+          // Incomplete packet, wait for more data
+          break;
+        }
+
+        // Extract the packet content (skipping the 2-byte length)
+        data += chunkBuffer.toString("utf8", 2, 2 + len);
+        chunkBuffer = chunkBuffer.subarray(2 + len);
+      }
     });
 
     socket.on("end", () => {
       clearTimeout(timeout);
+      socket.destroy(); // Ensure socket is closed
+
+      if (!data) {
+        reject(new Error("No data received from APC UPS"));
+        return;
+      }
 
       try {
         const extractValue = (key: string): string => {

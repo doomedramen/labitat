@@ -138,14 +138,17 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         }),
       });
 
-      if (!loginRes.ok) throw new Error(`NPM login failed: ${loginRes.status}`);
+      if (!loginRes.ok) {
+        const errorText = await loginRes.text().catch(() => loginRes.statusText);
+        throw new Error(`NPM login failed (${loginRes.status}): ${errorText || "Unknown error"}`);
+      }
 
       const tokenData = await loginRes.json();
-      token = tokenData.token;
+      token = tokenData?.token;
       if (!token) throw new Error("NPM login failed: no token in response");
 
       // Cache token with its expiry time (NPM tokens expire in 1 hour)
-      const expiresIn = tokenData.expires ?? 3600; // default 1 hour if not specified
+      const expiresIn = tokenData?.expires ?? 3600; // default 1 hour if not specified
       setCachedToken(cacheKey, token, expiresIn);
     }
 
@@ -168,13 +171,16 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
           }),
         });
 
-        if (!loginRes.ok) throw new Error(`NPM login failed: ${loginRes.status}`);
+        if (!loginRes.ok) {
+          const errorText = await loginRes.text().catch(() => loginRes.statusText);
+          throw new Error(`NPM login failed (${loginRes.status}): ${errorText || "Unknown error"}`);
+        }
 
         const tokenData = await loginRes.json();
-        token = tokenData.token;
+        token = tokenData?.token;
         if (!token) throw new Error("NPM login failed: no token in response");
 
-        const expiresIn = tokenData.expires ?? 3600;
+        const expiresIn = tokenData?.expires ?? 3600;
         setCachedToken(cacheKey, token, expiresIn);
 
         const retryHeaders = { Authorization: `Bearer ${token}` };

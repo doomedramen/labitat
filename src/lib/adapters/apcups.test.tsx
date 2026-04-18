@@ -55,17 +55,31 @@ STATUS   : ONLINE
       const mockSocket = new EventEmitter() as net.Socket & {
         write: ReturnType<typeof vi.fn>;
         destroy: ReturnType<typeof vi.fn>;
+        end: ReturnType<typeof vi.fn>;
       };
       mockSocket.write = vi.fn() as typeof mockSocket.write;
       mockSocket.destroy = vi.fn() as typeof mockSocket.destroy;
+      mockSocket.end = vi.fn() as typeof mockSocket.end;
 
       vi.mocked(net.createConnection).mockImplementation((_options, callback) => {
         // Simulate connection established
         setTimeout(() => callback?.(), 0);
-        // Simulate data received
-        setTimeout(() => mockSocket.emit("data", Buffer.from(mockTcpData)), 5);
-        // Simulate connection end
-        setTimeout(() => mockSocket.emit("end"), 10);
+
+        // Simulate data received in NIS format (2-byte length + payload)
+        const payload = Buffer.from(mockTcpData);
+        const packet = Buffer.alloc(2 + payload.length);
+        packet.writeUInt16BE(payload.length, 0);
+        payload.copy(packet, 2);
+
+        const endMarker = Buffer.alloc(2);
+        endMarker.writeUInt16BE(0, 0);
+
+        setTimeout(() => {
+          mockSocket.emit("data", packet);
+          mockSocket.emit("data", endMarker);
+          mockSocket.emit("end");
+        }, 5);
+
         return mockSocket;
       });
 
@@ -87,9 +101,11 @@ STATUS   : ONLINE
       const mockSocket = new EventEmitter() as net.Socket & {
         write: ReturnType<typeof vi.fn>;
         destroy: ReturnType<typeof vi.fn>;
+        end: ReturnType<typeof vi.fn>;
       };
       mockSocket.write = vi.fn() as typeof mockSocket.write;
       mockSocket.destroy = vi.fn() as typeof mockSocket.destroy;
+      mockSocket.end = vi.fn() as typeof mockSocket.end;
 
       vi.mocked(net.createConnection).mockImplementation(() => {
         // Simulate connection error
