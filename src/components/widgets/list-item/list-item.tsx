@@ -302,7 +302,7 @@ export function ListItem({ item }: { item: ListItemData }) {
         </div>
       </TooltipTrigger>
 
-      <TooltipContent side="top" className="p-2 shadow-md">
+      <TooltipContent side="top" className="p-2 shadow-md border">
         {download ? (
           <DownloadTooltip item={download} />
         ) : media ? (
