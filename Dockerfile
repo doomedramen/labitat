@@ -10,7 +10,7 @@ RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml* .npmrc* ./
 
 # Install dependencies — skip lifecycle scripts (no git repo in build context)
 # then rebuild native modules (better-sqlite3, sharp, etc.) explicitly
@@ -47,13 +47,12 @@ COPY --from=builder --chown=labitat:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=labitat:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=labitat:nodejs /app/public ./public
 
-# Copy migration runner script (not included in standalone trace)
+# Copy migration runner script and essential deps
 COPY --chown=labitat:nodejs scripts/migrate.js ./scripts/migrate.js
-# Copy drizzle migrations if they exist (generated locally, not at build time)
 COPY --from=builder --chown=labitat:nodejs /app/drizzle ./drizzle
-# Copy drizzle-orm and better-sqlite3 for migration runner (not in standalone trace)
 COPY --from=builder --chown=labitat:nodejs /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
 COPY --from=builder --chown=labitat:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
+COPY --from=builder --chown=labitat:nodejs /app/node_modules/pg ./node_modules/pg
 
 # Create data directory for SQLite database and cache
 RUN mkdir -p /app/data/cache && chown -R labitat:nodejs /app/data
