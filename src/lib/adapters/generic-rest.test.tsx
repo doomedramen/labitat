@@ -130,7 +130,7 @@ describe("generic-rest definition", () => {
 
       expect(result._status).toBe("error");
       expect(result.value).toBe("Error");
-      expect(result._statusText).toBe("Network error");
+      expect(result._statusText).toBe("Request failed: Network error");
     });
 
     it("uses POST method when configured", async () => {

@@ -36,8 +36,9 @@ export async function fetchApcupsTcpStatus(
     let data = "";
     let chunkBuffer = Buffer.alloc(0);
 
-    socket.on("data", (chunk) => {
-      chunkBuffer = Buffer.concat([chunkBuffer, chunk]);
+    socket.on("data", (chunk: Buffer | string) => {
+      const chunkAsBuffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      chunkBuffer = Buffer.concat([chunkBuffer, chunkAsBuffer]);
 
       // Process all complete packets in the buffer
       while (chunkBuffer.length >= 2) {

@@ -55,7 +55,7 @@ describe("generic-ping definition", () => {
       expect(result._status).toBe("error");
       expect(result.status).toBe("down");
       expect(result.responseTime).toBe(0);
-      expect(result._statusText).toBe("Network error");
+      expect(result._statusText).toBe("Request failed: Network error");
     });
 
     it("uses custom timeout when provided", async () => {

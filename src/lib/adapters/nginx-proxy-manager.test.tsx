@@ -142,7 +142,14 @@ describe("nginx-proxy-manager definition", () => {
     });
 
     it("throws on login failure", async () => {
-      vi.stubGlobal("fetch", () => Promise.resolve({ ok: false, status: 401 }));
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: false,
+          status: 401,
+          text: () => Promise.resolve("Unauthorized"),
+          json: () => Promise.resolve({ error: "Unauthorized" }),
+        }),
+      );
 
       await expect(
         nginxProxyManagerDefinition.fetchData!({
@@ -150,7 +157,7 @@ describe("nginx-proxy-manager definition", () => {
           email: "admin@example.org",
           password: "wrong",
         }),
-      ).rejects.toThrow("NPM login failed: 401");
+      ).rejects.toThrow("NPM login failed (401): Unauthorized");
     });
 
     it("handles failed individual endpoints gracefully", async () => {
