@@ -132,6 +132,7 @@ describe("LiveDataProvider", () => {
       </LiveDataProvider>,
     );
 
+    expect(screen.getByRole("status", { name: "Healthy (cached)" })).toBeInTheDocument();
     expect(screen.getByTestId("status-dot-cached-spinner")).toBeInTheDocument();
 
     act(() => {
@@ -144,8 +145,41 @@ describe("LiveDataProvider", () => {
       } as MessageEvent<string>);
     });
 
+    expect(screen.getByRole("status", { name: "Healthy" })).toBeInTheDocument();
     expect(screen.queryByTestId("status-dot-cached-spinner")).toBeNull();
 
     view.unmount();
+  });
+
+  it("shows degraded status with reason when provided", () => {
+    const item: ItemWithCache = {
+      id: "degraded-item",
+      groupId: "group-1",
+      label: "Degraded Item",
+      href: "https://degraded.test",
+      iconUrl: null,
+      serviceType: "generic-ping",
+      serviceUrl: "https://degraded.test",
+      configEnc: null,
+      order: 0,
+      pollingMs: 10000,
+      cleanMode: false,
+      displayMode: "label",
+      statDisplayMode: "label",
+      statCardOrder: null,
+      createdAt: null,
+      cachedWidgetData: { _status: "warn", _statusText: "High latency" },
+      cachedPingStatus: null,
+    };
+
+    render(
+      <LiveDataProvider>
+        <ItemStatusDot item={item} editMode={false} />
+      </LiveDataProvider>,
+    );
+
+    expect(
+      screen.getByRole("status", { name: "Degraded: High latency (cached)" }),
+    ).toBeInTheDocument();
   });
 });

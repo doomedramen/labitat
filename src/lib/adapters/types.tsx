@@ -35,7 +35,7 @@ export type ServiceCategory =
 export type ServiceStatus =
   | { state: "unknown" }
   | { state: "healthy"; latencyMs?: number }
-  | { state: "degraded" } // Service is up but with warnings (e.g. low disk, high queue)
+  | { state: "degraded"; reason?: string } // Service is up but with warnings (e.g. low disk, high queue)
   | { state: "reachable" } // HTTP 200 but no service adapter
   | { state: "unreachable"; reason: string } // Network error (refused, DNS failure, etc.)
   | { state: "slow"; reason: string; timeoutMs: number } // Request exceeded timeout — service may still be working
@@ -54,7 +54,10 @@ export function dataToStatus(data: ServiceData): ServiceStatus {
   }
 
   if (status === "warn") {
-    return { state: "degraded" };
+    return {
+      state: "degraded",
+      reason: data._statusText,
+    };
   }
 
   if (status === "error") {

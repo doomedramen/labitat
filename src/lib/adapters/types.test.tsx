@@ -16,7 +16,17 @@ describe("dataToStatus", () => {
   });
 
   it("returns degraded for 'warn' status", () => {
-    expect(dataToStatus({ _status: "warn" })).toEqual({ state: "degraded" });
+    expect(dataToStatus({ _status: "warn" })).toEqual({
+      state: "degraded",
+      reason: undefined,
+    });
+  });
+
+  it("returns degraded with reason for 'warn' status", () => {
+    expect(dataToStatus({ _status: "warn", _statusText: "High load" })).toEqual({
+      state: "degraded",
+      reason: "High load",
+    });
   });
 
   it("returns error with reason for 'error' status", () => {

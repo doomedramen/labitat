@@ -39,7 +39,9 @@ export function StatusDot({ status, cached = false }: StatusDotProps) {
       ? status.reason
       : status.state === "slow"
         ? `${status.reason} (${status.timeoutMs} ms)`
-        : undefined;
+        : status.state === "degraded"
+          ? status.reason
+          : undefined;
 
   const shouldPulse =
     status.state === "unreachable" ||
@@ -47,23 +49,34 @@ export function StatusDot({ status, cached = false }: StatusDotProps) {
     status.state === "degraded" ||
     status.state === "slow";
 
+  const ariaLabel = `${labels[status.state]}${reason ? `: ${reason}` : ""}${cached ? " (cached)" : ""}`;
+
   const dot = (
     <div
       role="status"
-      aria-label={reason ? `${labels[status.state]}: ${reason}` : labels[status.state]}
+      aria-label={ariaLabel}
       className={cn(
-        "relative h-2.5 w-2.5 rounded-full transition-all duration-300 overflow-visible",
+        "relative h-2.5 w-2.5 rounded-full transition-all duration-300",
         colors[status.state],
-        shouldPulse &&
-          "before:absolute before:inset-0 before:rounded-full before:bg-inherit before:content-[''] before:animate-pulse",
+        shouldPulse && "animate-pulse",
       )}
     >
+      {shouldPulse && (
+        <span
+          className={cn(
+            "absolute inset-0 block h-full w-full animate-ping rounded-full bg-inherit opacity-75",
+          )}
+        />
+      )}
       {cached ? (
         <svg
           aria-hidden
           data-testid="status-dot-cached-spinner"
           viewBox="0 0 10 10"
-          className="pointer-events-none absolute inset-0 size-full animate-spin text-white/80 [filter:drop-shadow(0_0_1px_rgba(0,0,0,0.35))]"
+          className={cn(
+            "pointer-events-none absolute inset-0 size-full animate-spin [filter:drop-shadow(0_0_1px_rgba(0,0,0,0.35))]",
+            status.state === "unknown" ? "text-white/40" : "text-white/80",
+          )}
         >
           <circle
             cx="5"
