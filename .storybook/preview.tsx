@@ -2,6 +2,7 @@ import React from "react";
 import type { Preview } from "@storybook/nextjs-vite";
 import { PALETTES } from "../src/lib/palettes";
 import "../src/app/globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const preview: Preview = {
   globalTypes: {
@@ -51,7 +52,9 @@ const preview: Preview = {
 
       return (
         <div data-palette={palette} className={dataTheme === "dark" ? "dark" : ""}>
-          <Story />
+          <TooltipProvider>
+            <Story />
+          </TooltipProvider>
         </div>
       );
     },

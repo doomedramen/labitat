@@ -21,6 +21,15 @@ const config: StorybookConfig = {
       alias: {
         ...config.resolve?.alias,
         "@": path.resolve(dirname, "../src"),
+        "@/lib/db": path.resolve(dirname, "../src/lib/db/__mocks__/index.ts"),
+        "@/lib/db/schema": path.resolve(dirname, "../src/lib/db/__mocks__/schema.ts"),
+        "drizzle-orm/better-sqlite3": path.resolve(
+          dirname,
+          "../src/lib/db/__mocks__/drizzle-better-sqlite3.ts",
+        ),
+        "drizzle-orm/sqlite-core": path.resolve(dirname, "../src/lib/db/__mocks__/sqlite-core.ts"),
+        "drizzle-orm": path.resolve(dirname, "../src/lib/db/__mocks__/drizzle-orm.ts"),
+        "better-sqlite3": path.resolve(dirname, "../src/lib/db/__mocks__/better-sqlite3.ts"),
       },
     };
     return config;

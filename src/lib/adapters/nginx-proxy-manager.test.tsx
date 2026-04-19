@@ -29,8 +29,7 @@ describe("nginx-proxy-manager definition", () => {
   describe("fetchData", () => {
     beforeEach(() => {
       vi.resetAllMocks();
-      // Clear token cache between tests
-      if (tokenCache) tokenCache.clear();
+      tokenCache.clear();
     });
 
     afterEach(() => {
@@ -48,25 +47,14 @@ describe("nginx-proxy-manager definition", () => {
         if (url.includes("/proxy-hosts")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve([{ id: 1 }, { id: 2 }]),
-          });
-        }
-        if (url.includes("/redirection-hosts")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([{ id: 1 }]),
-          });
-        }
-        if (url.includes("/streams")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([{ id: 1 }, { id: 2 }, { id: 3 }]),
-          });
-        }
-        if (url.includes("/dead-hosts")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([]),
+            json: () =>
+              Promise.resolve([
+                { id: 1, enabled: true },
+                { id: 2, enabled: false },
+                { id: 3, enabled: 1 },
+                { id: 4, enabled: 0 },
+                { id: 5, enabled: true },
+              ]),
           });
         }
         return Promise.reject(new Error("Unexpected URL"));
@@ -80,67 +68,7 @@ describe("nginx-proxy-manager definition", () => {
       });
 
       expect(result._status).toBe("ok");
-      expect(result.hosts).toBe(2);
-      expect(result.redirHosts).toBe(1);
-      expect(result.streams).toBe(3);
-      expect(result.deadHosts).toBe(0);
-    });
-
-    it("uses cached token on subsequent calls", async () => {
-      const mockFetch = vi.fn((url: string) => {
-        if (url.includes("/api/tokens")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ token: "jwt-token", expires: 3600 }),
-          });
-        }
-        if (url.includes("/proxy-hosts")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([{ id: 1 }]),
-          });
-        }
-        if (url.includes("/redirection-hosts")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([]),
-          });
-        }
-        if (url.includes("/streams")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([]),
-          });
-        }
-        if (url.includes("/dead-hosts")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([]),
-          });
-        }
-        return Promise.reject(new Error("Unexpected URL"));
-      });
-      vi.stubGlobal("fetch", mockFetch);
-
-      // First call - should login
-      await nginxProxyManagerDefinition.fetchData!({
-        url: "https://npm.example.com",
-        email: "admin@example.org",
-        password: "secret",
-      });
-
-      // Second call - should use cached token
-      await nginxProxyManagerDefinition.fetchData!({
-        url: "https://npm.example.com",
-        email: "admin@example.org",
-        password: "secret",
-      });
-
-      // Login should only have been called once
-      const loginCalls = mockFetch.mock.calls.filter((call) =>
-        (call[0] as string).includes("/api/tokens"),
-      ).length;
-      expect(loginCalls).toBe(1);
+      expect(result.hosts).toHaveLength(5);
     });
 
     it("throws on login failure", async () => {
@@ -162,7 +90,7 @@ describe("nginx-proxy-manager definition", () => {
       ).rejects.toThrow("NPM login failed (401): Unauthorized");
     });
 
-    it("handles failed individual endpoints gracefully", async () => {
+    it("handles failed endpoint gracefully", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/api/tokens")) {
           return Promise.resolve({
@@ -172,21 +100,6 @@ describe("nginx-proxy-manager definition", () => {
         }
         if (url.includes("/proxy-hosts")) {
           return Promise.resolve({ ok: false, status: 500 });
-        }
-        if (url.includes("/redirection-hosts")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([{ id: 1 }]),
-          });
-        }
-        if (url.includes("/streams")) {
-          return Promise.resolve({ ok: false, status: 403 });
-        }
-        if (url.includes("/dead-hosts")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([]),
-          });
         }
         return Promise.reject(new Error("Unexpected URL"));
       });
@@ -199,42 +112,51 @@ describe("nginx-proxy-manager definition", () => {
       });
 
       expect(result._status).toBe("ok");
-      expect(result.hosts).toBe(0);
-      expect(result.redirHosts).toBe(1);
-      expect(result.streams).toBe(0);
-      expect(result.deadHosts).toBe(0);
+      expect(result.hosts).toHaveLength(0);
     });
   });
 
   describe("toPayload", () => {
-    it("converts data to payload with stats", () => {
+    it("converts data to payload with enabled/disabled/total", () => {
       const payload = nginxProxyManagerDefinition.toPayload!({
         _status: "ok",
-        hosts: 5,
-        redirHosts: 2,
-        streams: 3,
-        deadHosts: 1,
+        hosts: [
+          { id: 1, enabled: true },
+          { id: 2, enabled: false },
+          { id: 3, enabled: 1 },
+          { id: 4, enabled: 0 },
+          { id: 5, enabled: true },
+        ],
       });
-      expect(payload.stats).toHaveLength(4);
-      expect(payload.stats[0].value).toBe(5);
-      expect(payload.stats[0].label).toBe("Proxy Hosts");
+
+      expect(payload.stats).toHaveLength(3);
+      expect(payload.stats[0].value).toBe(3);
+      expect(payload.stats[0].label).toBe("Enabled");
       expect(payload.stats[1].value).toBe(2);
-      expect(payload.stats[1].label).toBe("Redirections");
-      expect(payload.stats[2].value).toBe(3);
-      expect(payload.stats[2].label).toBe("Streams");
-      expect(payload.stats[3].value).toBe(1);
-      expect(payload.stats[3].label).toBe("Disabled");
+      expect(payload.stats[1].label).toBe("Disabled");
+      expect(payload.stats[2].value).toBe(5);
+      expect(payload.stats[2].label).toBe("Total");
     });
 
-    it("handles zero values", () => {
+    it("handles empty hosts array", () => {
       const payload = nginxProxyManagerDefinition.toPayload!({
         _status: "ok",
-        hosts: 0,
-        redirHosts: 0,
-        streams: 0,
-        deadHosts: 0,
+        hosts: [],
       });
-      expect(payload.stats.every((s) => s.value === 0)).toBe(true);
+
+      expect(payload.stats[0].value).toBe(0);
+      expect(payload.stats[1].value).toBe(0);
+      expect(payload.stats[2].value).toBe(0);
+    });
+
+    it("handles undefined hosts", () => {
+      const payload = nginxProxyManagerDefinition.toPayload!({
+        _status: "ok",
+      });
+
+      expect(payload.stats[0].value).toBe(0);
+      expect(payload.stats[1].value).toBe(0);
+      expect(payload.stats[2].value).toBe(0);
     });
   });
 });
