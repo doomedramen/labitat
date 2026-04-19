@@ -186,8 +186,10 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
 function TRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-2 text-[11px] py-[1.5px]">
-      <span className="text-muted-foreground whitespace-nowrap">{label}</span>
-      <span className="font-medium text-right break-words max-w-[120px]">{value}</span>
+      <span className="text-secondary-foreground/60 whitespace-nowrap">{label}</span>
+      <span className="font-medium text-secondary-foreground text-right break-words max-w-[120px]">
+        {value}
+      </span>
     </div>
   );
 }
@@ -306,7 +308,7 @@ export function ListItem({ item }: { item: ListItemData }) {
       <Tooltip open={isMobile ? tooltipOpen : undefined} onOpenChange={setTooltipOpen}>
         <TooltipTrigger asChild>
           <div
-            className="flex flex-col bg-secondary border border-border rounded-lg overflow-hidden cursor-default hover:border-border/60 transition-colors"
+            className="flex flex-col bg-secondary rounded-lg overflow-hidden cursor-default hover:bg-secondary/80 transition-colors"
             role="listitem"
             aria-label={displayTitle}
             onClick={(e) => {
@@ -319,7 +321,7 @@ export function ListItem({ item }: { item: ListItemData }) {
               <div className="flex items-center gap-[5px] h-[18px] min-w-0">
                 <MarqueeText
                   text={displayTitle}
-                  className="text-[12px] font-medium text-foreground"
+                  className="text-[12px] font-medium text-secondary-foreground"
                 />
                 {badge && (
                   <span
@@ -342,15 +344,15 @@ export function ListItem({ item }: { item: ListItemData }) {
                 {media ? (
                   <MarqueeText
                     text={media.user}
-                    className="text-[11px] text-muted-foreground self-center"
+                    className="text-[11px] text-secondary-foreground/60 self-center"
                   />
                 ) : (
                   <MarqueeText
                     text={subText}
-                    className="text-[11px] text-muted-foreground self-center"
+                    className="text-[11px] text-secondary-foreground/60 self-center"
                   />
                 )}
-                <span className="text-[11px] text-muted-foreground/70 whitespace-nowrap flex-shrink-0 leading-none">
+                <span className="text-[11px] text-secondary-foreground/60 whitespace-nowrap flex-shrink-0 leading-none">
                   {metaText}
                 </span>
               </div>
