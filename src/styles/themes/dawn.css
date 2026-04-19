@@ -1,82 +1,24 @@
-/* ----------------------------------------------------------
-   Rosé Pine Dawn (light) / Rosé Pine Moon (dark)
-   https://rosepinetheme.com/
-   Dawn:  base #FAF4ED, overlay #F2E9E1, highlight_low #F4EDE8
-          highlight_med #DFDAD9, text #575279, subtle #797593, muted #9893A5
-          iris #907AA9, gold #EA9D34, pine #286983, foam #56949F
-          love #B4637A, rose #D7827A
-   Moon:  base #232136, surface #2A273F, overlay #393552
-          highlight_med #44415A, text #E0DEF4, subtle #908CAA, muted #6E6A86
-          iris #C4A7E7, gold #F6C177, pine #3E8FB0, foam #9CCFD8
-          love #EB6F92, rose #EA9A97
-   ---------------------------------------------------------- */
-
+/* Rosé Pine Dawn / Moon */
 [data-palette="dawn"] {
-  /* Rosé Pine Dawn */
-  --background: oklch(0.975 0.015 64); /* #FAF4ED base - lightened */
-  --foreground: oklch(0.35 0.08 281); /* #575279 text - darker for contrast */
-  --card: oklch(0.99 0.005 64); /* lighter overlay */
-  --card-foreground: oklch(0.35 0.08 281);
-  --popover: oklch(0.99 0.005 64);
-  --popover-foreground: oklch(0.35 0.08 281);
-  --primary: oklch(0.55 0.1 306); /* #907AA9 iris - deeper */
-  --primary-foreground: oklch(0.98 0.01 64);
-  --secondary: oklch(0.96 0.012 47); /* #F4EDE8 highlight_low */
-  --secondary-foreground: oklch(0.45 0.06 301); /* #797593 subtle */
-  --muted: oklch(0.96 0.012 47);
-  --muted-foreground: oklch(0.58 0.055 300); /* #9893A5 muted */
-  --accent: oklch(0.68 0.18 60); /* #EA9D34 gold - richer */
-  --accent-foreground: oklch(0.35 0.08 281);
-  --destructive: oklch(0.52 0.13 357); /* #B4637A love */
-  --border: oklch(0.91 0.01 35); /* #DFDAD9 highlight_med */
-  --input: oklch(0.91 0.01 35);
-  --ring: oklch(0.55 0.1 306);
-  --chart-1: oklch(0.55 0.1 306); /* iris  #907AA9 */
-  --chart-2: oklch(0.68 0.18 60); /* gold  #EA9D34 */
-  --chart-3: oklch(0.42 0.095 219); /* pine  #286983 */
-  --chart-4: oklch(0.52 0.13 357); /* love  #B4637A */
-  --chart-5: oklch(0.55 0.08 208); /* foam  #56949F */
-  --sidebar: oklch(0.96 0.012 47);
-  --sidebar-foreground: oklch(0.35 0.08 281);
-  --sidebar-primary: oklch(0.55 0.1 306);
-  --sidebar-primary-foreground: oklch(0.98 0.01 64);
-  --sidebar-accent: oklch(0.68 0.18 60);
-  --sidebar-accent-foreground: oklch(0.35 0.08 281);
-  --sidebar-border: oklch(0.91 0.01 35);
-  --sidebar-ring: oklch(0.55 0.1 306);
+  --background: oklch(0.975 0.015 64);
+  --border: oklch(0.91 0.01 35);
+  --text: oklch(0.35 0.08 281);
+  --sub-card: oklch(0.96 0.012 47);
+  --graph-1: oklch(0.55 0.1 306);
+  --graph-2: oklch(0.68 0.18 60);
+  --success: oklch(0.42 0.095 219);
+  --danger: oklch(0.68 0.18 60);
+  --error: oklch(0.52 0.13 357);
 }
 
 [data-palette="dawn"].dark {
-  /* Rosé Pine Moon — rich purple with warm gold accents */
   --background: oklch(0.2111 0.0485 281);
-  --foreground: oklch(0.8976 0.038 281);
-  --card: oklch(0.2465 0.0481 284);
-  --card-foreground: oklch(0.8976 0.038 281);
-  --popover: oklch(0.2465 0.0481 284);
-  --popover-foreground: oklch(0.8976 0.038 281);
-  --primary: oklch(0.7695 0.1127 299);
-  --primary-foreground: oklch(0.2111 0.0485 281);
-  --secondary: oklch(0.368 0.0543 289);
-  --secondary-foreground: oklch(0.75 0.06 296);
-  --muted: oklch(0.3222 0.0576 283);
-  --muted-foreground: oklch(0.6409 0.0559 296);
-  --accent: oklch(0.8349 0.1325 68);
-  --accent-foreground: oklch(0.2111 0.0485 281);
-  --destructive: oklch(0.6786 0.1908 354);
   --border: oklch(0.44 0.06 289);
-  --input: oklch(0.368 0.0543 289);
-  --ring: oklch(0.7695 0.1127 299);
-  --chart-1: oklch(0.7695 0.1127 299); /* iris   #C4A7E7 */
-  --chart-2: oklch(0.8349 0.1325 68); /* gold   #F6C177 */
-  --chart-3: oklch(0.65 0.1 225); /* pine   #3E8FB0 */
-  --chart-4: oklch(0.6786 0.1908 354); /* love   #EB6F92 */
-  --chart-5: oklch(0.8246 0.0647 210); /* foam   #9CCFD8 */
-  --sidebar: oklch(0.2465 0.0481 284);
-  --sidebar-foreground: oklch(0.8976 0.038 281);
-  --sidebar-primary: oklch(0.7695 0.1127 299);
-  --sidebar-primary-foreground: oklch(0.2111 0.0485 281);
-  --sidebar-accent: oklch(0.8349 0.1325 68);
-  --sidebar-accent-foreground: oklch(0.2111 0.0485 281);
-  --sidebar-border: oklch(0.44 0.06 289);
-  --sidebar-ring: oklch(0.7695 0.1127 299);
+  --text: oklch(0.8976 0.038 281);
+  --sub-card: oklch(0.368 0.0543 289);
+  --graph-1: oklch(0.7695 0.1127 299);
+  --graph-2: oklch(0.8349 0.1325 68);
+  --success: oklch(0.65 0.1 225);
+  --danger: oklch(0.8349 0.1325 68);
+  --error: oklch(0.6786 0.1908 354);
 }

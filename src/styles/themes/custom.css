@@ -1,0 +1,61 @@
+/* Custom Theme - Maps 9 semantic keys to shadcn variables */
+[data-palette="custom"] {
+  /* Light mode - uses custom-* vars set by JS, falls back to defaults */
+  --background: var(--custom-background, #fafafa);
+  --foreground: var(--custom-text, #171717);
+  --card: var(--custom-background, #fafafa);
+  --card-foreground: var(--custom-text, #171717);
+  --popover: var(--custom-background, #fafafa);
+  --popover-foreground: var(--custom-text, #171717);
+  --primary: var(--custom-graph-1, #22c55e);
+  --primary-foreground: #ffffff;
+  --secondary: var(--custom-sub-card, #f5f5f5);
+  --secondary-foreground: var(--custom-text, #171717);
+  --muted: var(--custom-sub-card, #f5f5f5);
+  --muted-foreground: var(--custom-text, #171717);
+  --accent: var(--custom-graph-1, #22c55e);
+  --accent-foreground: #ffffff;
+  --destructive: var(--custom-error, #ef4444);
+  --border: var(--custom-border, #e5e5e5);
+  --input: var(--custom-border, #e5e5e5);
+  --ring: var(--custom-graph-1, #22c55e);
+  --chart-1: var(--custom-graph-1, #22c55e);
+  --chart-2: var(--custom-graph-2, #3b82f6);
+  --chart-3: var(--custom-graph-1, #22c55e);
+  --chart-4: var(--custom-graph-2, #3b82f6);
+  --chart-5: var(--custom-graph-1, #22c55e);
+  /* semantic keys */
+  --success: var(--custom-success, #22c55e);
+  --danger: var(--custom-danger, #f59e0b);
+  --error: var(--custom-error, #ef4444);
+}
+
+[data-palette="custom"].dark {
+  --background: var(--custom-background-dark, #171717);
+  --foreground: var(--custom-text-dark, #fafafa);
+  --card: var(--custom-background-dark, #171717);
+  --card-foreground: var(--custom-text-dark, #fafafa);
+  --popover: var(--custom-background-dark, #171717);
+  --popover-foreground: var(--custom-text-dark, #fafafa);
+  --primary: var(--custom-graph-1-dark, #22c55e);
+  --primary-foreground: #171717;
+  --secondary: var(--custom-sub-card-dark, #262626);
+  --secondary-foreground: var(--custom-text-dark, #fafafa);
+  --muted: var(--custom-sub-card-dark, #262626);
+  --muted-foreground: var(--custom-text-dark, #fafafa);
+  --accent: var(--custom-graph-1-dark, #22c55e);
+  --accent-foreground: #171717;
+  --destructive: var(--custom-error-dark, #ef4444);
+  --border: var(--custom-border-dark, #404040);
+  --input: var(--custom-border-dark, #404040);
+  --ring: var(--custom-graph-1-dark, #22c55e);
+  --chart-1: var(--custom-graph-1-dark, #22c55e);
+  --chart-2: var(--custom-graph-2-dark, #3b82f6);
+  --chart-3: var(--custom-graph-1-dark, #22c55e);
+  --chart-4: var(--custom-graph-2-dark, #3b82f6);
+  --chart-5: var(--custom-graph-1-dark, #22c55e);
+  /* semantic keys */
+  --success: var(--custom-success-dark, #22c55e);
+  --danger: var(--custom-danger-dark, #f59e0b);
+  --error: var(--custom-error-dark, #ef4444);
+}

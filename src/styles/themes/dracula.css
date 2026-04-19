@@ -1,85 +1,24 @@
-/* ----------------------------------------------------------
-   Dracula
-   https://draculatheme.com/
-   Background   #282A36  Main background
-   Current Line #6272A4  Comments, disabled code
-   Selection    #44475A  Text selection
-   Foreground   #F8F8F2  Default text
-   Red          #FF5555  Errors, warnings, deletion
-   Orange       #FFB86C  Numbers, constants, booleans
-   Yellow       #F1FA8C  Strings, text content
-   Green        #50FA7B  Functions, methods, inherited classes
-   Cyan         #8BE9FD  Classes, types, support, regex
-   Purple       #BD93F9  Instance reserved words, constants
-   Pink         #FF79C6  Keywords, storage types
-   ---------------------------------------------------------- */
-
+/* Dracula - Light / Dark */
 [data-palette="dracula"] {
-  /* Light — Dracula-inspired light with vibrant neon accents */
   --background: oklch(0.96 0.008 280);
-  --foreground: oklch(0.2 0.04 277);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.04 277);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.04 277);
-  --primary: oklch(0.65 0.25 349); /* Pink #FF79C6 */
-  --primary-foreground: oklch(0.98 0.005 280);
-  --secondary: oklch(0.92 0.015 280);
-  --secondary-foreground: oklch(0.25 0.05 277);
-  --muted: oklch(0.93 0.012 280);
-  --muted-foreground: oklch(0.45 0.06 264);
-  --accent: oklch(0.7 0.18 195); /* Cyan #8BE9FD */
-  --accent-foreground: oklch(0.2 0.04 277);
-  --destructive: oklch(0.6 0.24 28); /* Red #FF5555 */
   --border: oklch(0.82 0.02 280);
-  --input: oklch(0.95 0.008 280);
-  --ring: oklch(0.65 0.25 349); /* Pink #FF79C6 */
-  --chart-1: oklch(0.65 0.25 349); /* Pink   #FF79C6 */
-  --chart-2: oklch(0.7 0.18 195); /* Cyan   #8BE9FD */
-  --chart-3: oklch(0.75 0.2 143); /* Green  #50FA7B */
-  --chart-4: oklch(0.65 0.22 299); /* Purple #BD93F9 */
-  --chart-5: oklch(0.75 0.18 67); /* Orange #FFB86C */
-  --sidebar: oklch(0.94 0.01 280);
-  --sidebar-foreground: oklch(0.2 0.04 277);
-  --sidebar-primary: oklch(0.65 0.25 349);
-  --sidebar-primary-foreground: oklch(0.98 0.005 280);
-  --sidebar-accent: oklch(0.7 0.18 195);
-  --sidebar-accent-foreground: oklch(0.2 0.04 277);
-  --sidebar-border: oklch(0.82 0.02 280);
-  --sidebar-ring: oklch(0.65 0.25 349);
+  --text: oklch(0.2 0.04 277);
+  --sub-card: oklch(0.92 0.015 280);
+  --graph-1: oklch(0.65 0.25 349);
+  --graph-2: oklch(0.7 0.18 195);
+  --success: oklch(0.75 0.2 143);
+  --danger: oklch(0.75 0.18 67);
+  --error: oklch(0.6 0.24 28);
 }
 
 [data-palette="dracula"].dark {
-  /* Official Dracula Dark Colors */
-  --background: oklch(0.2291 0.0428 277); /* #282A36 Background   */
-  --foreground: oklch(0.9761 0.005 106); /* #F8F8F2 Foreground   */
-  --card: oklch(0.3722 0.0399 277); /* #44475A Selection      */
-  --card-foreground: oklch(0.9761 0.005 106); /* #F8F8F2          */
-  --popover: oklch(0.3722 0.0399 277); /* #44475A Selection     */
-  --popover-foreground: oklch(0.9761 0.005 106); /* #F8F8F2        */
-  --primary: oklch(0.7449 0.1812 299); /* #BD93F9 Purple        */
-  --primary-foreground: oklch(0.2291 0.0428 277); /* #282A36      */
-  --secondary: oklch(0.7731 0.203 349); /* #FF79C6 Pink          */
-  --secondary-foreground: oklch(0.2291 0.0428 277); /* #282A36    */
-  --muted: oklch(0.3722 0.0399 277); /* #44475A Selection       */
-  --muted-foreground: oklch(0.5056 0.0865 264); /* #6272A4 Comment */
-  --accent: oklch(0.9063 0.1126 207); /* #8BE9FD Cyan            */
-  --accent-foreground: oklch(0.2291 0.0428 277); /* #282A36       */
-  --destructive: oklch(0.6882 0.2357 28); /* #FF5555 Red         */
-  --border: oklch(0.3722 0.0399 277); /* #44475A Selection       */
-  --input: oklch(0.5056 0.0865 264); /* #6272A4 Current Line     */
-  --ring: oklch(0.7449 0.1812 299); /* #BD93F9 Purple            */
-  --chart-1: oklch(0.7731 0.203 349); /* Pink   #FF79C6         */
-  --chart-2: oklch(0.9063 0.1126 207); /* Cyan   #8BE9FD        */
-  --chart-3: oklch(0.9094 0.2283 143); /* Green  #50FA7B        */
-  --chart-4: oklch(0.7449 0.1812 299); /* Purple #BD93F9        */
-  --chart-5: oklch(0.8221 0.1578 67); /* Orange #FFB86C         */
-  --sidebar: oklch(0.3722 0.0399 277);
-  --sidebar-foreground: oklch(0.9761 0.005 106);
-  --sidebar-primary: oklch(0.7449 0.1812 299);
-  --sidebar-primary-foreground: oklch(0.2291 0.0428 277);
-  --sidebar-accent: oklch(0.9063 0.1126 207);
-  --sidebar-accent-foreground: oklch(0.2291 0.0428 277);
-  --sidebar-border: oklch(0.3722 0.0399 277);
-  --sidebar-ring: oklch(0.7449 0.1812 299);
+  --background: oklch(0.2291 0.0428 277);
+  --border: oklch(0.3722 0.0399 277);
+  --text: oklch(0.9761 0.005 106);
+  --sub-card: oklch(0.3722 0.0399 277);
+  --graph-1: oklch(0.7449 0.1812 299);
+  --graph-2: oklch(0.9063 0.1126 207);
+  --success: oklch(0.75 0.2 143);
+  --danger: oklch(0.8221 0.1578 67);
+  --error: oklch(0.6882 0.2357 28);
 }

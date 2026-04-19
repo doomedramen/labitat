@@ -1,76 +1,24 @@
-/* ----------------------------------------------------------
-   Monokai
-   Classic Sublime Text editor theme
-   bg #272822, fg #F8F8F2, comment #75715E
-   green #A6E22E, orange #FD971F, pink/red #F92672
-   purple #AE81FF, cyan #66D9E8, yellow #E6DB74
-   ---------------------------------------------------------- */
-
+/* Monokai - Light / Dark */
 [data-palette="monokai"] {
-  /* Light — Monokai-inspired with iconic vibrant colors on clean bg */
   --background: oklch(0.96 0.005 100);
-  --foreground: oklch(0.25 0.015 110);
-  --card: oklch(0.99 0.003 97);
-  --card-foreground: oklch(0.25 0.015 110);
-  --popover: oklch(0.99 0.003 97);
-  --popover-foreground: oklch(0.25 0.015 110);
-  --primary: oklch(0.65 0.22 127);
-  --primary-foreground: oklch(0.98 0.005 100);
-  --secondary: oklch(0.91 0.01 97);
-  --secondary-foreground: oklch(0.32 0.02 100);
-  --muted: oklch(0.92 0.008 97);
-  --muted-foreground: oklch(0.5 0.045 80);
-  --accent: oklch(0.7 0.2 52);
-  --accent-foreground: oklch(0.25 0.015 110);
-  --destructive: oklch(0.6 0.25 357);
   --border: oklch(0.86 0.012 97);
-  --input: oklch(0.86 0.012 97);
-  --ring: oklch(0.65 0.22 127);
-  --chart-1: oklch(0.65 0.22 127); /* green  #A6E22E */
-  --chart-2: oklch(0.7 0.2 52); /* orange #FD971F */
-  --chart-3: oklch(0.6 0.25 357); /* pink   #F92672 */
-  --chart-4: oklch(0.65 0.2 298); /* purple #AE81FF */
-  --chart-5: oklch(0.7 0.13 205); /* cyan   #66D9E8 */
-  --sidebar: oklch(0.94 0.006 97);
-  --sidebar-foreground: oklch(0.25 0.015 110);
-  --sidebar-primary: oklch(0.65 0.22 127);
-  --sidebar-primary-foreground: oklch(0.98 0.005 100);
-  --sidebar-accent: oklch(0.7 0.2 52);
-  --sidebar-accent-foreground: oklch(0.25 0.015 110);
-  --sidebar-border: oklch(0.86 0.012 97);
-  --sidebar-ring: oklch(0.65 0.22 127);
+  --text: oklch(0.25 0.015 110);
+  --sub-card: oklch(0.91 0.01 97);
+  --graph-1: oklch(0.65 0.22 127);
+  --graph-2: oklch(0.7 0.2 52);
+  --success: oklch(0.65 0.22 127);
+  --danger: oklch(0.7 0.2 52);
+  --error: oklch(0.6 0.25 357);
 }
 
 [data-palette="monokai"].dark {
-  --background: oklch(0.2148 0.0123 114); /* #272822 — slightly olive */
-  --foreground: oklch(0.9761 0.005 107); /* #F8F8F2                  */
-  --card: oklch(0.26 0.011 110);
-  --card-foreground: oklch(0.9761 0.005 107);
-  --popover: oklch(0.26 0.011 110);
-  --popover-foreground: oklch(0.9761 0.005 107);
-  --primary: oklch(0.8506 0.2163 127); /* #A6E22E green  */
-  --primary-foreground: oklch(0.2148 0.0123 114);
-  --secondary: oklch(0.32 0.013 110);
-  --secondary-foreground: oklch(0.9761 0.005 107);
-  --muted: oklch(0.26 0.011 110);
-  --muted-foreground: oklch(0.505 0.041 76); /* #75715E comment */
-  --accent: oklch(0.77 0.177 52); /* #FD971F orange */
-  --accent-foreground: oklch(0.2148 0.0123 114);
-  --destructive: oklch(0.6586 0.2654 357); /* #F92672 pink   */
+  --background: oklch(0.2148 0.0123 114);
   --border: oklch(0.32 0.013 110);
-  --input: oklch(0.32 0.013 110);
-  --ring: oklch(0.8506 0.2163 127);
-  --chart-1: oklch(0.8506 0.2163 127); /* green  #A6E22E */
-  --chart-2: oklch(0.77 0.177 52); /* orange #FD971F */
-  --chart-3: oklch(0.6586 0.2654 357); /* pink   #F92672 */
-  --chart-4: oklch(0.7302 0.1841 298); /* purple #AE81FF */
-  --chart-5: oklch(0.8527 0.1047 205); /* cyan   #66D9E8 */
-  --sidebar: oklch(0.26 0.011 110);
-  --sidebar-foreground: oklch(0.9761 0.005 107);
-  --sidebar-primary: oklch(0.8506 0.2163 127);
-  --sidebar-primary-foreground: oklch(0.2148 0.0123 114);
-  --sidebar-accent: oklch(0.77 0.177 52);
-  --sidebar-accent-foreground: oklch(0.2148 0.0123 114);
-  --sidebar-border: oklch(0.32 0.013 110);
-  --sidebar-ring: oklch(0.8506 0.2163 127);
+  --text: oklch(0.9761 0.005 107);
+  --sub-card: oklch(0.32 0.013 110);
+  --graph-1: oklch(0.8506 0.2163 127);
+  --graph-2: oklch(0.77 0.177 52);
+  --success: oklch(0.8506 0.2163 127);
+  --danger: oklch(0.77 0.177 52);
+  --error: oklch(0.6586 0.2654 357);
 }

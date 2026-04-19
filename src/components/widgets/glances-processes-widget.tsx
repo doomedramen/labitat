@@ -4,7 +4,7 @@ import { Circle, AlertTriangle, Pause, StopCircle } from "lucide-react";
 
 function valueColor(value: number, warnAt: number, critAt: number): string {
   if (value >= critAt) return "text-destructive";
-  if (value >= warnAt) return "text-amber-500";
+  if (value >= warnAt) return "text-danger";
   return "text-secondary-foreground";
 }
 
@@ -20,7 +20,7 @@ function valueColor(value: number, warnAt: number, critAt: number): string {
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
     case "R": // Running
-      return <Circle className="h-3 w-3 fill-green-500 text-green-500" />;
+      return <Circle className="h-3 w-3 fill-success text-success" />;
     case "S": // Sleeping
       return <Circle className="h-3 w-3 text-blue-500" />;
     case "D": // Disk sleep

@@ -16,12 +16,12 @@ interface StatusDotProps {
 export function StatusDot({ status, cached = false }: StatusDotProps) {
   const colors = {
     unknown: "bg-muted-foreground/30",
-    healthy: "bg-green-500",
-    degraded: "bg-amber-500",
-    reachable: "bg-green-500",
-    unreachable: "bg-red-500",
-    slow: "bg-amber-500",
-    error: "bg-red-500",
+    healthy: "bg-success",
+    degraded: "bg-danger",
+    reachable: "bg-success",
+    unreachable: "bg-error",
+    slow: "bg-danger",
+    error: "bg-error",
   };
 
   const labels = {

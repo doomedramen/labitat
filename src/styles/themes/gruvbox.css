@@ -1,81 +1,24 @@
-/* ----------------------------------------------------------
-   Gruvbox
-   https://github.com/morhetz/gruvbox
-   Light:  bg0 #FBF1C7, bg1 #EBDBB2, bg2 #D5C4A1, bg3 #BDAE93
-           fg #282828, fg4 #7C6F64
-           blue #458588, orange #D65D0E, red #CC241D
-           green #98971A, purple #B16286, yellow #B58900
-   Dark:   bg0 #282828, bg1 #3C3836, bg2 #504945, bg3 #665C54
-           fg1 #EBDBB2, gray #928374
-           bright blue #83A598, bright orange #FE8019, bright red #FB4934
-           bright green #B8BB26, bright purple #D3869B, bright yellow #FABD2F
-   ---------------------------------------------------------- */
-
+/* Gruvbox - Light / Dark */
 [data-palette="gruvbox"] {
-  /* Light — warm Gruvbox light with retro earth tones */
   --background: oklch(0.96 0.04 94);
-  --foreground: oklch(0.22 0.008 0);
-  --card: oklch(0.98 0.025 89);
-  --card-foreground: oklch(0.22 0.008 0);
-  --popover: oklch(0.98 0.025 89);
-  --popover-foreground: oklch(0.22 0.008 0);
-  --primary: oklch(0.52 0.1 192);
-  --primary-foreground: oklch(0.96 0.04 94);
-  --secondary: oklch(0.91 0.035 87);
-  --secondary-foreground: oklch(0.28 0.01 0);
-  --muted: oklch(0.92 0.03 89);
-  --muted-foreground: oklch(0.5 0.045 56);
-  --accent: oklch(0.58 0.22 44);
-  --accent-foreground: oklch(0.22 0.008 0);
-  --destructive: oklch(0.48 0.24 27);
   --border: oklch(0.85 0.035 73);
-  --input: oklch(0.85 0.035 73);
-  --ring: oklch(0.52 0.1 192);
-  --chart-1: oklch(0.52 0.1 192); /* blue   #458588 */
-  --chart-2: oklch(0.58 0.22 44); /* orange #D65D0E */
-  --chart-3: oklch(0.58 0.18 121); /* green  #98971A */
-  --chart-4: oklch(0.65 0.13 313); /* purple #B16286 */
-  --chart-5: oklch(0.62 0.18 84); /* yellow #B58900 */
-  --sidebar: oklch(0.94 0.035 89);
-  --sidebar-foreground: oklch(0.22 0.008 0);
-  --sidebar-primary: oklch(0.52 0.1 192);
-  --sidebar-primary-foreground: oklch(0.96 0.04 94);
-  --sidebar-accent: oklch(0.58 0.22 44);
-  --sidebar-accent-foreground: oklch(0.22 0.008 0);
-  --sidebar-border: oklch(0.85 0.035 73);
-  --sidebar-ring: oklch(0.52 0.1 192);
+  --text: oklch(0.22 0.008 0);
+  --sub-card: oklch(0.91 0.035 87);
+  --graph-1: oklch(0.52 0.1 192);
+  --graph-2: oklch(0.58 0.22 44);
+  --success: oklch(0.58 0.18 121);
+  --danger: oklch(0.58 0.22 44);
+  --error: oklch(0.48 0.24 27);
 }
 
 [data-palette="gruvbox"].dark {
-  --background: oklch(0.2109 0 0); /* #282828 bg0         */
-  --foreground: oklch(0.8879 0.0645 89); /* #EBDBB2 fg1 (cream) */
-  --card: oklch(0.2906 0.0152 57); /* #3C3836 bg1         */
-  --card-foreground: oklch(0.8879 0.0645 89);
-  --popover: oklch(0.2906 0.0152 57);
-  --popover-foreground: oklch(0.8879 0.0645 89);
-  --primary: oklch(0.6542 0.0626 182); /* #83A598 bright blue  */
-  --primary-foreground: oklch(0.2109 0 0);
-  --secondary: oklch(0.3641 0.0216 57); /* #504945 bg2          */
-  --secondary-foreground: oklch(0.8879 0.0645 89);
-  --muted: oklch(0.2906 0.0152 57); /* #3C3836 bg1          */
-  --muted-foreground: oklch(0.5676 0.0393 58); /* #928374 gray       */
-  --accent: oklch(0.7345 0.1934 51); /* #FE8019 bright orange */
-  --accent-foreground: oklch(0.2109 0 0);
-  --destructive: oklch(0.6294 0.2336 32); /* #FB4934 bright red   */
-  --border: oklch(0.4118 0.027 57); /* #665C54 bg3          */
-  --input: oklch(0.4118 0.027 57);
-  --ring: oklch(0.6542 0.0626 182);
-  --chart-1: oklch(0.6542 0.0626 182); /* bright blue   #83A598 */
-  --chart-2: oklch(0.7345 0.1934 51); /* bright orange #FE8019 */
-  --chart-3: oklch(0.7241 0.1755 128); /* bright green  #B8BB26 */
-  --chart-4: oklch(0.7303 0.1143 313); /* bright purple #D3869B */
-  --chart-5: oklch(0.8221 0.1578 78); /* bright yellow #FABD2F */
-  --sidebar: oklch(0.2906 0.0152 57);
-  --sidebar-foreground: oklch(0.8879 0.0645 89);
-  --sidebar-primary: oklch(0.6542 0.0626 182);
-  --sidebar-primary-foreground: oklch(0.2109 0 0);
-  --sidebar-accent: oklch(0.7345 0.1934 51);
-  --sidebar-accent-foreground: oklch(0.2109 0 0);
-  --sidebar-border: oklch(0.4118 0.027 57);
-  --sidebar-ring: oklch(0.6542 0.0626 182);
+  --background: oklch(0.2109 0 0);
+  --border: oklch(0.4118 0.027 57);
+  --text: oklch(0.8879 0.0645 89);
+  --sub-card: oklch(0.3641 0.0216 57);
+  --graph-1: oklch(0.6542 0.0626 182);
+  --graph-2: oklch(0.7345 0.1934 51);
+  --success: oklch(0.7241 0.1755 128);
+  --danger: oklch(0.7345 0.1934 51);
+  --error: oklch(0.6294 0.2336 32);
 }

@@ -17,11 +17,11 @@ export function ResourceBar({
   const isCritical = pct >= criticalAt;
   const isWarning = pct >= warningAt;
 
-  const barColor = isCritical ? "bg-destructive" : isWarning ? "bg-amber-500" : "bg-primary";
+  const barColor = isCritical ? "bg-destructive" : isWarning ? "bg-danger" : "bg-primary";
   const valueColor = isCritical
     ? "text-destructive"
     : isWarning
-      ? "text-amber-500"
+      ? "text-danger"
       : "text-secondary-foreground";
 
   return (

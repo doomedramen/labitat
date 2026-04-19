@@ -24,7 +24,7 @@ export function SseBanner() {
 
   return (
     <OverlayPortal slot="top">
-      <div className="pointer-events-auto mt-2 rounded-full bg-amber-500/90 px-3 py-1 text-xs font-medium text-white shadow-lg">
+      <div className="pointer-events-auto mt-2 rounded-full bg-danger/90 px-3 py-1 text-xs font-medium text-white shadow-lg">
         Reconnecting...
       </div>
     </OverlayPortal>

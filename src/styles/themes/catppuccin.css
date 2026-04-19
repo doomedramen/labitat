@@ -1,80 +1,24 @@
-/* ----------------------------------------------------------
-   Catppuccin — Latte (light) / Mocha (dark)
-   https://github.com/catppuccin/catppuccin
-   Latte:  base #EFF1F5, mantle #E6E9EF, surface0 #CCD0DA, surface1 #BCC0CC
-           text #4C4F69, subtext0 #6C6F85
-           mauve #8839EF, peach #FE640B, red #D20F39
-   Mocha:  base #1E1E2E, surface0 #313244, surface1 #45475A
-           text #CDD6F4, subtext0 #A6ADC8, subtext1 #BAC2DE
-           mauve #CBA6F7, peach #FAB387, red #F38BA8
-   ---------------------------------------------------------- */
-
+/* Catppuccin — Latte (light) / Mocha (dark) */
 [data-palette="catppuccin"] {
-  /* Latte */
-  --background: oklch(0.965 0.008 265); /* #EFF1F5 base - lighter */
-  --foreground: oklch(0.32 0.07 273); /* #4C4F69 text - deeper */
-  --card: oklch(0.99 0.004 265); /* white card */
-  --card-foreground: oklch(0.32 0.07 273);
-  --popover: oklch(0.99 0.004 265);
-  --popover-foreground: oklch(0.32 0.07 273);
-  --primary: oklch(0.5 0.27 293); /* #8839EF mauve - vibrant */
-  --primary-foreground: oklch(0.98 0.005 280);
-  --secondary: oklch(0.92 0.02 264); /* #CCD0DA surface0 */
-  --secondary-foreground: oklch(0.45 0.06 275); /* #6C6F85 subtext0 */
-  --muted: oklch(0.9 0.015 264); /* #BCC0CC surface1 */
-  --muted-foreground: oklch(0.5 0.055 275);
-  --accent: oklch(0.65 0.22 44); /* #FE640B peach - richer */
-  --accent-foreground: oklch(0.98 0.005 280);
-  --destructive: oklch(0.45 0.25 16); /* #D20F39 red */
+  --background: oklch(0.965 0.008 265);
   --border: oklch(0.88 0.02 264);
-  --input: oklch(0.88 0.02 264);
-  --ring: oklch(0.5 0.27 293);
-  --chart-1: oklch(0.5 0.27 293); /* mauve  */
-  --chart-2: oklch(0.65 0.22 44); /* peach  */
-  --chart-3: oklch(0.7 0.16 85); /* yellow #DF8E1D */
-  --chart-4: oklch(0.55 0.12 183); /* teal   #179299 */
-  --chart-5: oklch(0.5 0.25 268); /* blue   #1E66F5 */
-  --sidebar: oklch(0.94 0.015 264);
-  --sidebar-foreground: oklch(0.32 0.07 273);
-  --sidebar-primary: oklch(0.5 0.27 293);
-  --sidebar-primary-foreground: oklch(0.98 0.005 280);
-  --sidebar-accent: oklch(0.65 0.22 44);
-  --sidebar-accent-foreground: oklch(0.98 0.005 280);
-  --sidebar-border: oklch(0.88 0.02 264);
-  --sidebar-ring: oklch(0.5 0.27 293);
+  --text: oklch(0.32 0.07 273);
+  --sub-card: oklch(0.92 0.02 264);
+  --graph-1: oklch(0.5 0.27 293);
+  --graph-2: oklch(0.65 0.22 44);
+  --success: oklch(0.5 0.27 293);
+  --danger: oklch(0.65 0.22 44);
+  --error: oklch(0.45 0.25 16);
 }
 
 [data-palette="catppuccin"].dark {
-  /* Mocha */
-  --background: oklch(0.176 0.0355 282); /* #1E1E2E base     */
-  --foreground: oklch(0.8621 0.0657 264); /* #CDD6F4 text     */
-  --card: oklch(0.2774 0.0358 278); /* #313244 surface0 */
-  --card-foreground: oklch(0.8621 0.0657 264);
-  --popover: oklch(0.2774 0.0358 278);
-  --popover-foreground: oklch(0.8621 0.0657 264);
-  --primary: oklch(0.7836 0.153 303); /* #CBA6F7 mauve    */
-  --primary-foreground: oklch(0.176 0.0355 282);
-  --secondary: oklch(0.3798 0.0343 276); /* #45475A surface1 */
-  --secondary-foreground: oklch(0.7162 0.0499 271); /* #A6ADC8 subtext0 */
-  --muted: oklch(0.2774 0.0358 278); /* #313244 surface0 */
-  --muted-foreground: oklch(0.617 0.0444 270); /* #BAC2DE subtext1 */
-  --accent: oklch(0.8073 0.1449 50); /* #FAB387 peach    */
-  --accent-foreground: oklch(0.176 0.0355 282);
-  --destructive: oklch(0.7289 0.1767 9); /* #F38BA8 red      */
-  --border: oklch(0.3798 0.0343 276); /* #45475A surface1 */
-  --input: oklch(0.3798 0.0343 276);
-  --ring: oklch(0.7836 0.153 303);
-  --chart-1: oklch(0.7836 0.153 303); /* mauve  */
-  --chart-2: oklch(0.8073 0.1449 50); /* peach  */
-  --chart-3: oklch(0.8633 0.1372 86); /* yellow #F9E2AF */
-  --chart-4: oklch(0.8568 0.0979 185); /* teal   #94E2D5 */
-  --chart-5: oklch(0.7507 0.1481 234); /* blue   #89B4FA */
-  --sidebar: oklch(0.2774 0.0358 278);
-  --sidebar-foreground: oklch(0.8621 0.0657 264);
-  --sidebar-primary: oklch(0.7836 0.153 303);
-  --sidebar-primary-foreground: oklch(0.176 0.0355 282);
-  --sidebar-accent: oklch(0.8073 0.1449 50);
-  --sidebar-accent-foreground: oklch(0.176 0.0355 282);
-  --sidebar-border: oklch(0.3798 0.0343 276);
-  --sidebar-ring: oklch(0.7836 0.153 303);
+  --background: oklch(0.176 0.0355 282);
+  --border: oklch(0.3798 0.0343 276);
+  --text: oklch(0.8621 0.0657 264);
+  --sub-card: oklch(0.3798 0.0343 276);
+  --graph-1: oklch(0.7836 0.153 303);
+  --graph-2: oklch(0.8073 0.1449 50);
+  --success: oklch(0.7836 0.153 303);
+  --danger: oklch(0.8073 0.1449 50);
+  --error: oklch(0.7289 0.1767 9);
 }
