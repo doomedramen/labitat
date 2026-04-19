@@ -1,8 +1,7 @@
-/* Semantic Theme Mapping - Maps 9 semantic keys to all shadcn variables */
-/* This is included first, then each theme defines only the 9 semantic keys */
+/* Semantic Theme Mapping - Maps 12 semantic keys to all shadcn variables */
+/* This is included first, then each theme defines only the 12 semantic keys */
 
 /* Base body background - applies to all palettes regardless of background pattern */
-[data-palette] body,
 [data-palette] body {
   background-color: var(--background);
 }
@@ -10,13 +9,13 @@
 /* Light mode mapping */
 [data-palette] {
   --foreground: var(--text);
-  --card-foreground: var(--text);
+  --card-foreground: var(--card-text);
   --popover-foreground: var(--text);
   --primary-foreground: #ffffff;
-  --secondary-foreground: var(--text);
-  --muted-foreground: var(--text);
+  --secondary-foreground: var(--sub-card-text);
+  --muted-foreground: var(--sub-card-text);
   --accent-foreground: #ffffff;
-  --card: var(--background);
+  --card: var(--card);
   --popover: var(--background);
   --muted: var(--sub-card);
   --input: var(--border);
@@ -41,13 +40,13 @@
 /* Dark mode mapping */
 [data-palette].dark {
   --foreground: var(--text);
-  --card-foreground: var(--text);
+  --card-foreground: var(--card-text);
   --popover-foreground: var(--text);
   --primary-foreground: var(--background);
-  --secondary-foreground: var(--text);
-  --muted-foreground: var(--text);
+  --secondary-foreground: var(--sub-card-text);
+  --muted-foreground: var(--sub-card-text);
   --accent-foreground: var(--background);
-  --card: var(--background);
+  --card: var(--card);
   --popover: var(--background);
   --muted: var(--sub-card);
   --input: var(--border);

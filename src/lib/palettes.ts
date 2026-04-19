@@ -1,6 +1,5 @@
 export const PALETTES = [
   { id: "default", label: "Default" },
-  { id: "custom", label: "Custom" },
   { id: "nord", label: "Nord" },
   { id: "catppuccin", label: "Catppuccin" },
   { id: "gruvbox", label: "Gruvbox" },

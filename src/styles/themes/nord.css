@@ -1,8 +1,11 @@
 [data-palette="nord"] {
   --background: oklch(0.97 0.01 255);
+  --card: oklch(0.99 0.004 255);
+  --card-text: oklch(0.22 0.045 264);
   --border: oklch(0.9 0.015 255);
   --text: oklch(0.22 0.045 264);
-  --sub-card: oklch(0.94 0.015 255);
+  --sub-card: oklch(0.93 0.012 255);
+  --sub-card-text: oklch(0.35 0.04 264);
   --graph-1: oklch(0.52 0.11 246);
   --graph-2: oklch(0.72 0.09 211);
   --success: oklch(0.52 0.11 246);
@@ -12,9 +15,12 @@
 
 [data-palette="nord"].dark {
   --background: oklch(0.2584 0.039 264);
+  --card: oklch(0.30 0.036 264);
+  --card-text: oklch(0.88 0.018 255);
   --border: oklch(0.3729 0.0391 265);
-  --text: oklch(0.8831 0.0185 255);
-  --sub-card: oklch(0.3729 0.0391 265);
+  --text: oklch(0.88 0.018 255);
+  --sub-card: oklch(0.345 0.035 264);
+  --sub-card-text: oklch(0.7 0.025 260);
   --graph-1: oklch(0.778 0.0736 211);
   --graph-2: oklch(0.7473 0.0769 193);
   --success: oklch(0.52 0.11 246);

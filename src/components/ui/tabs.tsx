@@ -16,13 +16,18 @@ function Tabs({
   children: React.ReactNode;
 }) {
   return (
-    <div className={className} data-slot="tabs" data-value={value}>
+    <div className={className}>
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
           return React.cloneElement(
-            child as React.ReactElement<{ value: string; "data-value"?: string }>,
+            child as React.ReactElement<{
+              value: string;
+              activeValue?: string;
+              onChange?: (value: string) => void;
+            }>,
             {
-              "data-value": value,
+              activeValue: value,
+              onChange: onValueChange,
             },
           );
         }
@@ -50,12 +55,14 @@ function TabsTrigger({
   className,
   value,
   children,
-  "data-value": activeValue,
+  activeValue,
+  onChange,
 }: {
   className?: string;
   value: string;
   children: React.ReactNode;
-  "data-value"?: string;
+  activeValue?: string;
+  onChange?: (value: string) => void;
 }) {
   const isActive = activeValue === value;
   return (
@@ -68,7 +75,7 @@ function TabsTrigger({
         className,
       )}
       data-slot="tabs-trigger"
-      data-value={value}
+      onClick={() => onChange?.(value)}
     >
       {children}
     </button>
@@ -79,12 +86,12 @@ function TabsContent({
   className,
   value,
   children,
-  "data-value": activeValue,
+  activeValue,
 }: {
   className?: string;
   value: string;
   children: React.ReactNode;
-  "data-value"?: string;
+  activeValue?: string;
 }) {
   if (activeValue !== value) return null;
   return (

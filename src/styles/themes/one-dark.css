@@ -4,6 +4,9 @@
   --border: oklch(0.87 0.005 264);
   --text: oklch(0.25 0.03 259);
   --sub-card: oklch(0.92 0.005 264);
+  --card: oklch(0.975 0.002 264);
+  --card-text: oklch(0.25 0.03 259);
+  --sub-card-text: oklch(0.25 0.03 259);
   --graph-1: oklch(0.52 0.2 261);
   --graph-2: oklch(0.58 0.15 225);
   --success: oklch(0.52 0.18 145);
@@ -16,6 +19,9 @@
   --border: oklch(0.32 0.022 264);
   --text: oklch(0.7331 0.021 258);
   --sub-card: oklch(0.32 0.022 264);
+  --card: oklch(0.28 0.022 264);
+  --card-text: oklch(0.7331 0.021 258);
+  --sub-card-text: oklch(0.7331 0.021 258);
   --graph-1: oklch(0.7167 0.1244 221);
   --graph-2: oklch(0.6609 0.1872 313);
   --success: oklch(0.7611 0.1289 139);

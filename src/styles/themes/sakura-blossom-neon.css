@@ -16,6 +16,9 @@
   --border: oklch(0.32 0.027 279);
   --text: oklch(0.806 0.115 341);
   --sub-card: oklch(0.322 0.027 279);
+  --card: oklch(0.3 0.025 281);
+  --card-text: oklch(0.806 0.115 341);
+  --sub-card-text: oklch(0.806 0.115 341);
   --graph-1: oklch(0.828 0.128 341);
   --graph-2: oklch(0.806 0.115 341);
   --success: oklch(0.828 0.128 341);
