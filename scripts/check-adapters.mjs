@@ -21,7 +21,7 @@ const NON_ADAPTER_FILES = new Set([
   "fetch-with-timeout",
   "mock-utilities",
 ]);
-const NON_ADAPTER_SUFFIXES = [".test", "-widget", "-common"];
+const NON_ADAPTER_SUFFIXES = [".test", "-widget", "-common", ".stories"];
 
 async function main() {
   console.log("🔍 Deep-checking service adapters...");
