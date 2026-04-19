@@ -100,7 +100,7 @@ describe("LiveDataProvider", () => {
       } as MessageEvent<string>);
     });
 
-    expect(screen.getByRole("status", { name: "Healthy" })).toHaveClass("bg-green-500");
+    expect(screen.getByRole("status", { name: "Healthy" })).toHaveClass("bg-success");
 
     view.unmount();
   });

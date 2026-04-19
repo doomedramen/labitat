@@ -73,7 +73,7 @@ test.describe("Widget Rendering", () => {
     // An error status dot (red) should appear
     const statusDot = page.locator('[role="status"].rounded-full');
     await expect(statusDot).toBeVisible({ timeout: 15_000 });
-    await expect(statusDot).toHaveClass(/bg-red-500/);
+    await expect(statusDot).toHaveClass(/bg-error/);
   });
 
   test("renders empty state with zero values", async ({ page }) => {
