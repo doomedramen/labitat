@@ -8,8 +8,8 @@
   --sub-card-text: oklch(0.35 0.04 264);
   --graph-1: oklch(0.52 0.11 246);
   --graph-2: oklch(0.72 0.09 211);
-  --success: oklch(0.52 0.11 246);
-  --danger: oklch(0.6 0.13 50);
+  --success: oklch(0.52 0.11 145);
+  --danger: oklch(0.6 0.13 48);
   --error: oklch(0.5 0.15 17);
 }
 
@@ -23,7 +23,7 @@
   --sub-card-text: oklch(0.7 0.025 260);
   --graph-1: oklch(0.778 0.0736 211);
   --graph-2: oklch(0.7473 0.0769 193);
-  --success: oklch(0.52 0.11 246);
-  --danger: oklch(0.6 0.13 50);
+  --success: oklch(0.52 0.11 145);
+  --danger: oklch(0.6 0.13 48);
   --error: oklch(0.5499 0.1325 17);
 }

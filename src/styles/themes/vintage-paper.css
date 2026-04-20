@@ -9,7 +9,7 @@
   --sub-card-text: oklch(0.32 0.025 64.3434);
   --graph-1: oklch(0.56 0.09 65.5444);
   --graph-2: oklch(0.52 0.07 68.5805);
-  --success: oklch(0.56 0.09 65.5444);
+  --success: oklch(0.5 0.15 145);
   --danger: oklch(0.68 0.06 66.6967);
   --error: oklch(0.5 0.15 32.9149);
 }
@@ -24,7 +24,7 @@
   --sub-card-text: oklch(0.85 0.025 83);
   --graph-1: oklch(0.68 0.08 66);
   --graph-2: oklch(0.38 0.03 56);
-  --success: oklch(0.68 0.08 66);
+  --success: oklch(0.55 0.15 145);
   --danger: oklch(0.38 0.03 56);
   --error: oklch(0.55 0.16 33);
 }
