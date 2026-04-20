@@ -9,9 +9,19 @@ interface ItemIconProps {
   onError?: () => void;
 }
 
+const KNOWN_CDNS = ["cdn.jsdelivr.net"];
+
 function toProxyUrl(src: string): string | null {
   if (!src || src.trim() === "") return null;
   if (!src.startsWith("http://") && !src.startsWith("https://")) return src;
+  try {
+    const url = new URL(src);
+    if (KNOWN_CDNS.includes(url.hostname)) {
+      return src;
+    }
+  } catch {
+    // Invalid URL, fall through to proxy
+  }
   return `/api/icon?url=${encodeURIComponent(src)}`;
 }
 
