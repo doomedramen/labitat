@@ -44,6 +44,24 @@ class PollingSupervisor {
     }
   }
 
+  /** Trigger an immediate poll — useful when a client connects and cache may be stale */
+  async pollNow(): Promise<void> {
+    const items = await this.getItems();
+    const now = Date.now();
+    for (const item of items) {
+      if (!this.running.has(item.id)) {
+        item.lastPolledAt = now;
+        this.lastPolledAt.set(item.id, now);
+        this.running.add(item.id);
+        this.runPoll(item)
+          .catch((err) => console.error(`[polling] Error polling ${item.id}:`, err))
+          .finally(() => {
+            this.running.delete(item.id);
+          });
+      }
+    }
+  }
+
   /** A client disconnected — maybe stop polling after grace period */
   disconnect(): void {
     const prev = this.activeConnections;

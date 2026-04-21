@@ -12,11 +12,18 @@ export async function GET(request: NextRequest) {
 
   const stream = new ReadableStream({
     start(controller) {
-      if (pollingSup.getConnectionCount() === 0) {
-        pollingSup.connect();
-      }
-
       let closed = false;
+
+      const wasIdle = pollingSup.getConnectionCount() === 0;
+      pollingSup.connect();
+
+      // If no clients were connected, trigger immediate poll to freshen cache.
+      // The client will receive updates via SSE as polling completes.
+      if (wasIdle) {
+        pollingSup.pollNow().catch((err) => {
+          console.error("[events] Immediate poll failed:", err);
+        });
+      }
 
       const sendHeartbeat = () => {
         if (closed) return;
