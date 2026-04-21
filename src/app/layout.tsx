@@ -1,8 +1,7 @@
 import { Geist_Mono, Inter } from "next/font/google";
 import type { Viewport, Metadata } from "next";
 import { cookies } from "next/headers";
-import { ThemeProvider } from "@/components/theme-provider";
-import { ThemeColorUpdater } from "@/components/theme-color-updater";
+
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { AppToaster } from "@/components/ui/app-toaster";
 import { OverlayHost } from "@/components/ui/overlay-host";
@@ -21,12 +20,10 @@ const fontMono = Geist_Mono({
 });
 
 const PALETTE_COOKIE = "labitat-palette";
-const THEME_COOKIE = "labitat-theme";
 const BACKGROUND_COOKIE = "labitat-background";
 const SCALE_COOKIE = "labitat-bg-scale";
 const OPACITY_COOKIE = "labitat-bg-opacity";
-const DEFAULT_PALETTE = "default";
-const DEFAULT_THEME = "system";
+const DEFAULT_PALETTE = "nord";
 const DEFAULT_BACKGROUND = "none";
 const DEFAULT_SCALE = "1";
 const DEFAULT_OPACITY = "1";
@@ -37,15 +34,6 @@ async function getPalette(): Promise<string> {
     return cookieStore.get(PALETTE_COOKIE)?.value ?? DEFAULT_PALETTE;
   } catch {
     return DEFAULT_PALETTE;
-  }
-}
-
-async function getTheme(): Promise<string> {
-  try {
-    const cookieStore = await cookies();
-    return cookieStore.get(THEME_COOKIE)?.value ?? DEFAULT_THEME;
-  } catch {
-    return DEFAULT_THEME;
   }
 }
 
@@ -111,11 +99,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f2f4fa" },
-    { media: "(prefers-color-scheme: dark)", color: "#1d2035" },
-  ],
-  colorScheme: "light dark",
+  themeColor: "#2e3440",
 };
 
 export default async function RootLayout({
@@ -123,9 +107,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [palette, theme, background, bgScale, bgOpacity] = await Promise.all([
+  const [palette, background, bgScale, bgOpacity] = await Promise.all([
     getPalette(),
-    getTheme(),
     getBackground(),
     getBgScale(),
     getBgOpacity(),
@@ -147,14 +130,11 @@ export default async function RootLayout({
     >
       <SplashScreenLinks />
       <body>
-        <ThemeProvider attribute="class" serverTheme={theme} enableSystem>
-          <ThemeColorUpdater />
-          <TooltipProvider>{children}</TooltipProvider>
-          <OverlayHost />
-          <AppToaster />
-          <ServiceWorkerRegistrar />
-          <ConnectivityProvider />
-        </ThemeProvider>
+        <TooltipProvider>{children}</TooltipProvider>
+        <OverlayHost />
+        <AppToaster />
+        <ServiceWorkerRegistrar />
+        <ConnectivityProvider />
       </body>
     </html>
   );

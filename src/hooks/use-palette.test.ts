@@ -22,7 +22,7 @@ describe("usePalette", () => {
 
   it("returns default palette initially", () => {
     const { result } = renderHook(() => usePalette());
-    expect(result.current.palette).toBe("default");
+    expect(result.current.palette).toBe("nord");
   });
 
   it("reads palette from cookie if available", () => {
@@ -83,6 +83,6 @@ describe("usePalette", () => {
     });
 
     const { result } = renderHook(() => usePalette());
-    expect(result.current.palette).toBe("default");
+    expect(result.current.palette).toBe("nord");
   });
 });

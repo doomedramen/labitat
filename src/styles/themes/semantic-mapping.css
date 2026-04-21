@@ -6,39 +6,8 @@
   background-color: var(--background);
 }
 
-/* Light mode mapping */
+/* Base mapping */
 [data-palette] {
-  --foreground: var(--text);
-  --card-foreground: var(--card-text);
-  --popover-foreground: var(--text);
-  --primary-foreground: #ffffff;
-  --secondary-foreground: var(--sub-card-text);
-  --muted-foreground: var(--sub-card-text);
-  --accent-foreground: #ffffff;
-  --card: var(--card);
-  --popover: var(--background);
-  --muted: var(--sub-card);
-  --input: var(--border);
-  --ring: var(--graph-1);
-  --sidebar: var(--background);
-  --sidebar-foreground: var(--text);
-  --sidebar-primary: var(--graph-1);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--sub-card);
-  --sidebar-accent-foreground: var(--text);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--graph-1);
-
-  /* Chart colors derived from graph keys */
-  --chart-1: var(--graph-1);
-  --chart-2: var(--graph-2);
-  --chart-3: var(--graph-1);
-  --chart-4: var(--graph-2);
-  --chart-5: var(--graph-1);
-}
-
-/* Dark mode mapping */
-[data-palette].dark {
   --foreground: var(--text);
   --card-foreground: var(--card-text);
   --popover-foreground: var(--text);

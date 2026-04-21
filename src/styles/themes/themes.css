@@ -1,0 +1,220 @@
+/* Developer Color Themes — CSS Custom Properties
+ * 10 popular themes, each mapped to a consistent set of
+ * semantic design tokens. All colors expressed in OKLCH for
+ * perceptually-uniform interpolation and HDR-readiness.
+ *
+ * Usage:
+ *   <html data-palette="dracula">
+ *   <div data-palette="tokyo_night">
+ *
+ * Default: nord
+ * Sorted alphabetically (with nord as default first)
+ */
+
+/* ── Nord (Default) ────────────────────────────────────────
+   Arctic, north-bluish. Cool blues and whites inspired
+   by the Polar Night and Aurora Borealis.
+   Source: nordtheme.com (nord0–nord15)
+   ─────────────────────────────────────────────────────────── */
+[data-palette="nord"] {
+  --background:      oklch(32.4% 2.29% 264.2deg);
+  --card:            oklch(37.9% 2.90% 266.5deg);
+  --card-text:       oklch(95.1% 0.74% 260.7deg);
+  --border:          oklch(45.2% 3.52% 264.1deg);
+  --text:            oklch(95.1% 0.74% 260.7deg);
+  --sub-card:        oklch(41.6% 3.24% 264.1deg);
+  --sub-card-text:   oklch(89.9% 1.64% 262.7deg);
+  --graph-1:         oklch(77.5% 6.22% 217.5deg);
+  --graph-2:         oklch(69.7% 5.91% 248.7deg);
+  --success:         oklch(76.8% 7.49% 131.1deg);
+  --danger:          oklch(85.5% 8.92% 84.1deg);
+  --error:           oklch(60.6% 12.06% 15.3deg);
+}
+
+
+/* ── Catppuccin Frappé ───────────────────────────────────
+   Soothing pastel tones with a cooler, muted feel.
+   Source: catppuccin.com/palette
+   ─────────────────────────────────────────────────────────── */
+[data-palette="catppuccin_frappe"] {
+  --background:      oklch(32.9% 3.24% 274.8deg);
+  --card:            oklch(39.5% 3.42% 275.9deg);
+  --card-text:       oklch(86.2% 5.26% 273.3deg);
+  --border:          oklch(52.1% 3.86% 274.0deg);
+  --text:            oklch(86.2% 5.26% 273.3deg);
+  --sub-card:        oklch(46.0% 3.67% 273.0deg);
+  --sub-card-text:   oklch(80.8% 5.07% 272.7deg);
+  --graph-1:         oklch(76.5% 11.08% 311.7deg);
+  --graph-2:         oklch(78.0% 7.27% 227.9deg);
+  --success:         oklch(81.2% 10.71% 133.4deg);
+  --danger:          oklch(77.3% 11.06% 47.7deg);
+  --error:           oklch(71.7% 12.44% 19.4deg);
+}
+
+
+/* ── Dracula ─────────────────────────────────────────────
+   The classic. Deep charcoal purple backgrounds with
+   vibrant pinks, purples and cyans as accents.
+   Source: draculatheme.com/contribute
+   ─────────────────────────────────────────────────────────── */
+[data-palette="dracula"] {
+  --background:      oklch(28.8% 2.21% 277.5deg);
+  --card:            oklch(40.3% 3.22% 277.8deg);
+  --card-text:       oklch(97.7% 0.79% 106.5deg);
+  --border:          oklch(56.0% 8.03% 270.1deg);
+  --text:            oklch(97.7% 0.79% 106.5deg);
+  --sub-card:        oklch(34.5% 2.09% 281.5deg);
+  --sub-card-text:   oklch(87.9% 4.26% 272.3deg);
+  --graph-1:         oklch(74.2% 14.85% 301.9deg);
+  --graph-2:         oklch(88.3% 9.34% 212.8deg);
+  --success:         oklch(87.1% 21.95% 148.0deg);
+  --danger:          oklch(83.4% 12.41% 66.6deg);
+  --error:           oklch(68.2% 20.63% 24.4deg);
+}
+
+
+/* ── Everforest ──────────────────────────────────────────
+   Green-based, warm and soft — easy on the eyes.
+   Earthy forest tones with warm amber text.
+   Source: sainnhe/everforest (dark medium)
+   ─────────────────────────────────────────────────────────── */
+[data-palette="everforest"] {
+  --background:      oklch(32.4% 1.53% 240.4deg);
+  --card:            oklch(36.0% 1.69% 227.1deg);
+  --card-text:       oklch(83.0% 4.05% 86.1deg);
+  --border:          oklch(43.1% 1.72% 231.6deg);
+  --text:            oklch(83.0% 4.05% 86.1deg);
+  --sub-card:        oklch(39.4% 1.66% 227.0deg);
+  --sub-card-text:   oklch(72.3% 1.86% 153.4deg);
+  --graph-1:         oklch(77.3% 9.06% 125.8deg);
+  --graph-2:         oklch(74.9% 6.31% 185.5deg);
+  --success:         oklch(77.3% 9.06% 125.8deg);
+  --danger:          oklch(75.0% 10.59% 44.9deg);
+  --error:           oklch(70.9% 12.85% 19.6deg);
+}
+
+
+/* ── Gruvbox ─────────────────────────────────────────────
+   Retro groove. Warm earthy backgrounds with rich,
+   high-contrast yellows, oranges, and greens.
+   Source: morhetz/gruvbox (dark medium)
+   ─────────────────────────────────────────────────────────── */
+[data-palette="gruvbox"] {
+  --background:      oklch(27.7% 0.00% 0.0deg);
+  --card:            oklch(34.4% 0.66% 48.5deg);
+  --card-text:       oklch(89.4% 5.66% 89.2deg);
+  --border:          oklch(48.2% 1.81% 61.0deg);
+  --text:            oklch(89.4% 5.66% 89.2deg);
+  --sub-card:        oklch(41.1% 1.15% 51.9deg);
+  --sub-card-text:   oklch(82.5% 5.07% 85.1deg);
+  --graph-1:         oklch(83.2% 15.95% 83.0deg);
+  --graph-2:         oklch(69.3% 4.20% 169.8deg);
+  --success:         oklch(76.5% 15.81% 110.8deg);
+  --danger:          oklch(73.1% 18.20% 51.7deg);
+  --error:           oklch(66.0% 21.75% 30.4deg);
+}
+
+
+/* ── Kanagawa ───────────────────────────────────────────
+   Inspired by the colors of feudal Japan — Edo period
+   ink paintings meet modern terminal aesthetics.
+   Source: rebelot/kanagawa.nvim
+   ─────────────────────────────────────────────────────────── */
+[data-palette="kanagawa"] {
+  --background:      oklch(24.3% 1.70% 285.1deg);
+  --card:            oklch(29.1% 2.36% 284.8deg);
+  --card-text:       oklch(87.6% 3.91% 99.1deg);
+  --border:          oklch(34.0% 2.79% 284.8deg);
+  --text:            oklch(87.6% 3.91% 99.1deg);
+  --sub-card:        oklch(31.4% 4.67% 257.4deg);
+  --sub-card-text:   oklch(65.2% 4.66% 298.4deg);
+  --graph-1:         oklch(69.4% 9.51% 263.7deg);
+  --graph-2:         oklch(63.5% 5.04% 175.4deg);
+  --success:         oklch(63.2% 6.98% 136.9deg);
+  --danger:          oklch(75.9% 10.73% 70.9deg);
+  --error:           oklch(55.9% 16.70% 23.1deg);
+}
+
+
+/* ── One Dark Pro ────────────────────────────────────────
+   Atom's iconic dark theme. Refined slate backgrounds
+   with a warm, balanced syntax palette.
+   Source: Binaryify/OneDark-Pro (#282c34 bg)
+   ─────────────────────────────────────────────────────────── */
+[data-palette="one_dark_pro"] {
+  --background:      oklch(29.3% 1.57% 264.3deg);
+  --card:            oklch(31.2% 1.76% 262.2deg);
+  --card-text:       oklch(76.2% 2.02% 263.0deg);
+  --border:          oklch(38.7% 2.51% 266.9deg);
+  --text:            oklch(76.2% 2.02% 263.0deg);
+  --sub-card:        oklch(34.0% 1.89% 264.3deg);
+  --sub-card-text:   oklch(62.9% 2.26% 264.4deg);
+  --graph-1:         oklch(73.0% 12.13% 245.3deg);
+  --graph-2:         oklch(72.3% 9.16% 206.3deg);
+  --success:         oklch(76.8% 11.03% 133.0deg);
+  --danger:          oklch(72.7% 9.49% 63.8deg);
+  --error:           oklch(67.1% 14.48% 17.0deg);
+}
+
+
+/* ── Rosé Pine ───────────────────────────────────────────
+   All natural pine, faux fur and a bit of soho vibes.
+   Muted dusty rose and purple tones over dark indigo.
+   Source: rosepinetheme.com/palette (main variant)
+   ─────────────────────────────────────────────────────────── */
+[data-palette="rose_pine"] {
+  --background:      oklch(21.3% 2.55% 291.1deg);
+  --card:            oklch(24.1% 3.22% 289.1deg);
+  --card-text:       oklch(90.9% 2.99% 290.0deg);
+  --border:          oklch(37.2% 3.58% 291.1deg);
+  --text:            oklch(90.9% 2.99% 290.0deg);
+  --sub-card:        oklch(27.1% 4.23% 289.2deg);
+  --sub-card-text:   oklch(65.4% 4.44% 291.2deg);
+  --graph-1:         oklch(77.6% 9.45% 305.0deg);
+  --graph-2:         oklch(82.2% 5.43% 209.6deg);
+  --success:         oklch(52.8% 7.93% 227.7deg);
+  --danger:          oklch(84.3% 11.00% 74.6deg);
+  --error:           oklch(69.8% 15.65% 4.2deg);
+}
+
+
+/* ── Synthwave '84 ───────────────────────────────────────
+   Neon-soaked retro dreams. Deep indigo-purple bases
+   with glowing pink, mint, and violet accents.
+   Source: robb0wen/synthwave-vscode
+   ─────────────────────────────────────────────────────────── */
+[data-palette="synthwave84"] {
+  --background:      oklch(26.8% 3.33% 291.6deg);
+  --card:            oklch(31.4% 7.36% 283.5deg);
+  --card-text:       oklch(100.0% 0.00% 0.0deg);
+  --border:          oklch(46.8% 10.57% 274.4deg);
+  --text:            oklch(100.0% 0.00% 0.0deg);
+  --sub-card:        oklch(25.4% 6.11% 281.1deg);
+  --sub-card-text:   oklch(76.6% 12.88% 290.1deg);
+  --graph-1:         oklch(76.9% 18.89% 339.1deg);
+  --graph-2:         oklch(87.1% 14.02% 162.0deg);
+  --success:         oklch(87.1% 14.02% 162.0deg);
+  --danger:          oklch(75.1% 16.76% 51.9deg);
+  --error:           oklch(68.2% 20.63% 24.4deg);
+}
+
+
+/* ── Tokyo Night ─────────────────────────────────────────
+   Deep indigo skies and electric neon accents inspired
+   by Tokyo's cityscape after dark.
+   Source: enkia/tokyo-night-vscode-theme
+   ─────────────────────────────────────────────────────────── */
+[data-palette="tokyo_night"] {
+  --background:      oklch(22.6% 2.14% 280.5deg);
+  --card:            oklch(26.1% 3.44% 274.2deg);
+  --card-text:       oklch(84.6% 6.11% 274.8deg);
+  --border:          oklch(38.7% 5.37% 273.9deg);
+  --text:            oklch(84.6% 6.11% 274.8deg);
+  --sub-card:        oklch(28.2% 3.55% 274.7deg);
+  --sub-card-text:   oklch(76.7% 5.37% 275.5deg);
+  --graph-1:         oklch(71.9% 13.22% 264.2deg);
+  --graph-2:         oklch(82.0% 10.51% 235.7deg);
+  --success:         oklch(79.5% 13.95% 130.1deg);
+  --danger:          oklch(78.4% 10.57% 75.4deg);
+  --error:           oklch(72.3% 15.89% 10.3deg);
+}

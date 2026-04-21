@@ -9,37 +9,30 @@ test.describe("Theme Switching", () => {
   test("opens theme/palette dropdown", async ({ page }) => {
     await page.getByRole("button", { name: "Theme settings" }).click();
     await expect(page.getByText("Theme", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText("Palette", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("menuitemradio", { name: "Nord", exact: true })).toBeVisible();
   });
 
-  test("switches to dark theme", async ({ page }) => {
+  test("switches palette to dracula", async ({ page }) => {
     await page.getByRole("button", { name: "Theme settings" }).click();
-    // Use exact match to avoid "One Dark" matching
-    await page.getByRole("menuitemradio", { name: "Dark", exact: true }).click();
+    await page.getByRole("menuitemradio", { name: "Dracula", exact: true }).click();
 
     const html = page.locator("html");
-    await expect(html).toHaveClass(/dark/);
+    await expect(html).toHaveAttribute("data-palette", "dracula");
   });
 
-  test("switches to light theme", async ({ page }) => {
+  test("switches palette to tokyo night", async ({ page }) => {
     await page.getByRole("button", { name: "Theme settings" }).click();
-    await page.getByRole("menuitemradio", { name: "Dark", exact: true }).click();
-    await expect(page.locator("html")).toHaveClass(/dark/);
+    await page.getByRole("menuitemradio", { name: "Tokyo Night", exact: true }).click();
 
-    // Close the dropdown (it no longer auto-closes on selection)
-    await page.keyboard.press("Escape");
-
-    await page.getByRole("button", { name: "Theme settings" }).click();
-    await page.getByRole("menuitemradio", { name: "Light", exact: true }).click();
-
-    await expect(page.locator("html")).not.toHaveClass(/dark/);
+    const html = page.locator("html");
+    await expect(html).toHaveAttribute("data-palette", "tokyo_night");
   });
 
-  test("theme persists on page reload", async ({ page }) => {
+  test("palette persists on page reload", async ({ page }) => {
     await page.getByRole("button", { name: "Theme settings" }).click();
-    await page.getByRole("menuitemradio", { name: "Dark", exact: true }).click();
+    await page.getByRole("menuitemradio", { name: "Dracula", exact: true }).click();
 
     await page.reload();
-    await expect(page.locator("html")).toHaveClass(/dark/);
+    await expect(page.locator("html")).toHaveAttribute("data-palette", "dracula");
   });
 });

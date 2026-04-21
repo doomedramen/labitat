@@ -16,10 +16,10 @@ describe("palettes", () => {
     }
   });
 
-  it("includes 'default' palette", () => {
-    const defaultPalette = PALETTES.find((p) => p.id === "default");
-    expect(defaultPalette).toBeDefined();
-    expect(defaultPalette?.label).toBe("Default");
+  it("includes 'nord' palette", () => {
+    const nordPalette = PALETTES.find((p) => p.id === "nord");
+    expect(nordPalette).toBeDefined();
+    expect(nordPalette?.label).toBe("Nord");
   });
 
   it("has unique IDs", () => {
@@ -30,15 +30,9 @@ describe("palettes", () => {
 });
 
 describe("SORTED_PALETTES", () => {
-  it("is sorted alphabetically by label with 'default' first", () => {
+  it("is sorted alphabetically by label", () => {
     const labels = SORTED_PALETTES.map((p) => p.label);
-    expect(labels[0]).toBe("Default");
-    const restLabels = labels.slice(1);
-    expect(restLabels).toEqual([...restLabels].sort());
-  });
-
-  it("has 'default' as first item", () => {
-    expect(SORTED_PALETTES[0].id).toBe("default");
+    expect(labels).toEqual([...labels].sort());
   });
 
   it("contains same number of items as PALETTES", () => {

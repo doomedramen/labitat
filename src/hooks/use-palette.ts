@@ -3,7 +3,7 @@
 import * as React from "react";
 
 const COOKIE_NAME = "labitat-palette";
-const DEFAULT_PALETTE = "default";
+const DEFAULT_PALETTE = "nord";
 
 function getInitialPalette(): string {
   if (typeof window === "undefined") {
