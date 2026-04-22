@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useItemLastUpdateAt } from "./use-live-data";
 
 /**
  * Calculate sync progress percentage (0-100) based on polling interval
+ * Uses a local timer that increments smoothly, only resetting when new data arrives
  *
  * @param itemId - The item ID to track
  * @param pollingMs - The polling interval in milliseconds
@@ -12,25 +13,40 @@ import { useItemLastUpdateAt } from "./use-live-data";
  */
 export function useSyncProgress(itemId: string, pollingMs: number): number {
   const lastUpdateAt = useItemLastUpdateAt(itemId);
-  const [, forceRender] = useState({});
+  const [progress, setProgress] = useState(0);
+  const lastUpdateRef = useRef(lastUpdateAt);
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
-  // Re-render periodically to update the progress
   useEffect(() => {
-    // Update every 100ms for smooth animation
-    const interval = setInterval(() => {
-      forceRender({});
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
-
-  return useMemo(() => {
-    if (lastUpdateAt === 0) {
-      // No update yet, show full progress (waiting for first fetch)
-      return 100;
+    // Reset progress when new data arrives (lastUpdateAt changes)
+    if (lastUpdateAt !== lastUpdateRef.current) {
+      lastUpdateRef.current = lastUpdateAt;
+      setProgress(0);
     }
+  }, [lastUpdateAt]);
 
-    const elapsed = Date.now() - lastUpdateAt;
-    const progress = Math.min((elapsed / pollingMs) * 100, 100);
-    return progress;
-  }, [lastUpdateAt, pollingMs]);
+  useEffect(() => {
+    const startTime = Date.now();
+    const startProgress = progress;
+
+    const updateProgress = () => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min(startProgress + (elapsed / pollingMs) * 100, 100);
+      setProgress(newProgress);
+
+      if (newProgress < 100) {
+        animationFrameRef.current = requestAnimationFrame(updateProgress);
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(updateProgress);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [lastUpdateAt, pollingMs]); // Reset timer when lastUpdateAt changes
+
+  return progress;
 }

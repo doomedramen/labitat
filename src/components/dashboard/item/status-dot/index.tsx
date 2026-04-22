@@ -19,7 +19,7 @@ interface StatusDotProps {
  */
 export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusDotProps) {
   const syncProgress = useSyncProgress(itemId, pollingMs);
-  const colors = {
+  const bgColors = {
     unknown: "bg-muted-foreground/30",
     healthy: "bg-success",
     degraded: "bg-warning",
@@ -27,6 +27,17 @@ export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusD
     unreachable: "bg-error",
     slow: "bg-warning",
     error: "bg-error",
+  };
+
+  // Text colors for SVG stroke (currentColor)
+  const textColors = {
+    unknown: "text-muted-foreground/30",
+    healthy: "text-success",
+    degraded: "text-warning",
+    reachable: "text-success",
+    unreachable: "text-error",
+    slow: "text-warning",
+    error: "text-error",
   };
 
   const glowColors = {
@@ -70,12 +81,15 @@ export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusD
 
   // Calculate SVG ring properties
   // ViewBox is 16x16, center at 8,8
-  // Ring is 2px thick, with 2px gap from center dot
-  // Center dot is 8px diameter (4px radius)
-  // Ring outer radius = 4 + 2 (gap) + 1 (half stroke) = 7px, but we want 2px stroke centered
-  // So ring radius = 6px (centered at 6px from center), stroke 2px spans 5-7px
-  const radius = 6;
+  // Center dot: 10px diameter (5px radius), extends from 3px to 13px
+  // Gap: 1px (from dot edge at 5px to ring inner edge at 6px)
+  // Ring: 2px stroke centered at radius 7, spans 6px to 8px from center
+  // Total fits perfectly in 16px container (8px radius to edge)
+  const radius = 7;
+  const strokeWidth = 2;
+  const dotSize = 10; // px
   const circumference = 2 * Math.PI * radius;
+  // Progress depletes as we approach next sync (100% = just synced, 0% = about to sync)
   const strokeDashoffset = circumference - (syncProgress / 100) * circumference;
 
   const dot = (
@@ -87,58 +101,60 @@ export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusD
         "relative h-4 w-4 flex items-center justify-center transition-all duration-300",
       )}
     >
-      {/* Circular progress ring - dashed when cached */}
-      <svg viewBox="0 0 16 16" className="absolute inset-0 size-full -rotate-90" aria-hidden>
+      {/* Circular progress ring - background track */}
+      <svg
+        viewBox="0 0 16 16"
+        className={cn("absolute inset-0 size-full -rotate-90", cached && "animate-pulse")}
+        aria-hidden
+      >
+        {/* Background track */}
         <circle
           cx="8"
           cy="8"
           r={radius}
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
-          className={cn(colors[status.state])}
+          strokeWidth={strokeWidth}
+          className={cn(textColors[status.state])}
           style={{
-            strokeDasharray: cached
-              ? `${circumference * 0.15} ${circumference * 0.1}`
-              : circumference,
-            strokeDashoffset: strokeDashoffset,
-            transition: cached ? undefined : "stroke-dashoffset 0.1s linear",
-            opacity: cached ? 0.35 : 0.6,
+            strokeDasharray: `${circumference} ${circumference}`,
+            strokeDashoffset: 0,
+            opacity: cached ? 0.5 : 0.2,
           }}
         />
-      </svg>
-
-      {/* Center status dot */}
-      <div
-        className={cn(
-          // Base styles - 8px dot centered
-          "relative h-2 w-2 rounded-full transition-all duration-300 overflow-visible",
-          // Color
-          colors[status.state],
-          // Glow effect for healthy/problematic states
-          (isHealthy || isProblematic) && glowColors[status.state],
-          // Pulse animation for problematic states
-          isProblematic && "animate-pulse",
-        )}
-      >
-        {/* Ripple effect for problematic states */}
-        {isProblematic && (
-          <span
-            className={cn(
-              "absolute inset-0 block h-full w-full rounded-full bg-inherit",
-              "animate-ping opacity-60",
-            )}
+        {/* Progress indicator - depletes as sync approaches */}
+        {!cached && (
+          <circle
+            cx="8"
+            cy="8"
+            r={radius}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            className={cn(textColors[status.state])}
+            style={{
+              strokeDasharray: `${circumference} ${circumference}`,
+              strokeDashoffset: strokeDashoffset,
+              transition: "stroke-dashoffset 0.1s linear",
+              opacity: 0.7,
+            }}
           />
         )}
+      </svg>
 
-        {/* Subtle inner highlight */}
-        <span
-          className={cn(
-            "absolute inset-0.5 block rounded-full bg-white/30",
-            "transition-opacity duration-300",
-          )}
-        />
-      </div>
+      {/* Center status dot - 10px diameter */}
+      <div
+        style={{ width: `${dotSize}px`, height: `${dotSize}px` }}
+        className={cn(
+          // Base styles - 10px dot centered
+          "relative rounded-full transition-all duration-300 overflow-visible",
+          // Color
+          bgColors[status.state],
+          // Glow effect for healthy/problematic states
+          (isHealthy || isProblematic) && glowColors[status.state],
+        )}
+      ></div>
     </div>
   );
 
