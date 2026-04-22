@@ -71,9 +71,10 @@ test.describe("Widget Rendering", () => {
     await expect(page.getByText("Radarr")).toBeVisible();
 
     // An error status dot (red) should appear
-    const statusDot = page.locator('[role="status"].rounded-full');
+    const statusDot = page.locator('[role="status"]');
     await expect(statusDot).toBeVisible({ timeout: 15_000 });
-    await expect(statusDot).toHaveClass(/bg-error/);
+    // The bg-error class is on the inner dot (div with rounded-full), not the circle
+    await expect(statusDot.locator("div.rounded-full.bg-error")).toBeVisible();
   });
 
   test("renders empty state with zero values", async ({ page }) => {
@@ -220,8 +221,9 @@ test.describe("Widget Rendering", () => {
     await expect(page.getByText("Movies")).not.toBeVisible();
     await expect(page.getByText("Queued")).not.toBeVisible();
 
-    // Status dot should be hidden
-    const statusDot = page.locator('[role="status"].rounded-full');
+    // Status dot should be hidden (check within the item card context)
+    const radarrCard = page.getByTestId("item-card").filter({ hasText: "Radarr" });
+    const statusDot = radarrCard.locator('[role="status"]');
     await expect(statusDot).not.toBeVisible();
 
     // Edit controls should appear

@@ -86,9 +86,9 @@ describe("LiveDataProvider", () => {
       </LiveDataProvider>,
     );
 
-    expect(screen.getByRole("status", { name: "Status unknown" })).toHaveClass(
-      "bg-muted-foreground/30",
-    );
+    // Check initial unknown state - color class is on the inner dot, not the container
+    const unknownDot = screen.getByRole("status", { name: "Status unknown" });
+    expect(unknownDot.querySelector('[class*="bg-muted-foreground"]')).toBeInTheDocument();
 
     act(() => {
       MockEventSource.instances[0].onmessage?.({
@@ -100,7 +100,9 @@ describe("LiveDataProvider", () => {
       } as MessageEvent<string>);
     });
 
-    expect(screen.getByRole("status", { name: "Healthy" })).toHaveClass("bg-success");
+    // Check healthy state - color class is on the inner dot
+    const healthyDot = screen.getByRole("status", { name: "Healthy" });
+    expect(healthyDot.querySelector(".bg-success")).toBeInTheDocument();
 
     view.unmount();
   });
@@ -132,8 +134,12 @@ describe("LiveDataProvider", () => {
       </LiveDataProvider>,
     );
 
-    expect(screen.getByRole("status", { name: "Healthy (cached)" })).toBeInTheDocument();
-    expect(screen.getByTestId("status-dot-cached-spinner")).toBeInTheDocument();
+    const cachedStatus = screen.getByRole("status", { name: "Healthy (cached)" });
+    expect(cachedStatus).toBeInTheDocument();
+
+    // When cached, the progress ring should have dashed style and reduced opacity
+    const cachedRing = cachedStatus.querySelector("circle");
+    expect(cachedRing).toHaveStyle({ opacity: "0.35" });
 
     act(() => {
       MockEventSource.instances[0].onmessage?.({
@@ -145,8 +151,12 @@ describe("LiveDataProvider", () => {
       } as MessageEvent<string>);
     });
 
-    expect(screen.getByRole("status", { name: "Healthy" })).toBeInTheDocument();
-    expect(screen.queryByTestId("status-dot-cached-spinner")).toBeNull();
+    const liveStatus = screen.getByRole("status", { name: "Healthy" });
+    expect(liveStatus).toBeInTheDocument();
+
+    // When live, the progress ring should have full opacity
+    const liveRing = liveStatus.querySelector("circle");
+    expect(liveRing).toHaveStyle({ opacity: "0.6" });
 
     view.unmount();
   });

@@ -23,6 +23,8 @@ class LiveDataStore {
   private sseListeners = new Set<() => void>();
   private _lastUpdateAt: number = 0;
   private lastUpdateListeners = new Set<() => void>();
+  private itemLastUpdateAt = new Map<string, number>();
+  private itemUpdateListeners = new Map<string, Set<() => void>>();
 
   get(itemId: string): LiveDataEntry {
     return this.cache.get(itemId) ?? DEFAULT_ENTRY;
@@ -31,6 +33,7 @@ class LiveDataStore {
   set(itemId: string, data: LiveDataEntry): void {
     this.cache.set(itemId, data);
     this._lastUpdateAt = Date.now();
+    this.itemLastUpdateAt.set(itemId, Date.now());
     for (const l of this.listeners) {
       try {
         l();
@@ -43,6 +46,17 @@ class LiveDataStore {
         l();
       } catch {
         /* listener removed mid-iteration */
+      }
+    }
+    // Notify item-specific listeners
+    const itemListeners = this.itemUpdateListeners.get(itemId);
+    if (itemListeners) {
+      for (const l of itemListeners) {
+        try {
+          l();
+        } catch {
+          /* listener removed mid-iteration */
+        }
       }
     }
   }
@@ -98,6 +112,20 @@ class LiveDataStore {
       this.lastUpdateListeners.delete(listener);
     };
   };
+
+  getItemLastUpdateAt(itemId: string): number {
+    return this.itemLastUpdateAt.get(itemId) ?? 0;
+  }
+
+  subscribeItemUpdate(itemId: string, listener: () => void): () => void {
+    if (!this.itemUpdateListeners.has(itemId)) {
+      this.itemUpdateListeners.set(itemId, new Set());
+    }
+    this.itemUpdateListeners.get(itemId)!.add(listener);
+    return () => {
+      this.itemUpdateListeners.get(itemId)?.delete(listener);
+    };
+  }
 }
 
 const liveDataStore = new LiveDataStore();
@@ -134,6 +162,18 @@ export function useLastUpdateAt(): number {
   return useSyncExternalStore(
     liveDataStore.subscribeLastUpdate,
     () => liveDataStore.lastUpdateAt,
+    () => 0, // server snapshot — no updates during SSR
+  );
+}
+
+/**
+ * Subscribe to per-item last update timestamp.
+ * Returns the timestamp when this specific item was last updated via SSE.
+ */
+export function useItemLastUpdateAt(itemId: string): number {
+  return useSyncExternalStore(
+    (listener) => liveDataStore.subscribeItemUpdate(itemId, listener),
+    () => liveDataStore.getItemLastUpdateAt(itemId),
     () => 0, // server snapshot — no updates during SSR
   );
 }

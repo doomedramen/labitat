@@ -446,7 +446,6 @@ export function ListItem({ item }: { item: ListItemData }) {
                   className={cn(
                     "h-full rounded-full transition-all duration-500 ease-out",
                     gradient,
-                    isActive && "animate-pulse",
                   )}
                   style={{ width: `${Math.max(2, progressPct)}%` }}
                 />
