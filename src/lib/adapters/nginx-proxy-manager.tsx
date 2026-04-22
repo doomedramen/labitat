@@ -46,31 +46,69 @@ function nginxProxyManagerToPayload(data: NginxProxyManagerData) {
   };
 }
 
-interface CachedToken {
-  token: string;
+interface CachedCookie {
+  cookie: string;
   expiresAt: number;
 }
 
-export const tokenCache = new Map<string, CachedToken>();
+export const cookieCache = new Map<string, CachedCookie>();
 
-function getCachedToken(cacheKey: string): string | null {
-  const cached = tokenCache.get(cacheKey);
+function getCachedCookie(cacheKey: string): string | null {
+  const cached = cookieCache.get(cacheKey);
   if (!cached) return null;
 
   const refreshAt = cached.expiresAt - 5 * 60 * 1000;
   if (Date.now() > refreshAt) {
-    tokenCache.delete(cacheKey);
+    cookieCache.delete(cacheKey);
     return null;
   }
 
-  return cached.token;
+  return cached.cookie;
 }
 
-function setCachedToken(cacheKey: string, token: string, expiresIn: number): void {
-  tokenCache.set(cacheKey, {
-    token,
+function setCachedCookie(cacheKey: string, cookie: string, expiresIn: number): void {
+  cookieCache.set(cacheKey, {
+    cookie,
     expiresAt: Date.now() + expiresIn * 1000,
   });
+}
+
+/**
+ * Extracts the token cookie from Set-Cookie header
+ * NPM returns the token in a Set-Cookie header like:
+ * token=s%3AeyJhbGciOiJSUzI1NiIs...; Path=/api; Expires=...; HttpOnly; Secure; SameSite=Strict
+ */
+function extractTokenCookie(setCookieHeader: string | null): string | null {
+  if (!setCookieHeader) return null;
+
+  // Handle multiple Set-Cookie headers (joined by comma in fetch)
+  const cookies = setCookieHeader.split(",");
+
+  for (const cookie of cookies) {
+    const match = cookie.match(/token=([^;]+)/);
+    if (match) {
+      // URL decode the cookie value (s%3A becomes s:)
+      return decodeURIComponent(match[1]);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Parses expiration date from Set-Cookie header
+ */
+function parseCookieExpiration(setCookieHeader: string | null): number {
+  if (!setCookieHeader) return 3600;
+
+  const expiresMatch = setCookieHeader.match(/Expires=([^;]+)/);
+  if (expiresMatch) {
+    const expiresDate = new Date(expiresMatch[1]);
+    const expiresIn = Math.floor((expiresDate.getTime() - Date.now()) / 1000);
+    return expiresIn > 0 ? expiresIn : 3600;
+  }
+
+  return 3600;
 }
 
 export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerData> = {
@@ -114,9 +152,9 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
     const cacheKey = `${baseUrl}:${config.email}`;
     const insecure = config.insecure === "true";
 
-    let token = getCachedToken(cacheKey);
+    let cookie = getCachedCookie(cacheKey);
 
-    if (!token) {
+    if (!cookie) {
       const loginRes = await fetchWithTimeout(`${baseUrl}/api/tokens`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,31 +170,43 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         throw new Error(`NPM login failed (${loginRes.status}): ${errorText || "Unknown error"}`);
       }
 
-      const tokenData = await loginRes.json();
-      token = tokenData?.token;
-      if (!token) {
-        throw new Error(
-          `NPM login failed: no token in response. Response: ${JSON.stringify(tokenData)}`,
-        );
+      // NPM returns the token in Set-Cookie header, not JSON body
+      const setCookie = loginRes.headers.get("Set-Cookie");
+      const tokenValue = extractTokenCookie(setCookie);
+
+      if (!tokenValue) {
+        // Check JSON body for error messages or 2FA challenge
+        const tokenData = await loginRes.json().catch(() => null);
+
+        if (tokenData?.requires_2fa) {
+          throw new Error(
+            "NPM login failed: Two-factor authentication (2FA) is required. Please disable 2FA for this account.",
+          );
+        }
+
+        const errorMsg = tokenData?.error || tokenData?.message;
+        if (errorMsg) {
+          throw new Error(`NPM login failed: ${errorMsg}`);
+        }
+
+        throw new Error(`NPM login failed: no token cookie in response. Set-Cookie: ${setCookie}`);
       }
 
-      // NPM returns expires as an ISO date string, not seconds
-      let expiresIn: number;
-      if (typeof tokenData?.expires === "string") {
-        expiresIn = Math.floor((new Date(tokenData.expires).getTime() - Date.now()) / 1000);
-      } else {
-        expiresIn = tokenData?.expires ?? 3600;
-      }
-      setCachedToken(cacheKey, token, expiresIn);
+      // Build the full cookie string for the header
+      cookie = `token=${tokenValue}`;
+
+      // Parse expiration from the Set-Cookie header
+      const expiresIn = parseCookieExpiration(setCookie);
+      setCachedCookie(cacheKey, cookie, expiresIn);
     }
 
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = { Cookie: cookie };
 
     async function fetchWithRetry(url: string): Promise<NginxProxyHost[]> {
       const res = await fetchWithTimeout(url, { headers, insecure });
 
       if (res.status === 403) {
-        tokenCache.delete(cacheKey);
+        cookieCache.delete(cacheKey);
 
         const loginRes = await fetchWithTimeout(`${baseUrl}/api/tokens`, {
           method: "POST",
@@ -173,24 +223,33 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
           throw new Error(`NPM login failed (${loginRes.status}): ${errorText || "Unknown error"}`);
         }
 
-        const tokenData = await loginRes.json();
-        token = tokenData?.token;
-        if (!token) {
+        const setCookie = loginRes.headers.get("Set-Cookie");
+        const tokenValue = extractTokenCookie(setCookie);
+
+        if (!tokenValue) {
+          const tokenData = await loginRes.json().catch(() => null);
+
+          if (tokenData?.requires_2fa) {
+            throw new Error(
+              "NPM login failed: Two-factor authentication (2FA) is required. Please disable 2FA for this account.",
+            );
+          }
+
+          const errorMsg = tokenData?.error || tokenData?.message;
+          if (errorMsg) {
+            throw new Error(`NPM login failed: ${errorMsg}`);
+          }
+
           throw new Error(
-            `NPM login failed: no token in response. Response: ${JSON.stringify(tokenData)}`,
+            `NPM login failed: no token cookie in response. Set-Cookie: ${setCookie}`,
           );
         }
 
-        // NPM returns expires as an ISO date string, not seconds
-        let expiresIn: number;
-        if (typeof tokenData?.expires === "string") {
-          expiresIn = Math.floor((new Date(tokenData.expires).getTime() - Date.now()) / 1000);
-        } else {
-          expiresIn = tokenData?.expires ?? 3600;
-        }
-        setCachedToken(cacheKey, token, expiresIn);
+        cookie = `token=${tokenValue}`;
+        const expiresIn = parseCookieExpiration(setCookie);
+        setCachedCookie(cacheKey, cookie, expiresIn);
 
-        const retryHeaders = { Authorization: `Bearer ${token}` };
+        const retryHeaders = { Cookie: cookie };
         const retryRes = await fetchWithTimeout(url, {
           headers: retryHeaders,
           insecure,

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { nginxProxyManagerDefinition, tokenCache } from "@/lib/adapters/nginx-proxy-manager";
+import { nginxProxyManagerDefinition, cookieCache } from "@/lib/adapters/nginx-proxy-manager";
 
 describe("nginx-proxy-manager definition", () => {
   it("has correct metadata", () => {
@@ -29,19 +29,27 @@ describe("nginx-proxy-manager definition", () => {
   describe("fetchData", () => {
     beforeEach(() => {
       vi.resetAllMocks();
-      tokenCache.clear();
+      cookieCache.clear();
     });
 
     afterEach(() => {
       vi.restoreAllMocks();
     });
 
-    it("fetches data successfully", async () => {
+    it("fetches data successfully using cookie auth", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/api/tokens")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ token: "jwt-token", expires: 3600 }),
+            headers: {
+              get: (name: string) => {
+                if (name.toLowerCase() === "set-cookie") {
+                  return "token=s%3Ajwt-token-value; Path=/api; Expires=Thu, 23 Apr 2026 13:57:35 GMT; HttpOnly; Secure; SameSite=Strict";
+                }
+                return null;
+              },
+            },
+            json: () => Promise.resolve({ expires: "2026-04-23T13:57:35.000Z" }),
           });
         }
         if (url.includes("/proxy-hosts")) {
@@ -69,6 +77,13 @@ describe("nginx-proxy-manager definition", () => {
 
       expect(result._status).toBe("ok");
       expect(result.hosts).toHaveLength(5);
+
+      // Verify cookie was used in the proxy-hosts request
+      const proxyHostsCall = mockFetch.mock.calls.find((call) =>
+        call[0].includes("/proxy-hosts"),
+      ) as unknown as [string, { headers: { Cookie: string } }];
+      expect(proxyHostsCall).toBeDefined();
+      expect(proxyHostsCall[1].headers.Cookie).toBe("token=s:jwt-token-value");
     });
 
     it("throws on login failure", async () => {
@@ -95,7 +110,15 @@ describe("nginx-proxy-manager definition", () => {
         if (url.includes("/api/tokens")) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ token: "jwt-token", expires: 3600 }),
+            headers: {
+              get: (name: string) => {
+                if (name.toLowerCase() === "set-cookie") {
+                  return "token=s%3Ajwt-token; Path=/api; Expires=Thu, 23 Apr 2026 13:57:35 GMT";
+                }
+                return null;
+              },
+            },
+            json: () => Promise.resolve({ expires: "2026-04-23T13:57:35.000Z" }),
           });
         }
         if (url.includes("/proxy-hosts")) {
@@ -115,23 +138,73 @@ describe("nginx-proxy-manager definition", () => {
       expect(result.hosts).toHaveLength(0);
     });
 
-    it("handles ISO date string expires format (real NPM format)", async () => {
+    it("throws specific error for 2FA challenge response", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          headers: { get: () => null },
+          json: () =>
+            Promise.resolve({
+              requires_2fa: true,
+              challenge_token: "challenge-123",
+            }),
+        }),
+      );
+
+      await expect(
+        nginxProxyManagerDefinition.fetchData!({
+          url: "https://npm.example.com",
+          email: "admin@example.org",
+          password: "secret",
+        }),
+      ).rejects.toThrow("Two-factor authentication (2FA) is required");
+    });
+
+    it("throws error when no token cookie in response", async () => {
+      vi.stubGlobal("fetch", () =>
+        Promise.resolve({
+          ok: true,
+          headers: { get: () => null },
+          json: () => Promise.resolve({ expires: "2026-04-23T13:43:07.464Z" }),
+        }),
+      );
+
+      await expect(
+        nginxProxyManagerDefinition.fetchData!({
+          url: "https://npm.example.com",
+          email: "admin@example.org",
+          password: "secret",
+        }),
+      ).rejects.toThrow("no token cookie in response");
+    });
+
+    it("retries after 403 by re-authenticating", async () => {
+      let hostsCallCount = 0;
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/api/tokens")) {
           return Promise.resolve({
             ok: true,
-            json: () =>
-              Promise.resolve({
-                token: "jwt-token",
-                expires: new Date(Date.now() + 3600 * 1000).toISOString(),
-              }),
+            headers: {
+              get: (name: string) => {
+                if (name.toLowerCase() === "set-cookie") {
+                  return "token=s%3Anew-token; Path=/api; Expires=Thu, 23 Apr 2026 13:57:35 GMT";
+                }
+                return null;
+              },
+            },
+            json: () => Promise.resolve({ expires: "2026-04-23T13:57:35.000Z" }),
           });
         }
         if (url.includes("/proxy-hosts")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve([{ id: 1, enabled: true }]),
-          });
+          hostsCallCount++;
+          // First call returns 403, second succeeds
+          if (hostsCallCount === 2) {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve([{ id: 1, enabled: true }]),
+            });
+          }
+          return Promise.resolve({ ok: false, status: 403 });
         }
         return Promise.reject(new Error("Unexpected URL"));
       });
@@ -145,6 +218,7 @@ describe("nginx-proxy-manager definition", () => {
 
       expect(result._status).toBe("ok");
       expect(result.hosts).toHaveLength(1);
+      expect(mockFetch).toHaveBeenCalledTimes(4); // token, 403, token (retry), success
     });
   });
 
