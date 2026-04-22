@@ -104,7 +104,7 @@ function ItemCardContent({
     <div
       className={cn(
         "relative flex flex-col",
-        editMode ? "px-4 pt-6 pb-3" : item.cleanMode ? "p-3" : "px-4 py-3.5",
+        editMode ? "px-4 pt-6 pb-3 gap-3" : item.cleanMode ? "p-3" : "px-4 py-3.5 gap-3",
       )}
       data-testid="item-card"
       data-item-id={item.id}

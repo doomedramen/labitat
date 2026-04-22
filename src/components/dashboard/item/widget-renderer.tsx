@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { cn } from "@/lib/utils";
 import { WidgetContainer } from "@/components/widgets/widget-container";
 import type { ServiceData } from "@/lib/adapters/types";
 import type { ServiceDefinition } from "@/lib/adapters/types";
@@ -26,7 +25,7 @@ export function WidgetRenderer({
   effectiveData,
   isClientSide,
   editMode,
-  cleanMode,
+  cleanMode: _cleanMode,
   item,
 }: WidgetRendererProps) {
   // Custom widget takes precedence, otherwise use toPayload
@@ -56,22 +55,20 @@ export function WidgetRenderer({
 
   // Don't render client-side-only services during SSR
   if (isClientSide && !effectiveData) {
-    return <div className={cn(cleanMode ? "" : "mt-2")} />;
+    return null;
   }
 
   if (!(hasCustomWidget || hasPayload) || !effectiveData || !serviceDef) {
-    return <div className={cn(cleanMode ? "" : "mt-2")} />;
+    return null;
   }
 
   return (
-    <div className={cn(cleanMode ? "" : "mt-2")}>
-      <WidgetDisplayProvider value={contextValue}>
-        {hasCustomWidget && serviceDef.renderWidget ? (
-          <serviceDef.renderWidget {...(effectiveData as Record<string, unknown>)} />
-        ) : hasPayload && payload ? (
-          <WidgetContainer payload={payload} />
-        ) : null}
-      </WidgetDisplayProvider>
-    </div>
+    <WidgetDisplayProvider value={contextValue}>
+      {hasCustomWidget && serviceDef.renderWidget ? (
+        <serviceDef.renderWidget {...(effectiveData as Record<string, unknown>)} />
+      ) : hasPayload && payload ? (
+        <WidgetContainer payload={payload} />
+      ) : null}
+    </WidgetDisplayProvider>
   );
 }

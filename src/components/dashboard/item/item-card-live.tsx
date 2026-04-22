@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { useItemData } from "@/hooks/use-item-data";
 import { WidgetRenderer } from "./widget-renderer";
 import type { ItemWithCache } from "@/lib/types";
@@ -37,21 +36,13 @@ export function ItemCardLive({
   }
 
   return (
-    <div
-      className={cn(
-        "mt-3",
-        // Subtle separator line
-        "border-t border-border/20 pt-3",
-      )}
-    >
-      <WidgetRenderer
-        serviceDef={serviceDef ?? null}
-        effectiveData={effectiveData}
-        isClientSide={isClientSide}
-        editMode={editMode}
-        cleanMode={item.cleanMode ?? undefined}
-        item={item}
-      />
-    </div>
+    <WidgetRenderer
+      serviceDef={serviceDef ?? null}
+      effectiveData={effectiveData}
+      isClientSide={isClientSide}
+      editMode={editMode}
+      cleanMode={item.cleanMode ?? undefined}
+      item={item}
+    />
   );
 }
