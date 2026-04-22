@@ -108,7 +108,8 @@ export function useConnectivity() {
         },
       });
       startPolling(() => {
-        if (recoveringRef.current) return;
+        // Prevent duplicate recovery handling - but only after we've confirmed
+        // this is a real recovery (not a duplicate callback)
         recoveringRef.current = true;
         dismissToast();
         toast.success("Server is back online", {
