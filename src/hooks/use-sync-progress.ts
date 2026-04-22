@@ -16,22 +16,21 @@ export function useSyncProgress(itemId: string, pollingMs: number): number {
   const [progress, setProgress] = useState(0);
   const lastUpdateRef = useRef(lastUpdateAt);
   const animationFrameRef = useRef<number | undefined>(undefined);
+  const startTimeRef = useRef(Date.now());
 
   useEffect(() => {
     // Reset progress when new data arrives (lastUpdateAt changes)
     if (lastUpdateAt !== lastUpdateRef.current) {
       lastUpdateRef.current = lastUpdateAt;
+      startTimeRef.current = Date.now();
       setProgress(0);
     }
   }, [lastUpdateAt]);
 
   useEffect(() => {
-    const startTime = Date.now();
-    const startProgress = progress;
-
     const updateProgress = () => {
-      const elapsed = Date.now() - startTime;
-      const newProgress = Math.min(startProgress + (elapsed / pollingMs) * 100, 100);
+      const elapsed = Date.now() - startTimeRef.current;
+      const newProgress = Math.min((elapsed / pollingMs) * 100, 100);
       setProgress(newProgress);
 
       if (newProgress < 100) {

@@ -89,6 +89,7 @@ export async function GET(request: NextRequest) {
             itemId: id,
             widgetData: data.widgetData,
             pingStatus: data.pingStatus,
+            fromCache: true, // Flag as cache snapshot
           });
         }
       }

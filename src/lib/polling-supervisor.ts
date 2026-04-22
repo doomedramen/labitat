@@ -48,16 +48,20 @@ class PollingSupervisor {
   async pollNow(): Promise<void> {
     const items = await this.getItems();
     const now = Date.now();
+    console.log(`[polling] pollNow() called for ${items.length} items`);
     for (const item of items) {
       if (!this.running.has(item.id)) {
         item.lastPolledAt = now;
         this.lastPolledAt.set(item.id, now);
         this.running.add(item.id);
+        console.log(`[polling] pollNow() starting ${item.id}`);
         this.runPoll(item)
           .catch((err) => console.error(`[polling] Error polling ${item.id}:`, err))
           .finally(() => {
             this.running.delete(item.id);
           });
+      } else {
+        console.log(`[polling] pollNow() skipping ${item.id} - already running`);
       }
     }
   }
@@ -165,6 +169,7 @@ class PollingSupervisor {
         item.lastPolledAt = now;
         this.lastPolledAt.set(item.id, now);
         this.running.add(item.id);
+        console.log(`[polling] tick() starting ${item.id} (dueAt=${dueAt}, now=${now})`);
 
         // Fire-and-forget with error handling
         this.runPoll(item)
@@ -236,6 +241,12 @@ class PollingSupervisor {
           });
         } catch (err) {
           const isTimeout = err instanceof DOMException && err.name === "TimeoutError";
+          console.log(
+            `[polling] ${item.id} error:`,
+            err instanceof Error
+              ? `${err.constructor.name}: ${err.name} - ${err.message}`
+              : String(err),
+          );
           serverCache.set(item.id, {
             pingStatus: isTimeout
               ? {

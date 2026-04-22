@@ -139,7 +139,7 @@ describe("LiveDataProvider", () => {
 
     // When cached, the progress ring should have dashed style and reduced opacity
     const cachedRing = cachedStatus.querySelector("circle");
-    expect(cachedRing).toHaveStyle({ opacity: "0.35" });
+    expect(cachedRing).toHaveStyle({ opacity: "0.5" });
 
     act(() => {
       MockEventSource.instances[0].onmessage?.({
@@ -154,9 +154,9 @@ describe("LiveDataProvider", () => {
     const liveStatus = screen.getByRole("status", { name: "Healthy" });
     expect(liveStatus).toBeInTheDocument();
 
-    // When live, the progress ring should have full opacity
+    // When live, the background track should have reduced opacity
     const liveRing = liveStatus.querySelector("circle");
-    expect(liveRing).toHaveStyle({ opacity: "0.6" });
+    expect(liveRing).toHaveStyle({ opacity: "0.2" });
 
     view.unmount();
   });

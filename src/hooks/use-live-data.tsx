@@ -30,10 +30,13 @@ class LiveDataStore {
     return this.cache.get(itemId) ?? DEFAULT_ENTRY;
   }
 
-  set(itemId: string, data: LiveDataEntry): void {
+  set(itemId: string, data: LiveDataEntry, fromCache = false): void {
     this.cache.set(itemId, data);
-    this._lastUpdateAt = Date.now();
-    this.itemLastUpdateAt.set(itemId, Date.now());
+    // Only update timestamps for real updates, not cache snapshots
+    if (!fromCache) {
+      this._lastUpdateAt = Date.now();
+      this.itemLastUpdateAt.set(itemId, Date.now());
+    }
     for (const l of this.listeners) {
       try {
         l();
@@ -41,21 +44,26 @@ class LiveDataStore {
         /* listener removed mid-iteration */
       }
     }
-    for (const l of this.lastUpdateListeners) {
-      try {
-        l();
-      } catch {
-        /* listener removed mid-iteration */
-      }
-    }
-    // Notify item-specific listeners
-    const itemListeners = this.itemUpdateListeners.get(itemId);
-    if (itemListeners) {
-      for (const l of itemListeners) {
+    // Only notify progress listeners for real updates
+    if (!fromCache) {
+      for (const l of this.lastUpdateListeners) {
         try {
           l();
         } catch {
           /* listener removed mid-iteration */
+        }
+      }
+    }
+    // Notify item-specific listeners (only for real updates)
+    if (!fromCache) {
+      const itemListeners = this.itemUpdateListeners.get(itemId);
+      if (itemListeners) {
+        for (const l of itemListeners) {
+          try {
+            l();
+          } catch {
+            /* listener removed mid-iteration */
+          }
         }
       }
     }
@@ -187,6 +195,7 @@ interface SseMessage {
   itemId?: string;
   widgetData?: ServiceData | null;
   pingStatus?: ServiceStatus | null;
+  fromCache?: boolean;
 }
 
 /**
@@ -242,10 +251,19 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
           return;
         }
         if (msg.type === "update" && msg.itemId) {
-          liveDataStore.set(msg.itemId, {
-            widgetData: msg.widgetData ?? null,
-            pingStatus: msg.pingStatus ?? null,
-          });
+          console.log(
+            `[${new Date().toISOString()}] [live-data] Received update for ${msg.itemId}:`,
+            msg.pingStatus?.state ?? "no pingStatus",
+            msg.fromCache ? "(from cache)" : "(fresh)",
+          );
+          liveDataStore.set(
+            msg.itemId,
+            {
+              widgetData: msg.widgetData ?? null,
+              pingStatus: msg.pingStatus ?? null,
+            },
+            msg.fromCache,
+          );
         }
       } catch {
         // ignore malformed messages

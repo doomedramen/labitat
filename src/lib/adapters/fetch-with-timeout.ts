@@ -16,7 +16,11 @@ async function fetchWithHttps(
 ): Promise<Response> {
   const { insecure, ...fetchInit } = options;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
 
   try {
     const https = await import("https");
@@ -47,6 +51,11 @@ async function fetchWithHttps(
       });
 
       req.on("error", (err) => {
+        // Check if this was a timeout-induced abort
+        if (timedOut) {
+          reject(new DOMException("Request timed out", "TimeoutError"));
+          return;
+        }
         if (err.message.includes("certificate") || err.message.includes("SSL")) {
           reject(new Error(`Request failed: self-signed certificate`));
         } else {
@@ -55,9 +64,13 @@ async function fetchWithHttps(
       });
 
       req.on("timeout", () => {
+        timedOut = true;
         req.destroy();
         reject(new DOMException("Request timed out", "TimeoutError"));
       });
+
+      // Set timeout on the request itself
+      req.setTimeout(timeoutMs);
 
       if (fetchInit?.body) {
         req.write(fetchInit.body);
@@ -65,7 +78,9 @@ async function fetchWithHttps(
       req.end();
 
       controller.signal.addEventListener("abort", () => {
-        req.destroy();
+        if (!timedOut) {
+          req.destroy();
+        }
       });
     });
   } finally {
