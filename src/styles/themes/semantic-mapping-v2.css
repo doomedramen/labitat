@@ -135,14 +135,18 @@
   /* Elevation levels */
   --shadow-2xs: 0 1px 2px 0 color-mix(in oklch, var(--shadow-color) 5%, transparent);
   --shadow-xs: 0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 8%, transparent);
-  --shadow-sm: 0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 12%, transparent),
-               0 1px 2px -1px color-mix(in oklch, var(--shadow-color) 10%, transparent);
-  --shadow-md: 0 4px 6px -1px color-mix(in oklch, var(--shadow-color) 15%, transparent),
-               0 2px 4px -2px color-mix(in oklch, var(--shadow-color) 12%, transparent);
-  --shadow-lg: 0 10px 15px -3px color-mix(in oklch, var(--shadow-color) 18%, transparent),
-               0 4px 6px -4px color-mix(in oklch, var(--shadow-color) 14%, transparent);
-  --shadow-xl: 0 20px 25px -5px color-mix(in oklch, var(--shadow-color) 20%, transparent),
-               0 8px 10px -6px color-mix(in oklch, var(--shadow-color) 15%, transparent);
+  --shadow-sm:
+    0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 12%, transparent),
+    0 1px 2px -1px color-mix(in oklch, var(--shadow-color) 10%, transparent);
+  --shadow-md:
+    0 4px 6px -1px color-mix(in oklch, var(--shadow-color) 15%, transparent),
+    0 2px 4px -2px color-mix(in oklch, var(--shadow-color) 12%, transparent);
+  --shadow-lg:
+    0 10px 15px -3px color-mix(in oklch, var(--shadow-color) 18%, transparent),
+    0 4px 6px -4px color-mix(in oklch, var(--shadow-color) 14%, transparent);
+  --shadow-xl:
+    0 20px 25px -5px color-mix(in oklch, var(--shadow-color) 20%, transparent),
+    0 8px 10px -6px color-mix(in oklch, var(--shadow-color) 15%, transparent);
   --shadow-2xl: 0 25px 50px -12px color-mix(in oklch, var(--shadow-color) 25%, transparent);
 
   /* Colored glow shadows for semantic states */
@@ -182,20 +186,36 @@
    Fine-tune shadows and opacity for dark themes
    ============================================================ */
 
-[data-theme-version="2"]:is(.dark, [data-palette="dracula"], [data-palette="catppuccin_frappe"], [data-palette="nord"], [data-palette="tokyo_night"], [data-palette="one_dark_pro"], [data-palette="synthwave84"], [data-palette="gruvbox"], [data-palette="rose_pine"], [data-palette="everforest"], [data-palette="kanagawa"]) {
+[data-theme-version="2"]:is(
+  .dark,
+  [data-palette="dracula"],
+  [data-palette="catppuccin_frappe"],
+  [data-palette="nord"],
+  [data-palette="tokyo_night"],
+  [data-palette="one_dark_pro"],
+  [data-palette="synthwave84"],
+  [data-palette="gruvbox"],
+  [data-palette="rose_pine"],
+  [data-palette="everforest"],
+  [data-palette="kanagawa"]
+) {
   /* Dark themes need stronger shadows for visibility */
   --shadow-color: color-mix(in oklch, var(--color-accent-primary) 25%, oklch(0% 0 0));
 
   --shadow-2xs: 0 1px 2px 0 color-mix(in oklch, var(--shadow-color) 15%, transparent);
   --shadow-xs: 0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 20%, transparent);
-  --shadow-sm: 0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 25%, transparent),
-               0 1px 2px -1px color-mix(in oklch, var(--shadow-color) 20%, transparent);
-  --shadow-md: 0 4px 6px -1px color-mix(in oklch, var(--shadow-color) 30%, transparent),
-               0 2px 4px -2px color-mix(in oklch, var(--shadow-color) 25%, transparent);
-  --shadow-lg: 0 10px 15px -3px color-mix(in oklch, var(--shadow-color) 35%, transparent),
-               0 4px 6px -4px color-mix(in oklch, var(--shadow-color) 30%, transparent);
-  --shadow-xl: 0 20px 25px -5px color-mix(in oklch, var(--shadow-color) 40%, transparent),
-               0 8px 10px -6px color-mix(in oklch, var(--shadow-color) 35%, transparent);
+  --shadow-sm:
+    0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 25%, transparent),
+    0 1px 2px -1px color-mix(in oklch, var(--shadow-color) 20%, transparent);
+  --shadow-md:
+    0 4px 6px -1px color-mix(in oklch, var(--shadow-color) 30%, transparent),
+    0 2px 4px -2px color-mix(in oklch, var(--shadow-color) 25%, transparent);
+  --shadow-lg:
+    0 10px 15px -3px color-mix(in oklch, var(--shadow-color) 35%, transparent),
+    0 4px 6px -4px color-mix(in oklch, var(--shadow-color) 30%, transparent);
+  --shadow-xl:
+    0 20px 25px -5px color-mix(in oklch, var(--shadow-color) 40%, transparent),
+    0 8px 10px -6px color-mix(in oklch, var(--shadow-color) 35%, transparent);
   --shadow-2xl: 0 25px 50px -12px color-mix(in oklch, var(--shadow-color) 45%, transparent);
 }
 

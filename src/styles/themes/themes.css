@@ -26,7 +26,6 @@
  * ============================================================
  */
 
-
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    DARK THEMES
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -37,18 +36,18 @@
    Source: draculatheme.com/contribute
    ─────────────────────────────────────────────────────────── */
 [data-palette="dracula"] {
-  --background:    oklch(28.8% 0.0221 277.5);   /* #282a36 */
-  --card:          oklch(40.3% 0.0322 277.8);   /* #44475a */
-  --card-text:     oklch(97.7% 0.0079 106.5);   /* #f8f8f2 */
-  --border:        oklch(56.0% 0.0803 270.1);   /* #6272a4 */
-  --text:          oklch(97.7% 0.0079 106.5);   /* #f8f8f2 */
-  --sub-card:      oklch(34.5% 0.0209 281.5);   /* #373844 */
-  --sub-card-text: oklch(56.0% 0.0803 270.1);   /* #6272a4 comment */
-  --graph-1:       oklch(74.2% 0.1485 301.9);   /* #bd93f9 purple */
-  --graph-2:       oklch(88.3% 0.0934 212.8);   /* #8be9fd cyan */
-  --success:       oklch(87.1% 0.2195 148.0);   /* #50fa7b green */
-  --danger:        oklch(83.4% 0.1241 66.6);    /* #ffb86c orange */
-  --error:         oklch(68.2% 0.2063 24.4);    /* #ff5555 red */
+  --background: oklch(28.8% 0.0221 277.5); /* #282a36 */
+  --card: oklch(40.3% 0.0322 277.8); /* #44475a */
+  --card-text: oklch(97.7% 0.0079 106.5); /* #f8f8f2 */
+  --border: oklch(56% 0.0803 270.1); /* #6272a4 */
+  --text: oklch(97.7% 0.0079 106.5); /* #f8f8f2 */
+  --sub-card: oklch(34.5% 0.0209 281.5); /* #373844 */
+  --sub-card-text: oklch(56% 0.0803 270.1); /* #6272a4 comment */
+  --graph-1: oklch(74.2% 0.1485 301.9); /* #bd93f9 purple */
+  --graph-2: oklch(88.3% 0.0934 212.8); /* #8be9fd cyan */
+  --success: oklch(87.1% 0.2195 148); /* #50fa7b green */
+  --danger: oklch(83.4% 0.1241 66.6); /* #ffb86c orange */
+  --error: oklch(68.2% 0.2063 24.4); /* #ff5555 red */
 }
 
 /* ── 2. Catppuccin Frappe ───────────────────────────────────
@@ -56,18 +55,18 @@
    Source: catppuccin.com/palette (Frappe)
    ─────────────────────────────────────────────────────────── */
 [data-palette="catppuccin_frappe"] {
-  --background:    oklch(32.9% 0.0324 274.8);   /* #303446 base */
-  --card:          oklch(39.5% 0.0342 275.9);   /* #414559 surface1 */
-  --card-text:     oklch(86.2% 0.0526 273.3);   /* #c6d0f5 text */
-  --border:        oklch(52.1% 0.0386 274.0);   /* #626880 surface2 */
-  --text:          oklch(86.2% 0.0526 273.3);   /* #c6d0f5 text */
-  --sub-card:      oklch(46.0% 0.0367 273.0);   /* #51576d surface1 */
-  --sub-card-text: oklch(80.8% 0.0507 272.7);   /* #b5bfe2 subtext1 */
-  --graph-1:       oklch(76.5% 0.1108 311.7);   /* #ca9ee6 mauve */
-  --graph-2:       oklch(78.0% 0.0727 227.9);   /* #85c1dc sapphire */
-  --success:       oklch(81.2% 0.1071 133.4);   /* #a6d189 green */
-  --danger:        oklch(77.3% 0.1106 47.7);    /* #ef9f76 peach */
-  --error:         oklch(71.7% 0.1244 19.4);    /* #e78284 red */
+  --background: oklch(32.9% 0.0324 274.8); /* #303446 base */
+  --card: oklch(39.5% 0.0342 275.9); /* #414559 surface1 */
+  --card-text: oklch(86.2% 0.0526 273.3); /* #c6d0f5 text */
+  --border: oklch(52.1% 0.0386 274); /* #626880 surface2 */
+  --text: oklch(86.2% 0.0526 273.3); /* #c6d0f5 text */
+  --sub-card: oklch(46% 0.0367 273); /* #51576d surface1 */
+  --sub-card-text: oklch(80.8% 0.0507 272.7); /* #b5bfe2 subtext1 */
+  --graph-1: oklch(76.5% 0.1108 311.7); /* #ca9ee6 mauve */
+  --graph-2: oklch(78% 0.0727 227.9); /* #85c1dc sapphire */
+  --success: oklch(81.2% 0.1071 133.4); /* #a6d189 green */
+  --danger: oklch(77.3% 0.1106 47.7); /* #ef9f76 peach */
+  --error: oklch(71.7% 0.1244 19.4); /* #e78284 red */
 }
 
 /* ── 3. Nord ────────────────────────────────────────────────
@@ -76,18 +75,18 @@
    Source: nordtheme.com (nord0-nord15)
    ─────────────────────────────────────────────────────────── */
 [data-palette="nord"] {
-  --background:    oklch(32.4% 0.0229 264.2);   /* #2e3440 nord0 */
-  --card:          oklch(37.9% 0.0290 266.5);   /* #3b4252 nord1 */
-  --card-text:     oklch(95.1% 0.0074 260.7);   /* #eceff4 nord6 */
-  --border:        oklch(45.2% 0.0352 264.1);   /* #4c566a nord3 */
-  --text:          oklch(95.1% 0.0074 260.7);   /* #eceff4 nord6 */
-  --sub-card:      oklch(41.6% 0.0324 264.1);   /* #434c5e nord2 */
-  --sub-card-text: oklch(89.9% 0.0164 262.7);   /* #d8dee9 nord4 */
-  --graph-1:       oklch(77.5% 0.0622 217.5);   /* #88c0d0 nord8 */
-  --graph-2:       oklch(69.7% 0.0591 248.7);   /* #81a1c1 nord9 */
-  --success:       oklch(76.8% 0.0749 131.1);   /* #a3be8c nord14 */
-  --danger:        oklch(85.5% 0.0892 84.1);    /* #ebcb8b nord13 */
-  --error:         oklch(60.6% 0.1206 15.3);    /* #bf616a nord11 */
+  --background: oklch(32.4% 0.0229 264.2); /* #2e3440 nord0 */
+  --card: oklch(37.9% 0.029 266.5); /* #3b4252 nord1 */
+  --card-text: oklch(95.1% 0.0074 260.7); /* #eceff4 nord6 */
+  --border: oklch(45.2% 0.0352 264.1); /* #4c566a nord3 */
+  --text: oklch(95.1% 0.0074 260.7); /* #eceff4 nord6 */
+  --sub-card: oklch(41.6% 0.0324 264.1); /* #434c5e nord2 */
+  --sub-card-text: oklch(89.9% 0.0164 262.7); /* #d8dee9 nord4 */
+  --graph-1: oklch(77.5% 0.0622 217.5); /* #88c0d0 nord8 */
+  --graph-2: oklch(69.7% 0.0591 248.7); /* #81a1c1 nord9 */
+  --success: oklch(76.8% 0.0749 131.1); /* #a3be8c nord14 */
+  --danger: oklch(85.5% 0.0892 84.1); /* #ebcb8b nord13 */
+  --error: oklch(60.6% 0.1206 15.3); /* #bf616a nord11 */
 }
 
 /* ── 4. Tokyo Night ─────────────────────────────────────────
@@ -95,18 +94,18 @@
    Source: enkia/tokyo-night-vscode-theme
    ─────────────────────────────────────────────────────────── */
 [data-palette="tokyo_night"] {
-  --background:    oklch(22.6% 0.0214 280.5);   /* #1a1b26 */
-  --card:          oklch(26.1% 0.0344 274.2);   /* #1f2335 */
-  --card-text:     oklch(84.6% 0.0611 274.8);   /* #c0caf5 */
-  --border:        oklch(38.7% 0.0537 273.9);   /* #3b4261 */
-  --text:          oklch(84.6% 0.0611 274.8);   /* #c0caf5 */
-  --sub-card:      oklch(28.2% 0.0355 274.7);   /* #24283b */
-  --sub-card-text: oklch(76.7% 0.0537 275.5);   /* #a9b1d6 */
-  --graph-1:       oklch(71.9% 0.1322 264.2);   /* #7aa2f7 blue */
-  --graph-2:       oklch(82.0% 0.1051 235.7);   /* #7dcfff cyan */
-  --success:       oklch(79.5% 0.1395 130.1);   /* #9ece6a green */
-  --danger:        oklch(78.4% 0.1057 75.4);    /* #e0af68 yellow */
-  --error:         oklch(72.3% 0.1589 10.3);    /* #f7768e red */
+  --background: oklch(22.6% 0.0214 280.5); /* #1a1b26 */
+  --card: oklch(26.1% 0.0344 274.2); /* #1f2335 */
+  --card-text: oklch(84.6% 0.0611 274.8); /* #c0caf5 */
+  --border: oklch(38.7% 0.0537 273.9); /* #3b4261 */
+  --text: oklch(84.6% 0.0611 274.8); /* #c0caf5 */
+  --sub-card: oklch(28.2% 0.0355 274.7); /* #24283b */
+  --sub-card-text: oklch(76.7% 0.0537 275.5); /* #a9b1d6 */
+  --graph-1: oklch(71.9% 0.1322 264.2); /* #7aa2f7 blue */
+  --graph-2: oklch(82% 0.1051 235.7); /* #7dcfff cyan */
+  --success: oklch(79.5% 0.1395 130.1); /* #9ece6a green */
+  --danger: oklch(78.4% 0.1057 75.4); /* #e0af68 yellow */
+  --error: oklch(72.3% 0.1589 10.3); /* #f7768e red */
 }
 
 /* ── 5. One Dark Pro ────────────────────────────────────────
@@ -114,18 +113,18 @@
    Source: Binaryify/OneDark-Pro
    ─────────────────────────────────────────────────────────── */
 [data-palette="one_dark_pro"] {
-  --background:    oklch(29.3% 0.0157 264.3);   /* #282c34 */
-  --card:          oklch(31.2% 0.0176 262.2);   /* #2c313a */
-  --card-text:     oklch(76.2% 0.0202 263.0);   /* #abb2bf */
-  --border:        oklch(38.7% 0.0251 266.9);   /* #3e4452 */
-  --text:          oklch(76.2% 0.0202 263.0);   /* #abb2bf */
-  --sub-card:      oklch(34.0% 0.0189 264.3);   /* #333842 */
-  --sub-card-text: oklch(62.9% 0.0226 264.4);   /* #828997 */
-  --graph-1:       oklch(73.0% 0.1213 245.3);   /* #61afef blue */
-  --graph-2:       oklch(72.3% 0.0916 206.3);   /* #56b6c2 cyan */
-  --success:       oklch(76.8% 0.1103 133.0);   /* #98c379 green */
-  --danger:        oklch(72.7% 0.0949 63.8);    /* #d19a66 orange */
-  --error:         oklch(67.1% 0.1448 17.0);    /* #e06c75 red */
+  --background: oklch(29.3% 0.0157 264.3); /* #282c34 */
+  --card: oklch(31.2% 0.0176 262.2); /* #2c313a */
+  --card-text: oklch(76.2% 0.0202 263); /* #abb2bf */
+  --border: oklch(38.7% 0.0251 266.9); /* #3e4452 */
+  --text: oklch(76.2% 0.0202 263); /* #abb2bf */
+  --sub-card: oklch(34% 0.0189 264.3); /* #333842 */
+  --sub-card-text: oklch(62.9% 0.0226 264.4); /* #828997 */
+  --graph-1: oklch(73% 0.1213 245.3); /* #61afef blue */
+  --graph-2: oklch(72.3% 0.0916 206.3); /* #56b6c2 cyan */
+  --success: oklch(76.8% 0.1103 133); /* #98c379 green */
+  --danger: oklch(72.7% 0.0949 63.8); /* #d19a66 orange */
+  --error: oklch(67.1% 0.1448 17); /* #e06c75 red */
 }
 
 /* ── 6. Synthwave 84 ────────────────────────────────────────
@@ -134,18 +133,18 @@
    Source: robb0wen/synthwave-vscode
    ─────────────────────────────────────────────────────────── */
 [data-palette="synthwave84"] {
-  --background:    oklch(26.8% 0.0333 291.6);   /* #262335 */
-  --card:          oklch(31.4% 0.0736 283.5);   /* #2d2b55 */
-  --card-text:     oklch(100.0% 0.0000 0.0);    /* #ffffff */
-  --border:        oklch(46.8% 0.1057 274.4);   /* #495495 */
-  --text:          oklch(100.0% 0.0000 0.0);    /* #ffffff */
-  --sub-card:      oklch(25.4% 0.0611 281.1);   /* #1e1e3f */
-  --sub-card-text: oklch(76.6% 0.1288 290.1);   /* #b2a4ff lavender */
-  --graph-1:       oklch(76.9% 0.1889 339.1);   /* #ff7edb hot pink */
-  --graph-2:       oklch(87.1% 0.1402 162.0);   /* #72f1b8 mint */
-  --success:       oklch(87.1% 0.1402 162.0);   /* #72f1b8 mint */
-  --danger:        oklch(75.1% 0.1676 51.9);    /* #ff8b39 orange */
-  --error:         oklch(68.2% 0.2063 24.4);    /* #ff5555 red */
+  --background: oklch(26.8% 0.0333 291.6); /* #262335 */
+  --card: oklch(31.4% 0.0736 283.5); /* #2d2b55 */
+  --card-text: oklch(100% 0 0); /* #ffffff */
+  --border: oklch(46.8% 0.1057 274.4); /* #495495 */
+  --text: oklch(100% 0 0); /* #ffffff */
+  --sub-card: oklch(25.4% 0.0611 281.1); /* #1e1e3f */
+  --sub-card-text: oklch(76.6% 0.1288 290.1); /* #b2a4ff lavender */
+  --graph-1: oklch(76.9% 0.1889 339.1); /* #ff7edb hot pink */
+  --graph-2: oklch(87.1% 0.1402 162); /* #72f1b8 mint */
+  --success: oklch(87.1% 0.1402 162); /* #72f1b8 mint */
+  --danger: oklch(75.1% 0.1676 51.9); /* #ff8b39 orange */
+  --error: oklch(68.2% 0.2063 24.4); /* #ff5555 red */
 }
 
 /* ── 7. Gruvbox ─────────────────────────────────────────────
@@ -154,18 +153,18 @@
    Source: morhetz/gruvbox (dark medium)
    ─────────────────────────────────────────────────────────── */
 [data-palette="gruvbox"] {
-  --background:    oklch(27.7% 0.0000 0.0);     /* #282828 */
-  --card:          oklch(34.4% 0.0066 48.5);    /* #3c3836 */
-  --card-text:     oklch(89.4% 0.0566 89.2);    /* #ebdbb2 fg */
-  --border:        oklch(48.2% 0.0181 61.0);    /* #665c54 bg4 */
-  --text:          oklch(89.4% 0.0566 89.2);    /* #ebdbb2 fg */
-  --sub-card:      oklch(41.1% 0.0115 51.9);    /* #504945 bg2 */
-  --sub-card-text: oklch(82.5% 0.0507 85.1);    /* #d5c4a1 fg2 */
-  --graph-1:       oklch(83.2% 0.1595 83.0);    /* #fabd2f yellow */
-  --graph-2:       oklch(69.3% 0.0420 169.8);   /* #83a598 aqua */
-  --success:       oklch(76.5% 0.1581 110.8);   /* #b8bb26 green */
-  --danger:        oklch(73.1% 0.1820 51.7);    /* #fe8019 orange */
-  --error:         oklch(66.0% 0.2175 30.4);    /* #fb4934 red */
+  --background: oklch(27.7% 0 0); /* #282828 */
+  --card: oklch(34.4% 0.0066 48.5); /* #3c3836 */
+  --card-text: oklch(89.4% 0.0566 89.2); /* #ebdbb2 fg */
+  --border: oklch(48.2% 0.0181 61); /* #665c54 bg4 */
+  --text: oklch(89.4% 0.0566 89.2); /* #ebdbb2 fg */
+  --sub-card: oklch(41.1% 0.0115 51.9); /* #504945 bg2 */
+  --sub-card-text: oklch(82.5% 0.0507 85.1); /* #d5c4a1 fg2 */
+  --graph-1: oklch(83.2% 0.1595 83); /* #fabd2f yellow */
+  --graph-2: oklch(69.3% 0.042 169.8); /* #83a598 aqua */
+  --success: oklch(76.5% 0.1581 110.8); /* #b8bb26 green */
+  --danger: oklch(73.1% 0.182 51.7); /* #fe8019 orange */
+  --error: oklch(66% 0.2175 30.4); /* #fb4934 red */
 }
 
 /* ── 8. Rose Pine ───────────────────────────────────────────
@@ -174,18 +173,18 @@
    Source: rosepinetheme.com (main variant)
    ─────────────────────────────────────────────────────────── */
 [data-palette="rose_pine"] {
-  --background:    oklch(21.3% 0.0255 291.1);   /* #191724 base */
-  --card:          oklch(24.1% 0.0322 289.1);   /* #1f1d2e surface */
-  --card-text:     oklch(90.9% 0.0299 290.0);   /* #e0def4 text */
-  --border:        oklch(37.2% 0.0358 291.1);   /* #403d52 highlight-med */
-  --text:          oklch(90.9% 0.0299 290.0);   /* #e0def4 text */
-  --sub-card:      oklch(27.1% 0.0423 289.2);   /* #26233a overlay */
-  --sub-card-text: oklch(65.4% 0.0444 291.2);   /* #908caa subtle */
-  --graph-1:       oklch(77.6% 0.0945 305.0);   /* #c4a7e7 iris */
-  --graph-2:       oklch(82.2% 0.0543 209.6);   /* #9ccfd8 foam */
-  --success:       oklch(52.8% 0.0793 227.7);   /* #31748f pine */
-  --danger:        oklch(84.3% 0.1100 74.6);    /* #f6c177 gold */
-  --error:         oklch(69.8% 0.1565 4.2);     /* #eb6f92 love */
+  --background: oklch(21.3% 0.0255 291.1); /* #191724 base */
+  --card: oklch(24.1% 0.0322 289.1); /* #1f1d2e surface */
+  --card-text: oklch(90.9% 0.0299 290); /* #e0def4 text */
+  --border: oklch(37.2% 0.0358 291.1); /* #403d52 highlight-med */
+  --text: oklch(90.9% 0.0299 290); /* #e0def4 text */
+  --sub-card: oklch(27.1% 0.0423 289.2); /* #26233a overlay */
+  --sub-card-text: oklch(65.4% 0.0444 291.2); /* #908caa subtle */
+  --graph-1: oklch(77.6% 0.0945 305); /* #c4a7e7 iris */
+  --graph-2: oklch(82.2% 0.0543 209.6); /* #9ccfd8 foam */
+  --success: oklch(52.8% 0.0793 227.7); /* #31748f pine */
+  --danger: oklch(84.3% 0.11 74.6); /* #f6c177 gold */
+  --error: oklch(69.8% 0.1565 4.2); /* #eb6f92 love */
 }
 
 /* ── 9. Everforest ──────────────────────────────────────────
@@ -194,18 +193,18 @@
    Source: sainnhe/everforest (dark medium)
    ─────────────────────────────────────────────────────────── */
 [data-palette="everforest"] {
-  --background:    oklch(32.4% 0.0153 240.4);   /* #2d353b */
-  --card:          oklch(36.0% 0.0169 227.1);   /* #343f44 */
-  --card-text:     oklch(83.0% 0.0405 86.1);    /* #d3c6aa fg */
-  --border:        oklch(43.1% 0.0172 231.6);   /* #475258 */
-  --text:          oklch(83.0% 0.0405 86.1);    /* #d3c6aa fg */
-  --sub-card:      oklch(39.4% 0.0166 227.0);   /* #3d484d */
-  --sub-card-text: oklch(72.3% 0.0186 153.4);   /* #9da9a0 grey1 */
-  --graph-1:       oklch(77.3% 0.0906 125.8);   /* #a7c080 green */
-  --graph-2:       oklch(74.9% 0.0631 185.5);   /* #7fbbb3 blue */
-  --success:       oklch(77.3% 0.0906 125.8);   /* #a7c080 green */
-  --danger:        oklch(75.0% 0.1059 44.9);    /* #e69875 orange */
-  --error:         oklch(70.9% 0.1285 19.6);    /* #e67e80 red */
+  --background: oklch(32.4% 0.0153 240.4); /* #2d353b */
+  --card: oklch(36% 0.0169 227.1); /* #343f44 */
+  --card-text: oklch(83% 0.0405 86.1); /* #d3c6aa fg */
+  --border: oklch(43.1% 0.0172 231.6); /* #475258 */
+  --text: oklch(83% 0.0405 86.1); /* #d3c6aa fg */
+  --sub-card: oklch(39.4% 0.0166 227); /* #3d484d */
+  --sub-card-text: oklch(72.3% 0.0186 153.4); /* #9da9a0 grey1 */
+  --graph-1: oklch(77.3% 0.0906 125.8); /* #a7c080 green */
+  --graph-2: oklch(74.9% 0.0631 185.5); /* #7fbbb3 blue */
+  --success: oklch(77.3% 0.0906 125.8); /* #a7c080 green */
+  --danger: oklch(75% 0.1059 44.9); /* #e69875 orange */
+  --error: oklch(70.9% 0.1285 19.6); /* #e67e80 red */
 }
 
 /* ── 10. Kanagawa ───────────────────────────────────────────
@@ -214,20 +213,19 @@
    Source: rebelot/kanagawa.nvim
    ─────────────────────────────────────────────────────────── */
 [data-palette="kanagawa"] {
-  --background:    oklch(24.3% 0.0170 285.1);   /* #1f1f28 */
-  --card:          oklch(29.1% 0.0236 284.8);   /* #2a2a37 */
-  --card-text:     oklch(87.6% 0.0391 99.1);    /* #dcd7ba fg */
-  --border:        oklch(34.0% 0.0279 284.8);   /* #363646 */
-  --text:          oklch(87.6% 0.0391 99.1);    /* #dcd7ba fg */
-  --sub-card:      oklch(31.4% 0.0467 257.4);   /* #223249 winter-blue */
-  --sub-card-text: oklch(65.2% 0.0466 298.4);   /* #938aa9 fujiGray */
-  --graph-1:       oklch(69.4% 0.0951 263.7);   /* #7e9cd8 crystalBlue */
-  --graph-2:       oklch(63.5% 0.0504 175.4);   /* #6a9589 waveAqua */
-  --success:       oklch(63.2% 0.0698 136.9);   /* #76946a autumnGreen */
-  --danger:        oklch(75.9% 0.1073 70.9);    /* #dca561 carpYellow */
-  --error:         oklch(55.9% 0.1670 23.1);    /* #c34043 peachRed */
+  --background: oklch(24.3% 0.017 285.1); /* #1f1f28 */
+  --card: oklch(29.1% 0.0236 284.8); /* #2a2a37 */
+  --card-text: oklch(87.6% 0.0391 99.1); /* #dcd7ba fg */
+  --border: oklch(34% 0.0279 284.8); /* #363646 */
+  --text: oklch(87.6% 0.0391 99.1); /* #dcd7ba fg */
+  --sub-card: oklch(31.4% 0.0467 257.4); /* #223249 winter-blue */
+  --sub-card-text: oklch(65.2% 0.0466 298.4); /* #938aa9 fujiGray */
+  --graph-1: oklch(69.4% 0.0951 263.7); /* #7e9cd8 crystalBlue */
+  --graph-2: oklch(63.5% 0.0504 175.4); /* #6a9589 waveAqua */
+  --success: oklch(63.2% 0.0698 136.9); /* #76946a autumnGreen */
+  --danger: oklch(75.9% 0.1073 70.9); /* #dca561 carpYellow */
+  --error: oklch(55.9% 0.167 23.1); /* #c34043 peachRed */
 }
-
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    LIGHT THEMES
@@ -239,18 +237,18 @@
    Source: catppuccin.com/palette (Latte)
    ─────────────────────────────────────────────────────────── */
 [data-palette="catppuccin_latte"] {
-  --background:    oklch(95.8% 0.0058 264.5);   /* #eff1f5 base */
-  --card:          oklch(93.3% 0.0087 264.5);   /* #e6e9ef mantle */
-  --card-text:     oklch(43.5% 0.0430 279.3);   /* #4c4f69 text */
-  --border:        oklch(80.8% 0.0174 271.2);   /* #bcc0cc surface1 */
-  --text:          oklch(43.5% 0.0430 279.3);   /* #4c4f69 text */
-  --sub-card:      oklch(90.6% 0.0117 264.5);   /* #dce0e8 crust */
-  --sub-card-text: oklch(49.2% 0.0385 279.3);   /* #5c5f77 subtext1 */
-  --graph-1:       oklch(55.5% 0.2503 297.0);   /* #8839ef mauve */
-  --graph-2:       oklch(68.2% 0.1448 235.4);   /* #04a5e5 sky */
-  --success:       oklch(62.5% 0.1772 140.4);   /* #40a02b green */
-  --danger:        oklch(69.2% 0.2041 42.4);    /* #fe640b peach */
-  --error:         oklch(55.0% 0.2155 19.8);    /* #d20f39 red */
+  --background: oklch(95.8% 0.0058 264.5); /* #eff1f5 base */
+  --card: oklch(93.3% 0.0087 264.5); /* #e6e9ef mantle */
+  --card-text: oklch(43.5% 0.043 279.3); /* #4c4f69 text */
+  --border: oklch(80.8% 0.0174 271.2); /* #bcc0cc surface1 */
+  --text: oklch(43.5% 0.043 279.3); /* #4c4f69 text */
+  --sub-card: oklch(90.6% 0.0117 264.5); /* #dce0e8 crust */
+  --sub-card-text: oklch(49.2% 0.0385 279.3); /* #5c5f77 subtext1 */
+  --graph-1: oklch(55.5% 0.2503 297); /* #8839ef mauve */
+  --graph-2: oklch(68.2% 0.1448 235.4); /* #04a5e5 sky */
+  --success: oklch(62.5% 0.1772 140.4); /* #40a02b green */
+  --danger: oklch(69.2% 0.2041 42.4); /* #fe640b peach */
+  --error: oklch(55% 0.2155 19.8); /* #d20f39 red */
 }
 
 /* ── 12. Nord Light ─────────────────────────────────────────
@@ -259,18 +257,18 @@
    Source: nordtheme.com (bright ambiance, nord6 base)
    ─────────────────────────────────────────────────────────── */
 [data-palette="nord_light"] {
-  --background:    oklch(95.1% 0.0074 260.7);   /* #eceff4 nord6 */
-  --card:          oklch(93.3% 0.0104 261.8);   /* #e5e9f0 nord5 */
-  --card-text:     oklch(32.4% 0.0229 264.2);   /* #2e3440 nord0 */
-  --border:        oklch(79.4% 0.0210 238.7);   /* #b0bec8 */
-  --text:          oklch(32.4% 0.0229 264.2);   /* #2e3440 nord0 */
-  --sub-card:      oklch(89.9% 0.0164 262.7);   /* #d8dee9 nord4 */
-  --sub-card-text: oklch(45.2% 0.0352 264.1);   /* #4c566a nord3 */
-  --graph-1:       oklch(59.4% 0.0772 254.0);   /* #5e81ac nord10 */
-  --graph-2:       oklch(77.5% 0.0622 217.5);   /* #88c0d0 nord8 */
-  --success:       oklch(76.8% 0.0749 131.1);   /* #a3be8c nord14 */
-  --danger:        oklch(69.3% 0.0963 38.2);    /* #d08770 nord12 */
-  --error:         oklch(60.6% 0.1206 15.3);    /* #bf616a nord11 */
+  --background: oklch(95.1% 0.0074 260.7); /* #eceff4 nord6 */
+  --card: oklch(93.3% 0.0104 261.8); /* #e5e9f0 nord5 */
+  --card-text: oklch(32.4% 0.0229 264.2); /* #2e3440 nord0 */
+  --border: oklch(79.4% 0.021 238.7); /* #b0bec8 */
+  --text: oklch(32.4% 0.0229 264.2); /* #2e3440 nord0 */
+  --sub-card: oklch(89.9% 0.0164 262.7); /* #d8dee9 nord4 */
+  --sub-card-text: oklch(45.2% 0.0352 264.1); /* #4c566a nord3 */
+  --graph-1: oklch(59.4% 0.0772 254); /* #5e81ac nord10 */
+  --graph-2: oklch(77.5% 0.0622 217.5); /* #88c0d0 nord8 */
+  --success: oklch(76.8% 0.0749 131.1); /* #a3be8c nord14 */
+  --danger: oklch(69.3% 0.0963 38.2); /* #d08770 nord12 */
+  --error: oklch(60.6% 0.1206 15.3); /* #bf616a nord11 */
 }
 
 /* ── 13. Solarized Light ────────────────────────────────────
@@ -279,18 +277,18 @@
    Source: ethanschoonover.com/solarized
    ─────────────────────────────────────────────────────────── */
 [data-palette="solarized_light"] {
-  --background:    oklch(97.4% 0.0261 90.1);    /* #fdf6e3 base3 */
-  --card:          oklch(93.1% 0.0260 92.4);    /* #eee8d5 base2 */
-  --card-text:     oklch(56.8% 0.0285 221.9);   /* #657b83 base00 */
-  --border:        oklch(82.2% 0.0361 94.6);    /* #ccc5ab */
-  --text:          oklch(56.8% 0.0285 221.9);   /* #657b83 base00 */
-  --sub-card:      oklch(91.2% 0.0262 92.4);    /* #e8e2cf base2-mid */
-  --sub-card-text: oklch(65.4% 0.0197 205.3);   /* #839496 base0 */
-  --graph-1:       oklch(61.5% 0.1394 244.9);   /* #268bd2 blue */
-  --graph-2:       oklch(64.4% 0.1019 187.4);   /* #2aa198 cyan */
-  --success:       oklch(64.4% 0.1508 118.6);   /* #859900 green */
-  --danger:        oklch(58.1% 0.1732 39.5);    /* #cb4b16 orange */
-  --error:         oklch(58.6% 0.2064 27.1);    /* #dc322f red */
+  --background: oklch(97.4% 0.0261 90.1); /* #fdf6e3 base3 */
+  --card: oklch(93.1% 0.026 92.4); /* #eee8d5 base2 */
+  --card-text: oklch(56.8% 0.0285 221.9); /* #657b83 base00 */
+  --border: oklch(82.2% 0.0361 94.6); /* #ccc5ab */
+  --text: oklch(56.8% 0.0285 221.9); /* #657b83 base00 */
+  --sub-card: oklch(91.2% 0.0262 92.4); /* #e8e2cf base2-mid */
+  --sub-card-text: oklch(65.4% 0.0197 205.3); /* #839496 base0 */
+  --graph-1: oklch(61.5% 0.1394 244.9); /* #268bd2 blue */
+  --graph-2: oklch(64.4% 0.1019 187.4); /* #2aa198 cyan */
+  --success: oklch(64.4% 0.1508 118.6); /* #859900 green */
+  --danger: oklch(58.1% 0.1732 39.5); /* #cb4b16 orange */
+  --error: oklch(58.6% 0.2064 27.1); /* #dc322f red */
 }
 
 /* ── 14. Rose Pine Dawn ─────────────────────────────────────
@@ -299,18 +297,18 @@
    Source: rosepinetheme.com (dawn variant)
    ─────────────────────────────────────────────────────────── */
 [data-palette="rose_pine_dawn"] {
-  --background:    oklch(97.0% 0.0113 71.9);    /* #faf4ed base */
-  --card:          oklch(98.7% 0.0107 76.6);    /* #fffaf3 surface */
-  --card-text:     oklch(46.0% 0.0629 289.6);   /* #575279 text */
-  --border:        oklch(83.0% 0.0332 76.4);    /* #d4c5b0 highlight-med */
-  --text:          oklch(46.0% 0.0629 289.6);   /* #575279 text */
-  --sub-card:      oklch(93.9% 0.0145 64.3);    /* #f2e9e1 overlay */
-  --sub-card-text: oklch(67.3% 0.0268 298.4);   /* #9893a5 subtle */
-  --graph-1:       oklch(61.7% 0.0738 305.7);   /* #907aa9 iris */
-  --graph-2:       oklch(62.9% 0.0661 210.1);   /* #56949f foam */
-  --success:       oklch(49.1% 0.0770 228.0);   /* #286983 pine */
-  --danger:        oklch(75.5% 0.1459 69.7);    /* #ea9d34 gold */
-  --error:         oklch(59.9% 0.1071 2.7);     /* #b4637a love */
+  --background: oklch(97% 0.0113 71.9); /* #faf4ed base */
+  --card: oklch(98.7% 0.0107 76.6); /* #fffaf3 surface */
+  --card-text: oklch(46% 0.0629 289.6); /* #575279 text */
+  --border: oklch(83% 0.0332 76.4); /* #d4c5b0 highlight-med */
+  --text: oklch(46% 0.0629 289.6); /* #575279 text */
+  --sub-card: oklch(93.9% 0.0145 64.3); /* #f2e9e1 overlay */
+  --sub-card-text: oklch(67.3% 0.0268 298.4); /* #9893a5 subtle */
+  --graph-1: oklch(61.7% 0.0738 305.7); /* #907aa9 iris */
+  --graph-2: oklch(62.9% 0.0661 210.1); /* #56949f foam */
+  --success: oklch(49.1% 0.077 228); /* #286983 pine */
+  --danger: oklch(75.5% 0.1459 69.7); /* #ea9d34 gold */
+  --error: oklch(59.9% 0.1071 2.7); /* #b4637a love */
 }
 
 /* ── 15. Gruvbox Light ──────────────────────────────────────
@@ -319,16 +317,16 @@
    Source: morhetz/gruvbox (light medium)
    ─────────────────────────────────────────────────────────── */
 [data-palette="gruvbox_light"] {
-  --background:    oklch(95.6% 0.0555 96.2);    /* #fbf1c7 bg */
-  --card:          oklch(89.4% 0.0566 89.2);    /* #ebdbb2 bg1 */
-  --card-text:     oklch(34.4% 0.0066 48.5);    /* #3c3836 fg */
-  --border:        oklch(75.6% 0.0410 82.3);    /* #bdae93 bg4 */
-  --text:          oklch(34.4% 0.0066 48.5);    /* #3c3836 fg */
-  --sub-card:      oklch(82.5% 0.0507 85.1);    /* #d5c4a1 bg2 */
-  --sub-card-text: oklch(41.1% 0.0115 51.9);    /* #504945 fg2 */
-  --graph-1:       oklch(57.6% 0.0658 199.5);   /* #458588 aqua */
-  --graph-2:       oklch(64.5% 0.0939 145.3);   /* #689d6a green */
-  --success:       oklch(54.6% 0.1124 106.5);   /* #79740e green-dark */
-  --danger:        oklch(62.2% 0.1707 45.8);    /* #d65d0e orange */
-  --error:         oklch(43.7% 0.1789 28.3);    /* #9d0006 red-dark */
+  --background: oklch(95.6% 0.0555 96.2); /* #fbf1c7 bg */
+  --card: oklch(89.4% 0.0566 89.2); /* #ebdbb2 bg1 */
+  --card-text: oklch(34.4% 0.0066 48.5); /* #3c3836 fg */
+  --border: oklch(75.6% 0.041 82.3); /* #bdae93 bg4 */
+  --text: oklch(34.4% 0.0066 48.5); /* #3c3836 fg */
+  --sub-card: oklch(82.5% 0.0507 85.1); /* #d5c4a1 bg2 */
+  --sub-card-text: oklch(41.1% 0.0115 51.9); /* #504945 fg2 */
+  --graph-1: oklch(57.6% 0.0658 199.5); /* #458588 aqua */
+  --graph-2: oklch(64.5% 0.0939 145.3); /* #689d6a green */
+  --success: oklch(54.6% 0.1124 106.5); /* #79740e green-dark */
+  --danger: oklch(62.2% 0.1707 45.8); /* #d65d0e orange */
+  --error: oklch(43.7% 0.1789 28.3); /* #9d0006 red-dark */
 }
