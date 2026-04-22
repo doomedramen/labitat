@@ -3,7 +3,7 @@
 /**
  * Client-only StatGrid wrapper.
  * Adds dnd-kit drag-and-drop for reordering stat cards.
- * Enforces 2x2 or 4-per-row layout to prevent orphans.
+ * Adapts layout based on item count.
  */
 
 import { cn } from "@/lib/utils";
@@ -18,6 +18,20 @@ interface StatGridClientProps {
   items: StatItem[];
   displayMode?: StatDisplayMode;
   onReorder?: (activeId: string, overId: string) => void;
+}
+
+function getGridClasses(count: number): string {
+  switch (count) {
+    case 1:
+      return "grid-cols-1";
+    case 2:
+      return "grid-cols-2";
+    case 3:
+      return "grid-cols-3";
+    case 4:
+    default:
+      return "grid-cols-2 sm:grid-cols-4";
+  }
 }
 
 export function StatGridClient({ items, displayMode = "label", onReorder }: StatGridClientProps) {
@@ -37,13 +51,7 @@ export function StatGridClient({ items, displayMode = "label", onReorder }: Stat
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={items.map((i) => i.id)} strategy={horizontalListSortingStrategy}>
-        <div
-          className={cn(
-            "grid gap-1.5 text-xs",
-            // Mobile: 2 columns, Desktop: 4 columns
-            "grid-cols-2 sm:grid-cols-4",
-          )}
-        >
+        <div className={cn("grid gap-1.5 text-xs", getGridClasses(items.length))}>
           {items.map((item) => (
             <StatCard key={item.id} {...item} displayMode={displayMode} sortable editMode />
           ))}

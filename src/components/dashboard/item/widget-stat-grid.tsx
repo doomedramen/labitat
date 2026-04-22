@@ -1,7 +1,7 @@
 /**
  * Server-compatible stat card grid.
  * Renders stat cards directly without DnD.
- * Enforces 2x2 or 4-per-row layout to prevent orphans.
+ * Adapts layout based on item count to prevent awkward gaps.
  */
 
 import { cn } from "@/lib/utils";
@@ -12,16 +12,25 @@ interface WidgetStatGridProps {
   items: StatItem[];
 }
 
+function getGridClasses(count: number): string {
+  switch (count) {
+    case 1:
+      return "grid-cols-1";
+    case 2:
+      return "grid-cols-2";
+    case 3:
+      // 3 items: fill width evenly (33% each)
+      return "grid-cols-3";
+    case 4:
+    default:
+      // 4+ items: 2x2 on mobile, 4 across on desktop
+      return "grid-cols-2 sm:grid-cols-4";
+  }
+}
+
 export function WidgetStatGrid({ items }: WidgetStatGridProps) {
   return (
-    <div
-      className={cn(
-        "grid gap-2 text-xs",
-        // Mobile: 2 columns (2x2 layout for 4 items)
-        // Desktop: 4 columns (4 per row)
-        "grid-cols-2 sm:grid-cols-4",
-      )}
-    >
+    <div className={cn("grid gap-2 text-xs", getGridClasses(items.length))}>
       {items.map((item) => (
         <StatCard
           key={item.id}

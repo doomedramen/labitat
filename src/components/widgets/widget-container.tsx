@@ -27,7 +27,7 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
   // Show loading skeleton when loading
   if (payload.loading) {
     return (
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-4 gap-2">
         {[0, 1, 2, 3].map((i) => (
           <Skeleton
             key={i}

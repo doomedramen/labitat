@@ -2,7 +2,7 @@
  * Server-compatible StatGrid component.
  * Renders stat cards in a grid layout.
  * Delegates to StatGridClient when DnD is enabled.
- * Enforces 2x2 or 4-per-row layout to prevent orphans.
+ * Adapts layout based on item count.
  */
 
 import { cn } from "@/lib/utils";
@@ -17,6 +17,20 @@ interface StatGridProps {
   sortable?: boolean;
   editMode?: boolean;
   onReorder?: (activeId: string, overId: string) => void;
+}
+
+function getGridClasses(count: number): string {
+  switch (count) {
+    case 1:
+      return "grid-cols-1";
+    case 2:
+      return "grid-cols-2";
+    case 3:
+      return "grid-cols-3";
+    case 4:
+    default:
+      return "grid-cols-2 sm:grid-cols-4";
+  }
 }
 
 export function StatGrid({
@@ -35,15 +49,9 @@ export function StatGrid({
     return <StatGridClient items={items} displayMode={displayMode} onReorder={onReorder} />;
   }
 
-  // Server path: no DnD — render directly with fixed 2x2 or 4-col layout
+  // Server path: no DnD — render directly with adaptive layout
   return (
-    <div
-      className={cn(
-        "grid gap-1.5 text-xs",
-        // Mobile: 2 columns, Desktop: 4 columns
-        "grid-cols-2 sm:grid-cols-4",
-      )}
-    >
+    <div className={cn("grid gap-1.5 text-xs", getGridClasses(items.length))}>
       {items.map((item) => (
         <StatCard
           key={item.id}

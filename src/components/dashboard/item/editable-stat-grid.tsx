@@ -139,6 +139,21 @@ export function EditableStatGrid({
     ? [...activeItems, ...unusedItems].find((i) => i.id === activeId)
     : null;
 
+  // Get adaptive grid classes based on item count
+  const getGridClasses = (count: number): string => {
+    switch (count) {
+      case 1:
+        return "grid-cols-1";
+      case 2:
+        return "grid-cols-2";
+      case 3:
+        return "grid-cols-3";
+      case 4:
+      default:
+        return "grid-cols-2 sm:grid-cols-4";
+    }
+  };
+
   return (
     <DndContext
       sensors={sensors}
@@ -147,12 +162,12 @@ export function EditableStatGrid({
       onDragEnd={handleDragEnd}
     >
       <div className="space-y-3">
-        {/* Active items - 2x2 or 4-per-row layout */}
+        {/* Active items - adaptive layout */}
         <SortableContext
           items={activeItems.map((i: StatItem) => i.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="grid grid-cols-2 gap-1.5 text-xs sm:grid-cols-4">
+          <div className={cn("grid gap-1.5 text-xs", getGridClasses(activeItems.length))}>
             {activeItems.map((item) => (
               <EditableStatCard key={item.id} item={item} displayMode={displayMode} />
             ))}
@@ -257,6 +272,21 @@ function EditableStatCard({ item, displayMode }: EditableStatCardProps) {
 function UnusedZone({ items, displayMode }: { items: StatItem[]; displayMode: StatDisplayMode }) {
   const { setNodeRef, isOver } = useDroppable({ id: "unused-zone" });
 
+  // Get adaptive grid classes based on item count
+  const getGridClasses = (count: number): string => {
+    switch (count) {
+      case 1:
+        return "grid-cols-1";
+      case 2:
+        return "grid-cols-2";
+      case 3:
+        return "grid-cols-3";
+      case 4:
+      default:
+        return "grid-cols-2 sm:grid-cols-4";
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -275,7 +305,7 @@ function UnusedZone({ items, displayMode }: { items: StatItem[]; displayMode: St
           items={items.map((i: StatItem) => i.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="grid grid-cols-2 gap-1.5 text-xs sm:grid-cols-4">
+          <div className={cn("grid gap-1.5 text-xs", getGridClasses(items.length))}>
             {items.map((item) => (
               <UnusedStatCard key={item.id} item={item} displayMode={displayMode} />
             ))}
