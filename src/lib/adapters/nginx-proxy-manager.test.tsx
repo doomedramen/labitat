@@ -114,6 +114,38 @@ describe("nginx-proxy-manager definition", () => {
       expect(result._status).toBe("ok");
       expect(result.hosts).toHaveLength(0);
     });
+
+    it("handles ISO date string expires format (real NPM format)", async () => {
+      const mockFetch = vi.fn((url: string) => {
+        if (url.includes("/api/tokens")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                token: "jwt-token",
+                expires: new Date(Date.now() + 3600 * 1000).toISOString(),
+              }),
+          });
+        }
+        if (url.includes("/proxy-hosts")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([{ id: 1, enabled: true }]),
+          });
+        }
+        return Promise.reject(new Error("Unexpected URL"));
+      });
+      vi.stubGlobal("fetch", mockFetch);
+
+      const result = await nginxProxyManagerDefinition.fetchData!({
+        url: "https://npm.example.com",
+        email: "admin@example.org",
+        password: "secret",
+      });
+
+      expect(result._status).toBe("ok");
+      expect(result.hosts).toHaveLength(1);
+    });
   });
 
   describe("toPayload", () => {

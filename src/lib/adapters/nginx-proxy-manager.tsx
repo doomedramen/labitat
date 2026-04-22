@@ -134,9 +134,19 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
 
       const tokenData = await loginRes.json();
       token = tokenData?.token;
-      if (!token) throw new Error("NPM login failed: no token in response");
+      if (!token) {
+        throw new Error(
+          `NPM login failed: no token in response. Response: ${JSON.stringify(tokenData)}`,
+        );
+      }
 
-      const expiresIn = tokenData?.expires ?? 3600;
+      // NPM returns expires as an ISO date string, not seconds
+      let expiresIn: number;
+      if (typeof tokenData?.expires === "string") {
+        expiresIn = Math.floor((new Date(tokenData.expires).getTime() - Date.now()) / 1000);
+      } else {
+        expiresIn = tokenData?.expires ?? 3600;
+      }
       setCachedToken(cacheKey, token, expiresIn);
     }
 
@@ -165,9 +175,19 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
 
         const tokenData = await loginRes.json();
         token = tokenData?.token;
-        if (!token) throw new Error("NPM login failed: no token in response");
+        if (!token) {
+          throw new Error(
+            `NPM login failed: no token in response. Response: ${JSON.stringify(tokenData)}`,
+          );
+        }
 
-        const expiresIn = tokenData?.expires ?? 3600;
+        // NPM returns expires as an ISO date string, not seconds
+        let expiresIn: number;
+        if (typeof tokenData?.expires === "string") {
+          expiresIn = Math.floor((new Date(tokenData.expires).getTime() - Date.now()) / 1000);
+        } else {
+          expiresIn = tokenData?.expires ?? 3600;
+        }
         setCachedToken(cacheKey, token, expiresIn);
 
         const retryHeaders = { Authorization: `Bearer ${token}` };
