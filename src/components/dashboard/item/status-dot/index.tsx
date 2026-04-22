@@ -18,7 +18,7 @@ interface StatusDotProps {
  * Includes a circular progress ring showing time until next sync.
  */
 export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusDotProps) {
-  const syncProgress = useSyncProgress(itemId, pollingMs, cached);
+  const syncProgress = useSyncProgress(itemId, pollingMs);
   const bgColors = {
     unknown: "bg-muted-foreground/30",
     healthy: "bg-success",
@@ -101,45 +101,42 @@ export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusD
         "relative h-4 w-4 flex items-center justify-center transition-all duration-300",
       )}
     >
-      {/* Progress ring - only shown for live data */}
-      {!cached && (
-        <svg viewBox="0 0 16 16" className="absolute inset-0 size-full -rotate-90" aria-hidden>
-          {/* Background track */}
-          <circle
-            cx="8"
-            cy="8"
-            r={radius}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={strokeWidth}
-            className={cn(textColors[status.state])}
-            style={{
-              strokeDasharray: `${circumference} ${circumference}`,
-              strokeDashoffset: 0,
-              opacity: 0.2,
-            }}
-          />
-          {/* Progress indicator - depletes as sync approaches */}
-          <circle
-            cx="8"
-            cy="8"
-            r={radius}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            className={cn(textColors[status.state])}
-            style={{
-              strokeDasharray: `${circumference} ${circumference}`,
-              strokeDashoffset: strokeDashoffset,
-              transition: "stroke-dashoffset 0.1s linear",
-              opacity: 0.7,
-            }}
-          />
-        </svg>
-      )}
+      {/* Progress ring - always shown */}
+      <svg viewBox="0 0 16 16" className="absolute inset-0 size-full -rotate-90" aria-hidden>
+        {/* Background track */}
+        <circle
+          cx="8"
+          cy="8"
+          r={radius}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          className={cn(textColors[status.state])}
+          style={{
+            strokeDasharray: `${circumference} ${circumference}`,
+            strokeDashoffset: 0,
+            opacity: 0.2,
+          }}
+        />
+        {/* Progress indicator - depletes as sync approaches */}
+        <circle
+          cx="8"
+          cy="8"
+          r={radius}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          className={cn(textColors[status.state])}
+          style={{
+            strokeDasharray: `${circumference} ${circumference}`,
+            strokeDashoffset: strokeDashoffset,
+            opacity: 0.7,
+          }}
+        />
+      </svg>
 
-      {/* Center status dot - 10px diameter - pulses when cached */}
+      {/* Center status dot - 10px diameter */}
       <div
         style={{ width: `${dotSize}px`, height: `${dotSize}px` }}
         className={cn(
@@ -149,8 +146,6 @@ export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusD
           bgColors[status.state],
           // Glow effect for healthy/problematic states
           (isHealthy || isProblematic) && glowColors[status.state],
-          // Ping animation when cached
-          cached && "animate-ping",
         )}
       ></div>
     </div>

@@ -134,12 +134,12 @@ describe("LiveDataProvider", () => {
       </LiveDataProvider>,
     );
 
-    const cachedStatus = screen.getByRole("status", { name: "Healthy (cached)" });
+    const cachedStatus = screen.getByRole("status", { name: "Healthy" });
     expect(cachedStatus).toBeInTheDocument();
 
-    // When cached, there's no progress ring - just the pulsing dot
+    // Progress ring is always shown - full ring (0% progress) for cached data
     const cachedRing = cachedStatus.querySelector("circle");
-    expect(cachedRing).toBeNull();
+    expect(cachedRing).not.toBeNull();
 
     act(() => {
       MockEventSource.instances[0].onmessage?.({
@@ -154,7 +154,7 @@ describe("LiveDataProvider", () => {
     const liveStatus = screen.getByRole("status", { name: "Healthy" });
     expect(liveStatus).toBeInTheDocument();
 
-    // When live, the progress ring should be present with reduced opacity background
+    // Progress ring should be present with reduced opacity background
     const liveRing = liveStatus.querySelector("circle");
     expect(liveRing).not.toBeNull();
     expect(liveRing).toHaveStyle({ opacity: "0.2" });
@@ -189,9 +189,7 @@ describe("LiveDataProvider", () => {
       </LiveDataProvider>,
     );
 
-    expect(
-      screen.getByRole("status", { name: "Degraded: High latency (cached)" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Degraded: High latency" })).toBeInTheDocument();
   });
 
   it("shows status dot for services without an href", () => {
@@ -221,6 +219,6 @@ describe("LiveDataProvider", () => {
       </LiveDataProvider>,
     );
 
-    expect(screen.getByRole("status", { name: "Healthy (cached)" })).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Healthy" })).toBeInTheDocument();
   });
 });

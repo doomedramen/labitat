@@ -17,7 +17,7 @@ export function ItemStatusDot({ item, editMode }: { item: ItemWithCache; editMod
 
   return (
     <BlockLinkPropagation className="absolute top-3 right-3 transition-all duration-300 group-hover/item:scale-110">
-      <StatusDot itemId={item.id} status={serviceStatus} cached={isCached} pollingMs={pollingMs} />
+      <StatusDot itemId={item.id} status={serviceStatus} pollingMs={pollingMs} />
     </BlockLinkPropagation>
   );
 }
