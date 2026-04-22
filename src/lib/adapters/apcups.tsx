@@ -12,9 +12,17 @@ type APCUPSData = {
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
+function formatTimeLeft(minutes: number): string {
+  if (minutes <= 0) return "0m";
+  if (minutes < 1) return `${Math.round(minutes * 60)}s`;
+  if (minutes < 60) return `${Math.round(minutes)}m`;
+  const hours = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
 function apcupsToPayload(data: APCUPSData) {
-  const time = data.timeLeft ?? 0;
-  const timeLeftMin = time > 60 ? `${(time / 60).toFixed(0)}m` : `${time}s`;
+  const timeLeftMin = formatTimeLeft(data.timeLeft ?? 0);
 
   return {
     stats: [

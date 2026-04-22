@@ -216,7 +216,7 @@ STATUS   : ONLINE
         _status: "ok",
         loadPercent: 45,
         batteryCharge: 100,
-        timeLeft: 2100,
+        timeLeft: 35,
         temperature: 32,
         status: "ONLINE",
       });
@@ -231,17 +231,53 @@ STATUS   : ONLINE
       expect(payload.stats[3].label).toBe("Temp");
     });
 
-    it("shows seconds when time left is under 60", () => {
+    it("shows hours and minutes when time left is over 60 minutes", () => {
+      const payload = apcupsDefinition.toPayload!({
+        _status: "ok",
+        loadPercent: 45,
+        batteryCharge: 100,
+        timeLeft: 125,
+        temperature: 32,
+        status: "ONLINE",
+      });
+      expect(payload.stats[2].value).toBe("2h 5m");
+    });
+
+    it("shows hours only when time left is exactly on the hour", () => {
+      const payload = apcupsDefinition.toPayload!({
+        _status: "ok",
+        loadPercent: 45,
+        batteryCharge: 100,
+        timeLeft: 120,
+        temperature: 32,
+        status: "ONLINE",
+      });
+      expect(payload.stats[2].value).toBe("2h");
+    });
+
+    it("shows seconds when time left is under 1 minute", () => {
       const payload = apcupsDefinition.toPayload!({
         _status: "warn",
         _statusText: "UPS Status: ONBATT",
         loadPercent: 80,
         batteryCharge: 10,
-        timeLeft: 30,
+        timeLeft: 0.5,
         temperature: 35,
         status: "ONBATT",
       });
       expect(payload.stats[2].value).toBe("30s");
+    });
+
+    it("shows 0m when time left is zero", () => {
+      const payload = apcupsDefinition.toPayload!({
+        _status: "warn",
+        loadPercent: 80,
+        batteryCharge: 10,
+        timeLeft: 0,
+        temperature: 35,
+        status: "ONBATT",
+      });
+      expect(payload.stats[2].value).toBe("0m");
     });
   });
 });
