@@ -202,16 +202,6 @@ function getProgressGradient(activity: ActivityState | MediaState): string {
   return PROGRESS_GRADIENTS.active;
 }
 
-// ─── Marquee ──────────────────────────────────────────────────────────────────
-
-function MarqueeText({ text, className }: { text: string; className?: string }) {
-  return (
-    <div className={cn("overflow-hidden flex-1 min-w-0 flex items-center", className)}>
-      <span className="truncate block h-[18px] leading-none">{text}</span>
-    </div>
-  );
-}
-
 // ─── Tooltip rows ─────────────────────────────────────────────────────────────
 
 function TRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -355,18 +345,12 @@ export function ListItem({ item }: { item: ListItemData }) {
         <TooltipTrigger asChild>
           <div
             className={cn(
-              // Base container
-              "group/listitem flex flex-col rounded-xl overflow-hidden",
-              // Background with subtle gradient
+              "group/listitem flex flex-col gap-2 rounded-xl p-3",
               "bg-gradient-to-b from-secondary/90 to-secondary/70",
-              // Border
               "border border-border/30",
-              // Hover effects
               "hover:from-secondary hover:to-secondary/80",
               "hover:border-border/50 hover:shadow-sm",
-              // Transition
               "transition-all duration-200 ease-out",
-              // Cursor
               "cursor-default",
             )}
             role="listitem"
@@ -377,79 +361,64 @@ export function ListItem({ item }: { item: ListItemData }) {
             }}
             onPointerDown={handlePointerDown}
           >
-            {/* Content area */}
-            <div className="px-3 pt-2.5 pb-2 flex flex-col gap-1.5 overflow-hidden">
-              {/* Title row */}
-              <div className="flex items-center gap-2 h-5 min-w-0">
-                <MarqueeText
-                  text={displayTitle}
+            {/* Row 1: Title + Icon */}
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className={cn(
+                  "truncate flex-1 text-[13px] font-semibold tracking-tight",
+                  "text-secondary-foreground/90",
+                  "group-hover/listitem:text-secondary-foreground",
+                )}
+              >
+                {displayTitle}
+              </span>
+              {status && (
+                <span
                   className={cn(
-                    "text-[13px] font-semibold tracking-tight",
-                    "text-secondary-foreground/90",
-                    "group-hover/listitem:text-secondary-foreground",
+                    "w-6 h-5 flex items-center justify-center rounded-md",
+                    "text-[10px] font-bold",
+                    status.className,
+                    isActive && status.glowColor,
+                    "transition-all duration-200",
+                    "flex-shrink-0",
                   )}
-                />
-                {status && (
-                  <span
-                    className={cn(
-                      "w-6 h-5 flex items-center justify-center rounded-md",
-                      "text-[10px] font-bold",
-                      status.className,
-                      isActive && status.glowColor,
-                      "transition-all duration-200",
-                      "flex-shrink-0",
-                    )}
-                  >
-                    <BadgeIcon icon={status.icon} className="w-3 h-3" />
-                  </span>
-                )}
-              </div>
-
-              {/* Meta row */}
-              <div className="flex items-center gap-2 h-4 min-w-0">
-                {media && (
-                  <div
-                    className={cn(
-                      "w-5 h-5 rounded-full flex items-center justify-center",
-                      "bg-gradient-to-br from-primary/20 to-primary/5",
-                      "border border-primary/20",
-                      "text-[9px] font-bold text-primary/80",
-                      "flex-shrink-0",
-                    )}
-                  >
-                    {initials(media.user)}
-                  </div>
-                )}
-                {media ? (
-                  <MarqueeText
-                    text={media.user}
-                    className="text-[11px] text-secondary-foreground/60 font-medium"
-                  />
-                ) : (
-                  <MarqueeText
-                    text={subText}
-                    className="text-[11px] text-secondary-foreground/60 font-medium"
-                  />
-                )}
-                {metaText && (
-                  <span className="text-[11px] text-secondary-foreground/50 whitespace-nowrap flex-shrink-0">
-                    · {metaText}
-                  </span>
-                )}
-              </div>
+                >
+                  <BadgeIcon icon={status.icon} />
+                </span>
+              )}
             </div>
 
-            {/* Progress bar */}
-            <div className="h-1.5 bg-transparent flex-shrink-0 px-3 pb-2">
-              <div className="h-1.5 bg-border/30 rounded-full overflow-hidden">
+            {/* Row 2: Activity/User + Meta */}
+            <div className="flex items-center gap-2 min-w-0">
+              {media && (
                 <div
                   className={cn(
-                    "h-full rounded-full transition-all duration-500 ease-out",
-                    gradient,
+                    "w-5 h-5 rounded-full flex items-center justify-center",
+                    "bg-gradient-to-br from-primary/20 to-primary/5",
+                    "border border-primary/20",
+                    "text-[9px] font-bold text-primary/80",
+                    "flex-shrink-0",
                   )}
-                  style={{ width: `${Math.max(2, progressPct)}%` }}
-                />
-              </div>
+                >
+                  {initials(media.user)}
+                </div>
+              )}
+              <span className="truncate text-[11px] text-secondary-foreground/60 font-medium">
+                {media ? media.user : subText}
+              </span>
+              {metaText && (
+                <span className="text-[11px] text-secondary-foreground/50 whitespace-nowrap flex-shrink-0">
+                  · {metaText}
+                </span>
+              )}
+            </div>
+
+            {/* Row 3: Progress bar */}
+            <div className="h-1.5 bg-border/30 rounded-full overflow-hidden">
+              <div
+                className={cn("h-full rounded-full transition-all duration-500 ease-out", gradient)}
+                style={{ width: `${Math.max(2, progressPct)}%` }}
+              />
             </div>
           </div>
         </TooltipTrigger>
