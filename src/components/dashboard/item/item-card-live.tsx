@@ -33,7 +33,7 @@ export function ItemCardLive({
 
   // Don't render anything if no data
   if (!effectiveData) {
-    return <div className={cn("mt-3", !item.cleanMode && "h-1")} />;
+    return null;
   }
 
   return (

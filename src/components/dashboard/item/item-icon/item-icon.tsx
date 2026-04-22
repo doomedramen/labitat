@@ -1,5 +1,6 @@
-import { memo } from "react";
-import Image from "next/image";
+"use client";
+
+import { memo, useState } from "react";
 import { resolveIconUrl } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
@@ -7,7 +8,6 @@ interface ItemIconProps {
   iconUrl: string | null;
   label: string;
   serviceIcon?: string | null;
-  onError?: () => void;
   size?: "sm" | "md" | "lg";
 }
 
@@ -37,17 +37,18 @@ export const ItemIcon = memo(function ItemIcon({
   iconUrl,
   label,
   serviceIcon,
-  onError,
   size = "md",
 }: ItemIconProps) {
+  const [hasError, setHasError] = useState(false);
+
   // Use custom iconUrl if provided, otherwise fall back to service icon
   const rawIcon = iconUrl || serviceIcon || null;
   const resolvedUrl = resolveIconUrl(rawIcon);
   const iconSrc = resolvedUrl ? toProxyUrl(resolvedUrl) : null;
   const sizeConfig = SIZE_MAP[size];
 
-  // No icon available — show fallback with gradient
-  if (!iconSrc) {
+  // No icon available or failed to load — show fallback with gradient
+  if (!iconSrc || hasError) {
     return (
       <div
         className={cn(
@@ -79,15 +80,16 @@ export const ItemIcon = memo(function ItemIcon({
         sizeConfig.container,
       )}
     >
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={iconSrc}
         alt={label}
         width={sizeConfig.image}
         height={sizeConfig.image}
         className="h-full w-full object-contain drop-shadow-sm"
-        loading="eager"
+        loading="lazy"
         decoding="async"
-        onError={onError}
+        onError={() => setHasError(true)}
       />
     </div>
   );

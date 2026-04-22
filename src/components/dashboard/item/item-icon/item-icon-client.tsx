@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { ItemIcon as ItemIconServer } from "./item-icon";
+import { ItemIcon as ItemIconBase } from "./item-icon";
 
 interface ItemIconProps {
   iconUrl: string | null;
@@ -10,28 +9,9 @@ interface ItemIconProps {
 }
 
 /**
- * Client wrapper that adds error state handling for image loading.
- * Delegates to server component for rendering.
+ * Client wrapper for ItemIcon.
+ * The base component now handles error states internally.
  */
 export function ItemIconClient({ iconUrl, label, serviceIcon }: ItemIconProps) {
-  const [hasError, setHasError] = useState(false);
-
-  if (hasError) {
-    return (
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center">
-        <span className="text-xs font-medium text-muted-foreground">
-          {label.charAt(0).toUpperCase()}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <ItemIconServer
-      iconUrl={iconUrl}
-      label={label}
-      serviceIcon={serviceIcon}
-      onError={() => setHasError(true)}
-    />
-  );
+  return <ItemIconBase iconUrl={iconUrl} label={label} serviceIcon={serviceIcon} />;
 }

@@ -39,18 +39,6 @@ export function GroupCard({ group, editMode }: { group: GroupWithCache; editMode
         >
           {group.name}
         </h2>
-
-        {/* Item count indicator */}
-        <span
-          className={cn(
-            "text-[11px] font-medium",
-            "text-muted-foreground/50",
-            "transition-colors duration-200",
-            "group-hover/group:text-muted-foreground/70",
-          )}
-        >
-          {group.items.length} {group.items.length === 1 ? "item" : "items"}
-        </span>
       </header>
 
       {/* Items grid */}

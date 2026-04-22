@@ -4,6 +4,22 @@ import { type NextRequest, NextResponse } from "next/server";
 // while revalidating in the background.
 const CACHE_MAX_AGE = 60 * 60 * 24; // 24 h
 const CACHE_SWR = 60 * 60 * 24 * 7; // 7 days
+const FETCH_TIMEOUT_MS = 5000; // 5 second timeout
+
+async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      next: { revalidate: CACHE_MAX_AGE },
+    });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 export async function GET(req: NextRequest) {
   const raw = req.nextUrl.searchParams.get("url");
@@ -24,11 +40,11 @@ export async function GET(req: NextRequest) {
 
   let upstream: Response;
   try {
-    upstream = await fetch(raw, {
-      // Next.js data cache — avoids re-fetching the same icon on every request
-      next: { revalidate: CACHE_MAX_AGE },
-    });
-  } catch {
+    upstream = await fetchWithTimeout(raw, FETCH_TIMEOUT_MS);
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      return new NextResponse("Icon fetch timed out", { status: 504 });
+    }
     return new NextResponse("Failed to fetch icon", { status: 502 });
   }
 
