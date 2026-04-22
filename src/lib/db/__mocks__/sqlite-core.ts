@@ -8,7 +8,7 @@ const chain = {
   unique() {
     return this;
   },
-  default(sql: any) {
+  default(_sql: any) {
     return this;
   },
   references() {
@@ -18,12 +18,12 @@ const chain = {
 
 export const sqliteTable = (name: string, config: any) => config;
 
-export const text = (col: string) => {
+export const text = (_col: string) => {
   const obj = { ...chain };
   return obj;
 };
 
-export const integer = (col: string) => {
+export const integer = (_col: string) => {
   const obj = { ...chain };
   return obj;
 };

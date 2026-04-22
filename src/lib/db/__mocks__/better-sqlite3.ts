@@ -1,4 +1,4 @@
-export default function Database(path: string) {
+export default function Database(_path: string) {
   return {
     pragma: () => {},
   };

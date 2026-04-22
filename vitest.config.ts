@@ -1,13 +1,13 @@
 import { defineConfig } from "vitest/config";
 import path from "path";
 import { fileURLToPath } from "node:url";
-const dirname =
+const _dirname =
   typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
+      "@": path.resolve(_dirname, "src"),
     },
   },
   test: {

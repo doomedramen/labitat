@@ -20,6 +20,7 @@ import { EditMode } from "./edit-mode";
 import { ViewMode } from "./view-mode";
 import { Dialogs } from "./dialogs";
 import { EditBar } from "./edit-bar";
+import { Footer } from "./footer";
 import { reorderGroups } from "@/actions/groups";
 import { reorderItems } from "@/actions/items";
 import { updateDashboardTitle } from "@/actions/settings";
@@ -268,6 +269,8 @@ export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientPr
           }}
         />
       )}
+
+      <Footer editMode={editMode} />
 
       <Dialogs
         loginOpen={loginOpen}

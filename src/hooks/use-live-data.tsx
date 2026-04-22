@@ -21,6 +21,8 @@ class LiveDataStore {
   private listeners = new Set<() => void>();
   private _sseState: SseState = "disconnected";
   private sseListeners = new Set<() => void>();
+  private _lastUpdateAt: number = 0;
+  private lastUpdateListeners = new Set<() => void>();
 
   get(itemId: string): LiveDataEntry {
     return this.cache.get(itemId) ?? DEFAULT_ENTRY;
@@ -28,7 +30,15 @@ class LiveDataStore {
 
   set(itemId: string, data: LiveDataEntry): void {
     this.cache.set(itemId, data);
+    this._lastUpdateAt = Date.now();
     for (const l of this.listeners) {
+      try {
+        l();
+      } catch {
+        /* listener removed mid-iteration */
+      }
+    }
+    for (const l of this.lastUpdateListeners) {
       try {
         l();
       } catch {
@@ -53,6 +63,21 @@ class LiveDataStore {
     }
   }
 
+  get lastUpdateAt(): number {
+    return this._lastUpdateAt;
+  }
+
+  touchLastUpdate(): void {
+    this._lastUpdateAt = Date.now();
+    for (const l of this.lastUpdateListeners) {
+      try {
+        l();
+      } catch {
+        /* listener removed mid-iteration */
+      }
+    }
+  }
+
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => {
@@ -64,6 +89,13 @@ class LiveDataStore {
     this.sseListeners.add(listener);
     return () => {
       this.sseListeners.delete(listener);
+    };
+  };
+
+  subscribeLastUpdate = (listener: () => void): (() => void) => {
+    this.lastUpdateListeners.add(listener);
+    return () => {
+      this.lastUpdateListeners.delete(listener);
     };
   };
 }
@@ -92,6 +124,17 @@ export function useSseState(): SseState {
     liveDataStore.subscribeSse,
     () => liveDataStore.sseState,
     () => "disconnected" as SseState, // server snapshot — SSE is client-only
+  );
+}
+
+/**
+ * Subscribe to last data update timestamp.
+ */
+export function useLastUpdateAt(): number {
+  return useSyncExternalStore(
+    liveDataStore.subscribeLastUpdate,
+    () => liveDataStore.lastUpdateAt,
+    () => 0, // server snapshot — no updates during SSR
   );
 }
 
@@ -142,6 +185,10 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
     es.onopen = () => {
       backoffRef.current = 1000;
       liveDataStore.setSseState("connected");
+      // Set initial last update time when connecting (if not already set)
+      if (liveDataStore.lastUpdateAt === 0) {
+        liveDataStore.touchLastUpdate();
+      }
     };
 
     es.onmessage = (event) => {
