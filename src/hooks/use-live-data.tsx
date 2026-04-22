@@ -251,11 +251,11 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
           return;
         }
         if (msg.type === "update" && msg.itemId) {
-          console.log(
-            `[${new Date().toISOString()}] [live-data] Received update for ${msg.itemId}:`,
-            msg.pingStatus?.state ?? "no pingStatus",
-            msg.fromCache ? "(from cache)" : "(fresh)",
-          );
+          // console.log(
+          //   `[${new Date().toISOString()}] [live-data] Received update for ${msg.itemId}:`,
+          //   msg.pingStatus?.state ?? "no pingStatus",
+          //   msg.fromCache ? "(from cache)" : "(fresh)",
+          // );
           liveDataStore.set(
             msg.itemId,
             {

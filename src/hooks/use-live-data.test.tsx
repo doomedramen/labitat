@@ -137,9 +137,9 @@ describe("LiveDataProvider", () => {
     const cachedStatus = screen.getByRole("status", { name: "Healthy (cached)" });
     expect(cachedStatus).toBeInTheDocument();
 
-    // When cached, the progress ring should have dashed style and reduced opacity
+    // When cached, there's no progress ring - just the pulsing dot
     const cachedRing = cachedStatus.querySelector("circle");
-    expect(cachedRing).toHaveStyle({ opacity: "0.5" });
+    expect(cachedRing).toBeNull();
 
     act(() => {
       MockEventSource.instances[0].onmessage?.({
@@ -154,8 +154,9 @@ describe("LiveDataProvider", () => {
     const liveStatus = screen.getByRole("status", { name: "Healthy" });
     expect(liveStatus).toBeInTheDocument();
 
-    // When live, the background track should have reduced opacity
+    // When live, the progress ring should be present with reduced opacity background
     const liveRing = liveStatus.querySelector("circle");
+    expect(liveRing).not.toBeNull();
     expect(liveRing).toHaveStyle({ opacity: "0.2" });
 
     view.unmount();

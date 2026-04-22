@@ -100,10 +100,10 @@ class ServerCache {
       });
 
     // Notify listeners (SSE)
-    console.log(
-      `[server-cache] Notifying ${this.listeners.size} listeners for ${itemId}:`,
-      updated.pingStatus?.state ?? updated.widgetData?._status ?? "unknown",
-    );
+    // console.log(
+    //   `[server-cache] Notifying ${this.listeners.size} listeners for ${itemId}:`,
+    //   updated.pingStatus?.state ?? updated.widgetData?._status ?? "unknown",
+    // );
     for (const cb of this.listeners) {
       try {
         cb(itemId, updated.widgetData, updated.pingStatus);

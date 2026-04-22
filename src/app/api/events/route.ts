@@ -80,17 +80,20 @@ export async function GET(request: NextRequest) {
         controller.close();
       });
 
-      // Send current cache snapshot. Items that update between
-      // subscription and here are deduplicated via sentIds.
-      for (const [id, data] of serverCache.getAll()) {
-        if (!sentIds.has(id)) {
-          send({
-            type: "update",
-            itemId: id,
-            widgetData: data.widgetData,
-            pingStatus: data.pingStatus,
-            fromCache: true, // Flag as cache snapshot
-          });
+      // Send current cache snapshot only if not triggering a fresh poll.
+      // When wasIdle is true, pollNow() is already fetching fresh data,
+      // so skip the snapshot to avoid sending stale data before fresh results.
+      if (!wasIdle) {
+        for (const [id, data] of serverCache.getAll()) {
+          if (!sentIds.has(id)) {
+            send({
+              type: "update",
+              itemId: id,
+              widgetData: data.widgetData,
+              pingStatus: data.pingStatus,
+              fromCache: true, // Flag as cache snapshot
+            });
+          }
         }
       }
     },
