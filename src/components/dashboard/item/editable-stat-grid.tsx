@@ -31,7 +31,6 @@ import { EyeOff } from "lucide-react";
 
 interface EditableStatGridProps {
   items: StatItem[];
-  cols?: number;
   displayMode?: StatDisplayMode;
   order: StatCardOrder | null;
   onOrderChange: (order: StatCardOrder | null) => void;
@@ -39,7 +38,6 @@ interface EditableStatGridProps {
 
 export function EditableStatGrid({
   items,
-  cols,
   displayMode = "label",
   order,
   onOrderChange,
@@ -137,10 +135,6 @@ export function EditableStatGrid({
     setActiveId(event.active.id as string);
   }, []);
 
-  const gridStyle: React.CSSProperties = {
-    gridTemplateColumns: cols ? `repeat(${cols}, 1fr)` : "repeat(auto-fit, minmax(60px, 1fr))",
-  };
-
   const activeItem = activeId
     ? [...activeItems, ...unusedItems].find((i) => i.id === activeId)
     : null;
@@ -153,12 +147,12 @@ export function EditableStatGrid({
       onDragEnd={handleDragEnd}
     >
       <div className="space-y-3">
-        {/* Active items */}
+        {/* Active items - 2x2 or 4-per-row layout */}
         <SortableContext
           items={activeItems.map((i: StatItem) => i.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="grid gap-1.5 text-xs" style={gridStyle}>
+          <div className="grid grid-cols-2 gap-1.5 text-xs sm:grid-cols-4">
             {activeItems.map((item) => (
               <EditableStatCard key={item.id} item={item} displayMode={displayMode} />
             ))}
@@ -281,12 +275,7 @@ function UnusedZone({ items, displayMode }: { items: StatItem[]; displayMode: St
           items={items.map((i: StatItem) => i.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div
-            className="grid gap-1.5 text-xs"
-            style={{
-              gridTemplateColumns: "repeat(auto-fit, minmax(60px, 1fr))",
-            }}
-          >
+          <div className="grid grid-cols-2 gap-1.5 text-xs sm:grid-cols-4">
             {items.map((item) => (
               <UnusedStatCard key={item.id} item={item} displayMode={displayMode} />
             ))}

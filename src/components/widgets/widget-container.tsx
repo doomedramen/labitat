@@ -27,8 +27,8 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
   // Show loading skeleton when loading
   if (payload.loading) {
     return (
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(70px,1fr))] gap-2">
-        {[0, 1, 2].map((i) => (
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
           <Skeleton
             key={i}
             className={cn("h-16 rounded-xl", "bg-gradient-to-b from-secondary/50 to-secondary/30")}

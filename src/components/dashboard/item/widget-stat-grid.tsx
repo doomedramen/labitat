@@ -1,6 +1,7 @@
 /**
  * Server-compatible stat card grid.
  * Renders stat cards directly without DnD.
+ * Enforces 2x2 or 4-per-row layout to prevent orphans.
  */
 
 import { cn } from "@/lib/utils";
@@ -9,16 +10,18 @@ import type { StatItem } from "@/components/widgets";
 
 interface WidgetStatGridProps {
   items: StatItem[];
-  cols?: number;
 }
 
-export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
-  const gridStyle: React.CSSProperties = {
-    gridTemplateColumns: cols ? `repeat(${cols}, 1fr)` : "repeat(auto-fit, minmax(70px, 1fr))",
-  };
-
+export function WidgetStatGrid({ items }: WidgetStatGridProps) {
   return (
-    <div className={cn("grid gap-2", "text-xs")} style={gridStyle}>
+    <div
+      className={cn(
+        "grid gap-2 text-xs",
+        // Mobile: 2 columns (2x2 layout for 4 items)
+        // Desktop: 4 columns (4 per row)
+        "grid-cols-2 sm:grid-cols-4",
+      )}
+    >
       {items.map((item) => (
         <StatCard
           key={item.id}
