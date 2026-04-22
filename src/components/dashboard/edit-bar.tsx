@@ -18,7 +18,12 @@ export function EditBar({ onDone }: EditBarProps) {
           <Button
             variant="outline"
             className="dark:!bg-background bg-background"
-            onClick={() => startTransition(() => logout())}
+            onClick={() =>
+              startTransition(() => {
+                onDone(); // Exit edit mode first
+                logout();
+              })
+            }
           >
             <LogOut className="mr-1.5 h-4 w-4" />
             Sign out
