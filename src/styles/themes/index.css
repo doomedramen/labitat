@@ -1,3 +1,7 @@
 /* Labitat Theme Palettes */
 @import "./semantic-mapping.css";
 @import "./themes.css";
+
+/* Theme System v2 (Next Generation) */
+@import "./semantic-mapping-v2.css";
+@import "./themes-v2.css";

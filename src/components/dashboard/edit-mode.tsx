@@ -25,6 +25,7 @@ interface EditModeProps {
   onAddItem: (groupId: string) => void;
   onEditItem: (item: ItemWithCache) => void;
   onGroupsChanged: (groups: GroupWithItems[]) => void;
+  onAddGroup: () => void;
 }
 
 export function EditMode({
@@ -38,6 +39,7 @@ export function EditMode({
   onAddItem,
   onEditItem,
   onGroupsChanged,
+  onAddGroup,
 }: EditModeProps) {
   const activeItem = activeId
     ? (groups.flatMap((g) => g.items).find((i) => i.id === activeId) ?? null)
@@ -65,6 +67,13 @@ export function EditMode({
               onGroupsChanged={onGroupsChanged}
             />
           ))}
+          <button
+            type="button"
+            onClick={onAddGroup}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/50 py-4 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+          >
+            Add Group
+          </button>
         </div>
       </SortableContext>
 

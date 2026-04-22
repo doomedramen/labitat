@@ -12,9 +12,9 @@ type GlancesPerCpuData = {
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function CoreBar({ pct }: { pct: number }) {
-  const barColor = pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-amber-500" : "bg-primary";
+  const barColor = pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-warning" : "bg-primary";
   const textColor =
-    pct >= 90 ? "text-destructive" : pct >= 70 ? "text-amber-500" : "text-secondary-foreground/60";
+    pct >= 90 ? "text-destructive" : pct >= 70 ? "text-warning" : "text-secondary-foreground/60";
 
   return (
     <div className="flex items-center gap-1.5">

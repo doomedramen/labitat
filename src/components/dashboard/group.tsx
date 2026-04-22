@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { GroupWithCache } from "@/lib/types";
 import { ItemCard } from "./item/item-card";
+import { Folder } from "lucide-react";
 
 /**
  * Server-compatible GroupCard.
@@ -9,13 +10,48 @@ import { ItemCard } from "./item/item-card";
  */
 export function GroupCard({ group, editMode }: { group: GroupWithCache; editMode: boolean }) {
   return (
-    <div className="group/group relative">
+    <section className={cn("group/group relative", "rounded-2xl", "transition-all duration-300")}>
       {/* Group header */}
-      <div className="mb-2 flex items-center gap-2">
-        <h2 className="flex-1 text-sm font-medium text-muted-foreground transition-colors duration-200 select-none group-hover/group:text-foreground">
+      <header className={cn("mb-3 flex items-center gap-2 px-1", "transition-all duration-200")}>
+        {/* Group icon/indicator */}
+        <div
+          className={cn(
+            "flex h-5 w-5 items-center justify-center rounded-md",
+            "bg-gradient-to-br from-muted/80 to-muted/40",
+            "text-muted-foreground/70",
+            "transition-all duration-200",
+            "group-hover/group:from-muted group-hover/group:to-muted/60",
+            "group-hover/group:text-muted-foreground",
+          )}
+        >
+          <Folder className="h-3 w-3" />
+        </div>
+
+        {/* Group title */}
+        <h2
+          className={cn(
+            "flex-1 text-sm font-semibold",
+            "text-muted-foreground/80",
+            "transition-all duration-200",
+            "select-none",
+            "group-hover/group:text-foreground",
+          )}
+        >
           {group.name}
         </h2>
-      </div>
+
+        {/* Item count indicator */}
+        <span
+          className={cn(
+            "text-[11px] font-medium",
+            "text-muted-foreground/50",
+            "transition-colors duration-200",
+            "group-hover/group:text-muted-foreground/70",
+          )}
+        >
+          {group.items.length} {group.items.length === 1 ? "item" : "items"}
+        </span>
+      </header>
 
       {/* Items grid */}
       <div
@@ -28,6 +64,6 @@ export function GroupCard({ group, editMode }: { group: GroupWithCache; editMode
           <ItemCard key={item.id} item={item} editMode={editMode} />
         ))}
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,0 +1,209 @@
+/*
+ * ============================================================
+ * Semantic Theme Mapping v2 - Dynamic State Generation
+ * ============================================================
+ *
+ * This file maps the 20 base theme keys to shadcn/ui variables
+ * and generates dynamic state variants using CSS color-mix().
+ *
+ * NO STATE VARIABLES NEEDED IN THEMES - they're calculated here!
+ */
+
+/* ============================================================
+   BASE MAPPINGS
+   ============================================================ */
+
+[data-theme-version="2"] {
+  /* Surface colors */
+  --background: var(--color-bg-root);
+  --card: var(--color-bg-surface);
+  --popover: var(--color-bg-elevated);
+  --muted: var(--color-bg-overlay);
+
+  /* Content colors */
+  --foreground: var(--color-text-primary);
+  --card-foreground: var(--color-text-primary);
+  --popover-foreground: var(--color-text-primary);
+  --muted-foreground: var(--color-text-muted);
+  --secondary-foreground: var(--color-text-secondary);
+
+  /* Border colors */
+  --border: var(--color-border-default);
+  --input: var(--color-border-default);
+  --ring: var(--color-accent-primary);
+
+  /* Accent colors */
+  --primary: var(--color-accent-primary);
+  --primary-foreground: var(--color-text-inverse);
+  --accent: var(--color-accent-secondary);
+  --accent-foreground: var(--color-text-inverse);
+  --secondary: var(--color-bg-overlay);
+
+  /* Semantic colors */
+  --destructive: var(--color-semantic-error);
+  --success: var(--color-semantic-success);
+  --warning: var(--color-semantic-warning);
+  --error: var(--color-semantic-error);
+  --info: var(--color-semantic-info);
+
+  /* Chart colors */
+  --chart-1: var(--color-data-1);
+  --chart-2: var(--color-data-2);
+  --chart-3: var(--color-data-3);
+  --chart-4: var(--color-data-4);
+  --chart-5: var(--color-data-5);
+  --chart-6: var(--color-data-6);
+  --chart-7: var(--color-data-7);
+  --chart-8: var(--color-data-8);
+
+  /* Sidebar (same as main) */
+  --sidebar: var(--color-bg-root);
+  --sidebar-foreground: var(--color-text-primary);
+  --sidebar-primary: var(--color-accent-primary);
+  --sidebar-primary-foreground: var(--color-text-inverse);
+  --sidebar-accent: var(--color-bg-surface);
+  --sidebar-accent-foreground: var(--color-text-primary);
+  --sidebar-border: var(--color-border-default);
+  --sidebar-ring: var(--color-accent-primary);
+}
+
+/* ============================================================
+   DYNAMIC STATE GENERATION
+   Using color-mix() for hover, active, disabled states
+   ============================================================ */
+
+[data-theme-version="2"] {
+  /* Primary states */
+  --primary-hover: color-mix(in oklch, var(--primary) 92%, var(--color-text-inverse));
+  --primary-active: color-mix(in oklch, var(--primary) 85%, var(--color-text-inverse));
+  --primary-subtle: color-mix(in oklch, var(--primary) 15%, var(--color-bg-root));
+  --primary-subtle-hover: color-mix(in oklch, var(--primary) 25%, var(--color-bg-root));
+
+  /* Secondary states */
+  --secondary-hover: color-mix(in oklch, var(--secondary) 95%, var(--color-text-primary));
+  --secondary-active: color-mix(in oklch, var(--secondary) 90%, var(--color-text-primary));
+
+  /* Accent states */
+  --accent-hover: color-mix(in oklch, var(--accent) 92%, var(--color-text-inverse));
+  --accent-active: color-mix(in oklch, var(--accent) 85%, var(--color-text-inverse));
+
+  /* Destructive/Error states */
+  --destructive-hover: color-mix(in oklch, var(--destructive) 92%, var(--color-text-inverse));
+  --destructive-active: color-mix(in oklch, var(--destructive) 85%, var(--color-text-inverse));
+  --destructive-subtle: color-mix(in oklch, var(--destructive) 15%, var(--color-bg-root));
+  --destructive-subtle-hover: color-mix(in oklch, var(--destructive) 25%, var(--color-bg-root));
+
+  /* Success states */
+  --success-hover: color-mix(in oklch, var(--success) 92%, var(--color-text-inverse));
+  --success-active: color-mix(in oklch, var(--success) 85%, var(--color-text-inverse));
+  --success-subtle: color-mix(in oklch, var(--success) 15%, var(--color-bg-root));
+  --success-subtle-hover: color-mix(in oklch, var(--success) 25%, var(--color-bg-root));
+
+  /* Warning states */
+  --warning-hover: color-mix(in oklch, var(--warning) 92%, var(--color-text-inverse));
+  --warning-active: color-mix(in oklch, var(--warning) 85%, var(--color-text-inverse));
+  --warning-subtle: color-mix(in oklch, var(--warning) 15%, var(--color-bg-root));
+  --warning-subtle-hover: color-mix(in oklch, var(--warning) 25%, var(--color-bg-root));
+
+  /* Info states */
+  --info-hover: color-mix(in oklch, var(--info) 92%, var(--color-text-inverse));
+  --info-active: color-mix(in oklch, var(--info) 85%, var(--color-text-inverse));
+  --info-subtle: color-mix(in oklch, var(--info) 15%, var(--color-bg-root));
+  --info-subtle-hover: color-mix(in oklch, var(--info) 25%, var(--color-bg-root));
+
+  /* Muted states */
+  --muted-hover: color-mix(in oklch, var(--muted) 95%, var(--color-text-primary));
+
+  /* Border states */
+  --border-hover: color-mix(in oklch, var(--color-border-default) 80%, var(--color-accent-primary));
+  --border-focus: var(--color-accent-primary);
+
+  /* Text states */
+  --text-primary-hover: var(--color-accent-primary);
+  --text-secondary-hover: var(--color-text-primary);
+}
+
+/* ============================================================
+   SHADOW SYSTEM
+   Themed shadows using color-mix()
+   ============================================================ */
+
+[data-theme-version="2"] {
+  /* Shadow base color - uses primary with low opacity */
+  --shadow-color: color-mix(in oklch, var(--color-accent-primary) 15%, oklch(0% 0 0));
+
+  /* Elevation levels */
+  --shadow-2xs: 0 1px 2px 0 color-mix(in oklch, var(--shadow-color) 5%, transparent);
+  --shadow-xs: 0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 8%, transparent);
+  --shadow-sm: 0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 12%, transparent),
+               0 1px 2px -1px color-mix(in oklch, var(--shadow-color) 10%, transparent);
+  --shadow-md: 0 4px 6px -1px color-mix(in oklch, var(--shadow-color) 15%, transparent),
+               0 2px 4px -2px color-mix(in oklch, var(--shadow-color) 12%, transparent);
+  --shadow-lg: 0 10px 15px -3px color-mix(in oklch, var(--shadow-color) 18%, transparent),
+               0 4px 6px -4px color-mix(in oklch, var(--shadow-color) 14%, transparent);
+  --shadow-xl: 0 20px 25px -5px color-mix(in oklch, var(--shadow-color) 20%, transparent),
+               0 8px 10px -6px color-mix(in oklch, var(--shadow-color) 15%, transparent);
+  --shadow-2xl: 0 25px 50px -12px color-mix(in oklch, var(--shadow-color) 25%, transparent);
+
+  /* Colored glow shadows for semantic states */
+  --shadow-success: 0 0 20px -5px color-mix(in oklch, var(--success) 40%, transparent);
+  --shadow-warning: 0 0 20px -5px color-mix(in oklch, var(--warning) 40%, transparent);
+  --shadow-error: 0 0 20px -5px color-mix(in oklch, var(--destructive) 50%, transparent);
+  --shadow-info: 0 0 20px -5px color-mix(in oklch, var(--info) 40%, transparent);
+  --shadow-primary: 0 0 20px -5px color-mix(in oklch, var(--primary) 40%, transparent);
+}
+
+/* ============================================================
+   UTILITY VARIABLES
+   Convenience aliases for common patterns
+   ============================================================ */
+
+[data-theme-version="2"] {
+  /* Surface hierarchy aliases */
+  --surface-default: var(--color-bg-surface);
+  --surface-elevated: var(--color-bg-elevated);
+  --surface-overlay: var(--color-bg-overlay);
+
+  /* Content aliases */
+  --text-default: var(--color-text-primary);
+  --text-label: var(--color-text-secondary);
+  --text-hint: var(--color-text-muted);
+  --text-on-accent: var(--color-text-inverse);
+
+  /* Status aliases */
+  --status-healthy: var(--color-semantic-success);
+  --status-degraded: var(--color-semantic-warning);
+  --status-error: var(--color-semantic-error);
+  --status-info: var(--color-semantic-info);
+}
+
+/* ============================================================
+   DARK MODE ADJUSTMENTS
+   Fine-tune shadows and opacity for dark themes
+   ============================================================ */
+
+[data-theme-version="2"]:is(.dark, [data-palette="dracula"], [data-palette="catppuccin_frappe"], [data-palette="nord"], [data-palette="tokyo_night"], [data-palette="one_dark_pro"], [data-palette="synthwave84"], [data-palette="gruvbox"], [data-palette="rose_pine"], [data-palette="everforest"], [data-palette="kanagawa"]) {
+  /* Dark themes need stronger shadows for visibility */
+  --shadow-color: color-mix(in oklch, var(--color-accent-primary) 25%, oklch(0% 0 0));
+
+  --shadow-2xs: 0 1px 2px 0 color-mix(in oklch, var(--shadow-color) 15%, transparent);
+  --shadow-xs: 0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 20%, transparent);
+  --shadow-sm: 0 1px 3px 0 color-mix(in oklch, var(--shadow-color) 25%, transparent),
+               0 1px 2px -1px color-mix(in oklch, var(--shadow-color) 20%, transparent);
+  --shadow-md: 0 4px 6px -1px color-mix(in oklch, var(--shadow-color) 30%, transparent),
+               0 2px 4px -2px color-mix(in oklch, var(--shadow-color) 25%, transparent);
+  --shadow-lg: 0 10px 15px -3px color-mix(in oklch, var(--shadow-color) 35%, transparent),
+               0 4px 6px -4px color-mix(in oklch, var(--shadow-color) 30%, transparent);
+  --shadow-xl: 0 20px 25px -5px color-mix(in oklch, var(--shadow-color) 40%, transparent),
+               0 8px 10px -6px color-mix(in oklch, var(--shadow-color) 35%, transparent);
+  --shadow-2xl: 0 25px 50px -12px color-mix(in oklch, var(--shadow-color) 45%, transparent);
+}
+
+/* ============================================================
+   BODY BACKGROUND
+   ============================================================ */
+
+[data-theme-version="2"] body {
+  background-color: var(--color-bg-root);
+  color: var(--color-text-primary);
+}

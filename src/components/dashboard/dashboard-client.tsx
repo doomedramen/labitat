@@ -225,46 +225,39 @@ export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientPr
         onSignInClick={() => setLoginOpen(true)}
       />
 
-      {editMode ? (
-        <EditMode
-          groups={localGroups}
-          sensors={sensors}
-          activeId={activeId}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-          onGroupsChanged={handleGroupsUpdated}
-          onEditGroup={(group) => {
-            setEditingGroup(group);
-            setGroupDialogOpen(true);
-          }}
-          onAddItem={(groupId) => {
-            setEditingItem(null);
-            setTargetGroupId(groupId);
-            setItemDialogOpen(true);
-          }}
-          onEditItem={(item) => {
-            setEditingItem(item);
-            setTargetGroupId(findItemGroupId(item.id) ?? "");
-            setItemDialogOpen(true);
-          }}
-        />
-      ) : (
-        <ViewMode groups={localGroups} />
-      )}
-
-      {editMode && (
-        <button
-          type="button"
-          onClick={() => {
-            setEditingGroup(null);
-            setGroupDialogOpen(true);
-          }}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/50 py-4 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
-        >
-          Add Group
-        </button>
-      )}
+      <div className={editMode ? "pb-20" : undefined}>
+        {editMode ? (
+          <EditMode
+            groups={localGroups}
+            sensors={sensors}
+            activeId={activeId}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+            onGroupsChanged={handleGroupsUpdated}
+            onEditGroup={(group) => {
+              setEditingGroup(group);
+              setGroupDialogOpen(true);
+            }}
+            onAddItem={(groupId) => {
+              setEditingItem(null);
+              setTargetGroupId(groupId);
+              setItemDialogOpen(true);
+            }}
+            onEditItem={(item) => {
+              setEditingItem(item);
+              setTargetGroupId(findItemGroupId(item.id) ?? "");
+              setItemDialogOpen(true);
+            }}
+            onAddGroup={() => {
+              setEditingGroup(null);
+              setGroupDialogOpen(true);
+            }}
+          />
+        ) : (
+          <ViewMode groups={localGroups} />
+        )}
+      </div>
 
       {editMode && isLoggedIn && (
         <EditBar

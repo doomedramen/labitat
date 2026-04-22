@@ -3,6 +3,7 @@
  * Renders stat cards directly without DnD.
  */
 
+import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/item/stat-card";
 import type { StatItem } from "@/components/widgets";
 
@@ -13,11 +14,11 @@ interface WidgetStatGridProps {
 
 export function WidgetStatGrid({ items, cols }: WidgetStatGridProps) {
   const gridStyle: React.CSSProperties = {
-    gridTemplateColumns: cols ? `repeat(${cols}, 1fr)` : "repeat(auto-fit, minmax(60px, 1fr))",
+    gridTemplateColumns: cols ? `repeat(${cols}, 1fr)` : "repeat(auto-fit, minmax(70px, 1fr))",
   };
 
   return (
-    <div className="grid gap-1.5 text-xs" style={gridStyle}>
+    <div className={cn("grid gap-2", "text-xs")} style={gridStyle}>
       {items.map((item) => (
         <StatCard
           key={item.id}

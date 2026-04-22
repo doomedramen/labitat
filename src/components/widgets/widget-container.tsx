@@ -7,6 +7,7 @@
  * In edit mode: uses EditableStatGrid for drag-to-reorder and unused area.
  */
 
+import { cn } from "@/lib/utils";
 import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid";
 import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,9 +27,12 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
   // Show loading skeleton when loading
   if (payload.loading) {
     return (
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-1.5">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(70px,1fr))] gap-2">
         {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-[52px] rounded-md" />
+          <Skeleton
+            key={i}
+            className={cn("h-16 rounded-xl", "bg-gradient-to-b from-secondary/50 to-secondary/30")}
+          />
         ))}
       </div>
     );
@@ -37,9 +41,23 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
   // Show error state
   if (payload.error) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 py-4 text-center">
-        <AlertCircle className="h-5 w-5 text-destructive" />
-        <p className="text-xs text-destructive">{payload.error}</p>
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-2",
+          "rounded-xl border border-destructive/20",
+          "bg-destructive/5 py-4 text-center",
+          "px-3",
+        )}
+      >
+        <div
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-full",
+            "bg-destructive/10",
+          )}
+        >
+          <AlertCircle className="h-5 w-5 text-destructive" />
+        </div>
+        <p className="text-xs font-medium text-destructive/80">{payload.error}</p>
       </div>
     );
   }
@@ -60,7 +78,7 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
     : payload.stats.filter((stat) => !unusedIds.has(stat.id));
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {hasStats &&
         (isEditMode ? (
           <EditableStatGrid

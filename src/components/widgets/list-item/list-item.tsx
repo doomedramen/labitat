@@ -60,79 +60,98 @@ export interface MediaItem {
 
 export type ListItemData = DownloadItem | MediaItem;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Status Configuration ─────────────────────────────────────────────────────
 
-const BADGE: Record<
-  string,
-  {
-    icon: "play" | "pause" | "download" | "import" | "error" | "queued" | "stalled" | "fetch";
-    label: string;
-    className: string;
-  }
-> = {
+interface StatusConfig {
+  icon: "play" | "pause" | "download" | "import" | "error" | "queued" | "stalled" | "fetch";
+  label: string;
+  className: string;
+  glowColor: string;
+}
+
+const STATUS_CONFIG: Record<string, StatusConfig> = {
   Downloading: {
     icon: "download",
     label: "DL",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    className: "bg-primary/15 text-primary dark:bg-primary/20",
+    glowColor: "shadow-[0_0_8px_-2px_hsl(var(--primary)/0.4)]",
   },
   "Forced downloading": {
     icon: "download",
     label: "DL",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    className: "bg-primary/20 text-primary dark:bg-primary/30",
+    glowColor: "shadow-[0_0_12px_-2px_hsl(var(--primary)/0.5)]",
   },
   Importing: {
     icon: "import",
     label: "IMP",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    className: "bg-success/15 text-success dark:bg-success/20",
+    glowColor: "shadow-[0_0_8px_-2px_hsl(var(--success)/0.4)]",
   },
   Queued: {
     icon: "queued",
     label: "Q",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    className: "bg-muted/60 text-muted-foreground",
+    glowColor: "",
   },
   Stalled: {
     icon: "stalled",
     label: "ST",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    className: "bg-warning/15 text-warning dark:bg-warning/20",
+    glowColor: "shadow-[0_0_8px_-2px_hsl(var(--warning)/0.3)]",
   },
   Paused: {
     icon: "pause",
-    label: "⏸",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    label: "PA",
+    className: "bg-muted/80 text-muted-foreground",
+    glowColor: "",
   },
   "Fetching metadata": {
     icon: "fetch",
-    label: "FT",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    label: "META",
+    className: "bg-info/15 text-info dark:bg-info/20",
+    glowColor: "shadow-[0_0_8px_-2px_hsl(var(--info)/0.4)]",
   },
   "Import pending": {
     icon: "import",
     label: "IP",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    className: "bg-success/15 text-success dark:bg-success/20",
+    glowColor: "shadow-[0_0_8px_-2px_hsl(var(--success)/0.4)]",
   },
   "Failed pending": {
     icon: "error",
     label: "FP",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    className: "bg-destructive/15 text-destructive dark:bg-destructive/20",
+    glowColor: "shadow-[0_0_8px_-2px_hsl(var(--destructive)/0.4)]",
   },
   Failed: {
     icon: "error",
     label: "ERR",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    className: "bg-destructive/20 text-destructive dark:bg-destructive/25",
+    glowColor: "shadow-[0_0_10px_-2px_hsl(var(--destructive)/0.5)]",
   },
   playing: {
     icon: "play",
-    label: "▶",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    label: "PLAY",
+    className: "bg-success/15 text-success dark:bg-success/20",
+    glowColor: "shadow-[0_0_8px_-2px_hsl(var(--success)/0.4)]",
   },
   paused: {
     icon: "pause",
-    label: "⏸",
-    className: "bg-primary/15 text-primary dark:bg-primary/25",
+    label: "PAUSE",
+    className: "bg-muted/80 text-muted-foreground",
+    glowColor: "",
   },
 };
 
-const PROGRESS_COLOR = "bg-primary/50";
+const PROGRESS_GRADIENTS = {
+  active: "bg-gradient-to-r from-primary/60 via-primary/80 to-primary/60",
+  success: "bg-gradient-to-r from-success/60 via-success/80 to-success/60",
+  warning: "bg-gradient-to-r from-warning/60 via-warning/80 to-warning/60",
+  error: "bg-gradient-to-r from-destructive/60 via-destructive/80 to-destructive/60",
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -143,30 +162,44 @@ function formatTime(seconds: number): string {
 }
 
 function initials(name: string): string {
-  return name.slice(0, 1).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
 }
 
 function BadgeIcon({ icon, className }: { icon: string; className?: string }) {
+  const iconClass = cn("w-3 h-3", className);
   switch (icon) {
     case "play":
-      return <Play className={cn("w-3 h-3", className)} />;
+      return <Play className={iconClass} />;
     case "pause":
-      return <Pause className={cn("w-3 h-3", className)} />;
+      return <Pause className={iconClass} />;
     case "download":
-      return <Download className={cn("w-3 h-3", className)} />;
+      return <Download className={iconClass} />;
     case "import":
-      return <Upload className={cn("w-3 h-3", className)} />;
+      return <Upload className={iconClass} />;
     case "queued":
-      return <Clock className={cn("w-3 h-3", className)} />;
+      return <Clock className={iconClass} />;
     case "stalled":
-      return <Hourglass className={cn("w-3 h-3", className)} />;
+      return <Hourglass className={iconClass} />;
     case "fetch":
-      return <Loader2 className={cn("w-3 h-3", className)} />;
+      return <Loader2 className={cn(iconClass, "animate-spin")} />;
     case "error":
-      return <AlertCircle className={cn("w-3 h-3", className)} />;
+      return <AlertCircle className={iconClass} />;
     default:
       return null;
   }
+}
+
+function getProgressGradient(activity: ActivityState | MediaState): string {
+  if (activity === "Failed" || activity === "Failed pending") {
+    return PROGRESS_GRADIENTS.error;
+  }
+  if (activity === "Importing" || activity === "Import pending" || activity === "playing") {
+    return PROGRESS_GRADIENTS.success;
+  }
+  if (activity === "Stalled") {
+    return PROGRESS_GRADIENTS.warning;
+  }
+  return PROGRESS_GRADIENTS.active;
 }
 
 // ─── Marquee ──────────────────────────────────────────────────────────────────
@@ -183,21 +216,24 @@ function MarqueeText({ text, className }: { text: string; className?: string }) 
 
 function TRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between gap-2 text-[11px] py-[1.5px]">
+    <div className="flex justify-between gap-2 text-[11px] py-[2px]">
       <span className="text-secondary-foreground/60 whitespace-nowrap">{label}</span>
-      <span className="font-medium text-secondary-foreground text-right break-words max-w-[120px]">
+      <span className="font-medium text-secondary-foreground text-right break-words max-w-[140px]">
         {value}
       </span>
     </div>
   );
 }
 
-function TProgress({ pct, colorClass }: { pct: number; colorClass: string }) {
+function TProgress({ pct, gradient }: { pct: number; gradient: string }) {
   return (
-    <div className="mt-[5px] mb-[2px]">
+    <div className="mt-2 mb-1">
       <TRow label="Progress" value={`${Math.round(pct)}%`} />
-      <div className="h-[2px] bg-border rounded-full overflow-hidden mt-[3px]">
-        <div className={cn("h-full rounded-full", colorClass)} style={{ width: `${pct}%` }} />
+      <div className="h-[3px] bg-border/50 rounded-full overflow-hidden mt-1.5">
+        <div
+          className={cn("h-full rounded-full transition-all duration-300", gradient)}
+          style={{ width: `${pct}%` }}
+        />
       </div>
     </div>
   );
@@ -206,17 +242,19 @@ function TProgress({ pct, colorClass }: { pct: number; colorClass: string }) {
 // ─── Download tooltip ─────────────────────────────────────────────────────────
 
 function DownloadTooltip({ item }: { item: DownloadItem }) {
-  const colorClass = PROGRESS_COLOR;
+  const gradient = getProgressGradient(item.activity);
   return (
-    <div className="w-[215px] p-0">
-      <p className="text-[11.5px] font-medium leading-snug break-all mb-[5px]">{item.title}</p>
-      <div className="h-px bg-border my-1" />
+    <div className="w-[240px] p-0">
+      <p className="text-xs font-medium leading-snug break-all mb-2 text-foreground">
+        {item.title}
+      </p>
+      <div className="h-px bg-border/70 my-1.5" />
       {item.subtitle && <TRow label="Series" value={item.subtitle} />}
       {item.subtitle && <TRow label="Episode" value={item.title} />}
       <TRow label="Status" value={item.activity} />
       {item.size && <TRow label="Size" value={item.size} />}
       {item.timeLeft && <TRow label="Time left" value={item.timeLeft} />}
-      <TProgress pct={item.progress} colorClass={colorClass} />
+      <TProgress pct={item.progress} gradient={gradient} />
     </div>
   );
 }
@@ -228,12 +266,13 @@ function MediaTooltip({ item }: { item: MediaItem }) {
     ? `${item.subtitle} - ${item.title}`
     : (item.title ?? item.episode);
   const pct = item.duration > 0 ? (item.progress / item.duration) * 100 : 0;
-  const colorClass = PROGRESS_COLOR;
+  const gradient = getProgressGradient(item.state);
   const tc = item.transcoding;
+
   return (
-    <div className="w-[215px] p-0">
-      <p className="text-[11.5px] font-medium leading-snug break-all mb-[5px]">{fullTitle}</p>
-      <div className="h-px bg-border my-1" />
+    <div className="w-[240px] p-0">
+      <p className="text-xs font-medium leading-snug break-all mb-2 text-foreground">{fullTitle}</p>
+      <div className="h-px bg-border/70 my-1.5" />
       {item.subtitle && <TRow label="Series / Artist" value={item.subtitle} />}
       <TRow label="User" value={item.user} />
       <TRow label="State" value={item.state === "playing" ? "Playing" : "Paused"} />
@@ -246,13 +285,16 @@ function MediaTooltip({ item }: { item: MediaItem }) {
         </>
       )}
       {item.streamId && <TRow label="Stream ID" value={item.streamId} />}
-      <div className="mt-[5px] mb-[2px]">
+      <div className="mt-2 mb-1">
         <TRow
           label="Progress"
           value={`${formatTime(item.progress)} / ${formatTime(item.duration)}`}
         />
-        <div className="h-[2px] bg-border rounded-full overflow-hidden mt-[3px]">
-          <div className={cn("h-full rounded-full", colorClass)} style={{ width: `${pct}%` }} />
+        <div className="h-[3px] bg-border/50 rounded-full overflow-hidden mt-1.5">
+          <div
+            className={cn("h-full rounded-full transition-all duration-300", gradient)}
+            style={{ width: `${pct}%` }}
+          />
         </div>
       </div>
     </div>
@@ -277,8 +319,8 @@ export function ListItem({ item }: { item: ListItemData }) {
     "";
 
   const statusKey = download?.activity ?? media?.state ?? "Queued";
-  const badge = BADGE[statusKey];
-  const progressColor = PROGRESS_COLOR;
+  const status = STATUS_CONFIG[statusKey];
+  const gradient = getProgressGradient(statusKey as ActivityState | MediaState);
 
   const progressPct =
     download?.progress ??
@@ -301,12 +343,32 @@ export function ListItem({ item }: { item: ListItemData }) {
     }
   };
 
+  const isActive =
+    statusKey === "Downloading" ||
+    statusKey === "Forced downloading" ||
+    statusKey === "Importing" ||
+    statusKey === "playing";
+
   return (
-    <TooltipProvider delayDuration={isMobile ? 0 : 600}>
+    <TooltipProvider delayDuration={isMobile ? 0 : 500}>
       <Tooltip open={isMobile ? tooltipOpen : undefined} onOpenChange={setTooltipOpen}>
         <TooltipTrigger asChild>
           <div
-            className="flex flex-col bg-secondary rounded-lg overflow-hidden cursor-default hover:bg-secondary/80 transition-colors"
+            className={cn(
+              // Base container
+              "group/listitem flex flex-col rounded-xl overflow-hidden",
+              // Background with subtle gradient
+              "bg-gradient-to-b from-secondary/90 to-secondary/70",
+              // Border
+              "border border-border/30",
+              // Hover effects
+              "hover:from-secondary hover:to-secondary/80",
+              "hover:border-border/50 hover:shadow-sm",
+              // Transition
+              "transition-all duration-200 ease-out",
+              // Cursor
+              "cursor-default",
+            )}
             role="listitem"
             aria-label={displayTitle}
             onClick={(e) => {
@@ -315,54 +377,91 @@ export function ListItem({ item }: { item: ListItemData }) {
             }}
             onPointerDown={handlePointerDown}
           >
-            <div className="px-2 pt-[6px] pb-[5px] flex flex-col gap-[3px] overflow-hidden">
-              <div className="flex items-center gap-[5px] h-[18px] min-w-0">
+            {/* Content area */}
+            <div className="px-3 pt-2.5 pb-2 flex flex-col gap-1.5 overflow-hidden">
+              {/* Title row */}
+              <div className="flex items-center gap-2 h-5 min-w-0">
                 <MarqueeText
                   text={displayTitle}
-                  className="text-[12px] font-medium text-secondary-foreground"
+                  className={cn(
+                    "text-[13px] font-semibold tracking-tight",
+                    "text-secondary-foreground/90",
+                    "group-hover/listitem:text-secondary-foreground",
+                  )}
                 />
-                {badge && (
+                {status && (
                   <span
                     className={cn(
-                      "w-[18px] h-[18px] flex items-center justify-center rounded-[3px] whitespace-nowrap flex-shrink-0",
-                      badge.className,
+                      "w-6 h-5 flex items-center justify-center rounded-md",
+                      "text-[10px] font-bold",
+                      status.className,
+                      isActive && status.glowColor,
+                      "transition-all duration-200",
+                      "flex-shrink-0",
                     )}
                   >
-                    <BadgeIcon icon={badge.icon} className="w-3 h-3" />
+                    <BadgeIcon icon={status.icon} className="w-3 h-3" />
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center gap-[5px] h-[18px] min-w-0">
+              {/* Meta row */}
+              <div className="flex items-center gap-2 h-4 min-w-0">
                 {media && (
-                  <div className="w-[14px] h-[14px] rounded-full bg-primary/15 text-primary dark:bg-primary/25 text-[8px] font-medium flex items-center justify-center flex-shrink-0 leading-none">
+                  <div
+                    className={cn(
+                      "w-5 h-5 rounded-full flex items-center justify-center",
+                      "bg-gradient-to-br from-primary/20 to-primary/5",
+                      "border border-primary/20",
+                      "text-[9px] font-bold text-primary/80",
+                      "flex-shrink-0",
+                    )}
+                  >
                     {initials(media.user)}
                   </div>
                 )}
                 {media ? (
                   <MarqueeText
                     text={media.user}
-                    className="text-[11px] text-secondary-foreground/60"
+                    className="text-[11px] text-secondary-foreground/60 font-medium"
                   />
                 ) : (
                   <MarqueeText
                     text={subText}
-                    className="text-[11px] text-secondary-foreground/60"
+                    className="text-[11px] text-secondary-foreground/60 font-medium"
                   />
                 )}
-                <span className="text-[11px] text-secondary-foreground/60 whitespace-nowrap flex-shrink-0 leading-none">
-                  {metaText}
-                </span>
+                {metaText && (
+                  <span className="text-[11px] text-secondary-foreground/50 whitespace-nowrap flex-shrink-0">
+                    · {metaText}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="h-[2px] bg-transparent flex-shrink-0">
-              <div className={cn("h-full", progressColor)} style={{ width: `${progressPct}%` }} />
+            {/* Progress bar */}
+            <div className="h-1.5 bg-transparent flex-shrink-0 px-3 pb-2">
+              <div className="h-full bg-border/30 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all duration-500 ease-out",
+                    gradient,
+                    isActive && "animate-pulse",
+                  )}
+                  style={{ width: `${Math.max(2, progressPct)}%` }}
+                />
+              </div>
             </div>
           </div>
         </TooltipTrigger>
 
-        <TooltipContent side="top" className="p-2 shadow-md border">
+        <TooltipContent
+          side="top"
+          className={cn(
+            "p-3 shadow-lg border border-border/50",
+            "bg-popover/95 backdrop-blur-sm rounded-xl",
+          )}
+        >
           {download ? (
             <DownloadTooltip item={download} />
           ) : media ? (

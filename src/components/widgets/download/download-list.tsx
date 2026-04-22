@@ -33,8 +33,8 @@ export function DownloadList({ downloads }: DownloadListProps) {
   });
 
   return (
-    <TooltipProvider delayDuration={isMobile ? 0 : 600}>
-      <div className="flex flex-col gap-1">
+    <TooltipProvider delayDuration={isMobile ? 0 : 500}>
+      <div className="flex flex-col gap-2">
         {sorted.map((download) => (
           <DownloadItem key={download.title} {...download} />
         ))}

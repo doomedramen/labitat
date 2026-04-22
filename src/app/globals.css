@@ -32,6 +32,34 @@
   --color-success: var(--success, #22c55e);
   --color-danger: var(--danger, #f59e0b);
   --color-error: var(--error, #ef4444);
+  --color-warning: var(--warning, #f59e0b);
+  --color-info: var(--info, #3b82f6);
+
+  /* Theme v2 - New color variables */
+  --color-bg-root: var(--color-bg-root);
+  --color-bg-surface: var(--color-bg-surface);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-bg-overlay: var(--color-bg-overlay);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-inverse: var(--color-text-inverse);
+  --color-border-default: var(--color-border-default);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-accent-primary: var(--color-accent-primary);
+  --color-accent-secondary: var(--color-accent-secondary);
+  --color-semantic-success: var(--color-semantic-success);
+  --color-semantic-warning: var(--color-semantic-warning);
+  --color-semantic-error: var(--color-semantic-error);
+  --color-semantic-info: var(--color-semantic-info);
+  --color-data-1: var(--color-data-1);
+  --color-data-2: var(--color-data-2);
+  --color-data-3: var(--color-data-3);
+  --color-data-4: var(--color-data-4);
+  --color-data-5: var(--color-data-5);
+  --color-data-6: var(--color-data-6);
+  --color-data-7: var(--color-data-7);
+  --color-data-8: var(--color-data-8);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);

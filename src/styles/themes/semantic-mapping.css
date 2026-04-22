@@ -52,3 +52,13 @@
 [data-palette] {
   --destructive: var(--error);
 }
+
+/* Warning inherits from danger/amber */
+[data-palette] {
+  --warning: var(--danger);
+}
+
+/* Info inherits from graph-2 */
+[data-palette] {
+  --info: var(--graph-2);
+}

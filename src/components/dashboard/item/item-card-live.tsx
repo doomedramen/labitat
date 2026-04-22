@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useItemData } from "@/hooks/use-item-data";
 import { WidgetRenderer } from "./widget-renderer";
 import type { ItemWithCache } from "@/lib/types";
@@ -32,11 +33,17 @@ export function ItemCardLive({
 
   // Don't render anything if no data
   if (!effectiveData) {
-    return <div className="mt-2" />;
+    return <div className={cn("mt-3", !item.cleanMode && "h-1")} />;
   }
 
   return (
-    <div className="mt-2">
+    <div
+      className={cn(
+        "mt-3",
+        // Subtle separator line
+        "border-t border-border/20 pt-3",
+      )}
+    >
       <WidgetRenderer
         serviceDef={serviceDef ?? null}
         effectiveData={effectiveData}

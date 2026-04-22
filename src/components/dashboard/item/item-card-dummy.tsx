@@ -11,7 +11,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { getService } from "@/lib/adapters";
 import type { ItemWithCache } from "@/lib/types";
-import { Pencil, Trash2, GripVertical } from "lucide-react";
+import { Pencil, Trash2, GripVertical, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ItemIcon } from "./item-icon";
@@ -36,7 +36,7 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.35 : undefined,
+    opacity: isDragging ? 0.4 : undefined,
   };
 
   return (
@@ -45,42 +45,86 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
         ref={setNodeRef}
         style={style}
         className={cn(
-          "group/item relative overflow-hidden rounded-xl border-2 border-ring/50 bg-card",
-          isDragging && "rotate-2 shadow-2xl ring-2 ring-ring/20",
+          // Base container
+          "group/item-dummy relative flex flex-col",
+          "rounded-xl overflow-hidden",
+          // Background with subtle gradient
+          "bg-gradient-to-b from-card to-card/95",
+          // Border
+          "border-2 border-ring/40",
+          // Dragging state
+          isDragging && [
+            "rotate-1 scale-[1.02]",
+            "shadow-[0_20px_40px_-12px_rgba(0,0,0,0.3)]",
+            "ring-2 ring-ring/30",
+          ],
+          // Transition
+          "transition-all duration-200 ease-out",
         )}
         data-testid="item-card"
         data-item-id={item.id}
       >
-        {/* Drag handle */}
-        <button
-          {...attributes}
-          {...listeners}
-          className="absolute top-2 left-2 cursor-grab text-muted-foreground/50 transition-all duration-200 hover:scale-110 hover:text-muted-foreground active:scale-95 active:cursor-grabbing"
-          aria-label="Drag to reorder"
+        {/* Top action bar */}
+        <div
+          className={cn(
+            "flex items-center justify-between px-3 py-2",
+            "bg-gradient-to-r from-muted/50 via-muted/30 to-muted/50",
+            "border-b border-border/30",
+          )}
         >
-          <GripVertical className="h-4 w-4" />
-        </button>
+          {/* Drag handle */}
+          <button
+            {...attributes}
+            {...listeners}
+            className={cn(
+              "flex items-center gap-1.5",
+              "text-muted-foreground/50",
+              "transition-all duration-200",
+              "hover:text-muted-foreground hover:scale-105",
+              "active:scale-95 active:cursor-grabbing",
+              "cursor-grab",
+            )}
+            aria-label="Drag to reorder"
+          >
+            <GripVertical className="h-4 w-4" />
+            <span className="text-[10px] font-medium uppercase tracking-wider">Move</span>
+          </button>
 
-        {/* Edit/Delete buttons */}
-        <div className="absolute top-2 right-2 flex items-center gap-1">
-          <button
-            onClick={() => onEdit(item)}
-            className="rounded p-1 text-muted-foreground transition-all duration-200 hover:scale-110 hover:bg-secondary hover:text-foreground active:scale-95"
-            aria-label="Edit item"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setDeleteConfirmOpen(true)}
-            className="rounded p-1 text-muted-foreground transition-all duration-200 hover:scale-110 hover:bg-destructive/10 hover:text-destructive active:scale-95"
-            aria-label="Delete item"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {/* Edit/Delete buttons */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onEdit(item)}
+              className={cn(
+                "flex items-center gap-1 rounded-lg px-2 py-1",
+                "text-muted-foreground",
+                "transition-all duration-200",
+                "hover:bg-secondary hover:text-foreground hover:scale-105",
+                "active:scale-95",
+              )}
+              aria-label="Edit item"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              <span className="text-[10px] font-medium">Edit</span>
+            </button>
+            <button
+              onClick={() => setDeleteConfirmOpen(true)}
+              className={cn(
+                "flex items-center gap-1 rounded-lg px-2 py-1",
+                "text-muted-foreground",
+                "transition-all duration-200",
+                "hover:bg-destructive/10 hover:text-destructive hover:scale-105",
+                "active:scale-95",
+              )}
+              aria-label="Delete item"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span className="text-[10px] font-medium">Delete</span>
+            </button>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex items-center gap-3 px-3 pt-8 pb-3">
+        <div className="flex items-center gap-3.5 px-3 py-3.5">
           <div className="shrink-0">
             <ItemIcon
               iconUrl={item.iconUrl}
@@ -89,14 +133,40 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
             />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{item.label}</p>
-            <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
-              {serviceDef && <span>{serviceDef.name}</span>}
-              {item.href && <span className="truncate">{item.href}</span>}
-              <span>{(item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000) / 1000}s poll</span>
+            {/* Title */}
+            <p className="truncate text-sm font-semibold text-card-foreground">{item.label}</p>
+
+            {/* Metadata */}
+            <div className="mt-1 flex flex-col gap-0.5">
+              {serviceDef && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-primary/80">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60" />
+                  {serviceDef.name}
+                </span>
+              )}
+              {item.href && (
+                <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground/70">
+                  <ExternalLink className="h-3 w-3 shrink-0" />
+                  {item.href}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/60">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+                {(item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000) / 1000}s refresh
+              </span>
             </div>
           </div>
         </div>
+
+        {/* Subtle gradient overlay on hover */}
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0 opacity-0",
+            "bg-gradient-to-b from-primary/[0.02] to-transparent",
+            "transition-opacity duration-300",
+            "group-hover/item-dummy:opacity-100",
+          )}
+        />
       </div>
 
       <ConfirmDialog
