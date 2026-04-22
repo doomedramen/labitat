@@ -441,7 +441,7 @@ export function ListItem({ item }: { item: ListItemData }) {
 
             {/* Progress bar */}
             <div className="h-1.5 bg-transparent flex-shrink-0 px-3 pb-2">
-              <div className="h-full bg-border/30 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-border/30 rounded-full overflow-hidden">
                 <div
                   className={cn(
                     "h-full rounded-full transition-all duration-500 ease-out",
