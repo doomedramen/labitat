@@ -33,6 +33,18 @@ describe("formatBytes", () => {
   it("formats 1 byte", () => {
     expect(formatBytes(1)).toBe("1.0 B");
   });
+
+  it("handles NaN", () => {
+    expect(formatBytes(NaN)).toBe("—");
+  });
+
+  it("handles negative values", () => {
+    expect(formatBytes(-1)).toBe("—");
+  });
+
+  it("handles Infinity", () => {
+    expect(formatBytes(Infinity)).toBe("—");
+  });
 });
 
 describe("formatDuration", () => {

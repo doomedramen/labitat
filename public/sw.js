@@ -43,9 +43,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigation requests → NetworkFirst with offline fallback
+  // Navigation requests → Network only (no caching to prevent stale data flash)
+  // Falls back to cached version or offline page only when actually offline
   if (request.mode === "navigate") {
-    event.respondWith(networkFirst(request, "/~offline"));
+    event.respondWith(networkOnlyWithOfflineFallback(request, "/~offline"));
     return;
   }
 
@@ -120,6 +121,26 @@ async function networkFirst(request, fallbackUrl) {
     }
     return response;
   } catch {
+    const cache = await caches.open(CACHE_NAME);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    if (fallbackUrl) {
+      const fallback = await cache.match(fallbackUrl);
+      if (fallback) return fallback;
+    }
+    return new Response("Offline", {
+      status: 503,
+      headers: { "Content-Type": "text/plain" },
+    });
+  }
+}
+
+async function networkOnlyWithOfflineFallback(request, fallbackUrl) {
+  try {
+    // Always try network first - don't cache successful responses
+    return await fetch(request);
+  } catch {
+    // Network failed - try cached version or offline fallback
     const cache = await caches.open(CACHE_NAME);
     const cached = await cache.match(request);
     if (cached) return cached;

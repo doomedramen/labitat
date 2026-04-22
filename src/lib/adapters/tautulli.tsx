@@ -115,7 +115,7 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
         stream_container_video_decision?: string;
         session_key?: string;
       }) => {
-        totalBandwidth += s.bandwidth ?? 0;
+        totalBandwidth += Number(s.bandwidth) || 0;
 
         if (s.video_decision === "transcode") transcodeStreams++;
         else if (s.video_decision === "direct play") directPlayStreams++;
