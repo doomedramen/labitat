@@ -11,7 +11,7 @@ export type ItemLive = {
   itemLastUpdateAt: number | null;
 };
 
-const serviceDataSchema: z.ZodType<ServiceData> = z.record(z.unknown());
+const serviceDataSchema: z.ZodType<ServiceData> = z.record(z.string(), z.unknown());
 
 const serviceStatusSchema: z.ZodType<ServiceStatus> = z.discriminatedUnion("state", [
   z.object({ state: z.literal("unknown") }),

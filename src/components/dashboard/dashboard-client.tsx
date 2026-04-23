@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   KeyboardSensor,
   PointerSensor,
@@ -29,13 +30,21 @@ interface DashboardClientProps {
   groups: GroupWithCache[];
   isLoggedIn: boolean;
   title: string;
+  mode?: "view" | "edit";
 }
 
-export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientProps) {
+export function DashboardClient({
+  groups,
+  isLoggedIn,
+  title,
+  mode = "view",
+}: DashboardClientProps) {
   const haptic = useWebHaptics();
   useBackground();
+  const router = useRouter();
+  const isEditRoute = mode === "edit";
 
-  const [editMode, setEditMode] = useState(false);
+  const [editMode, setEditMode] = useState(isEditRoute);
   const [localTitle, setLocalTitle] = useState<string | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
@@ -222,7 +231,13 @@ export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientPr
         title={title}
         localTitle={localTitle}
         onTitleChange={setLocalTitle}
-        onToggleEditMode={() => setEditMode((v) => !v)}
+        onToggleEditMode={() => {
+          if (isEditRoute) {
+            router.push("/");
+            return;
+          }
+          setEditMode((v) => !v);
+        }}
         onSignInClick={() => setLoginOpen(true)}
       />
 
@@ -264,8 +279,12 @@ export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientPr
         <EditBar
           onDone={async () => {
             await handleSaveTitle();
-            setEditMode(false);
-            haptic.trigger("light");
+            if (isEditRoute) {
+              router.push("/");
+            } else {
+              setEditMode(false);
+              haptic.trigger("light");
+            }
           }}
         />
       )}
