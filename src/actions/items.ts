@@ -55,15 +55,19 @@ async function buildServiceConfig(
     const formKey = "config_" + field.key;
 
     if (field.type === "boolean") {
-      const value = formData.get(formKey);
-      config[field.key] = value === "true" ? "true" : "false";
+      const raw = formData.get(formKey);
+      if (raw === null) continue; // field omitted (e.g. async config not loaded yet)
+      config[field.key] = raw === "true" ? "true" : "false";
     } else {
-      const value = (formData.get(formKey) as string) ?? "";
+      const raw = formData.get(formKey);
+      if (raw === null) continue; // field omitted
+      const value = String(raw);
       if (field.type === "password" && value) {
         config[field.key] = value;
       } else if (field.type === "url") {
+        // Preserve explicit clears ("") but ignore omitted fields (handled above).
         config[field.key] = value;
-        serviceUrl = value || null;
+        serviceUrl = value === "" ? null : value;
       } else if (value) {
         config[field.key] = value;
       }
@@ -145,6 +149,13 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
     }
   }
 
+  // Preserve serviceUrl if the form didn't include the url config field (e.g. config not loaded yet).
+  const serviceUrlProvided = !!adapter?.configFields.some(
+    (f) => f.type === "url" && formData.has("config_" + f.key),
+  );
+  const nextServiceUrl =
+    !serviceUrlProvided && existingItem?.serviceUrl ? existingItem.serviceUrl : serviceUrl;
+
   const configEnc =
     Object.keys(config).length > 0
       ? await encrypt(JSON.stringify(config))
@@ -175,7 +186,7 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
       href: (formData.get("href") as string) || null,
       iconUrl: (formData.get("iconUrl") as string) || null,
       serviceType,
-      serviceUrl,
+      serviceUrl: nextServiceUrl,
       configEnc,
       pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
       displayMode,

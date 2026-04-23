@@ -7,11 +7,14 @@ import { cn } from "@/lib/utils";
 import { LiveProvider } from "@/components/dashboard/live-provider";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import type { ItemLive } from "@/lib/live-types";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function EditPage() {
+  // Ensure Next never serves a cached RSC response for this route.
+  noStore();
   const [session, groupsWithItems, titleSetting] = await Promise.all([
     getSession(),
     getOrSeedGroups(),

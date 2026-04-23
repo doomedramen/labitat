@@ -6,7 +6,9 @@ const analyze = withBundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  ...(process.env.NODE_ENV === "production" ? { output: "standalone" } : {}),
+  ...(process.env.NODE_ENV === "production" && process.env.DISABLE_STANDALONE !== "1"
+    ? { output: "standalone" }
+    : {}),
   images: {
     remotePatterns: [
       {

@@ -7,6 +7,7 @@ import type { ItemLive } from "@/lib/live-types";
 import { LiveProvider } from "@/components/dashboard/live-provider";
 import { DashboardViewChrome } from "@/components/dashboard/dashboard-view-chrome";
 import { GroupCard } from "@/components/dashboard/group";
+import { unstable_noStore as noStore } from "next/cache";
 
 // This page is always dynamic due to session auth, database queries, and cookie usage
 export const dynamic = "force-dynamic";
@@ -16,6 +17,8 @@ export const revalidate = 0;
 let warmupTriggered = false;
 
 async function DashboardContent() {
+  // Ensure Next never serves a cached RSC response for this route.
+  noStore();
   // Trigger startup warmup on first load (fire and forget)
   if (!warmupTriggered) {
     warmupTriggered = true;
