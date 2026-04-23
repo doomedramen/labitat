@@ -9,57 +9,46 @@
 
 import { cn } from "@/lib/utils";
 import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid";
-import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
 import type { WidgetPayload } from "@/lib/adapters/widget-types";
-import { useWidgetDisplay } from "@/components/dashboard/item/widget-display-context";
+import type { StatCardOrder } from "@/hooks/use-stat-card-order";
+import type { StatDisplayMode } from "@/lib/types";
 import { ActiveStreamList, DownloadList } from "./widget-lists-server";
 
 interface WidgetContainerProps {
   payload: WidgetPayload;
+  statDisplayMode?: StatDisplayMode;
+  statCardOrder?: StatCardOrder | null;
+  editMode?: boolean;
 }
 
-export function WidgetContainer({ payload }: WidgetContainerProps) {
-  const displaySettings = useWidgetDisplay();
-  const isEditMode = displaySettings?.editMode ?? false;
+export function WidgetContainer({
+  payload,
+  statDisplayMode = "label",
+  statCardOrder = null,
+  editMode = false,
+}: WidgetContainerProps) {
+  const isEditMode = editMode;
 
-  // Show loading skeleton when loading
+  // Show loading skeleton when loading - use div instead of Skeleton for SSR compatibility
   if (payload.loading) {
     return (
       <div className="grid grid-cols-4 gap-2">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton
+          <div
             key={i}
-            className={cn("h-16 rounded-xl", "bg-gradient-to-b from-secondary/50 to-secondary/30")}
+            className={cn(
+              "h-16 rounded-xl animate-pulse",
+              "bg-gradient-to-b from-secondary/50 to-secondary/30"
+            )}
           />
         ))}
       </div>
     );
   }
 
-  // Show error state
+  // Show error state - don't render during SSR, client will handle
   if (payload.error) {
-    return (
-      <div
-        className={cn(
-          "flex flex-col items-center justify-center gap-2",
-          "rounded-xl border border-destructive/20",
-          "bg-destructive/5 py-4 text-center",
-          "px-3",
-        )}
-      >
-        <div
-          className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full",
-            "bg-destructive/10",
-          )}
-        >
-          <AlertCircle className="h-5 w-5 text-destructive" />
-        </div>
-        <p className="text-xs font-medium text-destructive/80">{payload.error}</p>
-      </div>
-    );
+    return null;
   }
 
   const hasStats = payload.stats.length > 0;
@@ -72,24 +61,23 @@ export function WidgetContainer({ payload }: WidgetContainerProps) {
   }
 
   // Filter out unused stat cards when not in edit mode
-  const unusedIds = new Set(displaySettings?.statCardOrder?.unused ?? []);
+  const unusedIds = new Set(statCardOrder?.unused ?? []);
   const visibleStats = isEditMode
     ? payload.stats
     : payload.stats.filter((stat) => !unusedIds.has(stat.id));
 
   return (
     <div className="space-y-2.5">
-      {hasStats &&
-        (isEditMode ? (
-          <EditableStatGrid
-            items={payload.stats}
-            order={displaySettings?.statCardOrder ?? null}
-            onOrderChange={displaySettings?.onOrderChange ?? (() => {})}
-            displayMode={displaySettings?.statDisplayMode ?? "label"}
-          />
-        ) : (
-          <WidgetStatGrid items={visibleStats} />
-        ))}
+      {hasStats && !isEditMode && (
+        <WidgetStatGrid
+          items={visibleStats.map((stat) => ({
+            ...stat,
+            displayMode: statDisplayMode,
+          }))}
+        />
+      )}
+
+      {/* Edit mode is client-only - EditableStatGrid is rendered by the client component */}
 
       {hasStreams && <ActiveStreamList streams={payload.streams!} />}
 

@@ -2,12 +2,14 @@ import { cn } from "@/lib/utils";
 import { getService } from "@/lib/adapters";
 import type { ItemWithCache } from "@/lib/types";
 import { ItemIcon } from "./item-icon";
-import type { ServiceData } from "@/lib/adapters/types";
+import type { ServiceData, ServiceDefinition } from "@/lib/adapters/types";
 import { ItemCardLive } from "./item-card-live";
 import { StatusPill } from "./status-pill";
 import { useItemData } from "@/hooks/use-item-data";
 import { useSyncProgress } from "@/hooks/use-sync-progress";
 import { formatAge, formatAgeVerbose } from "@/lib/utils/age";
+import { WidgetContainer } from "@/components/widgets/widget-container";
+import { parseStatCardOrder } from "@/hooks/use-stat-card-order";
 
 interface ItemCardProps {
   item: ItemWithCache;
@@ -18,14 +20,14 @@ interface ItemCardProps {
 
 /**
  * Server-rendered ItemCard shell (icon, title, link).
- * Delegates widget rendering to ItemCardLive for SSE updates.
+ * Renders widgets from cached data during SSR.
  */
 export function ItemCard({ item, editMode }: ItemCardProps) {
   const serviceDef = item.serviceType ? getService(item.serviceType) : null;
   const isClientSide = serviceDef?.clientSide ?? false;
 
-  // Use cached data for SSR (only if not clientSide-only service)
-  const effectiveData = !editMode && !isClientSide ? item.cachedWidgetData : null;
+  // Use cached data for SSR widget rendering
+  const effectiveData = !editMode ? item.cachedWidgetData : null;
 
   return (
     <div
@@ -195,6 +197,16 @@ function ItemCardContent({
   effectiveData: ReturnType<typeof getService> extends null ? null : unknown;
   isClientSide: boolean;
 }) {
+  // Prepare display settings
+  const statDisplayMode = (item.statDisplayMode as "icon" | "label") ?? "label";
+  const statCardOrder = parseStatCardOrder(item.statCardOrder);
+
+  // Generate widget payload from cached data for SSR
+  const ssrPayload =
+    !editMode && effectiveData && serviceDef?.toPayload
+      ? serviceDef.toPayload(effectiveData as ServiceData)
+      : null;
+
   return (
     <div
       className={cn(
@@ -206,7 +218,26 @@ function ItemCardContent({
     >
       <ItemCardHeader item={item} editMode={editMode} serviceDef={serviceDef} />
 
-      {/* Client-side widget renderer for SSE updates */}
+      {/*
+        Widget rendering for SSR.
+        WidgetContainer receives data via props (no Context) so it works during SSR.
+        This ensures stat cards are visible in the initial HTML response.
+      */}
+      {ssrPayload && (
+        <WidgetContainer
+          payload={ssrPayload}
+          statDisplayMode={statDisplayMode}
+          statCardOrder={statCardOrder}
+          editMode={editMode}
+        />
+      )}
+
+      {/*
+        Client-side widget renderer for:
+        - Live SSE data updates (hydrates over SSR content)
+        - Client-side-only services
+        - Edit mode (drag-and-drop reordering)
+      */}
       <ItemCardLive
         item={item}
         serviceDef={serviceDef ?? null}

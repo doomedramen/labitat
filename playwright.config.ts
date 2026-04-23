@@ -24,10 +24,10 @@ export default defineConfig({
 
   webServer: {
     command:
-      "node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm dev",
+      "node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm build && pnpm start",
     url: "http://localhost:3000",
-    reuseExistingServer: true,
-    timeout: 120 * 1000,
+    reuseExistingServer: !process.env.CI,
+    timeout: 300 * 1000,
     env: {
       NODE_ENV: "test",
       PORT: "3000",

@@ -32,12 +32,16 @@ async function DashboardContent() {
   // Read from server cache — include stale data for immediate rendering
   const now = Date.now();
   const allCache = new Map(serverCache.getAll());
+  console.log(`[page.tsx] Groups: ${groupsWithItems.length}, Cache entries: ${allCache.size}`);
 
   const enrichedGroups: GroupWithCache[] = groupsWithItems.map((group) => ({
     ...group,
     items: group.items.map((item) => {
       const cached = allCache.get(item.id) ?? null;
       const age = cached ? now - cached.lastFetchedAt : null;
+      if (cached?.widgetData) {
+        console.log(`[page.tsx] Found cached data for ${item.label}`);
+      }
       return {
         ...item,
         cachedWidgetData: cached?.widgetData ?? null,
