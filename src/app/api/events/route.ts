@@ -58,19 +58,17 @@ export async function GET(request: NextRequest) {
       };
 
       // Subscribe to cache updates
-      const sentIds = new Set<string>();
       const unsubscribe = serverCache.onUpdate((itemId, widgetData, pingStatus) => {
-        sentIds.add(itemId);
         send({
           type: "update",
           itemId,
           widgetData,
           pingStatus,
+          fetchedAt: Date.now(),
         });
       });
 
-      // Cleanup on disconnect — registered before sending snapshot
-      // so early disconnect is handled correctly
+      // Cleanup on disconnect
       request.signal.addEventListener("abort", () => {
         closed = true;
         clearInterval(heartbeat);
@@ -79,23 +77,6 @@ export async function GET(request: NextRequest) {
         pollingSup.disconnect();
         controller.close();
       });
-
-      // Send current cache snapshot only if not triggering a fresh poll.
-      // When wasIdle is true, pollNow() is already fetching fresh data,
-      // so skip the snapshot to avoid sending stale data before fresh results.
-      if (!wasIdle) {
-        for (const [id, data] of serverCache.getAll()) {
-          if (!sentIds.has(id)) {
-            send({
-              type: "update",
-              itemId: id,
-              widgetData: data.widgetData,
-              pingStatus: data.pingStatus,
-              fromCache: true, // Flag as cache snapshot
-            });
-          }
-        }
-      }
     },
   });
 
