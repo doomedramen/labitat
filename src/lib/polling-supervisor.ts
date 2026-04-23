@@ -4,6 +4,7 @@ import { decrypt } from "@/lib/crypto";
 import { getService } from "@/lib/adapters";
 import { fetchWithTimeout } from "@/lib/adapters/fetch-with-timeout";
 import { serverCache } from "./server-cache";
+import { env } from "@/lib/env";
 
 const GRACE_PERIOD_MS = 5 * 60 * 1000; // 5 minutes
 const PING_TIMEOUT_MS = 10_000;
@@ -29,6 +30,7 @@ class PollingSupervisor {
   private lastPolledAt = new Map<string, number>();
   private shouldStaggerOnNextStart = false;
   private hasStartedOnce = false;
+  private idleMode = false;
 
   /** A client connected — start polling if needed */
   connect(): void {
@@ -39,7 +41,10 @@ class PollingSupervisor {
       clearTimeout(this.graceTimer);
       this.graceTimer = null;
     }
-    if (this.activeConnections === 1) {
+
+    if (this.idleMode) {
+      this.exitIdleMode();
+    } else if (this.activeConnections === 1) {
       this.start();
     }
   }
@@ -62,7 +67,7 @@ class PollingSupervisor {
     }
   }
 
-  /** A client disconnected — maybe stop polling after grace period */
+  /** A client disconnected — enter idle mode after grace period */
   disconnect(): void {
     const prev = this.activeConnections;
     this.activeConnections = Math.max(0, this.activeConnections - 1);
@@ -71,9 +76,42 @@ class PollingSupervisor {
     );
     if (this.activeConnections === 0) {
       this.graceTimer = setTimeout(() => {
-        this.stop();
+        this.enterIdleMode();
       }, GRACE_PERIOD_MS);
     }
+  }
+
+  /** Enter idle mode — poll at reduced rate when no clients connected */
+  private enterIdleMode(): void {
+    if (this.idleMode || !env.IDLE_POLLING_ENABLED) {
+      if (!env.IDLE_POLLING_ENABLED) {
+        this.stop();
+      }
+      return;
+    }
+
+    this.idleMode = true;
+    console.log("[polling] Entering idle mode — polling at reduced rate");
+
+    // Clear any existing timer and restart with idle interval
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+
+    // Continue polling but at slower rate
+    this.tick().catch(console.error);
+  }
+
+  /** Exit idle mode — resume normal polling */
+  private exitIdleMode(): void {
+    if (!this.idleMode) return;
+
+    this.idleMode = false;
+    console.log("[polling] Exiting idle mode — resuming normal polling");
+
+    // Trigger immediate refresh for fresh data
+    this.pollNow().catch(console.error);
   }
 
   /** Start the supervisor — first tick immediately, then reschedule dynamically */
@@ -92,6 +130,7 @@ class PollingSupervisor {
     }
     this.cacheExpiresAt = 0;
     this.shouldStaggerOnNextStart = this.hasStartedOnce;
+    this.idleMode = false;
     console.log("[polling] Supervisor stopped (no active connections)");
   }
 
@@ -137,6 +176,24 @@ class PollingSupervisor {
     return this.itemCache;
   }
 
+  /** Get effective polling interval based on mode and user settings */
+  private getEffectivePollingMs(item: PollingItem): number {
+    if (!this.idleMode) {
+      return item.pollingMs;
+    }
+
+    // Idle mode: respect user's explicit longer settings
+    const idleInterval = env.IDLE_POLLING_INTERVAL_MINUTES * 60 * 1000;
+    const userPolling = item.pollingMs;
+
+    // If user explicitly set longer interval, honor it
+    if (userPolling > idleInterval) {
+      return userPolling;
+    }
+
+    return idleInterval;
+  }
+
   /** Main tick — check all items and poll those that are due, then reschedule for next due item */
   private async tick(): Promise<void> {
     const now = Date.now();
@@ -150,10 +207,12 @@ class PollingSupervisor {
     let nextDue = Infinity;
 
     for (const item of items) {
-      const dueAt = item.lastPolledAt + item.pollingMs;
+      const effectivePollingMs = this.getEffectivePollingMs(item);
+      const dueAt = item.lastPolledAt + effectivePollingMs;
+
       if (this.running.has(item.id)) {
         // A long-running poll should not force the scheduler into a tight loop.
-        const runningDueAt = Math.max(dueAt, now + item.pollingMs);
+        const runningDueAt = Math.max(dueAt, now + effectivePollingMs);
         if (runningDueAt < nextDue) nextDue = runningDueAt;
         continue;
       }
@@ -176,7 +235,10 @@ class PollingSupervisor {
     }
 
     // Reschedule: wake up exactly when the next item is due
-    if (items.length > 0 && this.activeConnections > 0) {
+    // Continue in idle mode if enabled, otherwise only if clients connected
+    const shouldContinue =
+      this.activeConnections > 0 || (this.idleMode && env.IDLE_POLLING_ENABLED);
+    if (items.length > 0 && shouldContinue) {
       const delay = Math.max(nextDue - Date.now(), MIN_TICK_MS);
       this.timer = setTimeout(() => this.tick(), delay);
     } else {

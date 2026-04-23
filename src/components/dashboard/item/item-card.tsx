@@ -4,7 +4,10 @@ import type { ItemWithCache } from "@/lib/types";
 import { ItemIcon } from "./item-icon";
 import type { ServiceData } from "@/lib/adapters/types";
 import { ItemCardLive } from "./item-card-live";
-import { ItemStatusDot } from "./item-status-dot";
+import { StatusPill } from "./status-pill";
+import { useItemData } from "@/hooks/use-item-data";
+import { useSyncProgress } from "@/hooks/use-sync-progress";
+import { formatAge, formatAgeVerbose } from "@/lib/utils/age";
 
 interface ItemCardProps {
   item: ItemWithCache;
@@ -87,6 +90,98 @@ export function ItemCard({ item, editMode }: ItemCardProps) {
   );
 }
 
+function ItemCardHeader({
+  item,
+  editMode,
+  serviceDef,
+}: {
+  item: ItemWithCache;
+  editMode: boolean;
+  serviceDef: ReturnType<typeof getService> | null;
+}) {
+  // Get live data for status pill
+  const { hasStatus, serviceStatus, isCached } = useItemData({ editMode, item });
+
+  // Get polling interval: item setting > adapter default > 30s fallback
+  const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30000;
+
+  // Get sync progress for the animated border
+  const progress = useSyncProgress(item.id, pollingMs);
+
+  return (
+    <div className="flex items-center gap-3 min-w-0">
+      {/* Icon container with enhanced styling */}
+      <div
+        className={cn(
+          "shrink-0 transition-transform duration-300 ease-out",
+          "group-hover/item:scale-105 group-hover/item:rotate-[2deg]",
+        )}
+      >
+        <ItemIcon
+          iconUrl={item.iconUrl}
+          label={item.label}
+          serviceIcon={serviceDef?.icon ?? null}
+        />
+      </div>
+
+      {/* Title - truncates with ellipsis */}
+      <h3
+        className={cn(
+          "flex-1 min-w-0 truncate text-sm leading-tight font-semibold",
+          "text-card-foreground/90",
+          "transition-colors duration-200",
+          "group-hover/item:text-foreground",
+        )}
+      >
+        {editMode ? item.label || serviceDef?.name || item.href : item.label}
+      </h3>
+
+      {/* Status pill - shows age and sync progress */}
+      {!editMode && hasStatus && (
+        <div className="shrink-0 flex items-center">
+          <StatusPill
+            label={getStatusLabel(serviceStatus, item.cachedDataAge)}
+            progress={progress}
+            color={
+              serviceStatus.state === "error" || serviceStatus.state === "unreachable"
+                ? "#f87171"
+                : serviceStatus.state === "slow" || serviceStatus.state === "degraded"
+                  ? "#fbbf24"
+                  : "#4ade80"
+            }
+            dotClassName={
+              serviceStatus.state === "error" || serviceStatus.state === "unreachable"
+                ? "bg-error"
+                : serviceStatus.state === "slow" || serviceStatus.state === "degraded"
+                  ? "bg-warning"
+                  : "bg-success"
+            }
+            tooltip={getStatusTooltip(serviceStatus, item.cachedDataAge)}
+          />
+        </div>
+      )}
+
+      {/* Edit mode metadata */}
+      {editMode && (
+        <div className="shrink-0 min-w-0">
+          <div className="mt-1.5 flex flex-col gap-0.5">
+            {serviceDef && (
+              <span className="text-xs font-medium text-primary/80">{serviceDef.name}</span>
+            )}
+            {item.href && (
+              <span className="truncate text-xs text-muted-foreground/70">{item.href}</span>
+            )}
+            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground/60">
+              <span className="inline-block h-1 w-1 rounded-full bg-muted-foreground/40" />
+              {pollingMs / 1000}s refresh
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ItemCardContent({
   item,
   editMode,
@@ -104,59 +199,12 @@ function ItemCardContent({
     <div
       className={cn(
         "relative flex flex-col",
-        editMode ? "px-4 pt-6 pb-3 gap-3" : item.cleanMode ? "p-3" : "px-4 py-3.5 gap-3",
+        editMode ? "px-4 pt-6 pb-3 gap-3" : "px-4 py-3.5 gap-3",
       )}
       data-testid="item-card"
       data-item-id={item.id}
     >
-      <ItemStatusDot item={item} editMode={editMode} />
-
-      {(!item.cleanMode || editMode) && (
-        <div className="flex items-center gap-3.5">
-          {/* Icon container with enhanced styling */}
-          <div
-            className={cn(
-              "shrink-0 transition-transform duration-300 ease-out",
-              "group-hover/item:scale-105 group-hover/item:rotate-[2deg]",
-            )}
-          >
-            <ItemIcon
-              iconUrl={item.iconUrl}
-              label={item.label}
-              serviceIcon={serviceDef?.icon ?? null}
-            />
-          </div>
-
-          {/* Title and metadata */}
-          <div className="min-w-0 flex-1 pr-5">
-            <h3
-              className={cn(
-                "truncate text-sm leading-tight font-semibold",
-                "text-card-foreground/90",
-                "transition-colors duration-200",
-                "group-hover/item:text-foreground",
-              )}
-            >
-              {editMode ? item.label || serviceDef?.name || item.href : item.label}
-            </h3>
-
-            {editMode && (
-              <div className="mt-1.5 flex flex-col gap-0.5">
-                {serviceDef && (
-                  <span className="text-xs font-medium text-primary/80">{serviceDef.name}</span>
-                )}
-                {item.href && (
-                  <span className="truncate text-xs text-muted-foreground/70">{item.href}</span>
-                )}
-                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground/60">
-                  <span className="inline-block h-1 w-1 rounded-full bg-muted-foreground/40" />
-                  {(item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000) / 1000}s refresh
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ItemCardHeader item={item} editMode={editMode} serviceDef={serviceDef} />
 
       {/* Client-side widget renderer for SSE updates */}
       <ItemCardLive
@@ -199,6 +247,69 @@ export function ItemCardDragPreview({ item }: { item: ItemWithCache }) {
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+// Helper function to get status pill label
+function getStatusLabel(status: { state: string }, ageMs: number | null): string {
+  const isError = status.state === "error" || status.state === "unreachable";
+
+  // Show error text for error states
+  if (isError) {
+    return "Error";
+  }
+
+  // Show age if we have cached data and it's older than 5 minutes
+  const hasData = ageMs !== null;
+  const isStale = ageMs !== null && ageMs > 5 * 60 * 1000;
+
+  if (hasData && isStale) {
+    return formatAge(ageMs);
+  }
+
+  // Empty string for fresh data (just shows dot)
+  return "";
+}
+
+// Helper function to get status pill tooltip
+function getStatusTooltip(
+  status: { state: string; reason?: string },
+  ageMs: number | null,
+): React.ReactNode {
+  const statusLabels: Record<string, string> = {
+    unknown: "Status unknown",
+    healthy: "Healthy",
+    degraded: "Degraded",
+    reachable: "Reachable",
+    unreachable: "Unreachable",
+    slow: "Slow response",
+    error: "Error",
+  };
+
+  const baseLabel = statusLabels[status.state] || statusLabels.unknown;
+  const ageText =
+    ageMs !== null ? `Updated ${formatAgeVerbose(ageMs)}` : "Waiting for first update...";
+
+  const isProblem =
+    status.state === "error" ||
+    status.state === "unreachable" ||
+    status.state === "degraded" ||
+    status.state === "slow";
+
+  return (
+    <div className="flex flex-col">
+      {status.reason && isProblem ? (
+        <>
+          <div className="px-3 py-2 bg-destructive/10 text-destructive text-sm font-medium">
+            {status.reason}
+          </div>
+          <div className="h-px bg-border/50" />
+        </>
+      ) : (
+        <div className="px-3 py-2 text-sm font-medium text-foreground">{baseLabel}</div>
+      )}
+      <div className="px-3 py-2 text-xs text-muted-foreground">{ageText}</div>
     </div>
   );
 }

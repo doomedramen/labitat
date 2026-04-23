@@ -41,7 +41,6 @@ type ItemRow = {
   configEnc: string | null;
   order: number;
   pollingMs: number;
-  cleanMode: boolean;
   displayMode: string;
   statDisplayMode: string;
   statCardOrder: string | null;
@@ -51,6 +50,7 @@ type ItemRow = {
 type ItemWithCache = ItemRow & {
   cachedWidgetData: ServiceData | null;
   cachedPingStatus: ServiceStatus | null;
+  cachedDataAge: number | null;
 };
 
 const baseItem: ItemWithCache = {
@@ -64,13 +64,13 @@ const baseItem: ItemWithCache = {
   configEnc: null,
   order: 0,
   pollingMs: 10_000,
-  cleanMode: false,
   displayMode: "label",
   statDisplayMode: "label",
   statCardOrder: null,
   createdAt: "2024-01-01T00:00:00Z",
   cachedWidgetData: mockSonarrData,
   cachedPingStatus: null,
+  cachedDataAge: 120000,
 };
 
 const meta: Meta<typeof ItemCard> = {
@@ -107,16 +107,6 @@ export const WithDownloads: Story = {
         ...mockSonarrData,
         downloads: mockSonarrData.downloads,
       },
-    },
-    editMode: false,
-  },
-};
-
-export const CleanMode: Story = {
-  args: {
-    item: {
-      ...baseItem,
-      cleanMode: true,
     },
     editMode: false,
   },

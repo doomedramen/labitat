@@ -37,7 +37,6 @@ export const items = sqliteTable(
     configEnc: text("config_enc"),
     order: integer("order").notNull(),
     pollingMs: integer("polling_ms").default(10000),
-    cleanMode: integer("clean_mode", { mode: "boolean" }).default(false),
     /** Controls whether the card header shows the icon or the label */
     displayMode: text("display_mode").default("label"),
     /** Controls whether stat cards in widgets show icons or labels */

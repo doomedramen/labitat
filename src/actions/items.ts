@@ -70,7 +70,6 @@ export async function createItem(groupId: string, formData: FormData): Promise<G
   const pollingMsStr = formData.get("pollingMs") as string;
   const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) : null;
 
-  const cleanMode = formData.get("cleanMode") === "true";
   const displayMode = (formData.get("displayMode") as string) || "label";
   const statDisplayMode = (formData.get("statDisplayMode") as string) || "label";
 
@@ -84,7 +83,6 @@ export async function createItem(groupId: string, formData: FormData): Promise<G
     serviceUrl,
     configEnc,
     pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
-    cleanMode,
     displayMode,
     statDisplayMode,
     order: nextOrder,
@@ -132,7 +130,6 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
   const pollingMsStr = formData.get("pollingMs") as string;
   const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) : null;
 
-  const cleanMode = formData.get("cleanMode") === "true";
   const displayMode = (formData.get("displayMode") as string) || "label";
   const statDisplayMode = (formData.get("statDisplayMode") as string) || "label";
   const rawStatCardOrder = formData.get("statCardOrder") as string | null;
@@ -155,7 +152,6 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
       serviceUrl,
       configEnc,
       pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
-      cleanMode,
       displayMode,
       statDisplayMode,
       statCardOrder: statCardOrder ?? existingItem?.statCardOrder ?? null,

@@ -41,7 +41,6 @@ export function ItemCardLive({
       effectiveData={effectiveData}
       isClientSide={isClientSide}
       editMode={editMode}
-      cleanMode={item.cleanMode ?? undefined}
       item={item}
     />
   );

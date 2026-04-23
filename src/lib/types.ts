@@ -8,6 +8,7 @@ export type GroupWithItems = GroupRow & { items: ItemRow[] };
 export type ItemWithCache = ItemRow & {
   cachedWidgetData: ServiceData | null;
   cachedPingStatus: ServiceStatus | null;
+  cachedDataAge: number | null; // Age in milliseconds, null if no cache
 };
 export type GroupWithCache = GroupRow & { items: ItemWithCache[] };
 

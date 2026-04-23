@@ -11,7 +11,6 @@ interface WidgetRendererProps {
   effectiveData: ServiceData | null;
   isClientSide: boolean;
   editMode: boolean;
-  cleanMode?: boolean;
   item: ItemRow;
 }
 
@@ -25,7 +24,6 @@ export function WidgetRenderer({
   effectiveData,
   isClientSide,
   editMode,
-  cleanMode: _cleanMode,
   item,
 }: WidgetRendererProps) {
   // Custom widget takes precedence, otherwise use toPayload

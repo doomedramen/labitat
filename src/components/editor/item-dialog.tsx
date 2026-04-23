@@ -267,7 +267,6 @@ export function ItemDialog({
   const [statDisplayMode, setStatDisplayMode] = useState<"icon" | "label">(
     (item?.statDisplayMode as "icon" | "label") ?? "label",
   );
-  const [cleanMode, setCleanMode] = useState<boolean>(item?.cleanMode ?? false);
   const [localStatCardOrder, setLocalStatCardOrder] = useState<StatCardOrder | null>(
     parseStatCardOrder(item?.statCardOrder),
   );
@@ -306,7 +305,6 @@ export function ItemDialog({
         formData.append("pollingMs", String(value.pollingMs * 1000));
         formData.append("serviceType", serviceType);
         formData.append("displayMode", "label");
-        formData.append("cleanMode", cleanMode ? "true" : "false");
         formData.append("statDisplayMode", statDisplayMode);
 
         // Add stat card order
@@ -339,7 +337,6 @@ export function ItemDialog({
   useEffect(() => {
     setServiceType(item?.serviceType ?? "");
     setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label");
-    setCleanMode(item?.cleanMode ?? false);
     setLocalStatCardOrder(parseStatCardOrder(item?.statCardOrder));
     form.reset({
       label: item?.label ?? "",
@@ -356,7 +353,6 @@ export function ItemDialog({
       setServiceType("");
       setConfigFields({});
       setStatDisplayMode("label");
-      setCleanMode(false);
       setLocalStatCardOrder(null);
       form.reset({
         label: "",
@@ -681,12 +677,6 @@ export function ItemDialog({
                   );
                 }}
               </form.Field>
-
-              {/* Clean mode */}
-              <div className="flex items-center gap-2">
-                <Switch id="cleanMode" checked={cleanMode} onCheckedChange={setCleanMode} />
-                <Label htmlFor="cleanMode">Clean mode (minimal display)</Label>
-              </div>
 
               {/* Stat display mode - only for widgets using toPayload, not custom renderWidget */}
               {selectedService && !selectedService.renderWidget && (

@@ -2,12 +2,21 @@ import { getSession } from "@/lib/auth";
 import { Dashboard } from "@/components/dashboard";
 import { serverCache } from "@/lib/server-cache";
 import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache";
+import { runStartupWarmup } from "@/lib/startup";
 import type { GroupWithCache, ItemWithCache } from "@/lib/types";
 
 // This page is always dynamic due to session auth, database queries, and cookie usage
 export const dynamic = "force-dynamic";
 
+// Module-level flag to track startup warmup
+let warmupTriggered = false;
+
 async function DashboardContent() {
+  // Trigger startup warmup on first load (fire and forget)
+  if (!warmupTriggered) {
+    warmupTriggered = true;
+    runStartupWarmup();
+  }
   let session, groupsWithItems, titleSetting;
   try {
     [session, groupsWithItems, titleSetting] = await Promise.all([
@@ -20,17 +29,20 @@ async function DashboardContent() {
     throw err;
   }
 
-  // Read from server cache — only use data fresh enough for SSR.
-  const freshCache = new Map(serverCache.getAllFresh());
+  // Read from server cache — include stale data for immediate rendering
+  const now = Date.now();
+  const allCache = new Map(serverCache.getAll());
 
   const enrichedGroups: GroupWithCache[] = groupsWithItems.map((group) => ({
     ...group,
     items: group.items.map((item) => {
-      const cached = freshCache.get(item.id) ?? null;
+      const cached = allCache.get(item.id) ?? null;
+      const age = cached ? now - cached.lastFetchedAt : null;
       return {
         ...item,
         cachedWidgetData: cached?.widgetData ?? null,
         cachedPingStatus: cached?.pingStatus ?? null,
+        cachedDataAge: age,
       } as ItemWithCache;
     }),
   }));

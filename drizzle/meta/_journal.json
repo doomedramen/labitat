@@ -36,6 +36,13 @@
       "when": 1776029792488,
       "tag": "0004_nappy_namor",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1776933557413,
+      "tag": "0005_eager_maria_hill",
+      "breakpoints": true
     }
   ]
 }
