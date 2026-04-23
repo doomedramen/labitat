@@ -60,7 +60,7 @@ export default async function EditPage() {
         snapshotKey={snapshotKey}
         enableSse={false}
       >
-        <DashboardClient groups={enrichedGroups} isLoggedIn title={dashboardTitle} mode="edit" />
+        <DashboardClient groups={enrichedGroups} isLoggedIn title={dashboardTitle} />
       </LiveProvider>
     </div>
   );

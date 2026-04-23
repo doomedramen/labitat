@@ -3,15 +3,14 @@
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Wifi, WifiOff, RefreshCw } from "lucide-react";
-import { useSseState, useLastUpdateAt } from "@/hooks/use-live-data";
+import { useLiveMeta } from "@/components/dashboard/use-item-live";
 
 interface FooterProps {
   editMode: boolean;
 }
 
 export function Footer({ editMode }: FooterProps) {
-  const sseState = useSseState();
-  const lastUpdateAt = useLastUpdateAt();
+  const meta = useLiveMeta();
   const [mounted, setMounted] = useState(false);
   const [tick, setTick] = useState(0);
 
@@ -32,7 +31,7 @@ export function Footer({ editMode }: FooterProps) {
     return null;
   }
 
-  const isConnected = sseState === "connected";
+  const isConnected = meta.sseState === "connected";
 
   // Generate sync text based on connection state and last update time
   let syncText: string;
@@ -40,10 +39,10 @@ export function Footer({ editMode }: FooterProps) {
     syncText = "Loading...";
   } else if (!isConnected) {
     syncText = "Reconnecting...";
-  } else if (lastUpdateAt === 0) {
+  } else if (meta.lastUpdateAt === null) {
     syncText = "Waiting for data...";
   } else {
-    syncText = `Last synced ${formatDistanceToNow(lastUpdateAt, { addSuffix: true })}`;
+    syncText = `Last synced ${formatDistanceToNow(meta.lastUpdateAt, { addSuffix: true })}`;
   }
 
   return (

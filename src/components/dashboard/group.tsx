@@ -1,14 +1,13 @@
 import { cn } from "@/lib/utils";
-import type { GroupWithCache } from "@/lib/types";
+import type { GroupWithItems } from "@/lib/types";
 import { ItemCard } from "./item/item-card";
 import { Folder } from "lucide-react";
 
 /**
- * Server-compatible GroupCard.
- * Renders group name and items during SSR.
+ * Server-only GroupCard for view mode.
  * For edit mode, use GroupCardDummy instead.
  */
-export function GroupCard({ group, editMode }: { group: GroupWithCache; editMode: boolean }) {
+export function GroupCard({ group }: { group: GroupWithItems }) {
   return (
     <section className={cn("group/group relative", "rounded-2xl", "transition-all duration-300")}>
       {/* Group header */}
@@ -49,7 +48,7 @@ export function GroupCard({ group, editMode }: { group: GroupWithCache; editMode
         )}
       >
         {group.items.map((item) => (
-          <ItemCard key={item.id} item={item} editMode={editMode} />
+          <ItemCard key={item.id} item={item} />
         ))}
       </div>
     </section>

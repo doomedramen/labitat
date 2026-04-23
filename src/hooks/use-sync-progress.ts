@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useItemLastUpdateAt } from "./use-live-data";
+import { useItemLive } from "@/components/dashboard/use-item-live";
 
 /**
  * Calculate sync progress percentage (0-100) based on polling interval
@@ -12,8 +12,9 @@ import { useItemLastUpdateAt } from "./use-live-data";
  * @returns Progress percentage (0-100) indicating time until next sync
  */
 export function useSyncProgress(itemId: string, pollingMs: number): number {
-  const lastUpdateAt = useItemLastUpdateAt(itemId);
-  const lastUpdateAtRef = useRef(lastUpdateAt);
+  const live = useItemLive(itemId);
+  const lastUpdateAt = live?.itemLastUpdateAt ?? null;
+  const lastUpdateAtRef = useRef<number | null>(lastUpdateAt);
   const [progress, setProgress] = useState(0);
 
   // Keep ref in sync with the latest lastUpdateAt
@@ -27,7 +28,7 @@ export function useSyncProgress(itemId: string, pollingMs: number): number {
     const updateProgress = () => {
       const lastUpdate = lastUpdateAtRef.current;
 
-      if (lastUpdate === 0) {
+      if (lastUpdate === null) {
         // No live data yet - show full ring (0% progress)
         setProgress(0);
       } else {

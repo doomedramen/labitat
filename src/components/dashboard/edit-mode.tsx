@@ -12,7 +12,7 @@ import {
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types";
 import { GroupCardDummy } from "./group-dummy";
-import { ItemCardDragPreview } from "./item/item-card";
+import { ItemCardDragPreview } from "./item/item-card-drag-preview";
 
 interface EditModeProps {
   groups: GroupWithCache[];

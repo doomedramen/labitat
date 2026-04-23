@@ -18,10 +18,8 @@ import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types"
 import { useBackground } from "@/hooks/use-background";
 import { Header } from "./header";
 import { EditMode } from "./edit-mode";
-import { ViewMode } from "./view-mode";
 import { Dialogs } from "./dialogs";
 import { EditBar } from "./edit-bar";
-import { Footer } from "./footer";
 import { reorderGroups } from "@/actions/groups";
 import { reorderItems } from "@/actions/items";
 import { updateDashboardTitle } from "@/actions/settings";
@@ -30,21 +28,13 @@ interface DashboardClientProps {
   groups: GroupWithCache[];
   isLoggedIn: boolean;
   title: string;
-  mode?: "view" | "edit";
 }
 
-export function DashboardClient({
-  groups,
-  isLoggedIn,
-  title,
-  mode = "view",
-}: DashboardClientProps) {
+export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientProps) {
   const haptic = useWebHaptics();
   useBackground();
   const router = useRouter();
-  const isEditRoute = mode === "edit";
-
-  const [editMode, setEditMode] = useState(isEditRoute);
+  const editMode = true;
   const [localTitle, setLocalTitle] = useState<string | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
@@ -231,65 +221,49 @@ export function DashboardClient({
         title={title}
         localTitle={localTitle}
         onTitleChange={setLocalTitle}
-        onToggleEditMode={() => {
-          if (isEditRoute) {
-            router.push("/");
-            return;
-          }
-          setEditMode((v) => !v);
-        }}
+        onToggleEditMode={() => router.push("/")}
         onSignInClick={() => setLoginOpen(true)}
       />
 
-      <div className={editMode ? "pb-20" : undefined}>
-        {editMode ? (
-          <EditMode
-            groups={localGroups}
-            sensors={sensors}
-            activeId={activeId}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-            onGroupsChanged={handleGroupsUpdated}
-            onEditGroup={(group) => {
-              setEditingGroup(group);
-              setGroupDialogOpen(true);
-            }}
-            onAddItem={(groupId) => {
-              setEditingItem(null);
-              setTargetGroupId(groupId);
-              setItemDialogOpen(true);
-            }}
-            onEditItem={(item) => {
-              setEditingItem(item);
-              setTargetGroupId(findItemGroupId(item.id) ?? "");
-              setItemDialogOpen(true);
-            }}
-            onAddGroup={() => {
-              setEditingGroup(null);
-              setGroupDialogOpen(true);
-            }}
-          />
-        ) : (
-          <ViewMode groups={localGroups} />
-        )}
+      <div className="pb-20">
+        <EditMode
+          groups={localGroups}
+          sensors={sensors}
+          activeId={activeId}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          onGroupsChanged={handleGroupsUpdated}
+          onEditGroup={(group) => {
+            setEditingGroup(group);
+            setGroupDialogOpen(true);
+          }}
+          onAddItem={(groupId) => {
+            setEditingItem(null);
+            setTargetGroupId(groupId);
+            setItemDialogOpen(true);
+          }}
+          onEditItem={(item) => {
+            setEditingItem(item);
+            setTargetGroupId(findItemGroupId(item.id) ?? "");
+            setItemDialogOpen(true);
+          }}
+          onAddGroup={() => {
+            setEditingGroup(null);
+            setGroupDialogOpen(true);
+          }}
+        />
       </div>
 
       {editMode && isLoggedIn && (
         <EditBar
           onDone={async () => {
             await handleSaveTitle();
-            if (isEditRoute) {
-              router.push("/");
-            } else {
-              setEditMode(false);
-              haptic.trigger("light");
-            }
+            router.push("/");
+            haptic.trigger("light");
           }}
         />
       )}
-
-      <Footer editMode={editMode} />
 
       <Dialogs
         loginOpen={loginOpen}

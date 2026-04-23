@@ -2,11 +2,11 @@ import { getSession } from "@/lib/auth";
 import { serverCache } from "@/lib/server-cache";
 import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache";
 import { runStartupWarmup } from "@/lib/startup";
-import type { GroupWithCache, ItemWithCache } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type { ItemLive } from "@/lib/live-types";
 import { LiveProvider } from "@/components/dashboard/live-provider";
-import { DashboardClient } from "@/components/dashboard/dashboard-client";
+import { DashboardViewChrome } from "@/components/dashboard/dashboard-view-chrome";
+import { GroupCard } from "@/components/dashboard/group";
 
 // This page is always dynamic due to session auth, database queries, and cookie usage
 export const dynamic = "force-dynamic";
@@ -48,19 +48,6 @@ async function DashboardContent() {
     };
   }
 
-  const groupsForView: GroupWithCache[] = groupsWithItems.map((group) => ({
-    ...group,
-    items: group.items.map(
-      (item) =>
-        ({
-          ...item,
-          cachedWidgetData: null,
-          cachedPingStatus: null,
-          cachedDataAge: null,
-        }) as ItemWithCache,
-    ),
-  }));
-
   const isLoggedIn = !!session.loggedIn;
   const dashboardTitle = titleSetting?.value ?? "Labitat";
 
@@ -71,7 +58,13 @@ async function DashboardContent() {
         snapshotKey={snapshotKey}
         enableSse={true}
       >
-        <DashboardClient groups={groupsForView} isLoggedIn={isLoggedIn} title={dashboardTitle} />
+        <DashboardViewChrome isLoggedIn={isLoggedIn} title={dashboardTitle}>
+          <div className="flex flex-col gap-8">
+            {groupsWithItems.map((group) => (
+              <GroupCard key={group.id} group={group} />
+            ))}
+          </div>
+        </DashboardViewChrome>
       </LiveProvider>
     </div>
   );
