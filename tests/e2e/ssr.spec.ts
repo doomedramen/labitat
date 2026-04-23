@@ -140,7 +140,7 @@ test.describe("SSR Rendering", () => {
     expect(html).toContain("68.5");
   });
 
-  test("SSR renders status dots for items (response.text)", async ({ page }) => {
+  test("SSR renders status pills for items (response.text)", async ({ page }) => {
     await seedAndAuth(page, { groups: SEED_GROUPS });
 
     const response = await page.goto("/");
@@ -148,9 +148,8 @@ test.describe("SSR Rendering", () => {
 
     const html = await response!.text();
 
-    // ── Status dots should render (role="status" from StatusDot component) ──
-    expect(html).toMatch(/role=["']status["']/i);
-    expect(html).toContain("Status unknown");
+    // ── Status pills should render (ProgressPill uses conic-gradient) ──
+    expect(html).toContain("conic-gradient");
   });
 
   test("SSR renders images/icons for items (response.text)", async ({ page }) => {

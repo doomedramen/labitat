@@ -12,17 +12,27 @@ export type StatCardOrder = {
 
 /** Validate an unknown value as a StatCardOrder, returning null if invalid */
 export function parseStatCardOrder(value: unknown): StatCardOrder | null {
-  if (
-    value &&
-    typeof value === "object" &&
-    "active" in value &&
-    "unused" in value &&
-    Array.isArray((value as StatCardOrder).active) &&
-    Array.isArray((value as StatCardOrder).unused)
-  ) {
-    return value as StatCardOrder;
+  let candidate: unknown = value;
+
+  // Some DB drivers / serialization paths can surface JSON columns as strings.
+  if (typeof candidate === "string") {
+    try {
+      candidate = JSON.parse(candidate);
+    } catch {
+      return null;
+    }
   }
-  return null;
+
+  if (!candidate || typeof candidate !== "object") return null;
+  if (!("active" in candidate) || !("unused" in candidate)) return null;
+
+  const active = (candidate as StatCardOrder).active;
+  const unused = (candidate as StatCardOrder).unused;
+  if (!Array.isArray(active) || !Array.isArray(unused)) return null;
+  if (!active.every((v) => typeof v === "string")) return null;
+  if (!unused.every((v) => typeof v === "string")) return null;
+
+  return { active, unused };
 }
 
 /**

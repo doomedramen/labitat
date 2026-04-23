@@ -28,6 +28,7 @@ test.describe("Mobile Layout", () => {
   test("edit mode works on small viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
     await expect(page.getByRole("button", { name: "Done" })).toBeVisible();
   });
 });

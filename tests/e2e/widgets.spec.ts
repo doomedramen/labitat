@@ -216,6 +216,7 @@ test.describe("Widget Rendering", () => {
 
     // Enter edit mode
     await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
 
     // Stat labels should be hidden in edit mode
     await expect(page.getByText("Movies")).not.toBeVisible();
@@ -224,7 +225,7 @@ test.describe("Widget Rendering", () => {
     // Status dot should be hidden (check within the item card context)
     const radarrCard = page.getByTestId("item-card").filter({ hasText: "Radarr" });
     const statusDot = radarrCard.locator('[role="status"]');
-    await expect(statusDot).not.toBeVisible();
+    await expect(statusDot).toHaveCount(0);
 
     // Edit controls should appear
     await expect(page.getByText("Done")).toBeVisible();

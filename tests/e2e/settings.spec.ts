@@ -4,23 +4,18 @@ test.describe("Settings & Configuration", () => {
   test.describe("Edit Mode", () => {
     test("enters and exits edit mode", async ({ page }) => {
       await seedAndAuth(page);
-      await page.goto("/");
-
-      // Enter edit mode
-      await page.getByRole("button", { name: "Edit" }).click();
+      await page.goto("/edit");
       await expect(page.getByRole("button", { name: "Done" })).toBeVisible();
 
-      // Exit edit mode
+      // Done returns to /
       await page.getByRole("button", { name: "Done" }).click();
+      await expect(page).toHaveURL("/");
       await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
     });
 
     test("shows editing indicators", async ({ page }) => {
       await seedAndAuth(page);
-      await page.goto("/");
-
-      // Enter edit mode
-      await page.getByRole("button", { name: "Edit" }).click();
+      await page.goto("/edit");
 
       // Look for edit mode indicators (drag handles, delete buttons, etc.)
       const editIndicators = page.locator(
@@ -34,10 +29,7 @@ test.describe("Settings & Configuration", () => {
   test.describe("Stat Card Order", () => {
     test("reorders stat cards in edit mode", async ({ page }) => {
       await seedAndAuth(page);
-      await page.goto("/");
-
-      // Enter edit mode
-      await page.getByRole("button", { name: "Edit" }).click();
+      await page.goto("/edit");
 
       // Check if there are stat cards
       const statCards = page.locator("[data-stat-card]");
@@ -55,10 +47,7 @@ test.describe("Settings & Configuration", () => {
     test("settings are accessible on mobile", async ({ page }) => {
       await seedAndAuth(page);
       await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto("/");
-
-      // Enter edit mode
-      await page.getByRole("button", { name: "Edit" }).click();
+      await page.goto("/edit");
 
       // Verify settings buttons are still accessible
       const editButton = page.getByRole("button", { name: "Done" });

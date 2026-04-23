@@ -36,7 +36,9 @@ async function DashboardContent() {
   const uniqueItemIds = [...new Set(itemIds)];
   const snapshotKey = uniqueItemIds.sort().join(",");
 
-  const allCache = new Map(serverCache.getAll());
+  // Reload from DB so SSR snapshots reflect the latest persisted cache even if the
+  // request is served by a different server instance than the writer.
+  const allCache = new Map(serverCache.getAllReloaded());
   const initialSnapshotById: Record<string, ItemLive> = {};
   for (const id of uniqueItemIds) {
     const cached = allCache.get(id) ?? null;

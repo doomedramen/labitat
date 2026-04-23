@@ -51,11 +51,12 @@ export async function seedAndAuth(
   });
 
   // Extract session cookie from response and add to browser context
-  const setCookieHeaders = response.headers()["set-cookie"];
-  if (setCookieHeaders) {
-    const cookies = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
-
-    const parsedCookies = cookies.map((cookieStr) => {
+  const setCookieHeaders = response
+    .headersArray()
+    .filter((h) => h.name.toLowerCase() === "set-cookie")
+    .map((h) => h.value);
+  if (setCookieHeaders.length > 0) {
+    const parsedCookies = setCookieHeaders.map((cookieStr) => {
       const [nameValue, ...attrs] = cookieStr.split(";").map((s: string) => s.trim());
       const [name, value] = nameValue.split("=");
       const cookie: {

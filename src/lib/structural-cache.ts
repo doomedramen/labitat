@@ -4,7 +4,7 @@ import { settings } from "@/lib/db/schema";
 import type { GroupWithItems } from "@/lib/types";
 
 async function queryGroupsWithItems(): Promise<GroupWithItems[]> {
-  return db.query.groups.findMany({
+  const groupsWithItems = await db.query.groups.findMany({
     orderBy: (g, { asc }) => [asc(g.order)],
     with: {
       items: {
@@ -12,6 +12,21 @@ async function queryGroupsWithItems(): Promise<GroupWithItems[]> {
       },
     },
   });
+
+  return groupsWithItems.map((group) => ({
+    ...group,
+    items: group.items.map((item) => ({
+      ...item,
+      // Ensure this field crosses the RSC boundary reliably. Some runtimes surface JSON
+      // columns as non-plain objects; serializing to a JSON string keeps it stable.
+      statCardOrder:
+        item.statCardOrder === null || item.statCardOrder === undefined
+          ? null
+          : typeof item.statCardOrder === "string"
+            ? item.statCardOrder
+            : JSON.stringify(item.statCardOrder),
+    })),
+  }));
 }
 
 /** Get groups directly from DB — caching causes stale-data races in dev mode.

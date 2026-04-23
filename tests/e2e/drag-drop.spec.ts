@@ -22,8 +22,7 @@ test.describe("Drag and Drop Reordering", () => {
         },
       ],
     });
-    await page.goto("/");
-    await page.getByRole("button", { name: "Edit" }).click();
+    await page.goto("/edit");
   });
 
   test("reorders items within a group", async ({ page }) => {

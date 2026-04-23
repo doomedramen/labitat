@@ -74,8 +74,8 @@ test.describe("Authentication", () => {
       await page.goto("/");
       await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
 
-      // Enter edit mode to reveal the edit bar with Sign out button
-      await page.getByRole("button", { name: "Edit" }).click();
+      // Navigate to /edit to reveal the edit bar with Sign out button
+      await page.goto("/edit");
       await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
 
       await page.getByRole("button", { name: "Sign out" }).click();

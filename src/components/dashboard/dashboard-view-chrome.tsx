@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useBackground } from "@/hooks/use-background";
 import { Header } from "@/components/dashboard/header";
 import { Footer } from "@/components/dashboard/footer";
+import { SseBanner } from "@/components/dashboard/sse-banner";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ export function DashboardViewChrome({
 
   return (
     <>
+      <SseBanner />
       <Header
         editMode={false}
         isLoggedIn={isLoggedIn}

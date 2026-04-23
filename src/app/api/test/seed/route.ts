@@ -20,9 +20,6 @@ interface SeedRequest {
 }
 
 export async function POST(request: Request) {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
   const secret = request.headers.get("x-test-secret");
   if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -31,7 +28,6 @@ export async function POST(request: Request) {
   // Dynamic imports to avoid loading env-dependent modules during build
   const { sql } = await import("drizzle-orm");
   const { getIronSession } = await import("iron-session");
-  const { cookies } = await import("next/headers");
   const bcrypt = await import("bcryptjs");
   const { nanoid } = await import("nanoid");
   const { db } = await import("@/lib/db");
@@ -52,6 +48,8 @@ export async function POST(request: Request) {
 
   const body: SeedRequest = await request.json().catch(() => ({}));
 
+  const response = NextResponse.json({ ok: true });
+
   // Seed admin user
   if (body.admin) {
     const userId = nanoid();
@@ -64,7 +62,7 @@ export async function POST(request: Request) {
     });
 
     // Set session cookie
-    const session = await getIronSession<SessionData>(await cookies(), getSessionOptions());
+    const session = await getIronSession<SessionData>(request, response, getSessionOptions());
     session.loggedIn = true;
     session.userId = userId;
     await session.save();
@@ -117,14 +115,11 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true });
+  return response;
 }
 
 // GET handler for debugging cache state in E2E tests
 export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
   const secret = request.headers.get("x-test-secret");
   if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

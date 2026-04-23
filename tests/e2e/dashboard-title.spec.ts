@@ -9,31 +9,27 @@ test.describe("Dashboard Title", () => {
 
   test("edits title in edit mode", async ({ page }) => {
     await seedAndAuth(page, { groups: SEED_GROUPS });
-    await page.goto("/");
-
-    await page.getByRole("button", { name: "Edit" }).click();
+    await page.goto("/edit");
 
     const titleInput = page.getByRole("textbox");
     await titleInput.clear();
     await titleInput.fill("My Homelab");
-    await page.keyboard.press("Enter");
 
-    // Exit edit mode to see the h1
+    // Done returns to /
     await page.getByRole("button", { name: "Done" }).click();
+    await expect(page).toHaveURL("/");
     await expect(page.locator("h1")).toContainText("My Homelab");
   });
 
   test("title persists after page reload", async ({ page }) => {
     await seedAndAuth(page, { groups: SEED_GROUPS });
-    await page.goto("/");
-
-    await page.getByRole("button", { name: "Edit" }).click();
+    await page.goto("/edit");
     const titleInput = page.getByRole("textbox");
     await titleInput.clear();
     await titleInput.fill("My Homelab");
-    await page.keyboard.press("Enter");
 
     await page.getByRole("button", { name: "Done" }).click();
+    await expect(page).toHaveURL("/");
     await expect(page.locator("h1")).toContainText("My Homelab");
 
     await page.reload();

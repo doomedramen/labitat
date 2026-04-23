@@ -36,6 +36,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
 
     // Enter edit mode
     await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
 
     // Small delay to ensure edit mode is fully initialized
     await page.waitForTimeout(500);
@@ -84,6 +85,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
 
     // Enter edit mode
     await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
 
     // Open the item dialog
     await page.getByLabel("Edit item").first().click();
@@ -125,6 +127,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
 
     // Enter edit mode
     await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
 
     // Open the item dialog
     await page.getByLabel("Edit item").first().click();
@@ -175,6 +178,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
 
     // Enter edit mode
     await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
 
     // Open the item dialog
     await page.getByLabel("Edit item").first().click();
@@ -194,6 +198,11 @@ test.describe("Stat Card Reordering and Visibility", () => {
     const handles = dialog.locator('[aria-label="Drag to reorder stat card"]');
     await dragAndDropInDialog(page, handles.nth(1), handles.nth(0));
 
+    // Wait for order to update in the UI before saving (avoids racing React state updates)
+    await expect(dialog.locator('[data-testid="stat-card"]').nth(0)).toContainText(
+      initialSecondLabel ?? "",
+    );
+
     // Save the item - use existing dialog to avoid timing issues
     await dialog.getByRole("button", { name: "Update" }).click();
 
@@ -202,6 +211,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
 
     // Exit edit mode
     await page.getByRole("button", { name: "Done" }).click();
+    await expect(page).toHaveURL("/");
 
     // Reload page to verify persistence
     await page.reload();
@@ -211,6 +221,15 @@ test.describe("Stat Card Reordering and Visibility", () => {
 
     // Re-enter edit mode
     await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
+
+    // Debug: ensure stat card order is present on the item card after reload
+    // (useful for diagnosing RSC/DB serialization issues)
+    const card = page.getByTestId("item-card").first();
+    // eslint-disable-next-line no-console
+    console.log("data-item-id:", await card.getAttribute("data-item-id"));
+    // eslint-disable-next-line no-console
+    console.log("data-stat-card-order:", await card.getAttribute("data-stat-card-order"));
 
     // Open the item dialog again
     await page.getByLabel("Edit item").first().click();
@@ -221,8 +240,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
 
     // Verify order persisted
     const reorderedStatCards = dialog.locator('[data-testid="stat-card"]');
-    const persistedFirstLabel = await reorderedStatCards.nth(0).textContent();
-    expect(persistedFirstLabel).toBe(initialSecondLabel);
+    await expect(reorderedStatCards.nth(0)).toContainText(initialSecondLabel ?? "");
   });
 
   test("shows unused zone with count", async ({ page }) => {
@@ -233,6 +251,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
 
     // Enter edit mode
     await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
 
     // Open the item dialog
     await page.getByLabel("Edit item").first().click();

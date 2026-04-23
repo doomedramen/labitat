@@ -118,6 +118,12 @@ class ServerCache {
     return [...this.cache.entries()];
   }
 
+  /** Reload all cached items from DB and return the full map (no freshness filtering). */
+  getAllReloaded(): [string, CachedItem][] {
+    this.loadFromDb(true);
+    return [...this.cache.entries()];
+  }
+
   /** Get items fresh enough for SSR rendering. */
   getAllFresh(maxAgeMs: number = SSR_MAX_AGE_MS): [string, CachedItem][] {
     const now = Date.now();
