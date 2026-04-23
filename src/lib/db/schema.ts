@@ -42,7 +42,7 @@ export const items = sqliteTable(
     /** Controls whether stat cards in widgets show icons or labels */
     statDisplayMode: text("stat_display_mode").default("label"),
     /** Custom order of stat cards within widget grids (JSON array of IDs) */
-    statCardOrder: text("stat_card_order", { mode: "json" }),
+    statCardOrder: text("stat_card_order"),
     createdAt: text("created_at").default(sql`(current_timestamp)`),
   },
   (table) => [index("items_group_id_idx").on(table.groupId)],

@@ -17,14 +17,9 @@ async function queryGroupsWithItems(): Promise<GroupWithItems[]> {
     ...group,
     items: group.items.map((item) => ({
       ...item,
-      // Ensure this field crosses the RSC boundary reliably. Some runtimes surface JSON
-      // columns as non-plain objects; serializing to a JSON string keeps it stable.
-      statCardOrder:
-        item.statCardOrder === null || item.statCardOrder === undefined
-          ? null
-          : typeof item.statCardOrder === "string"
-            ? item.statCardOrder
-            : JSON.stringify(item.statCardOrder),
+      // statCardOrder is stored as a plain text JSON string in the database.
+      // Pass it through as-is for client-side parsing.
+      statCardOrder: item.statCardOrder ?? null,
     })),
   }));
 }

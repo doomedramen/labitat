@@ -9,7 +9,7 @@
     "dev:force": "lsof -ti :3000 | xargs kill -9 2>/dev/null; next dev --turbopack",
     "build": "next build",
     "analyze": "ANALYZE=true pnpm build",
-    "start": "next start",
+    "start": "node scripts/start-standalone.mjs",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",

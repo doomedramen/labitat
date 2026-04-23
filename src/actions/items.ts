@@ -11,6 +11,29 @@ import { refreshGroupsCache } from "@/lib/structural-cache";
 import { pollingSup } from "@/lib/polling-supervisor";
 import { serverCache } from "@/lib/server-cache";
 import type { GroupWithItems } from "@/lib/types";
+import { revalidatePath } from "next/cache";
+
+function safeRevalidatePath(path: string) {
+  try {
+    revalidatePath(path);
+  } catch {
+    // In unit tests or non-RSC contexts, Next's static generation store is absent.
+    // Revalidation is best-effort here; mutations still update the DB.
+  }
+}
+
+function isStatCardOrder(value: unknown): value is { active: string[]; unused: string[] } {
+  if (!value || typeof value !== "object") return false;
+  if (!("active" in value) || !("unused" in value)) return false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const v = value as any;
+  return (
+    Array.isArray(v.active) &&
+    v.active.every((x: unknown) => typeof x === "string") &&
+    Array.isArray(v.unused) &&
+    v.unused.every((x: unknown) => typeof x === "string")
+  );
+}
 
 async function buildServiceConfig(
   serviceType: string | null,
@@ -133,10 +156,13 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
   const displayMode = (formData.get("displayMode") as string) || "label";
   const statDisplayMode = (formData.get("statDisplayMode") as string) || "label";
   const rawStatCardOrder = formData.get("statCardOrder") as string | null;
-  let statCardOrder: { active: string[]; unused: string[] } | null = null;
+  let statCardOrderStr: string | null = null;
   if (rawStatCardOrder) {
     try {
-      statCardOrder = JSON.parse(rawStatCardOrder);
+      const parsed = JSON.parse(rawStatCardOrder) as unknown;
+      if (isStatCardOrder(parsed)) {
+        statCardOrderStr = JSON.stringify(parsed);
+      }
     } catch {
       // Invalid JSON — keep existing
     }
@@ -154,10 +180,15 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
       pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
       displayMode,
       statDisplayMode,
-      statCardOrder: statCardOrder ?? existingItem?.statCardOrder ?? null,
+      statCardOrder: statCardOrderStr ?? existingItem?.statCardOrder ?? null,
     })
     .where(eq(items.id, id));
   pollingSup.invalidateCache();
+
+  // Ensure both view and edit routes get fresh data after mutations.
+  safeRevalidatePath("/");
+  safeRevalidatePath("/edit");
+
   return refreshGroupsCache();
 }
 
@@ -166,6 +197,8 @@ export async function deleteItem(id: string): Promise<GroupWithItems[]> {
   await db.delete(items).where(eq(items.id, id));
   await serverCache.delete(id);
   pollingSup.invalidateCache();
+  safeRevalidatePath("/");
+  safeRevalidatePath("/edit");
   return refreshGroupsCache();
 }
 
@@ -180,6 +213,8 @@ export async function reorderItems(
     ),
   );
   pollingSup.invalidateCache();
+  safeRevalidatePath("/");
+  safeRevalidatePath("/edit");
   return refreshGroupsCache();
 }
 

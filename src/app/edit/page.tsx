@@ -9,6 +9,7 @@ import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import type { ItemLive } from "@/lib/live-types";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function EditPage() {
   const [session, groupsWithItems, titleSetting] = await Promise.all([
@@ -18,12 +19,6 @@ export default async function EditPage() {
   ]);
 
   if (!session.loggedIn) redirect("/");
-
-  if (process.env.NODE_ENV === "test") {
-    const first = groupsWithItems[0]?.items[0];
-    // eslint-disable-next-line no-console
-    console.log("[edit/page] firstItem.statCardOrder:", first?.id, first?.statCardOrder);
-  }
 
   const itemIds = groupsWithItems.flatMap((g) => g.items.map((i) => i.id));
   const uniqueItemIds = [...new Set(itemIds)];

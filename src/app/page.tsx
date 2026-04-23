@@ -10,6 +10,7 @@ import { GroupCard } from "@/components/dashboard/group";
 
 // This page is always dynamic due to session auth, database queries, and cookie usage
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // Module-level flag to track startup warmup
 let warmupTriggered = false;

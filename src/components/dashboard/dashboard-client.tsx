@@ -77,6 +77,15 @@ export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientPr
       }),
     }));
     setLocalGroups(enriched);
+
+    // Update editingItem if it's currently set and exists in the new groups
+    // This ensures the item dialog has the latest data including statCardOrder
+    if (editingItem) {
+      const updatedItem = enriched.flatMap((g) => g.items).find((i) => i.id === editingItem.id);
+      if (updatedItem) {
+        setEditingItem(updatedItem);
+      }
+    }
   }
 
   // DnD sensors

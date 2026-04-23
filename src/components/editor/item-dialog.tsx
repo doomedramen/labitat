@@ -271,6 +271,12 @@ export function ItemDialog({
   const [localStatCardOrder, setLocalStatCardOrder] = useState<StatCardOrder | null>(
     parseStatCardOrder(item?.statCardOrder),
   );
+  // TanStack React Form captures `onSubmit` config early; use a ref so we always
+  // serialize the latest stat card order, even if the handler is memoized.
+  const localStatCardOrderRef = useRef<StatCardOrder | null>(localStatCardOrder);
+  useEffect(() => {
+    localStatCardOrderRef.current = localStatCardOrder;
+  }, [localStatCardOrder]);
   const selectedService = services.find((s) => s.id === serviceType);
 
   const form = useForm({
@@ -306,8 +312,9 @@ export function ItemDialog({
         formData.append("statDisplayMode", statDisplayMode);
 
         // Add stat card order
-        if (localStatCardOrder) {
-          formData.append("statCardOrder", JSON.stringify(localStatCardOrder));
+        const latestOrder = localStatCardOrderRef.current;
+        if (latestOrder) {
+          formData.append("statCardOrder", JSON.stringify(latestOrder));
         }
 
         // Add config fields
@@ -345,9 +352,10 @@ export function ItemDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
   }, [item?.id, item, open]);
 
-  // Reset form and local state when dialog closes
+  // Reset form when dialog closes, or initialize when dialog opens with item
   useEffect(() => {
     if (!open) {
+      // Dialog closing - reset state
       setServiceType("");
       setConfigFields({});
       setStatDisplayMode("label");
@@ -358,9 +366,12 @@ export function ItemDialog({
         iconUrl: "",
         pollingMs: 10,
       });
+    } else if (item) {
+      // Dialog opening with item - ensure statCardOrder is synced
+      setLocalStatCardOrder(parseStatCardOrder(item.statCardOrder));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
-  }, [open]);
+  }, [open, item]);
 
   // Auto-set label based on service type when creating a new item
   useEffect(() => {

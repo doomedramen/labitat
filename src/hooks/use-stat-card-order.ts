@@ -14,7 +14,8 @@ export type StatCardOrder = {
 export function parseStatCardOrder(value: unknown): StatCardOrder | null {
   let candidate: unknown = value;
 
-  // Some DB drivers / serialization paths can surface JSON columns as strings.
+  // statCardOrder is stored as a JSON string in the database and passed through
+  // as-is from the server component. Parse it before validation.
   if (typeof candidate === "string") {
     try {
       candidate = JSON.parse(candidate);

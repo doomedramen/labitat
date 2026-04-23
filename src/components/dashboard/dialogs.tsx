@@ -46,6 +46,7 @@ export function Dialogs({
         onGroupsChanged={onGroupsChanged}
       />
       <ItemDialog
+        key={editingItem?.id ?? "new"}
         open={itemDialogOpen}
         onOpenChange={onItemDialogOpenChange}
         item={editingItem}

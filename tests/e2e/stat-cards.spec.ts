@@ -238,8 +238,11 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
     await expect(page.getByText("Stat Card Layout")).toBeVisible();
 
-    // Verify order persisted
+    // Wait for stat cards to be visible before checking order
     const reorderedStatCards = dialog.locator('[data-testid="stat-card"]');
+    await expect(reorderedStatCards.first()).toBeVisible({ timeout: 5000 });
+
+    // Verify order persisted
     await expect(reorderedStatCards.nth(0)).toContainText(initialSecondLabel ?? "");
   });
 

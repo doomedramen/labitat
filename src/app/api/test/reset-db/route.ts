@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { env } from "@/lib/env";
 
 export async function POST(request: Request) {
   const secret = request.headers.get("x-test-secret");
-  if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
+  if (!env.TEST_SECRET || secret !== env.TEST_SECRET) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

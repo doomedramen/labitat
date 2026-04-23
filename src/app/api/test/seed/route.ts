@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { ServiceData } from "@/lib/adapters/types";
 import type { SessionData } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 interface SeedRequest {
   admin?: { email: string; password: string };
@@ -21,7 +22,7 @@ interface SeedRequest {
 
 export async function POST(request: Request) {
   const secret = request.headers.get("x-test-secret");
-  if (!process.env.TEST_SECRET || secret !== process.env.TEST_SECRET) {
+  if (!env.TEST_SECRET || secret !== env.TEST_SECRET) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

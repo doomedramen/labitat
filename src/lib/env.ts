@@ -1,17 +1,26 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+const isTest = process.env.NODE_ENV === "test";
+
 export const env = createEnv({
   skipValidation: process.env.SKIP_ENV_VALIDATION === "1",
   server: {
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-    SECRET_KEY:
-      process.env.NODE_ENV === "production" ? z.string().min(32) : z.string().min(32).optional(),
-    DATABASE_URL: z.string().default("file:./data/labitat.db"),
+    SECRET_KEY: isTest
+      ? z.string().min(32).default("test-secret-key-for-e2e-tests-at-least-32-chars!")
+      : process.env.NODE_ENV === "production"
+        ? z.string().min(32)
+        : z.string().min(32).optional(),
+    DATABASE_URL: z
+      .string()
+      .default(isTest ? "file:./data/labitat.test.db" : "file:./data/labitat.db"),
     CACHE_DIR: z.string().optional(),
     IDLE_POLLING_ENABLED: z.boolean().default(true),
     IDLE_POLLING_INTERVAL_MINUTES: z.number().min(1).max(60).default(5),
     STARTUP_WARMUP_ENABLED: z.boolean().default(true),
+    // Used only by e2e helpers under /api/test/*
+    TEST_SECRET: isTest ? z.string().default("e2e-test-reset-token") : z.string().optional(),
   },
   client: {
     NEXT_PUBLIC_ALLOWED_DEV_ORIGINS: z.string().default(""),
@@ -27,5 +36,6 @@ export const env = createEnv({
       ? parseInt(process.env.IDLE_POLLING_INTERVAL_MINUTES, 10)
       : 5,
     STARTUP_WARMUP_ENABLED: process.env.STARTUP_WARMUP_ENABLED === "true",
+    TEST_SECRET: process.env.TEST_SECRET,
   },
 });
