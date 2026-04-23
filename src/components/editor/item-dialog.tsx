@@ -40,7 +40,9 @@ import {
 } from "@/components/dashboard/item/widget-display-context";
 import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid";
 import { parseStatCardOrder, type StatCardOrder } from "@/hooks/use-stat-card-order";
-import { useLiveDataEntry } from "@/hooks/use-live-data";
+import { useItemLive } from "@/components/dashboard/use-item-live";
+import { fetchServiceData } from "@/actions/services";
+import { liveStore } from "@/lib/live-store";
 
 /**
  * Stat card editor that only shows stat cards for reordering.
@@ -259,7 +261,6 @@ export function ItemDialog({
   onGroupsChanged,
 }: ItemDialogProps) {
   const haptic = useWebHaptics();
-  const liveData = useLiveDataEntry(item?.id ?? "");
   const services = getAllServices();
   const [serviceType, setServiceType] = useState(item?.serviceType ?? "");
   const [configFields, setConfigFields] = useState<Record<string, string>>({});
@@ -271,9 +272,6 @@ export function ItemDialog({
     parseStatCardOrder(item?.statCardOrder),
   );
   const selectedService = services.find((s) => s.id === serviceType);
-
-  // Get live widget data (from SSE) with fallback to SSR cache
-  const widgetData = liveData.widgetData ?? item?.cachedWidgetData;
 
   const form = useForm({
     defaultValues: {
@@ -698,27 +696,34 @@ export function ItemDialog({
               {/* Stat card layout preview - only for widgets using toPayload, not custom renderWidget */}
               {selectedService &&
                 !selectedService.renderWidget &&
+                open &&
                 item &&
                 serviceType === item.serviceType &&
-                widgetData && (
+                selectedService.toPayload && (
                   <div className="space-y-2">
                     <Label>Stat Card Layout</Label>
                     <p className="text-xs text-muted-foreground">
                       Drag to reorder · Drop into the unused area to hide
                     </p>
-                    <WidgetDisplayProvider
-                      value={{
-                        statDisplayMode,
-                        statCardOrder: localStatCardOrder,
-                        editMode: true,
-                        itemId: item.id,
-                        onOrderChange: setLocalStatCardOrder,
-                      }}
-                    >
-                      {selectedService.toPayload && widgetData ? (
-                        <StatCardEditor payload={selectedService.toPayload(widgetData)} />
-                      ) : null}
-                    </WidgetDisplayProvider>
+                    <ItemDialogPreview
+                      open={open}
+                      itemId={item.id}
+                      adapter={selectedService}
+                      statDisplayMode={statDisplayMode}
+                      statCardOrder={localStatCardOrder}
+                      onOrderChange={setLocalStatCardOrder}
+                    />
+                  </div>
+                )}
+
+              {selectedService &&
+                !selectedService.renderWidget &&
+                open &&
+                !item &&
+                selectedService.toPayload && (
+                  <div className="space-y-2">
+                    <Label>Stat Card Layout</Label>
+                    <p className="text-xs text-muted-foreground">Save item first to preview</p>
                   </div>
                 )}
             </div>
@@ -732,5 +737,117 @@ export function ItemDialog({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+type PreviewState =
+  | { status: "idle"; payload: WidgetPayload }
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "empty" };
+
+function withPlaceholderValues(payload: WidgetPayload): WidgetPayload {
+  return {
+    ...payload,
+    stats: payload.stats.map((s) => ({ ...s, value: "--" })),
+    downloads: undefined,
+    streams: undefined,
+    customComponent: undefined,
+    loading: false,
+    error: null,
+  };
+}
+
+function ItemDialogPreview({
+  open,
+  itemId,
+  adapter,
+  statDisplayMode,
+  statCardOrder,
+  onOrderChange,
+}: {
+  open: boolean;
+  itemId: string;
+  adapter: ServiceDefinition;
+  statDisplayMode: "icon" | "label";
+  statCardOrder: StatCardOrder | null;
+  onOrderChange: (order: StatCardOrder | null) => void;
+}) {
+  const live = useItemLive(itemId);
+
+  const [preview, setPreview] = useState<PreviewState>({ status: "loading" });
+  const fetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!open) return;
+    if (fetchedRef.current) return; // only once per open
+    fetchedRef.current = true;
+
+    const cached = live?.widgetData ?? null;
+    if (cached) {
+      const payload = adapter.toPayload ? adapter.toPayload(cached) : null;
+      if (payload) {
+        setPreview({ status: "idle", payload: withPlaceholderValues(payload) });
+        return;
+      }
+    }
+
+    setPreview({ status: "loading" });
+    fetchServiceData(itemId)
+      .then((data) => {
+        const existing = liveStore.getSnapshot(itemId);
+        liveStore.updateFromSse(itemId, {
+          widgetData: data,
+          pingStatus: existing?.pingStatus ?? null,
+          fetchedAt: Date.now(),
+        });
+
+        const payload = adapter.toPayload ? adapter.toPayload(data) : null;
+        if (!payload) {
+          setPreview({ status: "error" });
+          return;
+        }
+
+        setPreview({ status: "idle", payload: withPlaceholderValues(payload) });
+      })
+      .catch(() => setPreview({ status: "error" }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once per dialog open
+  }, []);
+
+  if (!open) return null;
+
+  if (preview.status === "empty") {
+    return <p className="text-xs text-muted-foreground">Save item first to preview</p>;
+  }
+
+  if (preview.status === "error") {
+    return <p className="text-xs text-muted-foreground">Preview unavailable</p>;
+  }
+
+  if (preview.status === "loading") {
+    return (
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-1.5 text-xs sm:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-12 animate-pulse rounded-md bg-secondary/50" />
+          ))}
+        </div>
+        <div className="h-16 rounded-md bg-secondary/30" />
+      </div>
+    );
+  }
+
+  return (
+    <WidgetDisplayProvider
+      value={{
+        statDisplayMode,
+        statCardOrder,
+        editMode: true,
+        itemId,
+        onOrderChange,
+      }}
+    >
+      <StatCardEditor payload={preview.payload} />
+    </WidgetDisplayProvider>
   );
 }
