@@ -19,7 +19,7 @@ export function getSessionOptions() {
     cookieName: "labitat-session",
     password: secret,
     cookieOptions: {
-      secure: env.NODE_ENV === "production",
+      secure: env.COOKIE_SECURE,
       httpOnly: true,
       sameSite: "lax" as const,
       maxAge: 60 * 60 * 24 * 7, // 7 days

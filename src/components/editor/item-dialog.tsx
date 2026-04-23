@@ -268,15 +268,16 @@ export function ItemDialog({
   const [statDisplayMode, setStatDisplayMode] = useState<"icon" | "label">(
     (item?.statDisplayMode as "icon" | "label") ?? "label",
   );
-  const [localStatCardOrder, setLocalStatCardOrder] = useState<StatCardOrder | null>(
-    parseStatCardOrder(item?.statCardOrder),
+  const initialStatCardOrder = parseStatCardOrder(item?.statCardOrder);
+  const [localStatCardOrder, setLocalStatCardOrderState] = useState<StatCardOrder | null>(
+    initialStatCardOrder,
   );
-  // TanStack React Form captures `onSubmit` config early; use a ref so we always
-  // serialize the latest stat card order, even if the handler is memoized.
-  const localStatCardOrderRef = useRef<StatCardOrder | null>(localStatCardOrder);
-  useEffect(() => {
-    localStatCardOrderRef.current = localStatCardOrder;
-  }, [localStatCardOrder]);
+  // Keep a synchronous ref for submit serialization so we don't race `useEffect`.
+  const localStatCardOrderRef = useRef<StatCardOrder | null>(initialStatCardOrder);
+  const setLocalStatCardOrder = (next: StatCardOrder | null) => {
+    localStatCardOrderRef.current = next;
+    setLocalStatCardOrderState(next);
+  };
   const selectedService = services.find((s) => s.id === serviceType);
 
   const form = useForm({

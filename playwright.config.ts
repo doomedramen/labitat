@@ -33,6 +33,7 @@ export default defineConfig({
       PORT: "3000",
       DATABASE_URL: "file:./data/labitat.test.db",
       SECRET_KEY: "test-secret-key-for-e2e-tests-at-least-32-chars!",
+      COOKIE_SECURE: "false",
       TEST_SECRET: "e2e-test-reset-token",
     },
   },
