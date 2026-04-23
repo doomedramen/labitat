@@ -1,9 +1,12 @@
 import { getSession } from "@/lib/auth";
-import { Dashboard } from "@/components/dashboard";
 import { serverCache } from "@/lib/server-cache";
 import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache";
 import { runStartupWarmup } from "@/lib/startup";
 import type { GroupWithCache, ItemWithCache } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import type { ItemLive } from "@/lib/live-types";
+import { LiveProvider } from "@/components/dashboard/live-provider";
+import { DashboardClient } from "@/components/dashboard/dashboard-client";
 
 // This page is always dynamic due to session auth, database queries, and cookie usage
 export const dynamic = "force-dynamic";
@@ -29,32 +32,49 @@ async function DashboardContent() {
     throw err;
   }
 
-  // Read from server cache — include stale data for immediate rendering
-  const now = Date.now();
-  const allCache = new Map(serverCache.getAll());
-  console.log(`[page.tsx] Groups: ${groupsWithItems.length}, Cache entries: ${allCache.size}`);
+  const itemIds = groupsWithItems.flatMap((g) => g.items.map((i) => i.id));
+  const uniqueItemIds = [...new Set(itemIds)];
+  const snapshotKey = uniqueItemIds.sort().join(",");
 
-  const enrichedGroups: GroupWithCache[] = groupsWithItems.map((group) => ({
+  const allCache = new Map(serverCache.getAll());
+  const initialSnapshotById: Record<string, ItemLive> = {};
+  for (const id of uniqueItemIds) {
+    const cached = allCache.get(id) ?? null;
+    initialSnapshotById[id] = {
+      widgetData: cached?.widgetData ?? null,
+      pingStatus: cached?.pingStatus ?? null,
+      lastFetchedAt: cached?.lastFetchedAt ? cached.lastFetchedAt : null,
+      itemLastUpdateAt: null,
+    };
+  }
+
+  const groupsForView: GroupWithCache[] = groupsWithItems.map((group) => ({
     ...group,
-    items: group.items.map((item) => {
-      const cached = allCache.get(item.id) ?? null;
-      const age = cached ? now - cached.lastFetchedAt : null;
-      if (cached?.widgetData) {
-        console.log(`[page.tsx] Found cached data for ${item.label}`);
-      }
-      return {
-        ...item,
-        cachedWidgetData: cached?.widgetData ?? null,
-        cachedPingStatus: cached?.pingStatus ?? null,
-        cachedDataAge: age,
-      } as ItemWithCache;
-    }),
+    items: group.items.map(
+      (item) =>
+        ({
+          ...item,
+          cachedWidgetData: null,
+          cachedPingStatus: null,
+          cachedDataAge: null,
+        }) as ItemWithCache,
+    ),
   }));
 
   const isLoggedIn = !!session.loggedIn;
   const dashboardTitle = titleSetting?.value ?? "Labitat";
 
-  return <Dashboard groups={enrichedGroups} isLoggedIn={isLoggedIn} title={dashboardTitle} />;
+  return (
+    <div className={cn("min-h-svh p-6")}>
+      <LiveProvider
+        initialSnapshotById={initialSnapshotById}
+        snapshotKey={snapshotKey}
+        enableSse={true}
+      >
+        <DashboardClient groups={groupsForView} isLoggedIn={isLoggedIn} title={dashboardTitle} />
+      </LiveProvider>
+    </div>
+  );
 }
 
 export default DashboardContent;
