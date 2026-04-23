@@ -19,8 +19,17 @@ function initDb(): Db {
   const dbPathRaw = env.DATABASE_URL.replace(/^file:/, "");
   // In Next.js dev/test, route handlers, RSC, and server actions can run in
   // separate workers with different CWDs. Resolve relative DB paths against a
-  // stable base (when available) so all workers point at the same SQLite file.
-  const baseDir = process.env.INIT_CWD ?? process.cwd();
+  // stable base so all workers point at the same SQLite file.
+  function findProjectRoot(startDir: string): string {
+    let dir = startDir;
+    for (;;) {
+      if (fs.existsSync(path.join(dir, "package.json"))) return dir;
+      const parent = path.dirname(dir);
+      if (parent === dir) return startDir;
+      dir = parent;
+    }
+  }
+  const baseDir = process.env.INIT_CWD ?? findProjectRoot(process.cwd());
   const dbPath = path.isAbsolute(dbPathRaw) ? dbPathRaw : path.resolve(baseDir, dbPathRaw);
   const dbDir = path.dirname(dbPath);
 
