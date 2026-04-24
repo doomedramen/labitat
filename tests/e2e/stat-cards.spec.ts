@@ -223,14 +223,6 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await page.getByRole("button", { name: "Edit" }).click();
     await expect(page).toHaveURL("/edit");
 
-    // Debug: ensure stat card order is present on the item card after reload
-    // (useful for diagnosing RSC/DB serialization issues)
-    const card = page.getByTestId("item-card").first();
-    // eslint-disable-next-line no-console
-    console.log("data-item-id:", await card.getAttribute("data-item-id"));
-    // eslint-disable-next-line no-console
-    console.log("data-stat-card-order:", await card.getAttribute("data-stat-card-order"));
-
     // Open the item dialog again
     await page.getByLabel("Edit item").first().click();
 

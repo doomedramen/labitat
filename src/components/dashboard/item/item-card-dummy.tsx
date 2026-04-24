@@ -63,13 +63,6 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
         )}
         data-testid="item-card"
         data-item-id={item.id}
-        data-stat-card-order={
-          item.statCardOrder === null || item.statCardOrder === undefined
-            ? ""
-            : typeof item.statCardOrder === "string"
-              ? item.statCardOrder
-              : JSON.stringify(item.statCardOrder)
-        }
       >
         {/* Top action bar */}
         <div

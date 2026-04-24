@@ -203,12 +203,6 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
   // Return fresh data from DB
   const freshGroups = await refreshGroupsCache();
 
-  // Debug logging for test flakiness investigation
-  if (process.env.NODE_ENV === "test") {
-    const updatedItem = freshGroups.flatMap((g) => g.items).find((i) => i.id === id);
-    console.log("[updateItem] statCardOrder in returned data:", updatedItem?.statCardOrder);
-  }
-
   return freshGroups;
 }
 
