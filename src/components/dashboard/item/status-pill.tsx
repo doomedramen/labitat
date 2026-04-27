@@ -141,7 +141,7 @@ function usePrefersDark(): boolean {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const STROKE_WIDTH = 2.5;
+const STROKE_WIDTH = 1.5;
 const GAP = STROKE_WIDTH / 2 + 1.5; // gap between pill bg and stroke
 
 export function StatusPill({
@@ -220,12 +220,12 @@ export function StatusPill({
           display: "inline-flex",
           alignItems: "center",
           gap: 6,
-          height: 28,
-          padding: "0 10px",
-          borderRadius: 14,
+          height: 18,
+          padding: "0 8px",
+          borderRadius: 9,
           background: bg,
           color: textColor,
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: 500,
           whiteSpace: "nowrap",
           userSelect: "none",
