@@ -12,7 +12,6 @@ test.describe("Status Pill Progress", () => {
               href: "https://radarr.test",
               serviceType: "radarr",
               serviceUrl: "https://radarr.test",
-              pollingMs: 5000, // 5 second polling for faster testing
               cachedWidgetData: {
                 queued: 5,
                 missing: 3,
@@ -60,7 +59,6 @@ test.describe("Status Pill Progress", () => {
               href: "https://radarr.test",
               serviceType: "radarr",
               serviceUrl: "https://radarr.test",
-              pollingMs: 3000, // 3 second polling for faster testing
               cachedWidgetData: {
                 queued: 5,
                 missing: 3,
@@ -100,16 +98,16 @@ test.describe("Status Pill Progress", () => {
       const laterOffset = await progressPath.getAttribute("stroke-dashoffset");
 
       // Offset should have changed (decreased as progress increases)
-      // Note: stroke-dashoffset = len * (1 - progress), so as progress goes up, offset goes down
       if (initialOffset && laterOffset) {
         const initial = parseFloat(initialOffset);
         const later = parseFloat(laterOffset);
         // Progress should have moved (offset decreased)
-        // In 1 second with 3s polling, progress goes from ~0 to ~0.33
-        // So offset should decrease by about 33%
+        // In 1 second with 30s polling, progress goes from ~0 to ~0.033
+        // So offset should decrease by about 3.3%
         console.log(`Progress stroke-dashoffset: ${initialOffset} -> ${laterOffset}`);
         // We don't assert exact values since timing can vary, but they should be different
         // if animation is working
+        expect(initial).not.toBe(later);
       }
     }
   });
@@ -125,7 +123,6 @@ test.describe("Status Pill Progress", () => {
               href: "https://test.test",
               serviceType: "radarr",
               serviceUrl: "https://radarr.test",
-              pollingMs: 5000,
               cachedWidgetData: {
                 _status: "error",
                 _statusText: "Connection refused",
@@ -149,5 +146,48 @@ test.describe("Status Pill Progress", () => {
     // We can't easily test CSS variables in e2e, but we can verify the structure
     const pillBackground = statusPill.locator("div").first();
     await expect(pillBackground).toBeVisible();
+  });
+
+  test("tooltip has correct styling", async ({ page }) => {
+    await seedAndAuth(page, {
+      groups: [
+        {
+          name: "Services",
+          items: [
+            {
+              label: "Radarr",
+              href: "https://radarr.test",
+              serviceType: "radarr",
+              serviceUrl: "https://radarr.test",
+              cachedWidgetData: {
+                queued: 5,
+                missing: 3,
+                wanted: 7,
+                movies: 42,
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    await page.goto("/");
+
+    // Wait for item to load
+    await expect(page.getByText("Radarr")).toBeVisible({ timeout: 15_000 });
+
+    // Hover over the status pill to trigger tooltip
+    const statusPill = page.locator('[role="status"]');
+    await statusPill.hover();
+
+    // Tooltip should appear with the same styling as list-item tooltips
+    // Check for the tooltip content
+    const tooltip = page.locator('[role="tooltip"]');
+    await expect(tooltip).toBeVisible({ timeout: 5000 });
+
+    // Should have the correct CSS classes (matching list-item tooltip)
+    await expect(tooltip).toHaveClass(/bg-popover/);
+    await expect(tooltip).toHaveClass(/border-border/);
+    await expect(tooltip).toHaveClass(/rounded-xl/);
   });
 });

@@ -2,6 +2,7 @@
 
 import { useRef, useLayoutEffect, useCallback } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -235,7 +236,14 @@ export function StatusPill({
             {pillContent}
           </div>
         </TooltipTrigger>
-        <TooltipContent side="top" sideOffset={4} className="p-0 shadow-lg">
+        <TooltipContent
+          side="top"
+          sideOffset={4}
+          className={cn(
+            "p-3 shadow-lg border border-border/50",
+            "bg-popover/95 backdrop-blur-sm rounded-xl",
+          )}
+        >
           {tooltip}
         </TooltipContent>
       </Tooltip>
