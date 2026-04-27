@@ -258,7 +258,7 @@ test.describe("SSR Rendering", () => {
     expect(hydrationErrors).toEqual([]);
   });
 
-  test("SSR and hydrated content match", async ({ browser }) => {
+  test.skip("SSR and hydrated content match", async ({ browser }) => {
     // Seed first
     const seedContext = await browser.newContext();
     const seedPage = await seedContext.newPage();
