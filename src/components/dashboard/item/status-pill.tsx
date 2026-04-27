@@ -19,7 +19,7 @@ function ProgressPill({
   className = "",
 }: ProgressPillProps) {
   return (
-    <div className="relative inline-flex">
+    <div className="relative inline-flex" role="status" aria-label={label}>
       {/* Border container - behind the pill */}
       <div className="absolute -inset-[2px] rounded-full overflow-hidden">
         {/* Track */}

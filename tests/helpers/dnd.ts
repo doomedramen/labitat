@@ -76,6 +76,8 @@ export async function dragAndDropInDialog(page: Page, source: Locator, target: L
   const targetX = targetBox.x + targetBox.width / 2;
   const targetY = targetBox.y + targetBox.height / 2;
 
+  console.log(`[dnd] source: (${sourceX}, ${sourceY}) target: (${targetX}, ${targetY})`);
+
   // Move to source and press
   await page.mouse.move(sourceX, sourceY);
   await page.waitForTimeout(100);
@@ -88,4 +90,5 @@ export async function dragAndDropInDialog(page: Page, source: Locator, target: L
   await page.waitForTimeout(100);
   // Release
   await page.mouse.up();
+  console.log(`[dnd] dropped at: (${targetX}, ${targetY})`);
 }

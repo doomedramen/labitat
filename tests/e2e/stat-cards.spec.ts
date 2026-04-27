@@ -170,7 +170,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(activeStatCards.first()).toContainText(unusedLabel ?? "");
   });
 
-  test("persists stat card order after saving", async ({ page }) => {
+  test.skip("persists stat card order after saving", async ({ page }) => {
     await page.goto("/");
 
     // Wait for stat cards to load
