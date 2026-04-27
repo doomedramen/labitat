@@ -221,7 +221,7 @@ export function StatusPill({
           alignItems: "center",
           gap: 6,
           height: 18,
-          padding: "0 8px",
+          padding: "0 4px",
           borderRadius: 9,
           background: bg,
           color: textColor,
