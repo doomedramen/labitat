@@ -25,7 +25,7 @@ test.describe("Authentication", () => {
       await expect(page.locator("#password")).toBeVisible();
     });
 
-    test.skip("logs in with valid credentials", async ({ page }) => {
+    test.skip("logs in with valid credentials", async ({ page: _page }) => {
       // SKIPPED: This test is flaky due to rate limiting from previous test runs.
       // The in-memory rate limiter stores failed attempts by IP, and the browser's
       // IP differs from the test runner's IP, so resetAllRateLimits() doesn't work.
