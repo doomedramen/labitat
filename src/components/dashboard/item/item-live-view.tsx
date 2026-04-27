@@ -8,7 +8,7 @@ import { useItemLive } from "@/components/dashboard/use-item-live";
 import { useSyncProgress } from "@/hooks/use-sync-progress";
 import { StatusPill } from "@/components/dashboard/item/status-pill";
 import { WidgetRenderer } from "@/components/dashboard/item/widget-renderer";
-import { formatAge, formatAgeVerbose } from "@/lib/utils/age";
+import { formatAgeVerbose } from "@/lib/utils/age";
 
 export function ItemLiveView({ item }: { item: ItemRow }) {
   const live = useItemLive(item.id);
@@ -37,22 +37,8 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
       {hasStatus && (
         <div className="absolute top-3.5 right-4 shrink-0 flex items-center">
           <StatusPill
-            label={getStatusLabel(serviceStatus, ageMs)}
             progress={progress}
-            color={
-              serviceStatus.state === "error" || serviceStatus.state === "unreachable"
-                ? "#f87171"
-                : serviceStatus.state === "slow" || serviceStatus.state === "degraded"
-                  ? "#fbbf24"
-                  : "#4ade80"
-            }
-            dotClassName={
-              serviceStatus.state === "error" || serviceStatus.state === "unreachable"
-                ? "bg-error"
-                : serviceStatus.state === "slow" || serviceStatus.state === "degraded"
-                  ? "bg-warning"
-                  : "bg-success"
-            }
+            statusState={serviceStatus.state}
             tooltip={getStatusTooltip(serviceStatus, ageMs)}
           />
         </div>
@@ -67,18 +53,6 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
       />
     </>
   );
-}
-
-function getStatusLabel(status: { state: string }, ageMs: number | null): string {
-  const isError = status.state === "error" || status.state === "unreachable";
-
-  if (isError) {
-    return "Error";
-  }
-
-  if (ageMs === null) return "";
-
-  return ageMs > 5 * 60 * 1000 ? formatAge(ageMs) : "";
 }
 
 function getStatusTooltip(

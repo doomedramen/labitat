@@ -148,8 +148,8 @@ test.describe("SSR Rendering", () => {
 
     const html = await response!.text();
 
-    // ── Status pills should render (ProgressPill uses conic-gradient) ──
-    expect(html).toContain("conic-gradient");
+    // Status pill should render with SVG circle
+    expect(html).toContain("<svg");
   });
 
   test("SSR renders images/icons for items (response.text)", async ({ page }) => {
