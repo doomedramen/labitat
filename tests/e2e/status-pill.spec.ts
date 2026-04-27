@@ -93,7 +93,7 @@ test.describe("Status Pill Progress", () => {
       const initialOffset = await progressPath.getAttribute("stroke-dashoffset");
 
       // Wait for some animation to happen (progress should increase)
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(2000);
 
       const laterOffset = await progressPath.getAttribute("stroke-dashoffset");
 
@@ -102,12 +102,14 @@ test.describe("Status Pill Progress", () => {
         const initial = parseFloat(initialOffset);
         const later = parseFloat(laterOffset);
         // Progress should have moved (offset decreased)
-        // In 1 second with 30s polling, progress goes from ~0 to ~0.033
-        // So offset should decrease by about 3.3%
-        console.log(`Progress stroke-dashoffset: ${initialOffset} -> ${laterOffset}`);
-        // We don't assert exact values since timing can vary, but they should be different
-        // if animation is working
-        expect(initial).not.toBe(later);
+        // Check if change is significant enough
+        const diff = Math.abs(initial - later);
+        console.log(
+          `Progress stroke-dashoffset: ${initialOffset} -> ${laterOffset} (diff: ${diff})`,
+        );
+
+        // Assert that the offset has changed by at least a small amount, if the animation is working
+        expect(diff).toBeGreaterThan(0.1);
       }
     }
   });
