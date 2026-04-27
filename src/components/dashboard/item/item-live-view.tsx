@@ -6,9 +6,45 @@ import { dataToStatus, type ServiceStatus } from "@/lib/adapters/types";
 import type { ItemRow } from "@/lib/types";
 import { useItemLive } from "@/components/dashboard/use-item-live";
 import { useSyncProgress } from "@/hooks/use-sync-progress";
-import { StatusPill } from "@/components/dashboard/item/status-pill";
+import { StatusPill, type StatusVariant } from "@/components/dashboard/item/status-pill";
 import { WidgetRenderer } from "@/components/dashboard/item/widget-renderer";
 import { formatAgeVerbose } from "@/lib/utils/age";
+
+// Map service status states to StatusPill variants
+function mapStatusToVariant(state: string): StatusVariant {
+  switch (state) {
+    case "healthy":
+    case "reachable":
+    case "ok":
+      return "online";
+    case "degraded":
+    case "slow":
+    case "warn":
+      return "warning";
+    case "error":
+    case "unreachable":
+      return "error";
+    case "stale":
+      return "stale";
+    default:
+      return "stale";
+  }
+}
+
+// Get display text for status
+function getStatusText(state: string): string {
+  const labels: Record<string, string> = {
+    unknown: "Unknown",
+    healthy: "Online",
+    degraded: "Degraded",
+    reachable: "Reachable",
+    unreachable: "Offline",
+    slow: "Slow",
+    error: "Error",
+    stale: "Stale",
+  };
+  return labels[state] || "Unknown";
+}
 
 export function ItemLiveView({ item }: { item: ItemRow }) {
   const live = useItemLive(item.id);
@@ -32,13 +68,17 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
       ? Date.now() - live.lastFetchedAt
       : null;
 
+  const statusVariant = mapStatusToVariant(serviceStatus.state);
+  const statusText = getStatusText(serviceStatus.state);
+
   return (
     <>
       {hasStatus && (
         <div className="absolute top-3.5 right-4 shrink-0 flex items-center">
           <StatusPill
+            status={statusVariant}
+            text={statusText}
             progress={progress}
-            statusState={serviceStatus.state}
             tooltip={getStatusTooltip(serviceStatus, ageMs)}
           />
         </div>
