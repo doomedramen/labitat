@@ -70,11 +70,11 @@ test.describe("Widget Rendering", () => {
     // The item should still appear
     await expect(page.getByText("Radarr")).toBeVisible();
 
-    // An error status dot (red) should appear
-    const statusDot = page.locator('[role="status"]');
-    await expect(statusDot).toBeVisible({ timeout: 15_000 });
-    // The center dot should be visible inside the status indicator (size-2 = 8px)
-    await expect(statusDot.locator("div.rounded-full.size-2")).toBeVisible();
+    // An error status pill should appear with "Error" text
+    const statusPill = page.locator('[role="status"]');
+    await expect(statusPill).toBeVisible({ timeout: 15_000 });
+    // The status pill should display "Error" text
+    await expect(statusPill.getByText("Error")).toBeVisible();
   });
 
   test("renders empty state with zero values", async ({ page }) => {
