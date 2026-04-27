@@ -1,63 +1,26 @@
 /*
- * ============================================================
- * Labitat Theme System v2 - Comprehensive Color Architecture
- * ============================================================
+ * Labitat Theme System - Simplified
+ * ===================================
  *
- * BREAKING CHANGES from v1:
- * - New variable naming convention (kebab-case semantic names)
- * - Expanded from 12 to 20 base color keys
- * - color-mix() used extensively for state generation
- * - Shadow/elevation system now themed
- * - Chart palette expanded from 2 to 8 colors
+ * Uses ONLY shadcn/ui + tailwind official CSS variables.
+ * No intermediate/semantic variable layers.
  *
- * NEW BASE VARIABLES (20 keys per theme):
+ * Variables per theme:
+ *   --background, --foreground
+ *   --card, --card-foreground
+ *   --popover, --popover-foreground
+ *   --primary, --primary-foreground
+ *   --secondary, --secondary-foreground
+ *   --muted, --muted-foreground
+ *   --accent, --accent-foreground
+ *   --destructive (--error maps to same)
+ *   --success, --warning, --info
+ *   --border, --input, --ring
+ *   --chart-1 through --chart-5
+ *   --sidebar-*
  *
- * SURFACE COLORS (Background hierarchy):
- *   --color-bg-root       - App/page background
- *   --color-bg-surface    - Card/container backgrounds
- *   --color-bg-elevated   - Elevated surfaces (modals, popovers)
- *   --color-bg-overlay    - Overlay/scrim backgrounds
- *
- * CONTENT COLORS (Text hierarchy):
- *   --color-text-primary   - Primary text, headings
- *   --color-text-secondary - Secondary text, labels
- *   --color-text-muted     - Muted text, placeholders, hints
- *   --color-text-inverse   - Text on colored backgrounds
- *
- * BORDER & SEPARATOR:
- *   --color-border-default - Default borders
- *   --color-border-subtle  - Subtle dividers
- *
- * ACCENT COLORS (Actionable elements):
- *   --color-accent-primary   - Primary buttons, links, focus
- *   --color-accent-secondary - Secondary accent
- *
- * SEMANTIC COLORS (Status/feedback):
- *   --color-semantic-success - Success states, healthy status
- *   --color-semantic-warning - Warning states, caution
- *   --color-semantic-error   - Error states, critical
- *   --color-semantic-info    - Info states, neutral status
- *
- * DATA VISUALIZATION (Charts/graphs):
- *   --color-data-1 through --color-data-8
- *   - 8 distinct colors for multi-series data
- *   - Each theme provides harmonious palette
- *
- * DYNAMIC STATES (Generated via color-mix()):
- *   State variants are generated automatically:
- *   - [color]-hover: 8% mix with inverse
- *   - [color]-active: 12% mix with inverse
- *   - [color]-disabled: 40% opacity mix
- *   - [color]-subtle: 15% mix with background
- *
- * SHADOWS (Themed elevation):
- *   --shadow-color - Base for all shadows
- *   Shadows use color-mix() with shadow-color
- *
-  * USAGE:
-  *   <html data-palette="dracula">
-  *
- * ============================================================
+ * USAGE:
+ *   <html data-palette="dracula">
  */
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -67,563 +30,458 @@
 /* ── 1. Dracula ─────────────────────────────────────────────
    Classic vampire. Charcoal-purple backgrounds, vivid
    pink/purple/cyan accents.
-   Source: draculatheme.com/contribute
-   
-   v2 Changes:
-   - 8-color data palette (purple, cyan, green, pink, yellow, orange, red, blue)
-   - Semantic colors: green (success), orange (warning), red (error), cyan (info)
-   - Secondary accent: bright cyan
    ─────────────────────────────────────────────────────────── */
 [data-palette="dracula"] {
-  /* Surface */
-  --color-bg-root: oklch(28.8% 0.0221 277.5);
-  --color-bg-surface: oklch(40.3% 0.0322 277.8);
-  --color-bg-elevated: oklch(45.3% 0.035 277.8);
-  --color-bg-overlay: oklch(34.5% 0.0209 281.5);
-
-  /* Content */
-  --color-text-primary: oklch(97.7% 0.0079 106.5);
-  --color-text-secondary: oklch(84% 0.02 277.5);
-  --color-text-muted: oklch(56% 0.0803 270.1);
-  --color-text-inverse: oklch(28.8% 0.0221 277.5);
-
-  /* Border */
-  --color-border-default: oklch(56% 0.0803 270.1);
-  --color-border-subtle: oklch(48% 0.05 277.5);
-
-  /* Accent */
-  --color-accent-primary: oklch(74.2% 0.1485 301.9);
-  --color-accent-secondary: oklch(88.3% 0.0934 212.8);
-
-  /* Semantic */
-  --color-semantic-success: oklch(87.1% 0.2195 148);
-  --color-semantic-warning: oklch(83.4% 0.1241 66.6);
-  --color-semantic-error: oklch(68.2% 0.2063 24.4);
-  --color-semantic-info: oklch(88.3% 0.0934 212.8);
-
-  /* Data Visualization - 8 harmonious colors */
-  --color-data-1: oklch(74.2% 0.1485 301.9);
-  --color-data-2: oklch(88.3% 0.0934 212.8);
-  --color-data-3: oklch(87.1% 0.2195 148);
-  --color-data-4: oklch(80% 0.18 340);
-  --color-data-5: oklch(85% 0.15 95);
-  --color-data-6: oklch(75% 0.18 50);
-  --color-data-7: oklch(68.2% 0.2063 24.4);
-  --color-data-8: oklch(70% 0.15 250);
+  --background: oklch(28.8% 0.0221 277.5);
+  --foreground: oklch(97.7% 0.0079 106.5);
+  --card: oklch(40.3% 0.0322 277.8);
+  --card-foreground: oklch(97.7% 0.0079 106.5);
+  --popover: oklch(45.3% 0.035 277.8);
+  --popover-foreground: oklch(97.7% 0.0079 106.5);
+  --primary: oklch(74.2% 0.1485 301.9);
+  --primary-foreground: oklch(28.8% 0.0221 277.5);
+  --secondary: oklch(34.5% 0.0209 281.5);
+  --secondary-foreground: oklch(56% 0.0803 270.1);
+  --muted: oklch(34.5% 0.0209 281.5);
+  --muted-foreground: oklch(56% 0.0803 270.1);
+  --accent: oklch(88.3% 0.0934 212.8);
+  --accent-foreground: oklch(28.8% 0.0221 277.5);
+  --destructive: oklch(68.2% 0.2063 24.4);
+  --success: oklch(87.1% 0.2195 148);
+  --warning: oklch(83.4% 0.1241 66.6);
+  --error: oklch(68.2% 0.2063 24.4);
+  --info: oklch(88.3% 0.0934 212.8);
+  --border: oklch(56% 0.0803 270.1);
+  --input: oklch(56% 0.0803 270.1);
+  --ring: oklch(74.2% 0.1485 301.9);
+  --chart-1: oklch(74.2% 0.1485 301.9);
+  --chart-2: oklch(88.3% 0.0934 212.8);
+  --chart-3: oklch(87.1% 0.2195 148);
+  --chart-4: oklch(80% 0.18 340);
+  --chart-5: oklch(85% 0.15 95);
+  --sidebar: oklch(28.8% 0.0221 277.5);
+  --sidebar-foreground: oklch(97.7% 0.0079 106.5);
+  --sidebar-primary: oklch(74.2% 0.1485 301.9);
+  --sidebar-primary-foreground: oklch(28.8% 0.0221 277.5);
+  --sidebar-accent: oklch(40.3% 0.0322 277.8);
+  --sidebar-accent-foreground: oklch(97.7% 0.0079 106.5);
+  --sidebar-border: oklch(56% 0.0803 270.1);
+  --sidebar-ring: oklch(74.2% 0.1485 301.9);
 }
 
-/* ── 2. Catppuccin Frappe ───────────────────────────────────
+/* ── 2. Catppuccin Frappe ───────────────────────────
    Soothing muted pastels, cooler blue-grey feel.
-   Source: catppuccin.com/palette (Frappe)
    ─────────────────────────────────────────────────────────── */
 [data-palette="catppuccin_frappe"] {
-  --color-bg-root: oklch(32.9% 0.0324 274.8);
-  --color-bg-surface: oklch(39.5% 0.0342 275.9);
-  --color-bg-elevated: oklch(44% 0.037 275.9);
-  --color-bg-overlay: oklch(46% 0.0367 273);
-
-  --color-text-primary: oklch(86.2% 0.0526 273.3);
-  --color-text-secondary: oklch(76% 0.045 273.3);
-  --color-text-muted: oklch(52.1% 0.0386 274);
-  --color-text-inverse: oklch(32.9% 0.0324 274.8);
-
-  --color-border-default: oklch(52.1% 0.0386 274);
-  --color-border-subtle: oklch(45% 0.035 274);
-
-  --color-accent-primary: oklch(76.5% 0.1108 311.7);
-  --color-accent-secondary: oklch(78% 0.0727 227.9);
-
-  --color-semantic-success: oklch(81.2% 0.1071 133.4);
-  --color-semantic-warning: oklch(77.3% 0.1106 47.7);
-  --color-semantic-error: oklch(71.7% 0.1244 19.4);
-  --color-semantic-info: oklch(78% 0.0727 227.9);
-
-  --color-data-1: oklch(76.5% 0.1108 311.7);
-  --color-data-2: oklch(78% 0.0727 227.9);
-  --color-data-3: oklch(81.2% 0.1071 133.4);
-  --color-data-4: oklch(79% 0.11 340);
-  --color-data-5: oklch(82% 0.1 85);
-  --color-data-6: oklch(75% 0.12 50);
-  --color-data-7: oklch(71.7% 0.1244 19.4);
-  --color-data-8: oklch(72% 0.08 200);
+  --background: oklch(32.9% 0.0324 274.8);
+  --foreground: oklch(86.2% 0.0526 273.3);
+  --card: oklch(39.5% 0.0342 275.9);
+  --card-foreground: oklch(86.2% 0.0526 273.3);
+  --popover: oklch(44% 0.037 275.9);
+  --popover-foreground: oklch(86.2% 0.0526 273.3);
+  --primary: oklch(76.5% 0.1108 311.7);
+  --primary-foreground: oklch(32.9% 0.0324 274.8);
+  --secondary: oklch(46% 0.0367 273);
+  --secondary-foreground: oklch(52.1% 0.0386 274);
+  --muted: oklch(46% 0.0367 273);
+  --muted-foreground: oklch(52.1% 0.0386 274);
+  --accent: oklch(78% 0.0727 227.9);
+  --accent-foreground: oklch(32.9% 0.0324 274.8);
+  --destructive: oklch(71.7% 0.1244 19.4);
+  --success: oklch(81.2% 0.1071 133.4);
+  --warning: oklch(77.3% 0.1106 47.7);
+  --error: oklch(71.7% 0.1244 19.4);
+  --info: oklch(78% 0.0727 227.9);
+  --border: oklch(52.1% 0.0386 274);
+  --input: oklch(52.1% 0.0386 274);
+  --ring: oklch(76.5% 0.1108 311.7);
+  --chart-1: oklch(76.5% 0.1108 311.7);
+  --chart-2: oklch(78% 0.0727 227.9);
+  --chart-3: oklch(81.2% 0.1071 133.4);
+  --chart-4: oklch(79% 0.11 340);
+  --chart-5: oklch(82% 0.1 85);
+  --sidebar: oklch(32.9% 0.0324 274.8);
+  --sidebar-foreground: oklch(86.2% 0.0526 273.3);
+  --sidebar-primary: oklch(76.5% 0.1108 311.7);
+  --sidebar-primary-foreground: oklch(32.9% 0.0324 274.8);
+  --sidebar-accent: oklch(39.5% 0.0342 275.9);
+  --sidebar-accent-foreground: oklch(86.2% 0.0526 273.3);
+  --sidebar-border: oklch(52.1% 0.0386 274);
+  --sidebar-ring: oklch(76.5% 0.1108 311.7);
 }
 
-/* ── 3. Nord ────────────────────────────────────────────────
+/* ── 3. Nord ────────────────────────────────────────
    Arctic, north-bluish. Polar Night backgrounds,
    Aurora Borealis accent colors.
-   Source: nordtheme.com (nord0-nord15)
    ─────────────────────────────────────────────────────────── */
 [data-palette="nord"] {
-  --color-bg-root: oklch(32.4% 0.0229 264.2);
-  --color-bg-surface: oklch(37.9% 0.029 266.5);
-  --color-bg-elevated: oklch(42% 0.032 266.5);
-  --color-bg-overlay: oklch(41.6% 0.0324 264.1);
-
-  --color-text-primary: oklch(95.1% 0.0074 260.7);
-  --color-text-secondary: oklch(82% 0.025 264);
-  --color-text-muted: oklch(45.2% 0.0352 264.1);
-  --color-text-inverse: oklch(32.4% 0.0229 264.2);
-
-  --color-border-default: oklch(45.2% 0.0352 264.1);
-  --color-border-subtle: oklch(40% 0.03 264);
-
-  --color-accent-primary: oklch(77.5% 0.0622 217.5);
-  --color-accent-secondary: oklch(69.7% 0.0591 248.7);
-
-  --color-semantic-success: oklch(76.8% 0.0749 131.1);
-  --color-semantic-warning: oklch(85.5% 0.0892 84.1);
-  --color-semantic-error: oklch(60.6% 0.1206 15.3);
-  --color-semantic-info: oklch(69.7% 0.0591 248.7);
-
-  --color-data-1: oklch(77.5% 0.0622 217.5);
-  --color-data-2: oklch(69.7% 0.0591 248.7);
-  --color-data-3: oklch(76.8% 0.0749 131.1);
-  --color-data-4: oklch(75% 0.08 290);
-  --color-data-5: oklch(82% 0.08 90);
-  --color-data-6: oklch(72% 0.09 55);
-  --color-data-7: oklch(60.6% 0.1206 15.3);
-  --color-data-8: oklch(65% 0.07 180);
+  --background: oklch(32.4% 0.0229 264.2);
+  --foreground: oklch(95.1% 0.0074 260.7);
+  --card: oklch(37.9% 0.029 266.5);
+  --card-foreground: oklch(95.1% 0.0074 260.7);
+  --popover: oklch(42% 0.032 266.5);
+  --popover-foreground: oklch(95.1% 0.0074 260.7);
+  --primary: oklch(77.5% 0.0622 217.5);
+  --primary-foreground: oklch(32.4% 0.0229 264.2);
+  --secondary: oklch(41.6% 0.0324 264.1);
+  --secondary-foreground: oklch(45.2% 0.0352 264.1);
+  --muted: oklch(41.6% 0.0324 264.1);
+  --muted-foreground: oklch(45.2% 0.0352 264.1);
+  --accent: oklch(69.7% 0.0591 248.7);
+  --accent-foreground: oklch(32.4% 0.0229 264.2);
+  --destructive: oklch(60.6% 0.1206 15.3);
+  --success: oklch(76.8% 0.0749 131.1);
+  --warning: oklch(85.5% 0.0892 84.1);
+  --error: oklch(60.6% 0.1206 15.3);
+  --info: oklch(69.7% 0.0591 248.7);
+  --border: oklch(45.2% 0.0352 264.1);
+  --input: oklch(45.2% 0.0352 264.1);
+  --ring: oklch(77.5% 0.0622 217.5);
+  --chart-1: oklch(77.5% 0.0622 217.5);
+  --chart-2: oklch(69.7% 0.0591 248.7);
+  --chart-3: oklch(76.8% 0.0749 131.1);
+  --chart-4: oklch(75% 0.08 290);
+  --chart-5: oklch(82% 0.08 90);
+  --sidebar: oklch(32.4% 0.0229 264.2);
+  --sidebar-foreground: oklch(95.1% 0.0074 260.7);
+  --sidebar-primary: oklch(77.5% 0.0622 217.5);
+  --sidebar-primary-foreground: oklch(32.4% 0.0229 264.2);
+  --sidebar-accent: oklch(37.9% 0.029 266.5);
+  --sidebar-accent-foreground: oklch(95.1% 0.0074 260.7);
+  --sidebar-border: oklch(45.2% 0.0352 264.1);
+  --sidebar-ring: oklch(77.5% 0.0622 217.5);
 }
 
 /* ── 4. Tokyo Night ─────────────────────────────────────────
    Deep indigo skies, electric blue/cyan, warm yellow accents.
-   Source: enkia/tokyo-night-vscode-theme
    ─────────────────────────────────────────────────────────── */
 [data-palette="tokyo_night"] {
-  --color-bg-root: oklch(22.6% 0.0214 280.5);
-  --color-bg-surface: oklch(26.1% 0.0344 274.2);
-  --color-bg-elevated: oklch(30% 0.038 274.2);
-  --color-bg-overlay: oklch(28.2% 0.0355 274.7);
-
-  --color-text-primary: oklch(84.6% 0.0611 274.8);
-  --color-text-secondary: oklch(72% 0.055 274.8);
-  --color-text-muted: oklch(38.7% 0.0537 273.9);
-  --color-text-inverse: oklch(22.6% 0.0214 280.5);
-
-  --color-border-default: oklch(38.7% 0.0537 273.9);
-  --color-border-subtle: oklch(32% 0.045 274);
-
-  --color-accent-primary: oklch(71.9% 0.1322 264.2);
-  --color-accent-secondary: oklch(82% 0.1051 235.7);
-
-  --color-semantic-success: oklch(79.5% 0.1395 130.1);
-  --color-semantic-warning: oklch(78.4% 0.1057 75.4);
-  --color-semantic-error: oklch(72.3% 0.1589 10.3);
-  --color-semantic-info: oklch(82% 0.1051 235.7);
-
-  --color-data-1: oklch(71.9% 0.1322 264.2);
-  --color-data-2: oklch(82% 0.1051 235.7);
-  --color-data-3: oklch(79.5% 0.1395 130.1);
-  --color-data-4: oklch(78% 0.14 320);
-  --color-data-5: oklch(80% 0.12 85);
-  --color-data-6: oklch(76% 0.13 50);
-  --color-data-7: oklch(72.3% 0.1589 10.3);
-  --color-data-8: oklch(68% 0.1 190);
+  --background: oklch(22.6% 0.0214 280.5);
+  --foreground: oklch(84.6% 0.0611 274.8);
+  --card: oklch(26.1% 0.0344 274.2);
+  --card-foreground: oklch(84.6% 0.0611 274.8);
+  --popover: oklch(30% 0.038 274.2);
+  --popover-foreground: oklch(84.6% 0.0611 274.8);
+  --primary: oklch(71.9% 0.1322 264.2);
+  --primary-foreground: oklch(22.6% 0.0214 280.5);
+  --secondary: oklch(28.2% 0.0355 274.7);
+  --secondary-foreground: oklch(38.7% 0.0537 273.9);
+  --muted: oklch(28.2% 0.0355 274.7);
+  --muted-foreground: oklch(38.7% 0.0537 273.9);
+  --accent: oklch(82% 0.1051 235.7);
+  --accent-foreground: oklch(22.6% 0.0214 280.5);
+  --destructive: oklch(72.3% 0.1589 10.3);
+  --success: oklch(79.5% 0.1395 130.1);
+  --warning: oklch(78.4% 0.1057 75.4);
+  --error: oklch(72.3% 0.1589 10.3);
+  --info: oklch(82% 0.1051 235.7);
+  --border: oklch(38.7% 0.0537 273.9);
+  --input: oklch(38.7% 0.0537 273.9);
+  --ring: oklch(71.9% 0.1322 264.2);
+  --chart-1: oklch(71.9% 0.1322 264.2);
+  --chart-2: oklch(82% 0.1051 235.7);
+  --chart-3: oklch(79.5% 0.1395 130.1);
+  --chart-4: oklch(78% 0.14 320);
+  --chart-5: oklch(80% 0.12 85);
+  --sidebar: oklch(22.6% 0.0214 280.5);
+  --sidebar-foreground: oklch(84.6% 0.0611 274.8);
+  --sidebar-primary: oklch(71.9% 0.1322 264.2);
+  --sidebar-primary-foreground: oklch(22.6% 0.0214 280.5);
+  --sidebar-accent: oklch(26.1% 0.0344 274.2);
+  --sidebar-accent-foreground: oklch(84.6% 0.0611 274.8);
+  --sidebar-border: oklch(38.7% 0.0537 273.9);
+  --sidebar-ring: oklch(71.9% 0.1322 264.2);
 }
 
 /* ── 5. One Dark Pro ────────────────────────────────────────
    Atom's iconic slate-grey with warm, balanced syntax.
-   Source: Binaryify/OneDark-Pro
    ─────────────────────────────────────────────────────────── */
 [data-palette="one_dark_pro"] {
-  --color-bg-root: oklch(29.3% 0.0157 264.3);
-  --color-bg-surface: oklch(31.2% 0.0176 262.2);
-  --color-bg-elevated: oklch(35% 0.02 262);
-  --color-bg-overlay: oklch(34% 0.0189 264.3);
-
-  --color-text-primary: oklch(76.2% 0.0202 263);
-  --color-text-secondary: oklch(65% 0.025 263);
-  --color-text-muted: oklch(38.7% 0.0251 266.9);
-  --color-text-inverse: oklch(29.3% 0.0157 264.3);
-
-  --color-border-default: oklch(38.7% 0.0251 266.9);
-  --color-border-subtle: oklch(35% 0.02 264);
-
-  --color-accent-primary: oklch(73% 0.1213 245.3);
-  --color-accent-secondary: oklch(72.3% 0.0916 206.3);
-
-  --color-semantic-success: oklch(76.8% 0.1103 133);
-  --color-semantic-warning: oklch(72.7% 0.0949 63.8);
-  --color-semantic-error: oklch(67.1% 0.1448 17);
-  --color-semantic-info: oklch(72.3% 0.0916 206.3);
-
-  --color-data-1: oklch(73% 0.1213 245.3);
-  --color-data-2: oklch(72.3% 0.0916 206.3);
-  --color-data-3: oklch(76.8% 0.1103 133);
-  --color-data-4: oklch(74% 0.12 320);
-  --color-data-5: oklch(80% 0.1 85);
-  --color-data-6: oklch(76% 0.12 50);
-  --color-data-7: oklch(67.1% 0.1448 17);
-  --color-data-8: oklch(68% 0.08 180);
+  --background: oklch(29.3% 0.0157 264.3);
+  --foreground: oklch(76.2% 0.0202 263);
+  --card: oklch(31.2% 0.0176 262.2);
+  --card-foreground: oklch(76.2% 0.0202 263);
+  --popover: oklch(35% 0.02 262);
+  --popover-foreground: oklch(76.2% 0.0202 263);
+  --primary: oklch(73% 0.1213 245.3);
+  --primary-foreground: oklch(29.3% 0.0157 264.3);
+  --secondary: oklch(34% 0.0189 264.3);
+  --secondary-foreground: oklch(38.7% 0.0251 266.9);
+  --muted: oklch(34% 0.0189 264.3);
+  --muted-foreground: oklch(38.7% 0.0251 266.9);
+  --accent: oklch(72.3% 0.0916 206.3);
+  --accent-foreground: oklch(29.3% 0.0157 264.3);
+  --destructive: oklch(67.1% 0.1448 17);
+  --success: oklch(76.8% 0.1103 133);
+  --warning: oklch(72.7% 0.0949 63.8);
+  --error: oklch(67.1% 0.1448 17);
+  --info: oklch(72.3% 0.0916 206.3);
+  --border: oklch(38.7% 0.0251 266.9);
+  --input: oklch(38.7% 0.0251 266.9);
+  --ring: oklch(73% 0.1213 245.3);
+  --chart-1: oklch(73% 0.1213 245.3);
+  --chart-2: oklch(72.3% 0.0916 206.3);
+  --chart-3: oklch(76.8% 0.1103 133);
+  --chart-4: oklch(74% 0.12 320);
+  --chart-5: oklch(80% 0.1 85);
+  --sidebar: oklch(29.3% 0.0157 264.3);
+  --sidebar-foreground: oklch(76.2% 0.0202 263);
+  --sidebar-primary: oklch(73% 0.1213 245.3);
+  --sidebar-primary-foreground: oklch(29.3% 0.0157 264.3);
+  --sidebar-accent: oklch(31.2% 0.0176 262.2);
+  --sidebar-accent-foreground: oklch(76.2% 0.0202 263);
+  --sidebar-border: oklch(38.7% 0.0251 266.9);
+  --sidebar-ring: oklch(73% 0.1213 245.3);
 }
 
-/* ── 6. Synthwave 84 ────────────────────────────────────────
+/* ── 6. Synthwave 84 ────────────────────────────────
    Neon-soaked retro dreams. Deep indigo-purple base,
    glowing hot pink and mint accents.
-   Source: robb0wen/synthwave-vscode
    ─────────────────────────────────────────────────────────── */
 [data-palette="synthwave84"] {
-  --color-bg-root: oklch(26.8% 0.0333 291.6);
-  --color-bg-surface: oklch(31.4% 0.0736 283.5);
-  --color-bg-elevated: oklch(35% 0.08 283.5);
-  --color-bg-overlay: oklch(25.4% 0.0611 281.1);
-
-  --color-text-primary: oklch(100% 0 0);
-  --color-text-secondary: oklch(90% 0.02 290);
-  --color-text-muted: oklch(46.8% 0.1057 274.4);
-  --color-text-inverse: oklch(26.8% 0.0333 291.6);
-
-  --color-border-default: oklch(46.8% 0.1057 274.4);
-  --color-border-subtle: oklch(40% 0.08 283);
-
-  --color-accent-primary: oklch(76.9% 0.1889 339.1);
-  --color-accent-secondary: oklch(87.1% 0.1402 162);
-
-  --color-semantic-success: oklch(87.1% 0.1402 162);
-  --color-semantic-warning: oklch(75.1% 0.1676 51.9);
-  --color-semantic-error: oklch(68.2% 0.2063 24.4);
-  --color-semantic-info: oklch(76.6% 0.1288 290.1);
-
-  --color-data-1: oklch(76.9% 0.1889 339.1);
-  --color-data-2: oklch(87.1% 0.1402 162);
-  --color-data-3: oklch(82% 0.15 120);
-  --color-data-4: oklch(85% 0.16 320);
-  --color-data-5: oklch(88% 0.14 85);
-  --color-data-6: oklch(78% 0.18 45);
-  --color-data-7: oklch(68.2% 0.2063 24.4);
-  --color-data-8: oklch(80% 0.12 200);
+  --background: oklch(26.8% 0.0333 291.6);
+  --foreground: oklch(100% 0 0);
+  --card: oklch(31.4% 0.0736 283.5);
+  --card-foreground: oklch(100% 0 0);
+  --popover: oklch(35% 0.08 283.5);
+  --popover-foreground: oklch(100% 0 0);
+  --primary: oklch(76.9% 0.1889 339.1);
+  --primary-foreground: oklch(26.8% 0.0333 291.6);
+  --secondary: oklch(25.4% 0.0611 281.1);
+  --secondary-foreground: oklch(46.8% 0.1057 274.4);
+  --muted: oklch(25.4% 0.0611 281.1);
+  --muted-foreground: oklch(46.8% 0.1057 274.4);
+  --accent: oklch(87.1% 0.1402 162);
+  --accent-foreground: oklch(26.8% 0.0333 291.6);
+  --destructive: oklch(68.2% 0.2063 24.4);
+  --success: oklch(87.1% 0.1402 162);
+  --warning: oklch(75.1% 0.1676 51.9);
+  --error: oklch(68.2% 0.2063 24.4);
+  --info: oklch(76.6% 0.1288 290.1);
+  --border: oklch(46.8% 0.1057 274.4);
+  --input: oklch(46.8% 0.1057 274.4);
+  --ring: oklch(76.9% 0.1889 339.1);
+  --chart-1: oklch(76.9% 0.1889 339.1);
+  --chart-2: oklch(87.1% 0.1402 162);
+  --chart-3: oklch(82% 0.15 120);
+  --chart-4: oklch(85% 0.16 320);
+  --chart-5: oklch(88% 0.14 85);
+  --sidebar: oklch(26.8% 0.0333 291.6);
+  --sidebar-foreground: oklch(100% 0 0);
+  --sidebar-primary: oklch(76.9% 0.1889 339.1);
+  --sidebar-primary-foreground: oklch(26.8% 0.0333 291.6);
+  --sidebar-accent: oklch(31.4% 0.0736 283.5);
+  --sidebar-accent-foreground: oklch(100% 0 0);
+  --sidebar-border: oklch(46.8% 0.1057 274.4);
+  --sidebar-ring: oklch(76.9% 0.1889 339.1);
 }
 
-/* ── 7. Gruvbox ─────────────────────────────────────────────
+/* ── 7. Gruvbox ─────────────────────────────────────
    Retro groove. Warm earthy backgrounds, rich gold/
    orange/green accents.
-   Source: morhetz/gruvbox (dark medium)
    ─────────────────────────────────────────────────────────── */
 [data-palette="gruvbox"] {
-  --color-bg-root: oklch(27.7% 0 0);
-  --color-bg-surface: oklch(34.4% 0.0066 48.5);
-  --color-bg-elevated: oklch(38% 0.008 48.5);
-  --color-bg-overlay: oklch(41.1% 0.0115 51.9);
-
-  --color-text-primary: oklch(89.4% 0.0566 89.2);
-  --color-text-secondary: oklch(78% 0.045 89);
-  --color-text-muted: oklch(48.2% 0.0181 61);
-  --color-text-inverse: oklch(27.7% 0 0);
-
-  --color-border-default: oklch(48.2% 0.0181 61);
-  --color-border-subtle: oklch(42% 0.015 50);
-
-  --color-accent-primary: oklch(83.2% 0.1595 83);
-  --color-accent-secondary: oklch(69.3% 0.042 169.8);
-
-  --color-semantic-success: oklch(76.5% 0.1581 110.8);
-  --color-semantic-warning: oklch(73.1% 0.182 51.7);
-  --color-semantic-error: oklch(66% 0.2175 30.4);
-  --color-semantic-info: oklch(69.3% 0.042 169.8);
-
-  --color-data-1: oklch(83.2% 0.1595 83);
-  --color-data-2: oklch(69.3% 0.042 169.8);
-  --color-data-3: oklch(76.5% 0.1581 110.8);
-  --color-data-4: oklch(80% 0.12 340);
-  --color-data-5: oklch(85% 0.14 60);
-  --color-data-6: oklch(75% 0.18 35);
-  --color-data-7: oklch(66% 0.2175 30.4);
-  --color-data-8: oklch(68% 0.08 200);
+  --background: oklch(27.7% 0 0);
+  --foreground: oklch(89.4% 0.0566 89.2);
+  --card: oklch(34.4% 0.0066 48.5);
+  --card-foreground: oklch(89.4% 0.0566 89.2);
+  --popover: oklch(38% 0.008 48.5);
+  --popover-foreground: oklch(89.4% 0.0566 89.2);
+  --primary: oklch(83.2% 0.1595 83);
+  --primary-foreground: oklch(27.7% 0 0);
+  --secondary: oklch(41.1% 0.0115 51.9);
+  --secondary-foreground: oklch(48.2% 0.0181 61);
+  --muted: oklch(41.1% 0.0115 51.9);
+  --muted-foreground: oklch(48.2% 0.0181 61);
+  --accent: oklch(69.3% 0.042 169.8);
+  --accent-foreground: oklch(27.7% 0 0);
+  --destructive: oklch(66% 0.2175 30.4);
+  --success: oklch(76.5% 0.1581 110.8);
+  --warning: oklch(73.1% 0.182 51.7);
+  --error: oklch(66% 0.2175 30.4);
+  --info: oklch(69.3% 0.042 169.8);
+  --border: oklch(48.2% 0.0181 61);
+  --input: oklch(48.2% 0.0181 61);
+  --ring: oklch(83.2% 0.1595 83);
+  --chart-1: oklch(83.2% 0.1595 83);
+  --chart-2: oklch(69.3% 0.042 169.8);
+  --chart-3: oklch(76.5% 0.1581 110.8);
+  --chart-4: oklch(80% 0.12 340);
+  --chart-5: oklch(85% 0.14 60);
+  --sidebar: oklch(27.7% 0 0);
+  --sidebar-foreground: oklch(89.4% 0.0566 89.2);
+  --sidebar-primary: oklch(83.2% 0.1595 83);
+  --sidebar-primary-foreground: oklch(27.7% 0 0);
+  --sidebar-accent: oklch(34.4% 0.0066 48.5);
+  --sidebar-accent-foreground: oklch(89.4% 0.0566 89.2);
+  --sidebar-border: oklch(48.2% 0.0181 61);
+  --sidebar-ring: oklch(83.2% 0.1595 83);
 }
 
-/* ── 8. Rose Pine ───────────────────────────────────────────
+/* ── 8. Rose Pine ───────────────────────────────────
    All natural pine. Dusty rose and purple elegance
    over a deep dark indigo base.
-   Source: rosepinetheme.com (main variant)
    ─────────────────────────────────────────────────────────── */
 [data-palette="rose_pine"] {
-  --color-bg-root: oklch(21.3% 0.0255 291.1);
-  --color-bg-surface: oklch(24.1% 0.0322 289.1);
-  --color-bg-elevated: oklch(28% 0.035 289);
-  --color-bg-overlay: oklch(27.1% 0.0423 289.2);
-
-  --color-text-primary: oklch(90.9% 0.0299 290);
-  --color-text-secondary: oklch(78% 0.04 290);
-  --color-text-muted: oklch(37.2% 0.0358 291.1);
-  --color-text-inverse: oklch(21.3% 0.0255 291.1);
-
-  --color-border-default: oklch(37.2% 0.0358 291.1);
-  --color-border-subtle: oklch(32% 0.03 291);
-
-  --color-accent-primary: oklch(77.6% 0.0945 305);
-  --color-accent-secondary: oklch(82.2% 0.0543 209.6);
-
-  --color-semantic-success: oklch(52.8% 0.0793 227.7);
-  --color-semantic-warning: oklch(84.3% 0.11 74.6);
-  --color-semantic-error: oklch(69.8% 0.1565 4.2);
-  --color-semantic-info: oklch(82.2% 0.0543 209.6);
-
-  --color-data-1: oklch(77.6% 0.0945 305);
-  --color-data-2: oklch(82.2% 0.0543 209.6);
-  --color-data-3: oklch(52.8% 0.0793 227.7);
-  --color-data-4: oklch(75% 0.1 340);
-  --color-data-5: oklch(85% 0.11 75);
-  --color-data-6: oklch(70% 0.14 45);
-  --color-data-7: oklch(69.8% 0.1565 4.2);
-  --color-data-8: oklch(65.4% 0.0444 291.2);
+  --background: oklch(21.3% 0.0255 291.1);
+  --foreground: oklch(90.9% 0.0299 290);
+  --card: oklch(24.1% 0.0322 289.1);
+  --card-foreground: oklch(90.9% 0.0299 290);
+  --popover: oklch(28% 0.035 289);
+  --popover-foreground: oklch(90.9% 0.0299 290);
+  --primary: oklch(77.6% 0.0945 305);
+  --primary-foreground: oklch(21.3% 0.0255 291.1);
+  --secondary: oklch(27.1% 0.0423 289.2);
+  --secondary-foreground: oklch(37.2% 0.0358 291.1);
+  --muted: oklch(27.1% 0.0423 289.2);
+  --muted-foreground: oklch(37.2% 0.0358 291.1);
+  --accent: oklch(82.2% 0.0543 209.6);
+  --accent-foreground: oklch(21.3% 0.0255 291.1);
+  --destructive: oklch(69.8% 0.1565 4.2);
+  --success: oklch(52.8% 0.0793 227.7);
+  --warning: oklch(84.3% 0.11 74.6);
+  --error: oklch(69.8% 0.1565 4.2);
+  --info: oklch(82.2% 0.0543 209.6);
+  --border: oklch(37.2% 0.0358 291.1);
+  --input: oklch(37.2% 0.0358 291.1);
+  --ring: oklch(77.6% 0.0945 305);
+  --chart-1: oklch(77.6% 0.0945 305);
+  --chart-2: oklch(82.2% 0.0543 209.6);
+  --chart-3: oklch(52.8% 0.0793 227.7);
+  --chart-4: oklch(75% 0.1 340);
+  --chart-5: oklch(85% 0.11 75);
+  --sidebar: oklch(21.3% 0.0255 291.1);
+  --sidebar-foreground: oklch(90.9% 0.0299 290);
+  --sidebar-primary: oklch(77.6% 0.0945 305);
+  --sidebar-primary-foreground: oklch(21.3% 0.0255 291.1);
+  --sidebar-accent: oklch(24.1% 0.0322 289.1);
+  --sidebar-accent-foreground: oklch(90.9% 0.0299 290);
+  --sidebar-border: oklch(37.2% 0.0358 291.1);
+  --sidebar-ring: oklch(77.6% 0.0945 305);
 }
 
-/* ── 9. Everforest ──────────────────────────────────────────
+/* ── 9. Everforest ──────────────────────────────────
    Soft forest greens, warm amber text.
    Designed for eye comfort in long sessions.
-   Source: sainnhe/everforest (dark medium)
    ─────────────────────────────────────────────────────────── */
 [data-palette="everforest"] {
-  --color-bg-root: oklch(32.4% 0.0153 240.4);
-  --color-bg-surface: oklch(36% 0.0169 227.1);
-  --color-bg-elevated: oklch(40% 0.018 227);
-  --color-bg-overlay: oklch(39.4% 0.0166 227);
-
-  --color-text-primary: oklch(83% 0.0405 86.1);
-  --color-text-secondary: oklch(72% 0.035 86);
-  --color-text-muted: oklch(43.1% 0.0172 231.6);
-  --color-text-inverse: oklch(32.4% 0.0153 240.4);
-
-  --color-border-default: oklch(43.1% 0.0172 231.6);
-  --color-border-subtle: oklch(38% 0.015 227);
-
-  --color-accent-primary: oklch(77.3% 0.0906 125.8);
-  --color-accent-secondary: oklch(74.9% 0.0631 185.5);
-
-  --color-semantic-success: oklch(77.3% 0.0906 125.8);
-  --color-semantic-warning: oklch(75% 0.1059 44.9);
-  --color-semantic-error: oklch(70.9% 0.1285 19.6);
-  --color-semantic-info: oklch(74.9% 0.0631 185.5);
-
-  --color-data-1: oklch(77.3% 0.0906 125.8);
-  --color-data-2: oklch(74.9% 0.0631 185.5);
-  --color-data-3: oklch(79% 0.08 100);
-  --color-data-4: oklch(75% 0.08 340);
-  --color-data-5: oklch(82% 0.09 80);
-  --color-data-6: oklch(72% 0.12 45);
-  --color-data-7: oklch(70.9% 0.1285 19.6);
-  --color-data-8: oklch(72.3% 0.0186 153.4);
+  --background: oklch(32.4% 0.0153 240.4);
+  --foreground: oklch(83% 0.0405 86.1);
+  --card: oklch(36% 0.0169 227.1);
+  --card-foreground: oklch(83% 0.0405 86.1);
+  --popover: oklch(40% 0.018 227);
+  --popover-foreground: oklch(83% 0.0405 86.1);
+  --primary: oklch(77.3% 0.0906 125.8);
+  --primary-foreground: oklch(32.4% 0.0153 240.4);
+  --secondary: oklch(39.4% 0.0166 227);
+  --secondary-foreground: oklch(43.1% 0.0172 231.6);
+  --muted: oklch(39.4% 0.0166 227);
+  --muted-foreground: oklch(43.1% 0.0172 231.6);
+  --accent: oklch(74.9% 0.0631 185.5);
+  --accent-foreground: oklch(32.4% 0.0153 240.4);
+  --destructive: oklch(70.9% 0.1285 19.6);
+  --success: oklch(77.3% 0.0906 125.8);
+  --warning: oklch(75% 0.1059 44.9);
+  --error: oklch(70.9% 0.1285 19.6);
+  --info: oklch(74.9% 0.0631 185.5);
+  --border: oklch(43.1% 0.0172 231.6);
+  --input: oklch(43.1% 0.0172 231.6);
+  --ring: oklch(77.3% 0.0906 125.8);
+  --chart-1: oklch(77.3% 0.0906 125.8);
+  --chart-2: oklch(74.9% 0.0631 185.5);
+  --chart-3: oklch(79% 0.08 100);
+  --chart-4: oklch(75% 0.08 340);
+  --chart-5: oklch(82% 0.09 80);
+  --sidebar: oklch(32.4% 0.0153 240.4);
+  --sidebar-foreground: oklch(83% 0.0405 86.1);
+  --sidebar-primary: oklch(77.3% 0.0906 125.8);
+  --sidebar-primary-foreground: oklch(32.4% 0.0153 240.4);
+  --sidebar-accent: oklch(36% 0.0169 227.1);
+  --sidebar-accent-foreground: oklch(83% 0.0405 86.1);
+  --sidebar-border: oklch(43.1% 0.0172 231.6);
+  --sidebar-ring: oklch(77.3% 0.0906 125.8);
 }
 
-/* ── 10. Kanagawa ───────────────────────────────────────────
-   Feudal Japan ink tones. Muted indigo night sky,
-   warm parchment text, deep teal accents.
-   Source: rebelot/kanagawa.nvim
-   ─────────────────────────────────────────────────────────── */
-[data-palette="kanagawa"] {
-  --color-bg-root: oklch(24.3% 0.017 285.1);
-  --color-bg-surface: oklch(29.1% 0.0236 284.8);
-  --color-bg-elevated: oklch(33% 0.026 285);
-  --color-bg-overlay: oklch(31.4% 0.0467 257.4);
-
-  --color-text-primary: oklch(87.6% 0.0391 99.1);
-  --color-text-secondary: oklch(76% 0.035 99);
-  --color-text-muted: oklch(34% 0.0279 284.8);
-  --color-text-inverse: oklch(24.3% 0.017 285.1);
-
-  --color-border-default: oklch(34% 0.0279 284.8);
-  --color-border-subtle: oklch(30% 0.025 285);
-
-  --color-accent-primary: oklch(69.4% 0.0951 263.7);
-  --color-accent-secondary: oklch(63.5% 0.0504 175.4);
-
-  --color-semantic-success: oklch(63.2% 0.0698 136.9);
-  --color-semantic-warning: oklch(75.9% 0.1073 70.9);
-  --color-semantic-error: oklch(55.9% 0.167 23.1);
-  --color-semantic-info: oklch(63.5% 0.0504 175.4);
-
-  --color-data-1: oklch(69.4% 0.0951 263.7);
-  --color-data-2: oklch(63.5% 0.0504 175.4);
-  --color-data-3: oklch(63.2% 0.0698 136.9);
-  --color-data-4: oklch(75% 0.1 340);
-  --color-data-5: oklch(82% 0.11 80);
-  --color-data-6: oklch(72% 0.14 45);
-  --color-data-7: oklch(55.9% 0.167 23.1);
-  --color-data-8: oklch(65.2% 0.0466 298.4);
+/* ── 6. Synthwave 84 ────────────────────────────────
+   Neon-soaked retro dreams. Deep indigo-purple base,
+   glowing hot pink and mint accents.
+   ─────────────────────────────────────────────────── */
+[data-palette="synthwave84"] {
+  --background: oklch(26.8% 0.0333 291.6);
+  --foreground: oklch(100% 0 0);
+  --card: oklch(31.4% 0.0736 283.5);
+  --card-foreground: oklch(100% 0 0);
+  --popover: oklch(35% 0.08 283.5);
+  --popover-foreground: oklch(100% 0 0);
+  --primary: oklch(76.9% 0.1889 339.1);
+  --primary-foreground: oklch(26.8% 0.0333 291.6);
+  --secondary: oklch(25.4% 0.0611 281.1);
+  --secondary-foreground: oklch(46.8% 0.1057 274.4);
+  --muted: oklch(25.4% 0.0611 281.1);
+  --muted-foreground: oklch(46.8% 0.1057 274.4);
+  --accent: oklch(87.1% 0.1402 162);
+  --accent-foreground: oklch(26.8% 0.0333 291.6);
+  --destructive: oklch(68.2% 0.2063 24.4);
+  --success: oklch(87.1% 0.1402 162);
+  --warning: oklch(75.1% 0.1676 51.9);
+  --error: oklch(68.2% 0.2063 24.4);
+  --info: oklch(76.6% 0.1288 290.1);
+  --border: oklch(46.8% 0.1057 274.4);
+  --input: oklch(46.8% 0.1057 274.4);
+  --ring: oklch(76.9% 0.1889 339.1);
+  --chart-1: oklch(76.9% 0.1889 339.1);
+  --chart-2: oklch(87.1% 0.1402 162);
+  --chart-3: oklch(82% 0.15 120);
+  --chart-4: oklch(85% 0.16 320);
+  --chart-5: oklch(88% 0.14 85);
+  --sidebar: oklch(26.8% 0.0333 291.6);
+  --sidebar-foreground: oklch(100% 0 0);
+  --sidebar-primary: oklch(76.9% 0.1889 339.1);
+  --sidebar-primary-foreground: oklch(26.8% 0.0333 291.6);
+  --sidebar-accent: oklch(31.4% 0.0736 283.5);
+  --sidebar-accent-foreground: oklch(100% 0 0);
+  --sidebar-border: oklch(46.8% 0.1057 274.4);
+  --sidebar-ring: oklch(76.9% 0.1889 339.1);
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   LIGHT THEMES
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-/* ── 11. Catppuccin Latte ───────────────────────────────────
-   The warm, creamy light Catppuccin variant.
-   Source: catppuccin.com/palette (Latte)
-   ─────────────────────────────────────────────────────────── */
-[data-palette="catppuccin_latte"] {
-  --color-bg-root: oklch(95.8% 0.0058 264.5);
-  --color-bg-surface: oklch(93.3% 0.0087 264.5);
-  --color-bg-elevated: oklch(100% 0 0);
-  --color-bg-overlay: oklch(90.6% 0.0117 264.5);
-
-  --color-text-primary: oklch(43.5% 0.043 279.3);
-  --color-text-secondary: oklch(55% 0.038 279);
-  --color-text-muted: oklch(80.8% 0.0174 271.2);
-  --color-text-inverse: oklch(95.8% 0.0058 264.5);
-
-  --color-border-default: oklch(80.8% 0.0174 271.2);
-  --color-border-subtle: oklch(85% 0.012 264);
-
-  --color-accent-primary: oklch(55.5% 0.2503 297);
-  --color-accent-secondary: oklch(68.2% 0.1448 235.4);
-
-  --color-semantic-success: oklch(62.5% 0.1772 140.4);
-  --color-semantic-warning: oklch(69.2% 0.2041 42.4);
-  --color-semantic-error: oklch(55% 0.2155 19.8);
-  --color-semantic-info: oklch(68.2% 0.1448 235.4);
-
-  --color-data-1: oklch(55.5% 0.2503 297);
-  --color-data-2: oklch(68.2% 0.1448 235.4);
-  --color-data-3: oklch(62.5% 0.1772 140.4);
-  --color-data-4: oklch(60% 0.2 320);
-  --color-data-5: oklch(70% 0.18 85);
-  --color-data-6: oklch(65% 0.22 50);
-  --color-data-7: oklch(55% 0.2155 19.8);
-  --color-data-8: oklch(60% 0.15 200);
-}
-
-/* ── 12. Nord Light ─────────────────────────────────────────
-   Nord's bright ambiance. Snow Storm base with full
-   Aurora Borealis accent palette.
-   Source: nordtheme.com (bright ambiance, nord6 base)
-   ─────────────────────────────────────────────────────────── */
-[data-palette="nord_light"] {
-  --color-bg-root: oklch(95.1% 0.0074 260.7);
-  --color-bg-surface: oklch(93.3% 0.0104 261.8);
-  --color-bg-elevated: oklch(100% 0 0);
-  --color-bg-overlay: oklch(89.9% 0.0164 262.7);
-
-  --color-text-primary: oklch(32.4% 0.0229 264.2);
-  --color-text-secondary: oklch(45% 0.025 264);
-  --color-text-muted: oklch(79.4% 0.021 238.7);
-  --color-text-inverse: oklch(95.1% 0.0074 260.7);
-
-  --color-border-default: oklch(79.4% 0.021 238.7);
-  --color-border-subtle: oklch(84% 0.018 264);
-
-  --color-accent-primary: oklch(59.4% 0.0772 254);
-  --color-accent-secondary: oklch(77.5% 0.0622 217.5);
-
-  --color-semantic-success: oklch(76.8% 0.0749 131.1);
-  --color-semantic-warning: oklch(69.3% 0.0963 38.2);
-  --color-semantic-error: oklch(60.6% 0.1206 15.3);
-  --color-semantic-info: oklch(77.5% 0.0622 217.5);
-
-  --color-data-1: oklch(59.4% 0.0772 254);
-  --color-data-2: oklch(77.5% 0.0622 217.5);
-  --color-data-3: oklch(76.8% 0.0749 131.1);
-  --color-data-4: oklch(65% 0.08 320);
-  --color-data-5: oklch(75% 0.1 85);
-  --color-data-6: oklch(68% 0.11 45);
-  --color-data-7: oklch(60.6% 0.1206 15.3);
-  --color-data-8: oklch(68% 0.06 200);
-}
-
-/* ── 13. Solarized Light ────────────────────────────────────
-   The precision-engineered classic by Ethan Schoonover.
-   Source: ethanschoonover.com/solarized
-   ─────────────────────────────────────────────────────────── */
-[data-palette="solarized_light"] {
-  --color-bg-root: oklch(97.4% 0.0261 90.1);
-  --color-bg-surface: oklch(93.1% 0.026 92.4);
-  --color-bg-elevated: oklch(100% 0 0);
-  --color-bg-overlay: oklch(91.2% 0.0262 92.4);
-
-  --color-text-primary: oklch(56.8% 0.0285 221.9);
-  --color-text-secondary: oklch(48% 0.03 222);
-  --color-text-muted: oklch(82.2% 0.0361 94.6);
-  --color-text-inverse: oklch(97.4% 0.0261 90.1);
-
-  --color-border-default: oklch(82.2% 0.0361 94.6);
-  --color-border-subtle: oklch(86% 0.03 92);
-
-  --color-accent-primary: oklch(61.5% 0.1394 244.9);
-  --color-accent-secondary: oklch(64.4% 0.1019 187.4);
-
-  --color-semantic-success: oklch(64.4% 0.1508 118.6);
-  --color-semantic-warning: oklch(58.1% 0.1732 39.5);
-  --color-semantic-error: oklch(58.6% 0.2064 27.1);
-  --color-semantic-info: oklch(64.4% 0.1019 187.4);
-
-  --color-data-1: oklch(61.5% 0.1394 244.9);
-  --color-data-2: oklch(64.4% 0.1019 187.4);
-  --color-data-3: oklch(64.4% 0.1508 118.6);
-  --color-data-4: oklch(58% 0.16 320);
-  --color-data-5: oklch(70% 0.15 85);
-  --color-data-6: oklch(60% 0.18 45);
-  --color-data-7: oklch(58.6% 0.2064 27.1);
-  --color-data-8: oklch(65.4% 0.0197 205.3);
-}
-
-/* ── 14. Rose Pine Dawn ─────────────────────────────────────
-   Warm cream and parchment with rose and lavender
-   accents. The daylight sister to Rose Pine.
-   Source: rosepinetheme.com (dawn variant)
-   ─────────────────────────────────────────────────────────── */
-[data-palette="rose_pine_dawn"] {
-  --color-bg-root: oklch(97% 0.0113 71.9);
-  --color-bg-surface: oklch(98.7% 0.0107 76.6);
-  --color-bg-elevated: oklch(100% 0 0);
-  --color-bg-overlay: oklch(93.9% 0.0145 64.3);
-
-  --color-text-primary: oklch(46% 0.0629 289.6);
-  --color-text-secondary: oklch(55% 0.055 290);
-  --color-text-muted: oklch(83% 0.0332 76.4);
-  --color-text-inverse: oklch(97% 0.0113 71.9);
-
-  --color-border-default: oklch(83% 0.0332 76.4);
-  --color-border-subtle: oklch(87% 0.025 76);
-
-  --color-accent-primary: oklch(61.7% 0.0738 305.7);
-  --color-accent-secondary: oklch(62.9% 0.0661 210.1);
-
-  --color-semantic-success: oklch(49.1% 0.077 228);
-  --color-semantic-warning: oklch(75.5% 0.1459 69.7);
-  --color-semantic-error: oklch(59.9% 0.1071 2.7);
-  --color-semantic-info: oklch(62.9% 0.0661 210.1);
-
-  --color-data-1: oklch(61.7% 0.0738 305.7);
-  --color-data-2: oklch(62.9% 0.0661 210.1);
-  --color-data-3: oklch(49.1% 0.077 228);
-  --color-data-4: oklch(58% 0.08 340);
-  --color-data-5: oklch(75% 0.12 75);
-  --color-data-6: oklch(68% 0.13 45);
-  --color-data-7: oklch(59.9% 0.1071 2.7);
-  --color-data-8: oklch(67.3% 0.0268 298.4);
-}
-
-/* ── 15. Gruvbox Light ──────────────────────────────────────
-   The same retro-groove warmth, inverted for daylight.
-   Source: morhetz/gruvbox (light medium)
-   ─────────────────────────────────────────────────────────── */
-[data-palette="gruvbox_light"] {
-  --color-bg-root: oklch(95.6% 0.0555 96.2);
-  --color-bg-surface: oklch(89.4% 0.0566 89.2);
-  --color-bg-elevated: oklch(100% 0 0);
-  --color-bg-overlay: oklch(82.5% 0.0507 85.1);
-
-  --color-text-primary: oklch(34.4% 0.0066 48.5);
-  --color-text-secondary: oklch(45% 0.015 48);
-  --color-text-muted: oklch(75.6% 0.041 82.3);
-  --color-text-inverse: oklch(95.6% 0.0555 96.2);
-
-  --color-border-default: oklch(75.6% 0.041 82.3);
-  --color-border-subtle: oklch(80% 0.035 82);
-
-  --color-accent-primary: oklch(57.6% 0.0658 199.5);
-  --color-accent-secondary: oklch(64.5% 0.0939 145.3);
-
-  --color-semantic-success: oklch(54.6% 0.1124 106.5);
-  --color-semantic-warning: oklch(62.2% 0.1707 45.8);
-  --color-semantic-error: oklch(43.7% 0.1789 28.3);
-  --color-semantic-info: oklch(64.5% 0.0939 145.3);
-
-  --color-data-1: oklch(57.6% 0.0658 199.5);
-  --color-data-2: oklch(64.5% 0.0939 145.3);
-  --color-data-3: oklch(54.6% 0.1124 106.5);
-  --color-data-4: oklch(55% 0.08 340);
-  --color-data-5: oklch(65% 0.1 60);
-  --color-data-6: oklch(60% 0.14 35);
-  --color-data-7: oklch(43.7% 0.1789 28.3);
-  --color-data-8: oklch(60% 0.08 200);
+/* ── 7. Gruvbox ─────────────────────────────────────
+   Retro groove. Warm earthy backgrounds, rich gold/
+   orange/green accents.
+   ─────────────────────────────────────────────────── */
+[data-palette="gruvbox"] {
+  --background: oklch(27.7% 0 0);
+  --foreground: oklch(89.4% 0.0566 89.2);
+  --card: oklch(34.4% 0.0066 48.5);
+  --card-foreground: oklch(89.4% 0.0566 89.2);
+  --popover: oklch(38% 0.008 48.5);
+  --popover-foreground: oklch(89.4% 0.0566 89.2);
+  --primary: oklch(83.2% 0.1595 83);
+  --primary-foreground: oklch(27.7% 0 0);
+  --secondary: oklch(41.1% 0.0115 51.9);
+  --secondary-foreground: oklch(48.2% 0.0181 61);
+  --muted: oklch(41.1% 0.0115 51.9);
+  --muted-foreground: oklch(48.2% 0.0181 61);
+  --accent: oklch(69.3% 0.042 169.8);
+  --accent-foreground: oklch(27.7% 0 0);
+  --destructive: oklch(66% 0.2175 30.4);
+  --success: oklch(76.5% 0.1581 110.8);
+  --warning: oklch(73.1% 0.182 51.7);
+  --error: oklch(66% 0.2175 30.4);
+  --info: oklch(69.3% 0.042 169.8);
+  --border: oklch(48.2% 0.0181 61);
+  --input: oklch(48.2% 0.0181 61);
+  --ring: oklch(83.2% 0.1595 83);
+  --chart-1: oklch(83.2% 0.1595 83);
+  --chart-2: oklch(69.3% 0.042 169.8);
+  --chart-3: oklch(76.5% 0.1581 110.8);
+  --chart-4: oklch(80% 0.12 340);
+  --chart-5: oklch(85% 0.14 60);
+  --sidebar: oklch(27.7% 0 0);
+  --sidebar-foreground: oklch(89.4% 0.0566 89.2);
+  --sidebar-primary: oklch(83.2% 0.1595 83);
+  --sidebar-primary-foreground: oklch(27.7% 0 0);
+  --sidebar-accent: oklch(34.4% 0.0066 48.5);
+  --sidebar-accent-foreground: oklch(89.4% 0.0566 89.2);
+  --sidebar-border: oklch(48.2% 0.0181 61);
+  --sidebar-ring: oklch(83.2% 0.1595 83);
 }
