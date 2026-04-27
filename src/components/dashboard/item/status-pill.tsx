@@ -101,8 +101,9 @@ export function StatusPill({
     const progPath = progressPathRef.current;
     if (!inner || !svg || !trackPath) return;
 
-    const w = inner.offsetWidth;
-    const h = inner.offsetHeight;
+    const w = inner.offsetWidth || 0;
+    const h = inner.offsetHeight || 0;
+    if (w === 0 || h === 0) return;
     const svgW = w + GAP * 2;
     const svgH = h + GAP * 2;
 
@@ -152,7 +153,7 @@ export function StatusPill({
           display: "inline-flex",
           alignItems: "center",
           gap: 6,
-          height: 18,
+          height: 17.5,
           padding: "0 4px",
           borderRadius: 9,
           background: bgColor,
