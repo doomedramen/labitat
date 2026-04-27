@@ -205,9 +205,9 @@ export function StatusPill({
           strokeLinejoin="round"
           strokeDasharray="0"
           strokeDashoffset="0"
-          style={{
-            transition: "stroke-dashoffset 0.4s ease, stroke 0.2s",
-          }}
+          // style={{
+          //   transition: "stroke-dashoffset 0.4s ease, stroke 0.2s",
+          // }}
         />
       </svg>
 
