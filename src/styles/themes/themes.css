@@ -485,3 +485,340 @@
   --sidebar-border: oklch(48.2% 0.0181 61);
   --sidebar-ring: oklch(83.2% 0.1595 83);
 }
+
+/* ── 8. Rose Pine ───────────────────────────────────
+   All natural pine. Dusty rose and purple elegance
+   over a deep dark indigo base.
+   ─────────────────────────────────────────────────── */
+[data-palette="rose_pine"] {
+  --background: oklch(21.3% 0.0255 291.1);
+  --foreground: oklch(90.9% 0.0299 290);
+  --card: oklch(24.1% 0.0322 289.1);
+  --card-foreground: oklch(90.9% 0.0299 290);
+  --popover: oklch(28% 0.035 289);
+  --popover-foreground: oklch(90.9% 0.0299 290);
+  --primary: oklch(77.6% 0.0945 305);
+  --primary-foreground: oklch(21.3% 0.0255 291.1);
+  --secondary: oklch(27.1% 0.0423 289.2);
+  --secondary-foreground: oklch(37.2% 0.0358 291.1);
+  --muted: oklch(27.1% 0.0423 289.2);
+  --muted-foreground: oklch(37.2% 0.0358 291.1);
+  --accent: oklch(82.2% 0.0543 209.6);
+  --accent-foreground: oklch(21.3% 0.0255 291.1);
+  --destructive: oklch(69.8% 0.1565 4.2);
+  --success: oklch(52.8% 0.0793 227.7);
+  --warning: oklch(84.3% 0.11 74.6);
+  --error: oklch(69.8% 0.1565 4.2);
+  --info: oklch(82.2% 0.0543 209.6);
+  --border: oklch(37.2% 0.0358 291.1);
+  --input: oklch(37.2% 0.0358 291.1);
+  --ring: oklch(77.6% 0.0945 305);
+  --chart-1: oklch(77.6% 0.0945 305);
+  --chart-2: oklch(82.2% 0.0543 209.6);
+  --chart-3: oklch(52.8% 0.0793 227.7);
+  --chart-4: oklch(75% 0.1 340);
+  --chart-5: oklch(85% 0.11 75);
+  --sidebar: oklch(21.3% 0.0255 291.1);
+  --sidebar-foreground: oklch(90.9% 0.0299 290);
+  --sidebar-primary: oklch(77.6% 0.0945 305);
+  --sidebar-primary-foreground: oklch(21.3% 0.0255 291.1);
+  --sidebar-accent: oklch(24.1% 0.0322 289.1);
+  --sidebar-accent-foreground: oklch(90.9% 0.0299 290);
+  --sidebar-border: oklch(37.2% 0.0358 291.1);
+  --sidebar-ring: oklch(77.6% 0.0945 305);
+}
+
+/* ── 9. Everforest ──────────────────────────────────
+   Soft forest greens, warm amber text.
+   Designed for eye comfort in long sessions.
+   ─────────────────────────────────────────────────── */
+[data-palette="everforest"] {
+  --background: oklch(32.4% 0.0153 240.4);
+  --foreground: oklch(83% 0.0405 86.1);
+  --card: oklch(36% 0.0169 227.1);
+  --card-foreground: oklch(83% 0.0405 86.1);
+  --popover: oklch(40% 0.018 227);
+  --popover-foreground: oklch(83% 0.0405 86.1);
+  --primary: oklch(77.3% 0.0906 125.8);
+  --primary-foreground: oklch(32.4% 0.0153 240.4);
+  --secondary: oklch(39.4% 0.0166 227);
+  --secondary-foreground: oklch(43.1% 0.0172 231.6);
+  --muted: oklch(39.4% 0.0166 227);
+  --muted-foreground: oklch(43.1% 0.0172 231.6);
+  --accent: oklch(74.9% 0.0631 185.5);
+  --accent-foreground: oklch(32.4% 0.0153 240.4);
+  --destructive: oklch(70.9% 0.1285 19.6);
+  --success: oklch(77.3% 0.0906 125.8);
+  --warning: oklch(75% 0.1059 44.9);
+  --error: oklch(70.9% 0.1285 19.6);
+  --info: oklch(74.9% 0.0631 185.5);
+  --border: oklch(43.1% 0.0172 231.6);
+  --input: oklch(43.1% 0.0172 231.6);
+  --ring: oklch(77.3% 0.0906 125.8);
+  --chart-1: oklch(77.3% 0.0906 125.8);
+  --chart-2: oklch(74.9% 0.0631 185.5);
+  --chart-3: oklch(79% 0.08 100);
+  --chart-4: oklch(75% 0.08 340);
+  --chart-5: oklch(82% 0.09 80);
+  --sidebar: oklch(32.4% 0.0153 240.4);
+  --sidebar-foreground: oklch(83% 0.0405 86.1);
+  --sidebar-primary: oklch(77.3% 0.0906 125.8);
+  --sidebar-primary-foreground: oklch(32.4% 0.0153 240.4);
+  --sidebar-accent: oklch(36% 0.0169 227.1);
+  --sidebar-accent-foreground: oklch(83% 0.0405 86.1);
+  --sidebar-border: oklch(43.1% 0.0172 231.6);
+  --sidebar-ring: oklch(77.3% 0.0906 125.8);
+}
+
+/* ── 10. Kanagawa ───────────────────────────────────
+   Feudal Japan ink tones. Muted indigo night sky,
+   warm parchment text, deep teal accents.
+   ─────────────────────────────────────────────────── */
+[data-palette="kanagawa"] {
+  --background: oklch(24.3% 0.017 285.1);
+  --foreground: oklch(87.6% 0.0391 99.1);
+  --card: oklch(29.1% 0.0236 284.8);
+  --card-foreground: oklch(87.6% 0.0391 99.1);
+  --popover: oklch(33% 0.026 285);
+  --popover-foreground: oklch(87.6% 0.0391 99.1);
+  --primary: oklch(69.4% 0.0951 263.7);
+  --primary-foreground: oklch(24.3% 0.017 285.1);
+  --secondary: oklch(31.4% 0.0467 257.4);
+  --secondary-foreground: oklch(34% 0.0279 284.8);
+  --muted: oklch(31.4% 0.0467 257.4);
+  --muted-foreground: oklch(34% 0.0279 284.8);
+  --accent: oklch(63.5% 0.0504 175.4);
+  --accent-foreground: oklch(24.3% 0.017 285.1);
+  --destructive: oklch(55.9% 0.167 23.1);
+  --success: oklch(63.2% 0.0698 136.9);
+  --warning: oklch(75.9% 0.1073 70.9);
+  --error: oklch(55.9% 0.167 23.1);
+  --info: oklch(63.5% 0.0504 175.4);
+  --border: oklch(34% 0.0279 284.8);
+  --input: oklch(34% 0.0279 284.8);
+  --ring: oklch(69.4% 0.0951 263.7);
+  --chart-1: oklch(69.4% 0.0951 263.7);
+  --chart-2: oklch(63.5% 0.0504 175.4);
+  --chart-3: oklch(63.2% 0.0698 136.9);
+  --chart-4: oklch(75% 0.1 340);
+  --chart-5: oklch(82% 0.11 80);
+  --sidebar: oklch(24.3% 0.017 285.1);
+  --sidebar-foreground: oklch(87.6% 0.0391 99.1);
+  --sidebar-primary: oklch(69.4% 0.0951 263.7);
+  --sidebar-primary-foreground: oklch(24.3% 0.017 285.1);
+  --sidebar-accent: oklch(29.1% 0.0236 284.8);
+  --sidebar-accent-foreground: oklch(87.6% 0.0391 99.1);
+  --sidebar-border: oklch(34% 0.0279 284.8);
+  --sidebar-ring: oklch(69.4% 0.0951 263.7);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LIGHT THEMES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* ── 11. Catppuccin Latte ───────────────────────────
+   The warm, creamy light Catppuccin variant.
+   ─────────────────────────────────────────────────── */
+[data-palette="catppuccin_latte"] {
+  --background: oklch(95.8% 0.0058 264.5);
+  --foreground: oklch(43.5% 0.043 279.3);
+  --card: oklch(93.3% 0.0087 264.5);
+  --card-foreground: oklch(43.5% 0.043 279.3);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(43.5% 0.043 279.3);
+  --primary: oklch(55.5% 0.2503 297);
+  --primary-foreground: oklch(95.8% 0.0058 264.5);
+  --secondary: oklch(90.6% 0.0117 264.5);
+  --secondary-foreground: oklch(80.8% 0.0174 271.2);
+  --muted: oklch(90.6% 0.0117 264.5);
+  --muted-foreground: oklch(80.8% 0.0174 271.2);
+  --accent: oklch(68.2% 0.1448 235.4);
+  --accent-foreground: oklch(95.8% 0.0058 264.5);
+  --destructive: oklch(55% 0.2155 19.8);
+  --success: oklch(62.5% 0.1772 140.4);
+  --warning: oklch(69.2% 0.2041 42.4);
+  --error: oklch(55% 0.2155 19.8);
+  --info: oklch(68.2% 0.1448 235.4);
+  --border: oklch(80.8% 0.0174 271.2);
+  --input: oklch(80.8% 0.0174 271.2);
+  --ring: oklch(55.5% 0.2503 297);
+  --chart-1: oklch(55.5% 0.2503 297);
+  --chart-2: oklch(68.2% 0.1448 235.4);
+  --chart-3: oklch(62.5% 0.1772 140.4);
+  --chart-4: oklch(60% 0.2 320);
+  --chart-5: oklch(70% 0.18 85);
+  --sidebar: oklch(95.8% 0.0058 264.5);
+  --sidebar-foreground: oklch(43.5% 0.043 279.3);
+  --sidebar-primary: oklch(55.5% 0.2503 297);
+  --sidebar-primary-foreground: oklch(95.8% 0.0058 264.5);
+  --sidebar-accent: oklch(93.3% 0.0087 264.5);
+  --sidebar-accent-foreground: oklch(43.5% 0.043 279.3);
+  --sidebar-border: oklch(80.8% 0.0174 271.2);
+  --sidebar-ring: oklch(55.5% 0.2503 297);
+}
+
+/* ── 12. Nord Light ─────────────────────────────────
+   Nord's bright ambience. Snow Storm base with full
+   Aurora Borealis accent palette.
+   ─────────────────────────────────────────────────── */
+[data-palette="nord_light"] {
+  --background: oklch(95.1% 0.0074 260.7);
+  --foreground: oklch(32.4% 0.0229 264.2);
+  --card: oklch(93.3% 0.0104 261.8);
+  --card-foreground: oklch(32.4% 0.0229 264.2);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(32.4% 0.0229 264.2);
+  --primary: oklch(59.4% 0.0772 254);
+  --primary-foreground: oklch(95.1% 0.0074 260.7);
+  --secondary: oklch(89.9% 0.0164 262.7);
+  --secondary-foreground: oklch(79.4% 0.021 238.7);
+  --muted: oklch(89.9% 0.0164 262.7);
+  --muted-foreground: oklch(79.4% 0.021 238.7);
+  --accent: oklch(77.5% 0.0622 217.5);
+  --accent-foreground: oklch(95.1% 0.0074 260.7);
+  --destructive: oklch(60.6% 0.1206 15.3);
+  --success: oklch(76.8% 0.0749 131.1);
+  --warning: oklch(69.3% 0.0963 38.2);
+  --error: oklch(60.6% 0.1206 15.3);
+  --info: oklch(77.5% 0.0622 217.5);
+  --border: oklch(79.4% 0.021 238.7);
+  --input: oklch(79.4% 0.021 238.7);
+  --ring: oklch(59.4% 0.0772 254);
+  --chart-1: oklch(59.4% 0.0772 254);
+  --chart-2: oklch(77.5% 0.0622 217.5);
+  --chart-3: oklch(76.8% 0.0749 131.1);
+  --chart-4: oklch(65% 0.08 320);
+  --chart-5: oklch(75% 0.1 85);
+  --sidebar: oklch(95.1% 0.0074 260.7);
+  --sidebar-foreground: oklch(32.4% 0.0229 264.2);
+  --sidebar-primary: oklch(59.4% 0.0772 254);
+  --sidebar-primary-foreground: oklch(95.1% 0.0074 260.7);
+  --sidebar-accent: oklch(93.3% 0.0104 261.8);
+  --sidebar-accent-foreground: oklch(32.4% 0.0229 264.2);
+  --sidebar-border: oklch(79.4% 0.021 238.7);
+  --sidebar-ring: oklch(59.4% 0.0772 254);
+}
+
+/* ── 13. Solarized Light ────────────────────────────
+   The precision-engineered classic by Ethan Schoonover.
+   ─────────────────────────────────────────────────── */
+[data-palette="solarized_light"] {
+  --background: oklch(97.4% 0.0261 90.1);
+  --foreground: oklch(56.8% 0.0285 221.9);
+  --card: oklch(93.1% 0.026 92.4);
+  --card-foreground: oklch(56.8% 0.0285 221.9);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(56.8% 0.0285 221.9);
+  --primary: oklch(61.5% 0.1394 244.9);
+  --primary-foreground: oklch(97.4% 0.0261 90.1);
+  --secondary: oklch(91.2% 0.0262 92.4);
+  --secondary-foreground: oklch(82.2% 0.0361 94.6);
+  --muted: oklch(91.2% 0.0262 92.4);
+  --muted-foreground: oklch(82.2% 0.0361 94.6);
+  --accent: oklch(64.4% 0.1019 187.4);
+  --accent-foreground: oklch(97.4% 0.0261 90.1);
+  --destructive: oklch(58.6% 0.2064 27.1);
+  --success: oklch(64.4% 0.1508 118.6);
+  --warning: oklch(58.1% 0.1732 39.5);
+  --error: oklch(58.6% 0.2064 27.1);
+  --info: oklch(64.4% 0.1019 187.4);
+  --border: oklch(82.2% 0.0361 94.6);
+  --input: oklch(82.2% 0.0361 94.6);
+  --ring: oklch(61.5% 0.1394 244.9);
+  --chart-1: oklch(61.5% 0.1394 244.9);
+  --chart-2: oklch(64.4% 0.1019 187.4);
+  --chart-3: oklch(64.4% 0.1508 118.6);
+  --chart-4: oklch(58% 0.16 320);
+  --chart-5: oklch(70% 0.15 85);
+  --sidebar: oklch(97.4% 0.0261 90.1);
+  --sidebar-foreground: oklch(56.8% 0.0285 221.9);
+  --sidebar-primary: oklch(61.5% 0.1394 244.9);
+  --sidebar-primary-foreground: oklch(97.4% 0.0261 90.1);
+  --sidebar-accent: oklch(93.1% 0.026 92.4);
+  --sidebar-accent-foreground: oklch(56.8% 0.0285 221.9);
+  --sidebar-border: oklch(82.2% 0.0361 94.6);
+  --sidebar-ring: oklch(61.5% 0.1394 244.9);
+}
+
+/* ── 14. Rose Pine Dawn ─────────────────────────────
+   Warm cream and parchment with rose and lavender
+   accents. The daylight sister to Rose Pine.
+   ─────────────────────────────────────────────────── */
+[data-palette="rose_pine_dawn"] {
+  --background: oklch(97% 0.0113 71.9);
+  --foreground: oklch(46% 0.0629 289.6);
+  --card: oklch(98.7% 0.0107 76.6);
+  --card-foreground: oklch(46% 0.0629 289.6);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(46% 0.0629 289.6);
+  --primary: oklch(61.7% 0.0738 305.7);
+  --primary-foreground: oklch(97% 0.0113 71.9);
+  --secondary: oklch(93.9% 0.0145 64.3);
+  --secondary-foreground: oklch(83% 0.0332 76.4);
+  --muted: oklch(93.9% 0.0145 64.3);
+  --muted-foreground: oklch(83% 0.0332 76.4);
+  --accent: oklch(62.9% 0.0661 210.1);
+  --accent-foreground: oklch(97% 0.0113 71.9);
+  --destructive: oklch(59.9% 0.1071 2.7);
+  --success: oklch(49.1% 0.077 228);
+  --warning: oklch(75.5% 0.1459 69.7);
+  --error: oklch(59.9% 0.1071 2.7);
+  --info: oklch(62.9% 0.0661 210.1);
+  --border: oklch(83% 0.0332 76.4);
+  --input: oklch(83% 0.0332 76.4);
+  --ring: oklch(61.7% 0.0738 305.7);
+  --chart-1: oklch(61.7% 0.0738 305.7);
+  --chart-2: oklch(62.9% 0.0661 210.1);
+  --chart-3: oklch(49.1% 0.077 228);
+  --chart-4: oklch(58% 0.08 320);
+  --chart-5: oklch(75% 0.12 75);
+  --sidebar: oklch(97% 0.0113 71.9);
+  --sidebar-foreground: oklch(46% 0.0629 289.6);
+  --sidebar-primary: oklch(61.7% 0.0738 305.7);
+  --sidebar-primary-foreground: oklch(97% 0.0113 71.9);
+  --sidebar-accent: oklch(98.7% 0.0107 76.6);
+  --sidebar-accent-foreground: oklch(46% 0.0629 289.6);
+  --sidebar-border: oklch(83% 0.0332 76.4);
+  --sidebar-ring: oklch(61.7% 0.0738 305.7);
+}
+
+/* ── 15. Gruvbox Light ──────────────────────────────
+   The same retro-groove warmth, inverted for daylight.
+   ─────────────────────────────────────────────────── */
+[data-palette="gruvbox_light"] {
+  --background: oklch(95.6% 0.0555 96.2);
+  --foreground: oklch(34.4% 0.0066 48.5);
+  --card: oklch(89.4% 0.0566 89.2);
+  --card-foreground: oklch(34.4% 0.0066 48.5);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(34.4% 0.0066 48.5);
+  --primary: oklch(57.6% 0.0658 199.5);
+  --primary-foreground: oklch(95.6% 0.0555 96.2);
+  --secondary: oklch(82.5% 0.0507 85.1);
+  --secondary-foreground: oklch(75.6% 0.041 82.3);
+  --muted: oklch(82.5% 0.0507 85.1);
+  --muted-foreground: oklch(75.6% 0.041 82.3);
+  --accent: oklch(64.5% 0.0939 145.3);
+  --accent-foreground: oklch(95.6% 0.0555 96.2);
+  --destructive: oklch(43.7% 0.1789 28.3);
+  --success: oklch(54.6% 0.1124 106.5);
+  --warning: oklch(62.2% 0.1707 45.8);
+  --error: oklch(43.7% 0.1789 28.3);
+  --info: oklch(64.5% 0.0939 145.3);
+  --border: oklch(75.6% 0.041 82.3);
+  --input: oklch(75.6% 0.041 82.3);
+  --ring: oklch(57.6% 0.0658 199.5);
+  --chart-1: oklch(57.6% 0.0658 199.5);
+  --chart-2: oklch(64.5% 0.0939 145.3);
+  --chart-3: oklch(54.6% 0.1124 106.5);
+  --chart-4: oklch(55% 0.08 340);
+  --chart-5: oklch(65% 0.1 60);
+  --sidebar: oklch(95.6% 0.0555 96.2);
+  --sidebar-foreground: oklch(34.4% 0.0066 48.5);
+  --sidebar-primary: oklch(57.6% 0.0658 199.5);
+  --sidebar-primary-foreground: oklch(95.6% 0.0555 96.2);
+  --sidebar-accent: oklch(89.4% 0.0566 89.2);
+  --sidebar-accent-foreground: oklch(34.4% 0.0066 48.5);
+  --sidebar-border: oklch(75.6% 0.041 82.3);
+  --sidebar-ring: oklch(57.6% 0.0658 199.5);
+}

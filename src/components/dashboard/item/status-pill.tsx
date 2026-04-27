@@ -24,16 +24,16 @@ export interface StatusPillProps {
   tooltip?: React.ReactNode;
 }
 
-// ─── Map status variant to theme semantic color name ─────────────────────────
+// ─── Map status variant to shadcn CSS variable name ─────────────────────────
 
-function getSemanticColorName(status: StatusVariant): string {
+function getColorVar(status: StatusVariant): string {
   switch (status) {
     case "online":
       return "success";
     case "warning":
       return "warning";
     case "error":
-      return "error";
+      return "destructive";
     case "info":
       return "info";
     case "stale":
@@ -77,17 +77,17 @@ export function StatusPill({
   const progressPathRef = useRef<SVGPathElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const semanticColor = getSemanticColorName(status);
+  const colorVar = getColorVar(status);
 
-  // Use theme CSS variables for colors
-  // Background: use semantic color at 15% opacity so dot stands out
-  const bgColor = `color-mix(in srgb, var(--color-semantic-${semanticColor}) 15%, transparent)`;
-  // Text, dot, and stroke use full semantic color to stand out from background
-  const textAndDotColor = `var(--color-semantic-${semanticColor})`;
-  // Track stroke uses same background as pill (not visible, just defines the path)
+  // Use shadcn CSS variables directly
+  // Background: use theme color at 15% opacity
+  const bgColor = `color-mix(in srgb, var(--${colorVar}) 15%, transparent)`;
+  // Text, dot, and stroke use full theme color
+  const textAndDotColor = `var(--${colorVar})`;
+  // Track stroke uses same background as pill
   const trackColor = bgColor;
-  // Progress stroke uses full semantic color
-  const progressColor = `var(--color-semantic-${semanticColor})`;
+  // Progress stroke uses full theme color
+  const progressColor = `var(--${colorVar})`;
 
   const clampedProgress = Math.max(0, Math.min(1, progress));
   const showStroke = clampedProgress > 0;

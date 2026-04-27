@@ -42,12 +42,12 @@ export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusD
 
   const glowColors = {
     unknown: "",
-    healthy: "shadow-[0_0_8px_-2px_hsl(var(--success)/0.6)]",
-    degraded: "shadow-[0_0_8px_-2px_hsl(var(--warning)/0.6)]",
-    reachable: "shadow-[0_0_8px_-2px_hsl(var(--success)/0.6)]",
-    unreachable: "shadow-[0_0_10px_-2px_hsl(var(--error)/0.7)]",
-    slow: "shadow-[0_0_8px_-2px_hsl(var(--warning)/0.6)]",
-    error: "shadow-[0_0_10px_-2px_hsl(var(--error)/0.7)]",
+    healthy: "shadow-[0_0_8px_-2px_color-mix(in_srgb,var(--success)_60%,transparent)]",
+    degraded: "shadow-[0_0_8px_-2px_color-mix(in_srgb,var(--warning)_60%,transparent)]",
+    reachable: "shadow-[0_0_8px_-2px_color-mix(in_srgb,var(--success)_60%,transparent)]",
+    unreachable: "shadow-[0_0_10px_-2px_color-mix(in_srgb,var(--destructive)_70%,transparent)]",
+    slow: "shadow-[0_0_8px_-2px_color-mix(in_srgb,var(--warning)_60%,transparent)]",
+    error: "shadow-[0_0_10px_-2px_color-mix(in_srgb,var(--destructive)_70%,transparent)]",
   };
 
   const labels = {

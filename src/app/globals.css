@@ -48,10 +48,10 @@
   --color-border-subtle: var(--color-border-subtle);
   --color-accent-primary: var(--color-accent-primary);
   --color-accent-secondary: var(--color-accent-secondary);
-  --color-semantic-success: var(--color-semantic-success);
-  --color-semantic-warning: var(--color-semantic-warning);
-  --color-semantic-error: var(--color-semantic-error);
-  --color-semantic-info: var(--color-semantic-info);
+  --color-success: var(--success, #22c55e);
+  --color-warning: var(--warning, #f59e0b);
+  --color-error: var(--destructive, #ef4444);
+  --color-info: var(--info, #3b82f6);
   --color-data-1: var(--color-data-1);
   --color-data-2: var(--color-data-2);
   --color-data-3: var(--color-data-3);
