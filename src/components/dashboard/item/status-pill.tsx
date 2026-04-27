@@ -84,8 +84,10 @@ export function StatusPill({
   const bgColor = `color-mix(in srgb, var(--color-semantic-${semanticColor}) 15%, transparent)`;
   // Text, dot, and stroke use full semantic color to stand out from background
   const textAndDotColor = `var(--color-semantic-${semanticColor})`;
-  // Progress stroke and track both use the semantic color
-  const strokeColor = `var(--color-semantic-${semanticColor})`;
+  // Track stroke uses same background as pill (not visible, just defines the path)
+  const trackColor = bgColor;
+  // Progress stroke uses full semantic color
+  const progressColor = `var(--color-semantic-${semanticColor})`;
 
   const clampedProgress = Math.max(0, Math.min(1, progress));
   const showStroke = clampedProgress > 0;
@@ -189,16 +191,15 @@ export function StatusPill({
           overflow: "visible",
         }}
       >
-        {/* Track (full pill outline, same color as stroke but more transparent) */}
+        {/* Track (full pill outline, same color as pill background) */}
         <path
           ref={pathRef}
           fill="none"
-          stroke={strokeColor}
+          stroke={trackColor}
           strokeWidth={STROKE_WIDTH}
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{
-            opacity: 0.3,
             transition: "stroke 0.2s",
           }}
         />
@@ -208,7 +209,7 @@ export function StatusPill({
           <path
             ref={progressPathRef}
             fill="none"
-            stroke={strokeColor}
+            stroke={progressColor}
             strokeWidth={STROKE_WIDTH}
             strokeLinecap="round"
             strokeLinejoin="round"
