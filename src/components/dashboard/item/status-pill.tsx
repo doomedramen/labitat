@@ -90,7 +90,6 @@ export function StatusPill({
   const progressColor = `var(--${colorVar})`;
 
   const clampedProgress = Math.max(0, Math.min(1, progress));
-  const showStroke = clampedProgress > 0;
   const showPulse = status !== "stale";
 
   // Measure pill and update SVG geometry
@@ -99,7 +98,7 @@ export function StatusPill({
     const svg = svgRef.current;
     const trackPath = pathRef.current;
     const progPath = progressPathRef.current;
-    if (!inner || !svg || !trackPath) return;
+    if (!inner || !svg || !trackPath || !progPath) return;
 
     const w = inner.offsetWidth || 0;
     const h = inner.offsetHeight || 0;
@@ -115,18 +114,9 @@ export function StatusPill({
 
     const d = pillPath(w, h, GAP);
     trackPath.setAttribute("d", d);
-    if (progPath) {
-      progPath.setAttribute("d", d);
-    }
-  }, []);
 
-  // Update stroke-dashoffset separately for smooth animation
-  useLayoutEffect(() => {
-    const progPath = progressPathRef.current;
-    const trackPath = pathRef.current;
-    if (!progPath || !trackPath) return;
-
-    const len = trackPath.getTotalLength();
+    progPath.setAttribute("d", d);
+    const len = progPath.getTotalLength();
     progPath.setAttribute("stroke-dasharray", String(len));
     progPath.setAttribute("stroke-dashoffset", String(len * (1 - clampedProgress)));
   }, [clampedProgress]);
@@ -206,19 +196,19 @@ export function StatusPill({
         />
 
         {/* Progress stroke */}
-        {showStroke && (
-          <path
-            ref={progressPathRef}
-            fill="none"
-            stroke={progressColor}
-            strokeWidth={STROKE_WIDTH}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{
-              transition: "stroke-dashoffset 0.4s ease, stroke 0.2s",
-            }}
-          />
-        )}
+        <path
+          ref={progressPathRef}
+          fill="none"
+          stroke={progressColor}
+          strokeWidth={STROKE_WIDTH}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray="0"
+          strokeDashoffset="0"
+          style={{
+            transition: "stroke-dashoffset 0.4s ease, stroke 0.2s",
+          }}
+        />
       </svg>
 
       {/* Pulse keyframe — injected once */}
