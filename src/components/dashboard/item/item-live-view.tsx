@@ -61,7 +61,7 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
   }, [live?.pingStatus, live?.widgetData]);
 
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30000;
-  const progress = useSyncProgress(item.id, pollingMs);
+  const progress = useSyncProgress(item.id, pollingMs) / 100;
 
   const ageMs =
     live?.lastFetchedAt !== null && live?.lastFetchedAt !== undefined
