@@ -4,7 +4,7 @@ import { useRef, useLayoutEffect, useCallback } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 export type StatusVariant = "online" | "warning" | "error" | "stale" | "info";
 
@@ -24,7 +24,7 @@ export interface StatusPillProps {
   tooltip?: React.ReactNode;
 }
 
-// ─── Map status variant to theme semantic color name ─────────────────────────────────
+// ─── Map status variant to theme semantic color name ─────────────────────────
 
 function getSemanticColorName(status: StatusVariant): string {
   switch (status) {
@@ -41,7 +41,7 @@ function getSemanticColorName(status: StatusVariant): string {
   }
 }
 
-// ─── Pill outline path ────────────────────────────────────────────────────────────────
+// ─── Pill outline path ────────────────────────────────────────────────────────
 
 /** Builds a pill-shaped SVG path that traces the outer edge of the component. */
 function pillPath(w: number, h: number, gap: number): string {
@@ -80,12 +80,12 @@ export function StatusPill({
   const semanticColor = getSemanticColorName(status);
 
   // Use theme CSS variables for colors
-  const bgVar = "--color-bg-surface";
-  const textVar = "--color-text-primary";
-  const dotColor = `var(--color-semantic-${semanticColor})`;
-  // Track uses a subtle border color (much more muted than the progress stroke)
-  const trackColor = `var(--color-border-default)`;
-  const progressColor = `var(--color-semantic-${semanticColor})`;
+  // Background: use semantic color at 15% opacity so dot stands out
+  const bgColor = `color-mix(in srgb, var(--color-semantic-${semanticColor}) 15%, transparent)`;
+  // Text, dot, and stroke use full semantic color to stand out from background
+  const textAndDotColor = `var(--color-semantic-${semanticColor})`;
+  // Progress stroke and track both use the semantic color
+  const strokeColor = `var(--color-semantic-${semanticColor})`;
 
   const clampedProgress = Math.max(0, Math.min(1, progress));
   const showStroke = clampedProgress > 0;
@@ -153,8 +153,8 @@ export function StatusPill({
           height: 18,
           padding: "0 4px",
           borderRadius: 9,
-          background: `var(${bgVar})`,
-          color: `var(${textVar})`,
+          background: bgColor,
+          color: textAndDotColor,
           fontSize: 11,
           fontWeight: 500,
           whiteSpace: "nowrap",
@@ -170,7 +170,7 @@ export function StatusPill({
             width: 7,
             height: 7,
             borderRadius: "50%",
-            background: dotColor,
+            background: textAndDotColor,
             flexShrink: 0,
             transition: "background 0.2s",
             animation: showPulse ? "statusPulse 2s ease-in-out infinite" : "none",
@@ -189,15 +189,18 @@ export function StatusPill({
           overflow: "visible",
         }}
       >
-        {/* Track (full pill outline, subtle) */}
+        {/* Track (full pill outline, same color as stroke but more transparent) */}
         <path
           ref={pathRef}
           fill="none"
-          stroke={trackColor}
+          stroke={strokeColor}
           strokeWidth={STROKE_WIDTH}
           strokeLinecap="round"
           strokeLinejoin="round"
-          style={{ transition: "stroke 0.2s" }}
+          style={{
+            opacity: 0.3,
+            transition: "stroke 0.2s",
+          }}
         />
 
         {/* Progress stroke */}
@@ -205,7 +208,7 @@ export function StatusPill({
           <path
             ref={progressPathRef}
             fill="none"
-            stroke={progressColor}
+            stroke={strokeColor}
             strokeWidth={STROKE_WIDTH}
             strokeLinecap="round"
             strokeLinejoin="round"
