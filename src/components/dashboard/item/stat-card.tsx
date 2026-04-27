@@ -18,7 +18,7 @@ export function StatCard({
   value,
   label,
   tooltip,
-  valueClassName,
+  // valueClassName,
   displayMode = "label",
 }: StatCardProps) {
   const showLabel = displayMode === "label";
@@ -27,17 +27,13 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground select-none",
+        "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center select-none",
         "transition-all duration-200 hover:scale-105 hover:bg-secondary/80 active:scale-95",
       )}
     >
-      <span
-        className={cn("font-medium tabular-nums", valueClassName ?? "text-secondary-foreground")}
-      >
-        {value}
-      </span>
+      <span className={cn("font-medium tabular-nums")}>{value}</span>
       {showLabel ? (
-        <span className="text-secondary-foreground/60">{label}</span>
+        <span className="">{label}</span>
       ) : effectiveTooltip ? (
         <span className="sr-only">{effectiveTooltip}</span>
       ) : null}
