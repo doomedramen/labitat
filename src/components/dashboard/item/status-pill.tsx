@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useLayoutEffect, useState, useCallback } from "react";
+import { useRef, useLayoutEffect, useCallback } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -23,96 +23,32 @@ export interface StatusPillProps {
   tooltip?: React.ReactNode;
 }
 
-// ─── Token maps ───────────────────────────────────────────────────────────────
+// ─── Map status variant to theme semantic color name ─────────────────────────────────
 
-const tokens: Record<
-  StatusVariant,
-  {
-    bg: string;
-    text: string;
-    dot: string;
-    track: string;
-    progress: string;
-    darkBg: string;
-    darkText: string;
-    darkDot: string;
-    darkTrack: string;
-    darkProgress: string;
+function getSemanticColorName(status: StatusVariant): string {
+  switch (status) {
+    case "online":
+      return "success";
+    case "warning":
+      return "warning";
+    case "error":
+      return "error";
+    case "info":
+      return "info";
+    case "stale":
+      return "muted";
   }
-> = {
-  online: {
-    bg: "#EAF3DE",
-    text: "#3B6D11",
-    dot: "#639922",
-    track: "#C0DD97",
-    progress: "#639922",
-    darkBg: "#27500A",
-    darkText: "#C0DD97",
-    darkDot: "#97C459",
-    darkTrack: "#3B6D11",
-    darkProgress: "#97C459",
-  },
-  warning: {
-    bg: "#FAEEDA",
-    text: "#854F0B",
-    dot: "#BA7517",
-    track: "#FAC775",
-    progress: "#BA7517",
-    darkBg: "#633806",
-    darkText: "#FAC775",
-    darkDot: "#EF9F27",
-    darkTrack: "#854F0B",
-    darkProgress: "#EF9F27",
-  },
-  error: {
-    bg: "#FCEBEB",
-    text: "#A32D2D",
-    dot: "#E24B4A",
-    track: "#F7C1C1",
-    progress: "#E24B4A",
-    darkBg: "#791F1F",
-    darkText: "#F7C1C1",
-    darkDot: "#F09595",
-    darkTrack: "#A32D2D",
-    darkProgress: "#F09595",
-  },
-  stale: {
-    bg: "#F1EFE8",
-    text: "#5F5E5A",
-    dot: "#888780",
-    track: "#D3D1C7",
-    progress: "#888780",
-    darkBg: "#444441",
-    darkText: "#D3D1C7",
-    darkDot: "#B4B2A9",
-    darkTrack: "#5F5E5A",
-    darkProgress: "#D3D1C7",
-  },
-  info: {
-    bg: "#E6F1FB",
-    text: "#185FA5",
-    dot: "#378ADD",
-    track: "#B5D4F4",
-    progress: "#378ADD",
-    darkBg: "#0C447C",
-    darkText: "#B5D4F4",
-    darkDot: "#85B7EB",
-    darkTrack: "#185FA5",
-    darkProgress: "#85B7EB",
-  },
-};
+}
 
-// ─── Pill outline path ────────────────────────────────────────────────────────
+// ─── Pill outline path ────────────────────────────────────────────────────────────────
 
-/** Builds a pill-shaped SVG path that traces the outer edge of the component.
- *  Starts at the top-center and goes clockwise so dashoffset fills left→right. */
+/** Builds a pill-shaped SVG path that traces the outer edge of the component. */
 function pillPath(w: number, h: number, gap: number): string {
   const r = h / 2 + gap;
   const W = w + gap * 2;
   const H = h + gap * 2;
   const x = -gap;
   const y = -gap;
-  // Start top-center, go clockwise
   return [
     `M ${x + W / 2} ${y}`,
     `L ${x + W - r} ${y}`,
@@ -123,26 +59,10 @@ function pillPath(w: number, h: number, gap: number): string {
   ].join(" ");
 }
 
-// ─── Hooks ────────────────────────────────────────────────────────────────────
-
-function usePrefersDark(): boolean {
-  const [dark, setDark] = useState(
-    () =>
-      typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches,
-  );
-  useLayoutEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => setDark(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return dark;
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const STROKE_WIDTH = 1.5;
-const GAP = STROKE_WIDTH / 2 + 1.5; // gap between pill bg and stroke
+const GAP = STROKE_WIDTH / 2 + 1.5;
 
 export function StatusPill({
   status,
@@ -155,14 +75,16 @@ export function StatusPill({
   const pathRef = useRef<SVGPathElement>(null);
   const progressPathRef = useRef<SVGPathElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
-  const dark = usePrefersDark();
 
-  const t = tokens[status];
-  const bg = dark ? t.darkBg : t.bg;
-  const textColor = dark ? t.darkText : t.text;
-  const dotColor = dark ? t.darkDot : t.dot;
-  const trackColor = dark ? t.darkTrack : t.track;
-  const progressColor = dark ? t.darkProgress : t.progress;
+  const semanticColor = getSemanticColorName(status);
+
+  // Use theme CSS variables for colors
+  const bgVar = "--color-bg-surface";
+  const textVar = "--color-text-primary";
+  const dotColor = `var(--color-semantic-${semanticColor})`;
+  // Track uses a subtle border color (much more muted than the progress stroke)
+  const trackColor = `var(--color-border-default)`;
+  const progressColor = `var(--color-semantic-${semanticColor})`;
 
   const clampedProgress = Math.max(0, Math.min(1, progress));
   const showStroke = clampedProgress > 0;
@@ -191,15 +113,22 @@ export function StatusPill({
     trackPath.setAttribute("d", d);
     if (progPath) {
       progPath.setAttribute("d", d);
-      const len = trackPath.getTotalLength();
-      progPath.setAttribute("stroke-dasharray", String(len));
-      progPath.setAttribute("stroke-dashoffset", String(len * (1 - clampedProgress)));
     }
+  }, []);
+
+  // Update stroke-dashoffset separately for smooth animation
+  useLayoutEffect(() => {
+    const progPath = progressPathRef.current;
+    const trackPath = pathRef.current;
+    if (!progPath || !trackPath) return;
+
+    const len = trackPath.getTotalLength();
+    progPath.setAttribute("stroke-dasharray", String(len));
+    progPath.setAttribute("stroke-dashoffset", String(len * (1 - clampedProgress)));
   }, [clampedProgress]);
 
   useLayoutEffect(() => {
     syncGeometry();
-    // Re-sync on resize (e.g. text changes)
     if (!innerRef.current) return;
     const ro = new ResizeObserver(syncGeometry);
     ro.observe(innerRef.current);
@@ -223,8 +152,8 @@ export function StatusPill({
           height: 18,
           padding: "0 4px",
           borderRadius: 9,
-          background: bg,
-          color: textColor,
+          background: `var(${bgVar})`,
+          color: `var(${textVar})`,
           fontSize: 11,
           fontWeight: 500,
           whiteSpace: "nowrap",
@@ -259,7 +188,7 @@ export function StatusPill({
           overflow: "visible",
         }}
       >
-        {/* Track (full pill outline, muted) */}
+        {/* Track (full pill outline, subtle) */}
         <path
           ref={pathRef}
           fill="none"
