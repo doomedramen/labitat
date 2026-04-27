@@ -73,8 +73,8 @@ test.describe("Widget Rendering", () => {
     // An error status dot (red) should appear
     const statusDot = page.locator('[role="status"]');
     await expect(statusDot).toBeVisible({ timeout: 15_000 });
-    // The bg-error class is on the inner dot (div with rounded-full), not the circle
-    await expect(statusDot.locator("div.rounded-full.bg-error")).toBeVisible();
+    // The center dot should be visible inside the status indicator (size-2 = 8px)
+    await expect(statusDot.locator("div.rounded-full.size-2")).toBeVisible();
   });
 
   test("renders empty state with zero values", async ({ page }) => {

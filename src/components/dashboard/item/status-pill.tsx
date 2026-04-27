@@ -3,57 +3,43 @@
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-function getStatusColors(state: string) {
+function getStatusColor(state: string): string {
   switch (state) {
     case "error":
     case "unreachable":
-      return { colorVar: "hsl(var(--error))", bgClass: "bg-error" };
+      return "hsl(var(--error))";
     case "degraded":
     case "slow":
     case "warn":
-      return { colorVar: "hsl(var(--warning))", bgClass: "bg-warning" };
+      return "hsl(var(--warning))";
     case "healthy":
     case "reachable":
     case "ok":
-      return { colorVar: "hsl(var(--success))", bgClass: "bg-success" };
+      return "hsl(var(--success))";
     default:
-      return { colorVar: "hsl(var(--muted-foreground))", bgClass: "bg-muted-foreground/50" };
+      return "hsl(var(--muted-foreground))";
   }
 }
 
 function ProgressPill({ progress = 0, statusState }: { progress?: number; statusState: string }) {
-  const { colorVar, bgClass } = getStatusColors(statusState);
-
-  // Progress ring: 24px diameter, 10px radius, 2px stroke
-  const circumference = 2 * Math.PI * 10;
-  const strokeDashoffset = (progress / 100) * circumference;
+  const color = getStatusColor(statusState);
 
   return (
-    <div role="status" aria-label="Status" className="relative inline-flex items-center">
-      <svg viewBox="0 0 24 24" className="relative size-6 -rotate-90" aria-hidden>
-        <circle cx="12" cy="12" r="10" fill="none" stroke="hsl(var(--border))" strokeWidth="2" />
-        <circle
-          cx="12"
-          cy="12"
-          r="10"
-          fill="none"
-          stroke={colorVar}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-1000 ease-linear"
+    <div
+      role="status"
+      aria-label="Status"
+      className="relative inline-flex items-center justify-center"
+    >
+      <div className="absolute -inset-[2px] rounded-full overflow-hidden">
+        <div className="absolute inset-0 bg-border" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `conic-gradient(${color} 0%, ${color} ${progress}%, transparent ${progress}%)`,
+          }}
         />
-      </svg>
-      <div
-        className={`absolute rounded-full size-1.5 ${bgClass} ${
-          statusState === "error" || statusState === "unreachable"
-            ? "shadow-[0_0_4px_0px_hsl(var(--error)/0.6)]"
-            : statusState === "healthy" || statusState === "reachable"
-              ? "shadow-[0_0_4px_0px_hsl(var(--success)/0.5)]"
-              : ""
-        }`}
-      />
+      </div>
+      <div className="relative rounded-full size-2 bg-current" />
     </div>
   );
 }
