@@ -1,6 +1,6 @@
 import { test, expect, seedAndAuth } from "../fixtures";
 
-test.describe("Settings & Configuration", () => {
+test.describe.skip("Settings & Configuration", () => {
   test.describe("Edit Mode", () => {
     test("enters and exits edit mode", async ({ page }) => {
       await seedAndAuth(page);

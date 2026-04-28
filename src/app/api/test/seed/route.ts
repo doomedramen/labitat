@@ -33,7 +33,6 @@ export async function POST(request: Request) {
   const { nanoid } = await import("nanoid");
   const { db } = await import("@/lib/db");
   const { users, groups, items, settings } = await import("@/lib/db/schema");
-  const { resetAllRateLimits } = await import("@/lib/auth/rate-limit");
   const { getSessionOptions } = await import("@/lib/auth");
   const { serverCache } = await import("@/lib/server-cache");
 
@@ -42,7 +41,6 @@ export async function POST(request: Request) {
   await db.run(sql`DELETE FROM groups`);
   await db.run(sql`DELETE FROM settings`);
   await db.run(sql`DELETE FROM users`);
-  resetAllRateLimits();
 
   // Clear server cache
   serverCache.clear();

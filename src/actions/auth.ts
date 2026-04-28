@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
@@ -10,7 +9,6 @@ import { users } from "@/lib/db/schema";
 import { hasAdminUser } from "@/lib/db/admin";
 import { getSession } from "@/lib/auth";
 import { eq } from "drizzle-orm";
-import { checkRateLimit, recordFailedAttempt, resetRateLimit } from "@/lib/auth/rate-limit";
 
 export async function getUserByEmail(email: string) {
   const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -70,19 +68,6 @@ export async function login(_: LoginState, formData: FormData): Promise<LoginSta
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  const ip = (await headers()).get("x-forwarded-for") ?? "unknown";
-  const ipLimit = checkRateLimit(`ip:${ip}`);
-  if (!ipLimit.allowed) {
-    const mins = Math.ceil((ipLimit.retryAfterMs ?? 0) / 60000);
-    return { error: `Too many attempts. Try again in ${mins} minute(s).` };
-  }
-
-  const emailLimit = checkRateLimit(`email:${email}`);
-  if (!emailLimit.allowed) {
-    const mins = Math.ceil((emailLimit.retryAfterMs ?? 0) / 60000);
-    return { error: `This account is locked. Try again in ${mins} minute(s).` };
-  }
-
   const user = await getUserByEmail(email);
 
   // Real bcrypt hash of a dummy password — ensures consistent timing whether the user exists or not
@@ -91,13 +76,8 @@ export async function login(_: LoginState, formData: FormData): Promise<LoginSta
   const passwordMatch = await bcrypt.compare(password, hashToCompare);
 
   if (!user || !passwordMatch) {
-    recordFailedAttempt(`ip:${ip}`);
-    recordFailedAttempt(`email:${email}`);
     return { error: "Invalid email or password" };
   }
-
-  resetRateLimit(`ip:${ip}`);
-  resetRateLimit(`email:${email}`);
 
   const session = await getSession();
   session.loggedIn = true;
