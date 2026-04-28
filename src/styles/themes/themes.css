@@ -21,6 +21,15 @@
  *
  * USAGE:
  *   <html data-palette="dracula">
+ *
+ * CONTRAST FIX LOG:
+ *   All --muted-foreground and --secondary-foreground values have been
+ *   recalculated to achieve WCAG AA (4.5:1) against both --muted/--secondary
+ *   backgrounds AND --card backgrounds. Only the L (lightness) channel was
+ *   adjusted; C (chroma) and H (hue) are unchanged to preserve the theme brand.
+ *
+ *   Dark themes: L raised from ~34–56% to ~65–85%
+ *   Light themes: L lowered from ~76–83% to ~44–53%
  */
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -41,9 +50,11 @@
   --primary: oklch(74.2% 0.1485 301.9);
   --primary-foreground: oklch(28.8% 0.0221 277.5);
   --secondary: oklch(34.5% 0.0209 281.5);
-  --secondary-foreground: oklch(56% 0.0803 270.1);
+  /* FIX: was oklch(56% 0.0803 270.1) — 2.46:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(78% 0.0803 270.1);
   --muted: oklch(34.5% 0.0209 281.5);
-  --muted-foreground: oklch(56% 0.0803 270.1);
+  /* FIX: was oklch(56% 0.0803 270.1) — 2.46:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(78% 0.0803 270.1);
   --accent: oklch(88.3% 0.0934 212.8);
   --accent-foreground: oklch(28.8% 0.0221 277.5);
   --destructive: oklch(68.2% 0.2063 24.4);
@@ -82,9 +93,11 @@
   --primary: oklch(76.5% 0.1108 311.7);
   --primary-foreground: oklch(32.9% 0.0324 274.8);
   --secondary: oklch(46% 0.0367 273);
-  --secondary-foreground: oklch(52.1% 0.0386 274);
+  /* FIX: was oklch(52.1% 0.0386 274) — 1.30:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(85% 0.0386 274);
   --muted: oklch(46% 0.0367 273);
-  --muted-foreground: oklch(52.1% 0.0386 274);
+  /* FIX: was oklch(52.1% 0.0386 274) — 1.30:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(85% 0.0386 274);
   --accent: oklch(78% 0.0727 227.9);
   --accent-foreground: oklch(32.9% 0.0324 274.8);
   --destructive: oklch(71.7% 0.1244 19.4);
@@ -124,9 +137,11 @@
   --primary: oklch(77.5% 0.0622 217.5);
   --primary-foreground: oklch(32.4% 0.0229 264.2);
   --secondary: oklch(41.6% 0.0324 264.1);
-  --secondary-foreground: oklch(45.2% 0.0352 264.1);
+  /* FIX: was oklch(45.2% 0.0352 264.1) — 1.17:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(79.5% 0.0352 264.1);
   --muted: oklch(41.6% 0.0324 264.1);
-  --muted-foreground: oklch(45.2% 0.0352 264.1);
+  /* FIX: was oklch(45.2% 0.0352 264.1) — 1.17:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(79.5% 0.0352 264.1);
   --accent: oklch(69.7% 0.0591 248.7);
   --accent-foreground: oklch(32.4% 0.0229 264.2);
   --destructive: oklch(60.6% 0.1206 15.3);
@@ -165,9 +180,11 @@
   --primary: oklch(71.9% 0.1322 264.2);
   --primary-foreground: oklch(22.6% 0.0214 280.5);
   --secondary: oklch(28.2% 0.0355 274.7);
-  --secondary-foreground: oklch(38.7% 0.0537 273.9);
+  /* FIX: was oklch(38.7% 0.0537 273.9) — 1.48:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(65.5% 0.0537 273.9);
   --muted: oklch(28.2% 0.0355 274.7);
-  --muted-foreground: oklch(38.7% 0.0537 273.9);
+  /* FIX: was oklch(38.7% 0.0537 273.9) — 1.48:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(65.5% 0.0537 273.9);
   --accent: oklch(82% 0.1051 235.7);
   --accent-foreground: oklch(22.6% 0.0214 280.5);
   --destructive: oklch(72.3% 0.1589 10.3);
@@ -206,9 +223,11 @@
   --primary: oklch(73% 0.1213 245.3);
   --primary-foreground: oklch(29.3% 0.0157 264.3);
   --secondary: oklch(34% 0.0189 264.3);
-  --secondary-foreground: oklch(38.7% 0.0251 266.9);
+  /* FIX: was oklch(38.7% 0.0251 266.9) — 1.21:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(71% 0.0251 266.9);
   --muted: oklch(34% 0.0189 264.3);
-  --muted-foreground: oklch(38.7% 0.0251 266.9);
+  /* FIX: was oklch(38.7% 0.0251 266.9) — 1.21:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(71% 0.0251 266.9);
   --accent: oklch(72.3% 0.0916 206.3);
   --accent-foreground: oklch(29.3% 0.0157 264.3);
   --destructive: oklch(67.1% 0.1448 17);
@@ -248,9 +267,12 @@
   --primary: oklch(76.9% 0.1889 339.1);
   --primary-foreground: oklch(26.8% 0.0333 291.6);
   --secondary: oklch(25.4% 0.0611 281.1);
-  --secondary-foreground: oklch(46.8% 0.1057 274.4);
+  /* FIX: was oklch(46.8% 0.1057 274.4) — 2.27:1 on secondary bg (which is darker than card).
+     Must pass against card (the harder constraint). Now 4.5:1+ on both. */
+  --secondary-foreground: oklch(68% 0.1057 274.4);
   --muted: oklch(25.4% 0.0611 281.1);
-  --muted-foreground: oklch(46.8% 0.1057 274.4);
+  /* FIX: was oklch(46.8% 0.1057 274.4) — 2.27:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(68% 0.1057 274.4);
   --accent: oklch(87.1% 0.1402 162);
   --accent-foreground: oklch(26.8% 0.0333 291.6);
   --destructive: oklch(68.2% 0.2063 24.4);
@@ -290,9 +312,11 @@
   --primary: oklch(83.2% 0.1595 83);
   --primary-foreground: oklch(27.7% 0 0);
   --secondary: oklch(41.1% 0.0115 51.9);
-  --secondary-foreground: oklch(48.2% 0.0181 61);
+  /* FIX: was oklch(48.2% 0.0181 61) — 1.36:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(79% 0.0181 61);
   --muted: oklch(41.1% 0.0115 51.9);
-  --muted-foreground: oklch(48.2% 0.0181 61);
+  /* FIX: was oklch(48.2% 0.0181 61) — 1.36:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(79% 0.0181 61);
   --accent: oklch(69.3% 0.042 169.8);
   --accent-foreground: oklch(27.7% 0 0);
   --destructive: oklch(66% 0.2175 30.4);
@@ -332,9 +356,11 @@
   --primary: oklch(77.6% 0.0945 305);
   --primary-foreground: oklch(21.3% 0.0255 291.1);
   --secondary: oklch(27.1% 0.0423 289.2);
-  --secondary-foreground: oklch(37.2% 0.0358 291.1);
+  /* FIX: was oklch(37.2% 0.0358 291.1) — 1.45:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(64.5% 0.0358 291.1);
   --muted: oklch(27.1% 0.0423 289.2);
-  --muted-foreground: oklch(37.2% 0.0358 291.1);
+  /* FIX: was oklch(37.2% 0.0358 291.1) — 1.45:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(64.5% 0.0358 291.1);
   --accent: oklch(82.2% 0.0543 209.6);
   --accent-foreground: oklch(21.3% 0.0255 291.1);
   --destructive: oklch(69.8% 0.1565 4.2);
@@ -374,177 +400,11 @@
   --primary: oklch(77.3% 0.0906 125.8);
   --primary-foreground: oklch(32.4% 0.0153 240.4);
   --secondary: oklch(39.4% 0.0166 227);
-  --secondary-foreground: oklch(43.1% 0.0172 231.6);
+  /* FIX: was oklch(43.1% 0.0172 231.6) — 1.17:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(77% 0.0172 231.6);
   --muted: oklch(39.4% 0.0166 227);
-  --muted-foreground: oklch(43.1% 0.0172 231.6);
-  --accent: oklch(74.9% 0.0631 185.5);
-  --accent-foreground: oklch(32.4% 0.0153 240.4);
-  --destructive: oklch(70.9% 0.1285 19.6);
-  --success: oklch(77.3% 0.0906 125.8);
-  --warning: oklch(75% 0.1059 44.9);
-  --error: oklch(70.9% 0.1285 19.6);
-  --info: oklch(74.9% 0.0631 185.5);
-  --border: oklch(43.1% 0.0172 231.6);
-  --input: oklch(43.1% 0.0172 231.6);
-  --ring: oklch(77.3% 0.0906 125.8);
-  --chart-1: oklch(77.3% 0.0906 125.8);
-  --chart-2: oklch(74.9% 0.0631 185.5);
-  --chart-3: oklch(79% 0.08 100);
-  --chart-4: oklch(75% 0.08 340);
-  --chart-5: oklch(82% 0.09 80);
-  --sidebar: oklch(32.4% 0.0153 240.4);
-  --sidebar-foreground: oklch(83% 0.0405 86.1);
-  --sidebar-primary: oklch(77.3% 0.0906 125.8);
-  --sidebar-primary-foreground: oklch(32.4% 0.0153 240.4);
-  --sidebar-accent: oklch(36% 0.0169 227.1);
-  --sidebar-accent-foreground: oklch(83% 0.0405 86.1);
-  --sidebar-border: oklch(43.1% 0.0172 231.6);
-  --sidebar-ring: oklch(77.3% 0.0906 125.8);
-}
-
-/* ── 6. Synthwave 84 ────────────────────────────────
-   Neon-soaked retro dreams. Deep indigo-purple base,
-   glowing hot pink and mint accents.
-   ─────────────────────────────────────────────────── */
-[data-palette="synthwave84"] {
-  --background: oklch(26.8% 0.0333 291.6);
-  --foreground: oklch(100% 0 0);
-  --card: oklch(31.4% 0.0736 283.5);
-  --card-foreground: oklch(100% 0 0);
-  --popover: oklch(35% 0.08 283.5);
-  --popover-foreground: oklch(100% 0 0);
-  --primary: oklch(76.9% 0.1889 339.1);
-  --primary-foreground: oklch(26.8% 0.0333 291.6);
-  --secondary: oklch(25.4% 0.0611 281.1);
-  --secondary-foreground: oklch(46.8% 0.1057 274.4);
-  --muted: oklch(25.4% 0.0611 281.1);
-  --muted-foreground: oklch(46.8% 0.1057 274.4);
-  --accent: oklch(87.1% 0.1402 162);
-  --accent-foreground: oklch(26.8% 0.0333 291.6);
-  --destructive: oklch(68.2% 0.2063 24.4);
-  --success: oklch(87.1% 0.1402 162);
-  --warning: oklch(75.1% 0.1676 51.9);
-  --error: oklch(68.2% 0.2063 24.4);
-  --info: oklch(76.6% 0.1288 290.1);
-  --border: oklch(46.8% 0.1057 274.4);
-  --input: oklch(46.8% 0.1057 274.4);
-  --ring: oklch(76.9% 0.1889 339.1);
-  --chart-1: oklch(76.9% 0.1889 339.1);
-  --chart-2: oklch(87.1% 0.1402 162);
-  --chart-3: oklch(82% 0.15 120);
-  --chart-4: oklch(85% 0.16 320);
-  --chart-5: oklch(88% 0.14 85);
-  --sidebar: oklch(26.8% 0.0333 291.6);
-  --sidebar-foreground: oklch(100% 0 0);
-  --sidebar-primary: oklch(76.9% 0.1889 339.1);
-  --sidebar-primary-foreground: oklch(26.8% 0.0333 291.6);
-  --sidebar-accent: oklch(31.4% 0.0736 283.5);
-  --sidebar-accent-foreground: oklch(100% 0 0);
-  --sidebar-border: oklch(46.8% 0.1057 274.4);
-  --sidebar-ring: oklch(76.9% 0.1889 339.1);
-}
-
-/* ── 7. Gruvbox ─────────────────────────────────────
-   Retro groove. Warm earthy backgrounds, rich gold/
-   orange/green accents.
-   ─────────────────────────────────────────────────── */
-[data-palette="gruvbox"] {
-  --background: oklch(27.7% 0 0);
-  --foreground: oklch(89.4% 0.0566 89.2);
-  --card: oklch(34.4% 0.0066 48.5);
-  --card-foreground: oklch(89.4% 0.0566 89.2);
-  --popover: oklch(38% 0.008 48.5);
-  --popover-foreground: oklch(89.4% 0.0566 89.2);
-  --primary: oklch(83.2% 0.1595 83);
-  --primary-foreground: oklch(27.7% 0 0);
-  --secondary: oklch(41.1% 0.0115 51.9);
-  --secondary-foreground: oklch(48.2% 0.0181 61);
-  --muted: oklch(41.1% 0.0115 51.9);
-  --muted-foreground: oklch(48.2% 0.0181 61);
-  --accent: oklch(69.3% 0.042 169.8);
-  --accent-foreground: oklch(27.7% 0 0);
-  --destructive: oklch(66% 0.2175 30.4);
-  --success: oklch(76.5% 0.1581 110.8);
-  --warning: oklch(73.1% 0.182 51.7);
-  --error: oklch(66% 0.2175 30.4);
-  --info: oklch(69.3% 0.042 169.8);
-  --border: oklch(48.2% 0.0181 61);
-  --input: oklch(48.2% 0.0181 61);
-  --ring: oklch(83.2% 0.1595 83);
-  --chart-1: oklch(83.2% 0.1595 83);
-  --chart-2: oklch(69.3% 0.042 169.8);
-  --chart-3: oklch(76.5% 0.1581 110.8);
-  --chart-4: oklch(80% 0.12 340);
-  --chart-5: oklch(85% 0.14 60);
-  --sidebar: oklch(27.7% 0 0);
-  --sidebar-foreground: oklch(89.4% 0.0566 89.2);
-  --sidebar-primary: oklch(83.2% 0.1595 83);
-  --sidebar-primary-foreground: oklch(27.7% 0 0);
-  --sidebar-accent: oklch(34.4% 0.0066 48.5);
-  --sidebar-accent-foreground: oklch(89.4% 0.0566 89.2);
-  --sidebar-border: oklch(48.2% 0.0181 61);
-  --sidebar-ring: oklch(83.2% 0.1595 83);
-}
-
-/* ── 8. Rose Pine ───────────────────────────────────
-   All natural pine. Dusty rose and purple elegance
-   over a deep dark indigo base.
-   ─────────────────────────────────────────────────── */
-[data-palette="rose_pine"] {
-  --background: oklch(21.3% 0.0255 291.1);
-  --foreground: oklch(90.9% 0.0299 290);
-  --card: oklch(24.1% 0.0322 289.1);
-  --card-foreground: oklch(90.9% 0.0299 290);
-  --popover: oklch(28% 0.035 289);
-  --popover-foreground: oklch(90.9% 0.0299 290);
-  --primary: oklch(77.6% 0.0945 305);
-  --primary-foreground: oklch(21.3% 0.0255 291.1);
-  --secondary: oklch(27.1% 0.0423 289.2);
-  --secondary-foreground: oklch(37.2% 0.0358 291.1);
-  --muted: oklch(27.1% 0.0423 289.2);
-  --muted-foreground: oklch(37.2% 0.0358 291.1);
-  --accent: oklch(82.2% 0.0543 209.6);
-  --accent-foreground: oklch(21.3% 0.0255 291.1);
-  --destructive: oklch(69.8% 0.1565 4.2);
-  --success: oklch(52.8% 0.0793 227.7);
-  --warning: oklch(84.3% 0.11 74.6);
-  --error: oklch(69.8% 0.1565 4.2);
-  --info: oklch(82.2% 0.0543 209.6);
-  --border: oklch(37.2% 0.0358 291.1);
-  --input: oklch(37.2% 0.0358 291.1);
-  --ring: oklch(77.6% 0.0945 305);
-  --chart-1: oklch(77.6% 0.0945 305);
-  --chart-2: oklch(82.2% 0.0543 209.6);
-  --chart-3: oklch(52.8% 0.0793 227.7);
-  --chart-4: oklch(75% 0.1 340);
-  --chart-5: oklch(85% 0.11 75);
-  --sidebar: oklch(21.3% 0.0255 291.1);
-  --sidebar-foreground: oklch(90.9% 0.0299 290);
-  --sidebar-primary: oklch(77.6% 0.0945 305);
-  --sidebar-primary-foreground: oklch(21.3% 0.0255 291.1);
-  --sidebar-accent: oklch(24.1% 0.0322 289.1);
-  --sidebar-accent-foreground: oklch(90.9% 0.0299 290);
-  --sidebar-border: oklch(37.2% 0.0358 291.1);
-  --sidebar-ring: oklch(77.6% 0.0945 305);
-}
-
-/* ── 9. Everforest ──────────────────────────────────
-   Soft forest greens, warm amber text.
-   Designed for eye comfort in long sessions.
-   ─────────────────────────────────────────────────── */
-[data-palette="everforest"] {
-  --background: oklch(32.4% 0.0153 240.4);
-  --foreground: oklch(83% 0.0405 86.1);
-  --card: oklch(36% 0.0169 227.1);
-  --card-foreground: oklch(83% 0.0405 86.1);
-  --popover: oklch(40% 0.018 227);
-  --popover-foreground: oklch(83% 0.0405 86.1);
-  --primary: oklch(77.3% 0.0906 125.8);
-  --primary-foreground: oklch(32.4% 0.0153 240.4);
-  --secondary: oklch(39.4% 0.0166 227);
-  --secondary-foreground: oklch(43.1% 0.0172 231.6);
-  --muted: oklch(39.4% 0.0166 227);
-  --muted-foreground: oklch(43.1% 0.0172 231.6);
+  /* FIX: was oklch(43.1% 0.0172 231.6) — 1.17:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(77% 0.0172 231.6);
   --accent: oklch(74.9% 0.0631 185.5);
   --accent-foreground: oklch(32.4% 0.0153 240.4);
   --destructive: oklch(70.9% 0.1285 19.6);
@@ -584,9 +444,11 @@
   --primary: oklch(69.4% 0.0951 263.7);
   --primary-foreground: oklch(24.3% 0.017 285.1);
   --secondary: oklch(31.4% 0.0467 257.4);
-  --secondary-foreground: oklch(34% 0.0279 284.8);
+  /* FIX: was oklch(34% 0.0279 284.8) — 1.10:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(68.5% 0.0279 284.8);
   --muted: oklch(31.4% 0.0467 257.4);
-  --muted-foreground: oklch(34% 0.0279 284.8);
+  /* FIX: was oklch(34% 0.0279 284.8) — 1.10:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(68.5% 0.0279 284.8);
   --accent: oklch(63.5% 0.0504 175.4);
   --accent-foreground: oklch(24.3% 0.017 285.1);
   --destructive: oklch(55.9% 0.167 23.1);
@@ -629,9 +491,11 @@
   --primary: oklch(55.5% 0.2503 297);
   --primary-foreground: oklch(95.8% 0.0058 264.5);
   --secondary: oklch(90.6% 0.0117 264.5);
-  --secondary-foreground: oklch(80.8% 0.0174 271.2);
+  /* FIX: was oklch(80.8% 0.0174 271.2) — 1.38:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(50% 0.0174 271.2);
   --muted: oklch(90.6% 0.0117 264.5);
-  --muted-foreground: oklch(80.8% 0.0174 271.2);
+  /* FIX: was oklch(80.8% 0.0174 271.2) — 1.38:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(50% 0.0174 271.2);
   --accent: oklch(68.2% 0.1448 235.4);
   --accent-foreground: oklch(95.8% 0.0058 264.5);
   --destructive: oklch(55% 0.2155 19.8);
@@ -671,9 +535,11 @@
   --primary: oklch(59.4% 0.0772 254);
   --primary-foreground: oklch(95.1% 0.0074 260.7);
   --secondary: oklch(89.9% 0.0164 262.7);
-  --secondary-foreground: oklch(79.4% 0.021 238.7);
+  /* FIX: was oklch(79.4% 0.021 238.7) — 1.41:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(49.5% 0.021 238.7);
   --muted: oklch(89.9% 0.0164 262.7);
-  --muted-foreground: oklch(79.4% 0.021 238.7);
+  /* FIX: was oklch(79.4% 0.021 238.7) — 1.41:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(49.5% 0.021 238.7);
   --accent: oklch(77.5% 0.0622 217.5);
   --accent-foreground: oklch(95.1% 0.0074 260.7);
   --destructive: oklch(60.6% 0.1206 15.3);
@@ -712,9 +578,11 @@
   --primary: oklch(61.5% 0.1394 244.9);
   --primary-foreground: oklch(97.4% 0.0261 90.1);
   --secondary: oklch(91.2% 0.0262 92.4);
-  --secondary-foreground: oklch(82.2% 0.0361 94.6);
+  /* FIX: was oklch(82.2% 0.0361 94.6) — 1.33:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(50.5% 0.0361 94.6);
   --muted: oklch(91.2% 0.0262 92.4);
-  --muted-foreground: oklch(82.2% 0.0361 94.6);
+  /* FIX: was oklch(82.2% 0.0361 94.6) — 1.33:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(50.5% 0.0361 94.6);
   --accent: oklch(64.4% 0.1019 187.4);
   --accent-foreground: oklch(97.4% 0.0261 90.1);
   --destructive: oklch(58.6% 0.2064 27.1);
@@ -754,9 +622,11 @@
   --primary: oklch(61.7% 0.0738 305.7);
   --primary-foreground: oklch(97% 0.0113 71.9);
   --secondary: oklch(93.9% 0.0145 64.3);
-  --secondary-foreground: oklch(83% 0.0332 76.4);
+  /* FIX: was oklch(83% 0.0332 76.4) — 1.41:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(52.5% 0.0332 76.4);
   --muted: oklch(93.9% 0.0145 64.3);
-  --muted-foreground: oklch(83% 0.0332 76.4);
+  /* FIX: was oklch(83% 0.0332 76.4) — 1.41:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(52.5% 0.0332 76.4);
   --accent: oklch(62.9% 0.0661 210.1);
   --accent-foreground: oklch(97% 0.0113 71.9);
   --destructive: oklch(59.9% 0.1071 2.7);
@@ -795,9 +665,11 @@
   --primary: oklch(57.6% 0.0658 199.5);
   --primary-foreground: oklch(95.6% 0.0555 96.2);
   --secondary: oklch(82.5% 0.0507 85.1);
-  --secondary-foreground: oklch(75.6% 0.041 82.3);
+  /* FIX: was oklch(75.6% 0.041 82.3) — 1.27:1 on secondary bg. Now 4.5:1+ */
+  --secondary-foreground: oklch(44% 0.041 82.3);
   --muted: oklch(82.5% 0.0507 85.1);
-  --muted-foreground: oklch(75.6% 0.041 82.3);
+  /* FIX: was oklch(75.6% 0.041 82.3) — 1.27:1 on muted bg. Now 4.5:1+ */
+  --muted-foreground: oklch(44% 0.041 82.3);
   --accent: oklch(64.5% 0.0939 145.3);
   --accent-foreground: oklch(95.6% 0.0555 96.2);
   --destructive: oklch(43.7% 0.1789 28.3);
