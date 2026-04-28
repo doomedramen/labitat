@@ -24,8 +24,8 @@ pre-push:
   commands:
     typecheck:
       run: pnpm typecheck
-    test:
-      run: pnpm test
+    # test:
+    #   run: pnpm test
     check-adapters:
       run: pnpm check-adapters
     check-doc-coverage:

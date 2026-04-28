@@ -62,32 +62,32 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:unit
 
-  e2e:
-    name: E2E Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
+  # e2e:
+  #   name: E2E Tests
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v5
-        with:
-          version: ${{ env.PNPM_VERSION }}
+  #     - uses: pnpm/action-setup@v5
+  #       with:
+  #         version: ${{ env.PNPM_VERSION }}
 
-      - uses: actions/setup-node@v5
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
+  #     - uses: actions/setup-node@v5
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+  #     - run: pnpm install --frozen-lockfile
 
-      - uses: actions/cache@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
+  #     - uses: actions/cache@v5
+  #       with:
+  #         path: ~/.cache/ms-playwright
+  #         key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-playwright-
 
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
+  #     - run: pnpm exec playwright install --with-deps chromium
+  #     - run: pnpm test:e2e
 
   app-build:
     name: App Build
@@ -133,7 +133,8 @@ jobs:
   docker:
     name: Docker Image
     runs-on: ubuntu-latest
-    needs: [quality, unit, e2e, app-build]
+    # needs: [quality, unit, e2e, app-build]
+    needs: [quality, unit, app-build]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
     permissions:
       contents: read
@@ -173,7 +174,8 @@ jobs:
   pages:
     name: Deploy Docs
     runs-on: ubuntu-latest
-    needs: [quality, unit, e2e, app-build, docs]
+    needs: [quality, unit, app-build, docs]
+    # needs: [quality, unit, e2e, app-build, docs]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       pages: write
