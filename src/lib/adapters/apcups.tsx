@@ -1,5 +1,5 @@
 import type { ServiceDefinition } from "./types";
-import { Zap, Battery, Clock, Thermometer } from "lucide-react";
+import { Zap, Battery, Clock } from "lucide-react";
 
 type APCUPSData = {
   _status?: "ok" | "warn" | "error";
@@ -7,7 +7,6 @@ type APCUPSData = {
   loadPercent: number;
   batteryCharge: number;
   timeLeft: number;
-  temperature: number;
   status: string;
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
@@ -27,28 +26,28 @@ function apcupsToPayload(data: APCUPSData) {
   return {
     stats: [
       {
+        id: "status",
+        value: data.status ?? "Unknown",
+        label: "Status",
+        icon: Zap,
+      },
+      {
         id: "load",
         value: `${data.loadPercent ?? 0}%`,
         label: "Load",
         icon: Zap,
       },
       {
-        id: "battery",
+        id: "batterycharge",
         value: `${data.batteryCharge ?? 0}%`,
-        label: "Battery",
+        label: "Battery Charge",
         icon: Battery,
       },
       {
-        id: "time",
+        id: "timeleft",
         value: timeLeftMin,
-        label: "Time",
+        label: "Time Left",
         icon: Clock,
-      },
-      {
-        id: "temp",
-        value: `${data.temperature ?? 0}°C`,
-        label: "Temp",
-        icon: Thermometer,
       },
     ],
   };
@@ -112,8 +111,10 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
       try {
         // Import server-only TCP utility
         const { fetchApcupsTcpStatus } = await import("@/lib/apcups-tcp");
-        const { loadPercent, batteryCharge, timeLeft, temperature, status } =
-          await fetchApcupsTcpStatus(host, port);
+        const { loadPercent, batteryCharge, timeLeft, status } = await fetchApcupsTcpStatus(
+          host,
+          port,
+        );
 
         return {
           _status: status.includes("ONLINE") ? "ok" : "warn",
@@ -121,7 +122,6 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
           loadPercent,
           batteryCharge,
           timeLeft,
-          temperature,
           status,
         };
       } catch (error) {
@@ -152,7 +152,6 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
       const loadPercent = parseFloat(extractValue("LOADPCT")) || 0;
       const batteryCharge = parseFloat(extractValue("BCHARGE")) || 0;
       const timeLeft = parseFloat(extractValue("TIMELEFT")) || 0;
-      const temperature = parseFloat(extractValue("ITEMP")) || 0;
       const status = extractValue("STATUS") || "Unknown";
 
       return {
@@ -161,7 +160,6 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
         loadPercent,
         batteryCharge,
         timeLeft,
-        temperature,
         status,
       };
     }

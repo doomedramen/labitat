@@ -22,15 +22,13 @@ test.describe("Dashboard", () => {
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   });
 
-  test.skip("shows Edit button when authenticated", async ({ page }) => {
-    // TODO: Fix seedAndAuth fixture - session not being set correctly in production mode
+  test("shows Edit button when authenticated", async ({ page }) => {
     await seedAndAuth(page);
     await page.goto("/");
     await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
   });
 
-  test.skip("displays seeded groups and items", async ({ page }) => {
-    // TODO: Fix seedAndAuth fixture - session not being set correctly in production mode
+  test("displays seeded groups and items", async ({ page }) => {
     await seedAndAuth(page, { groups: SEED_GROUPS });
     await page.goto("/");
 
@@ -41,8 +39,7 @@ test.describe("Dashboard", () => {
     await expect(page.getByText("Jellyfin")).toBeVisible();
   });
 
-  test.skip("items with href are clickable links", async ({ page }) => {
-    // TODO: Fix seedAndAuth fixture - session not being set correctly in production mode
+  test("items with href are clickable links", async ({ page }) => {
     await seedAndAuth(page, { groups: SEED_GROUPS });
     await page.goto("/");
 
@@ -51,8 +48,7 @@ test.describe("Dashboard", () => {
     await expect(proxmoxLink).toHaveAttribute("href", "https://proxmox.test");
   });
 
-  test.skip("displays custom dashboard title from settings", async ({ page }) => {
-    // TODO: Fix seedAndAuth fixture - session not being set correctly in production mode
+  test("displays custom dashboard title from settings", async ({ page }) => {
     await seedAndAuth(page, {
       settings: { dashboardTitle: "My Homelab" },
     });

@@ -93,7 +93,6 @@ STATUS   : ONLINE
       expect(result.loadPercent).toBe(45.2);
       expect(result.batteryCharge).toBe(100);
       expect(result.timeLeft).toBe(35);
-      expect(result.temperature).toBe(32.5);
       expect(result.status).toBe("ONLINE");
     });
 
@@ -148,7 +147,6 @@ STATUS   : ONLINE
       expect(result.loadPercent).toBe(45.2);
       expect(result.batteryCharge).toBe(100);
       expect(result.timeLeft).toBe(35);
-      expect(result.temperature).toBe(32.5);
       expect(result.status).toBe("ONLINE");
     });
 
@@ -205,7 +203,6 @@ STATUS   : ONLINE
       expect(result.loadPercent).toBe(0);
       expect(result.batteryCharge).toBe(0);
       expect(result.timeLeft).toBe(0);
-      expect(result.temperature).toBe(0);
       expect(result.status).toBe("Unknown");
     });
   });
@@ -217,18 +214,17 @@ STATUS   : ONLINE
         loadPercent: 45,
         batteryCharge: 100,
         timeLeft: 35,
-        temperature: 32,
         status: "ONLINE",
       });
       expect(payload.stats).toHaveLength(4);
-      expect(payload.stats[0].value).toBe("45%");
-      expect(payload.stats[0].label).toBe("Load");
-      expect(payload.stats[1].value).toBe("100%");
-      expect(payload.stats[1].label).toBe("Battery");
-      expect(payload.stats[2].value).toBe("35m");
-      expect(payload.stats[2].label).toBe("Time");
-      expect(payload.stats[3].value).toBe("32°C");
-      expect(payload.stats[3].label).toBe("Temp");
+      expect(payload.stats[0].value).toBe("ONLINE");
+      expect(payload.stats[0].label).toBe("Status");
+      expect(payload.stats[1].value).toBe("45%");
+      expect(payload.stats[1].label).toBe("Load");
+      expect(payload.stats[2].value).toBe("100%");
+      expect(payload.stats[2].label).toBe("Battery Charge");
+      expect(payload.stats[3].value).toBe("35m");
+      expect(payload.stats[3].label).toBe("Time Left");
     });
 
     it("shows hours and minutes when time left is over 60 minutes", () => {
@@ -237,10 +233,9 @@ STATUS   : ONLINE
         loadPercent: 45,
         batteryCharge: 100,
         timeLeft: 125,
-        temperature: 32,
         status: "ONLINE",
       });
-      expect(payload.stats[2].value).toBe("2h 5m");
+      expect(payload.stats[3].value).toBe("2h 5m");
     });
 
     it("shows hours only when time left is exactly on the hour", () => {
@@ -249,10 +244,9 @@ STATUS   : ONLINE
         loadPercent: 45,
         batteryCharge: 100,
         timeLeft: 120,
-        temperature: 32,
         status: "ONLINE",
       });
-      expect(payload.stats[2].value).toBe("2h");
+      expect(payload.stats[3].value).toBe("2h");
     });
 
     it("shows seconds when time left is under 1 minute", () => {
@@ -262,10 +256,9 @@ STATUS   : ONLINE
         loadPercent: 80,
         batteryCharge: 10,
         timeLeft: 0.5,
-        temperature: 35,
         status: "ONBATT",
       });
-      expect(payload.stats[2].value).toBe("30s");
+      expect(payload.stats[3].value).toBe("30s");
     });
 
     it("shows 0m when time left is zero", () => {
@@ -274,10 +267,9 @@ STATUS   : ONLINE
         loadPercent: 80,
         batteryCharge: 10,
         timeLeft: 0,
-        temperature: 35,
         status: "ONBATT",
       });
-      expect(payload.stats[2].value).toBe("0m");
+      expect(payload.stats[3].value).toBe("0m");
     });
   });
 });

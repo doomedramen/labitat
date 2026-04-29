@@ -58,31 +58,32 @@ export async function seedAndAuth(
   if (setCookieHeaders.length > 0) {
     const parsedCookies = setCookieHeaders.map((cookieStr) => {
       const [nameValue, ...attrs] = cookieStr.split(";").map((s: string) => s.trim());
-      const [name, value] = nameValue.split("=");
-      const cookie: {
-        name: string;
-        value: string;
-        domain?: string;
-        path?: string;
-        secure?: boolean;
-        httpOnly?: boolean;
-        sameSite?: "Strict" | "Lax" | "None";
-      } = {
-        name,
-        value,
+      const [name, value] = nameValue!.split("=");
+
+      const cookie: any = {
+        name: name!.trim(),
+        value: value!.trim(),
         domain: "localhost",
         path: "/",
       };
 
       for (const attr of attrs) {
-        const lower = attr.toLowerCase();
-        if (lower === "secure") cookie.secure = true;
-        else if (lower === "httponly") cookie.httpOnly = true;
-        else if (lower.startsWith("samesite=")) {
-          const val = attr.split("=")[1]?.trim();
+        const parts = attr.split("=");
+        const key = parts[0]!.trim().toLowerCase();
+        const val = parts[1]?.trim();
+
+        if (key === "secure") cookie.secure = true;
+        else if (key === "httponly") cookie.httpOnly = true;
+        else if (key === "samesite") {
           if (val === "Strict" || val === "Lax" || val === "None") {
             cookie.sameSite = val;
           }
+        } else if (key === "path") {
+          cookie.path = val;
+        } else if (key === "domain") {
+          cookie.domain = val;
+        } else if (key === "expires") {
+          cookie.expires = Math.floor(new Date(val!).getTime() / 1000);
         }
       }
 

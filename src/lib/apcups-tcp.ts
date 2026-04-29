@@ -15,7 +15,6 @@ export async function fetchApcupsTcpStatus(
   loadPercent: number;
   batteryCharge: number;
   timeLeft: number;
-  temperature: number;
   status: string;
 }> {
   return new Promise((resolve, reject) => {
@@ -79,14 +78,12 @@ export async function fetchApcupsTcpStatus(
         const loadPercent = parseFloat(extractValue("LOADPCT")) || 0;
         const batteryCharge = parseFloat(extractValue("BCHARGE")) || 0;
         const timeLeft = parseFloat(extractValue("TIMELEFT")) || 0;
-        const temperature = parseFloat(extractValue("ITEMP")) || 0;
         const status = extractValue("STATUS") || "Unknown";
 
         resolve({
           loadPercent,
           batteryCharge,
           timeLeft,
-          temperature,
           status,
         });
       } catch (error) {

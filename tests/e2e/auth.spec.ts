@@ -38,8 +38,7 @@ test.describe("Authentication", () => {
   });
 
   test.describe("Logout", () => {
-    test.skip("clicking Sign out button shows Sign in button", async ({ page }) => {
-      // TODO: Fix seedAndAuth fixture - session not being set correctly in production mode
+    test("clicking Sign out button shows Sign in button", async ({ page }) => {
       await seedAndAuth(page);
       await page.goto("/");
       await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
@@ -53,8 +52,7 @@ test.describe("Authentication", () => {
       await expect(page.getByRole("button", { name: "Edit" })).not.toBeVisible();
     });
 
-    test.skip("clearing session shows Sign in button", async ({ page }) => {
-      // TODO: Fix seedAndAuth fixture - session not being set correctly in production mode
+    test("clearing session shows Sign in button", async ({ page }) => {
       await seedAndAuth(page);
       await page.goto("/");
       await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
