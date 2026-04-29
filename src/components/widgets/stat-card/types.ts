@@ -1,9 +1,7 @@
 /**
- * Types for stat card components.
+ * Types for stat card data.
  * Server-compatible (no React hooks).
  */
-
-import type { StatDisplayMode } from "@/lib/types";
 
 export type StatItem = {
   /** Stable identifier for DnD and React keys */
@@ -16,9 +14,3 @@ export type StatItem = {
   tooltip?: React.ReactNode;
   valueClassName?: string;
 };
-
-export interface StatCardProps extends StatItem {
-  displayMode?: StatDisplayMode;
-  sortable?: boolean;
-  editMode?: boolean;
-}

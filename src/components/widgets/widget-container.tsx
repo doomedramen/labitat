@@ -12,7 +12,8 @@ import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid";
 import type { WidgetPayload } from "@/lib/adapters/widget-types";
 import type { StatCardOrder } from "@/hooks/use-stat-card-order";
 import type { StatDisplayMode } from "@/lib/types";
-import { ActiveStreamList, DownloadList } from "./widget-lists-server";
+import { ActiveStreamList } from "./active-stream/active-stream-list";
+import { DownloadList } from "./download/download-list";
 
 interface WidgetContainerProps {
   payload: WidgetPayload;
@@ -38,7 +39,7 @@ export function WidgetContainer({
             key={i}
             className={cn(
               "h-16 rounded-xl animate-pulse",
-              "bg-gradient-to-b from-secondary/50 to-secondary/30"
+              "bg-gradient-to-b from-secondary/50 to-secondary/30",
             )}
           />
         ))}

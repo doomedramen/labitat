@@ -29,9 +29,9 @@ export type ActivityState =
   | "Failed pending"
   | "Failed";
 
-export type MediaState = "playing" | "paused";
+type MediaState = "playing" | "paused";
 
-export interface DownloadItem {
+interface DownloadItem {
   kind: "download";
   title: string;
   subtitle?: string;
@@ -41,7 +41,7 @@ export interface DownloadItem {
   size?: string;
 }
 
-export interface MediaItem {
+interface MediaItem {
   kind: "media";
   title: string;
   subtitle?: string;
@@ -58,7 +58,7 @@ export interface MediaItem {
   };
 }
 
-export type ListItemData = DownloadItem | MediaItem;
+type ListItemData = DownloadItem | MediaItem;
 
 // ─── Status Configuration ─────────────────────────────────────────────────────
 

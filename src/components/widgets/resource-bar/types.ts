@@ -10,12 +10,3 @@ export type ResourceBarProps = {
   warningAt?: number;
   criticalAt?: number;
 };
-
-export type ResourceBarDualProps = {
-  label: string;
-  used: number; // 0-100 percentage
-  total?: string; // Human-readable total (e.g., "16.0 GB")
-  free?: string; // Human-readable free amount (e.g., "4.2 GB")
-  warningAt?: number;
-  criticalAt?: number;
-};
