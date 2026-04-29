@@ -29,6 +29,9 @@ export function StatusDot({
 }: StatusDotProps) {
   const liveProgress = useSyncProgress(itemId, pollingMs);
   const syncProgress = Math.max(0, Math.min(100, progress ?? liveProgress));
+  const visualState = cached ? "unknown" : status.state;
+  const dotColorClass = cached ? "bg-secondary" : undefined;
+  const ringColorClass = cached ? "text-secondary-foreground/45" : undefined;
   const bgColors = {
     unknown: "bg-muted-foreground/30",
     healthy: "bg-success",
@@ -80,12 +83,12 @@ export function StatusDot({
           : undefined;
 
   const isProblematic =
-    status.state === "unreachable" ||
-    status.state === "error" ||
-    status.state === "degraded" ||
-    status.state === "slow";
+    visualState === "unreachable" ||
+    visualState === "error" ||
+    visualState === "degraded" ||
+    visualState === "slow";
 
-  const isHealthy = status.state === "healthy" || status.state === "reachable";
+  const isHealthy = visualState === "healthy" || visualState === "reachable";
 
   const ariaLabel = `${labels[status.state]}${reason ? `: ${reason}` : ""}${cached ? " (cached)" : ""}`;
 
@@ -121,7 +124,7 @@ export function StatusDot({
           fill="none"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          className={cn(textColors[status.state])}
+          className={cn(ringColorClass ?? textColors[visualState])}
           style={{
             strokeDasharray: `${circumference} ${circumference}`,
             strokeDashoffset: 0,
@@ -137,7 +140,7 @@ export function StatusDot({
           stroke="currentColor"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          className={cn(textColors[status.state])}
+          className={cn(ringColorClass ?? textColors[visualState])}
           style={{
             strokeDasharray: `${circumference} ${circumference}`,
             strokeDashoffset: strokeDashoffset,
@@ -153,9 +156,9 @@ export function StatusDot({
           // Base styles - 10px dot centered
           "relative rounded-full transition-all duration-300 overflow-visible",
           // Color
-          bgColors[status.state],
+          dotColorClass ?? bgColors[visualState],
           // Glow effect for healthy/problematic states
-          (isHealthy || isProblematic) && glowColors[status.state],
+          (isHealthy || isProblematic) && glowColors[visualState],
         )}
       ></div>
     </div>
