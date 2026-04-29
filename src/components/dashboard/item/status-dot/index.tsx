@@ -10,6 +10,8 @@ interface StatusDotProps {
   status: ServiceStatus;
   cached?: boolean;
   pollingMs: number;
+  progress?: number;
+  tooltip?: React.ReactNode;
 }
 
 /**
@@ -17,8 +19,16 @@ interface StatusDotProps {
  * Renders just the dot for simple statuses, wraps with HoverCard for error/degraded/slow states.
  * Includes a circular progress ring showing time until next sync.
  */
-export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusDotProps) {
-  const syncProgress = useSyncProgress(itemId, pollingMs);
+export function StatusDot({
+  itemId,
+  status,
+  cached = false,
+  pollingMs,
+  progress,
+  tooltip,
+}: StatusDotProps) {
+  const liveProgress = useSyncProgress(itemId, pollingMs);
+  const syncProgress = Math.max(0, Math.min(100, progress ?? liveProgress));
   const bgColors = {
     unknown: "bg-muted-foreground/30",
     healthy: "bg-success",
@@ -151,9 +161,27 @@ export function StatusDot({ itemId, status, cached = false, pollingMs }: StatusD
     </div>
   );
 
-  // Delegate to client component when tooltip is needed (uses HoverCard)
-  if (reason) {
-    return <StatusDotClient dot={dot} reason={reason} />;
+  const tooltipContent =
+    tooltip ??
+    (reason ? <div className="px-3 py-2 text-sm font-medium text-foreground">{reason}</div> : null);
+
+  if (tooltipContent) {
+    return (
+      <StatusDotClient
+        dot={
+          <div
+            className="inline-flex cursor-default"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+          >
+            {dot}
+          </div>
+        }
+        content={tooltipContent}
+      />
+    );
   }
 
   return dot;

@@ -140,7 +140,7 @@ test.describe("SSR Rendering", () => {
     expect(html).toContain("68.5");
   });
 
-  test("SSR renders status pills for items (response.text)", async ({ page }) => {
+  test("SSR renders status dots for items (response.text)", async ({ page }) => {
     await seedAndAuth(page, { groups: SEED_GROUPS });
 
     const response = await page.goto("/");
@@ -148,7 +148,7 @@ test.describe("SSR Rendering", () => {
 
     const html = await response!.text();
 
-    // Status pill should render with SVG circle
+    // Status dot should render with SVG circle
     expect(html).toContain("<svg");
   });
 

@@ -1,19 +1,33 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { StatusPill } from "@/components/dashboard/item/status-pill";
+import { useState, useEffect } from "react";
+import { StatusDot } from "@/components/dashboard/item/status-dot";
+import type { ServiceStatus } from "@/lib/adapters/types";
 
 const STATUSES = [
-  { status: "online" as const, text: "Online" },
-  { status: "warning" as const, text: "Degraded" },
-  { status: "error" as const, text: "Error" },
-  { status: "stale" as const, text: "Cached" },
-  { status: "info" as const, text: "Info" },
+  { label: "Healthy", status: { state: "healthy" } satisfies ServiceStatus },
+  { label: "Reachable", status: { state: "reachable" } satisfies ServiceStatus },
+  {
+    label: "Degraded",
+    status: { state: "degraded", reason: "Queue depth is elevated" } satisfies ServiceStatus,
+  },
+  {
+    label: "Slow response",
+    status: {
+      state: "slow",
+      reason: "Responding with latency",
+      timeoutMs: 2000,
+    } satisfies ServiceStatus,
+  },
+  {
+    label: "Error",
+    status: { state: "error", reason: "Connection refused" } satisfies ServiceStatus,
+  },
+  { label: "Cached", status: { state: "unknown" } satisfies ServiceStatus, cached: true },
 ];
 
 export default function DemoPage() {
   const [progress, setProgress] = useState(0);
-  const ref = useRef<number>(0);
 
   useEffect(() => {
     let animationFrameId: number;
@@ -62,7 +76,7 @@ export default function DemoPage() {
             marginBottom: 8,
           }}
         >
-          Status Pill Demo
+          Status Dot Demo
         </h1>
         <p
           style={{
@@ -71,7 +85,7 @@ export default function DemoPage() {
             fontSize: 14,
           }}
         >
-          Real-time animated progress (0 → 1, looping). All pills share the same progress value.
+          Real-time animated sync rings using the simpler dot treatment.
         </p>
 
         {/* Progress indicator */}
@@ -116,7 +130,7 @@ export default function DemoPage() {
           </div>
         </div>
 
-        {/* Status Pills */}
+        {/* Status Dots */}
         <div
           style={{
             display: "flex",
@@ -124,9 +138,9 @@ export default function DemoPage() {
             gap: 16,
           }}
         >
-          {STATUSES.map(({ status, text }) => (
+          {STATUSES.map(({ label, status, cached }) => (
             <div
-              key={status}
+              key={label}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -145,7 +159,7 @@ export default function DemoPage() {
                     marginBottom: 4,
                   }}
                 >
-                  {text}{" "}
+                  {label}{" "}
                   <span
                     style={{
                       fontSize: 12,
@@ -153,7 +167,7 @@ export default function DemoPage() {
                       fontWeight: 400,
                     }}
                   >
-                    ({status})
+                    ({status.state})
                   </span>
                 </div>
                 <div
@@ -165,7 +179,13 @@ export default function DemoPage() {
                   Progress: {(progress * 100).toFixed(1)}%
                 </div>
               </div>
-              <StatusPill status={status} text={text} progress={progress} />
+              <StatusDot
+                itemId={`demo-${label.toLowerCase().replace(/\s+/g, "-")}`}
+                status={status}
+                cached={cached}
+                pollingMs={3000}
+                progress={progress * 100}
+              />
             </div>
           ))}
         </div>
@@ -187,13 +207,10 @@ export default function DemoPage() {
             How it works:
           </p>
           <ul style={{ paddingLeft: 20, margin: 0 }}>
-            <li>The progress stroke animates from 0% to 100% in a continuous loop</li>
-            <li>
-              Background uses semantic color at 15% opacity via <code>color-mix()</code>
-            </li>
-            <li>Track stroke uses the same background as the pill (almost invisible)</li>
-            <li>Progress stroke uses full semantic color</li>
-            <li>Status dot pulses for non-stale states</li>
+            <li>The sync ring depletes continuously as the next refresh approaches</li>
+            <li>The center dot carries the semantic status color</li>
+            <li>Problem states expose details through the hover card</li>
+            <li>The `Cached` example uses the muted unknown treatment</li>
           </ul>
         </div>
       </div>

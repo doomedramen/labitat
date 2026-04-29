@@ -70,11 +70,11 @@ test.describe("Widget Rendering", () => {
     // The item should still appear
     await expect(page.getByText("Radarr")).toBeVisible();
 
-    // An error status pill should appear with "Error" text
-    const statusPill = page.locator('[role="status"]');
-    await expect(statusPill).toBeVisible({ timeout: 15_000 });
-    // The status pill should display "Error" text
-    await expect(statusPill.getByText("Error")).toBeVisible();
+    // An error status dot should appear with an accessible error label
+    const radarrCard = page.getByTestId("item-card").filter({ hasText: "Radarr" });
+    const statusDot = radarrCard.locator('[role="status"]');
+    await expect(statusDot).toBeVisible({ timeout: 15_000 });
+    await expect(statusDot).toHaveAttribute("aria-label", /Error:/i);
   });
 
   test("renders empty state with zero values", async ({ page }) => {
