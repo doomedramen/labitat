@@ -143,7 +143,8 @@ describe("polling supervisor scheduling", () => {
     pollingSup.invalidateCache();
     pollingSup.connect();
 
-    await vi.advanceTimersByTimeAsync(100);
+    // Staggering spreads items over 2 seconds, so we need to wait long enough.
+    await vi.advanceTimersByTimeAsync(2100);
     expect(pollCount).toBe(3);
 
     pollingSup.disconnect();

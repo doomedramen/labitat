@@ -1,4 +1,4 @@
-import { randomBytes, createCipheriv, createDecipheriv, scryptSync } from "crypto";
+import { randomBytes, createCipheriv, createDecipheriv, scrypt } from "crypto";
 import { env } from "@/lib/env";
 
 const ALGORITHM = "aes-256-gcm";
@@ -16,25 +16,35 @@ const SCRYPT_OPTIONS_LEGACY = {
 /**
  * Derive a 256-bit encryption key from the SECRET_KEY using the given salt.
  */
-function deriveKey(salt: Buffer): Buffer {
+async function deriveKey(salt: Buffer): Promise<Buffer> {
   const secret = env.SECRET_KEY;
   if (!secret || secret.length < 32) {
     throw new Error("SECRET_KEY must be at least 32 characters for encryption");
   }
-  return scryptSync(secret, salt, KEY_LENGTH, SCRYPT_OPTIONS);
+  return new Promise((resolve, reject) => {
+    scrypt(secret, salt, KEY_LENGTH, SCRYPT_OPTIONS, (err, derivedKey) => {
+      if (err) reject(err);
+      else resolve(derivedKey as Buffer);
+    });
+  });
 }
 
 /**
  * Derive a key using the legacy deterministic salt (secret-slice).
  * Used for decrypting ciphertext created before the random-salt migration.
  */
-function deriveKeyLegacy(): Buffer {
+async function deriveKeyLegacy(): Promise<Buffer> {
   const secret = env.SECRET_KEY;
   if (!secret || secret.length < 32) {
     throw new Error("SECRET_KEY must be at least 32 characters for encryption");
   }
   const salt = Buffer.from(secret.slice(0, SALT_LENGTH));
-  return scryptSync(secret, salt, KEY_LENGTH, SCRYPT_OPTIONS_LEGACY);
+  return new Promise((resolve, reject) => {
+    scrypt(secret, salt, KEY_LENGTH, SCRYPT_OPTIONS_LEGACY, (err, derivedKey) => {
+      if (err) reject(err);
+      else resolve(derivedKey as Buffer);
+    });
+  });
 }
 
 /**
@@ -43,7 +53,7 @@ function deriveKeyLegacy(): Buffer {
  */
 export async function encrypt(plaintext: string): Promise<string> {
   const salt = randomBytes(SALT_LENGTH);
-  const key = deriveKey(salt);
+  const key = await deriveKey(salt);
   const iv = randomBytes(IV_LENGTH);
 
   const cipher = createCipheriv(ALGORITHM, key, iv);
@@ -72,11 +82,11 @@ export async function decrypt(encrypted: string): Promise<string> {
     // Current format: salt:iv:authTag:ciphertext
     const [saltB64, ...rest] = parts;
     [ivB64, authTagB64, ciphertextB64] = rest;
-    key = deriveKey(Buffer.from(saltB64!, "base64"));
+    key = await deriveKey(Buffer.from(saltB64!, "base64"));
   } else if (parts.length === 3) {
     // Legacy format: iv:authTag:ciphertext (deterministic salt)
     [ivB64, authTagB64, ciphertextB64] = parts;
-    key = deriveKeyLegacy();
+    key = await deriveKeyLegacy();
   } else {
     throw new Error("Invalid encrypted data format");
   }

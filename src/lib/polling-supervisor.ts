@@ -40,6 +40,7 @@ type PollingItem = {
   href: string | null;
   serviceUrl: string | null;
   configEnc: string | null;
+  config: Record<string, string> | null;
   pollingMs: number;
   lastPolledAt: number;
   retryCount: number;
@@ -252,10 +253,16 @@ class PollingSupervisor {
 
     if (overdue.length <= 1) return;
 
+    // Spread overdue items over a short window to avoid a spike,
+    // but keep it short so the UI feels responsive on load.
+    const STAGGER_WINDOW_MS = 2000;
+    const step = STAGGER_WINDOW_MS / (overdue.length + 1);
+
     overdue.forEach((item, index) => {
       const interval = this.getEffectiveInterval(item);
-      const offset = Math.floor(((index + 1) * interval) / (overdue.length + 1));
-      item.lastPolledAt = now - interval + offset;
+      // item is due at: lastPolledAt + interval
+      // we want it due at: now + ((index + 1) * step)
+      item.lastPolledAt = now + (index + 1) * step - interval;
     });
   }
 
@@ -266,26 +273,50 @@ class PollingSupervisor {
     try {
       const allItems = await db.select().from(items);
 
-      // Preserve existing item state (lastPolledAt, retryCount)
+      // Preserve existing item state (lastPolledAt, retryCount, config)
       const existingMap = new Map(this.itemCache.map((i) => [i.id, i]));
 
-      this.itemCache = allItems
-        .filter((item) => item.serviceType || item.href)
-        .map((item) => {
-          const adapter = item.serviceType ? getService(item.serviceType) : null;
-          const existing = existingMap.get(item.id);
+      const nextItems: PollingItem[] = [];
+      for (const item of allItems) {
+        if (!item.serviceType && !item.href) continue;
 
-          return {
-            id: item.id,
-            serviceType: item.serviceType,
-            href: item.href,
-            serviceUrl: item.serviceUrl,
-            configEnc: item.configEnc,
-            pollingMs: item.pollingMs ?? adapter?.defaultPollingMs ?? 30_000,
-            lastPolledAt: existing?.lastPolledAt ?? 0,
-            retryCount: existing?.retryCount ?? 0,
-          };
+        const adapter = item.serviceType ? getService(item.serviceType) : null;
+        const existing = existingMap.get(item.id);
+
+        let config: Record<string, string> | null = existing?.config ?? null;
+
+        // Decrypt only if the encrypted config changed or we don't have it yet
+        if (item.configEnc && (!existing || existing.configEnc !== item.configEnc)) {
+          try {
+            config = JSON.parse(await decrypt(item.configEnc));
+          } catch {
+            console.warn(`[polling] Failed to decrypt config for item ${item.id}`);
+            config = null;
+          }
+        } else if (!item.configEnc) {
+          config = null;
+        }
+
+        nextItems.push({
+          id: item.id,
+          serviceType: item.serviceType,
+          href: item.href,
+          serviceUrl: item.serviceUrl,
+          configEnc: item.configEnc,
+          config,
+          pollingMs: item.pollingMs ?? adapter?.defaultPollingMs ?? 30_000,
+          lastPolledAt: existing?.lastPolledAt ?? 0,
+          retryCount: existing?.retryCount ?? 0,
         });
+      }
+
+      this.itemCache = nextItems;
+
+      // Stagger if this is the first load or we have many items
+      if (this.cacheExpiresAt === 0 || this.shouldStaggerOnNextStart) {
+        this.staggerOverdueItems(this.itemCache, now);
+        this.shouldStaggerOnNextStart = false;
+      }
 
       this.cacheExpiresAt = now + 10_000;
       console.log(`[polling] Loaded ${this.itemCache.length} item(s)`);
@@ -308,7 +339,7 @@ class PollingSupervisor {
     const adapter = item.serviceType ? getService(item.serviceType) : null;
     if (!adapter?.fetchData) return;
 
-    const config = await this.buildConfig(item);
+    const config = this.buildConfig(item);
     if (!config) return;
 
     const data = await adapter.fetchData(config);
@@ -334,20 +365,18 @@ class PollingSupervisor {
     }
   }
 
-  private async buildConfig(item: PollingItem): Promise<Record<string, string> | null> {
+  private buildConfig(item: PollingItem): Record<string, string> | null {
     const config: Record<string, string> = {};
     if (item.serviceUrl) config.url = item.serviceUrl;
 
-    if (item.configEnc) {
-      try {
-        const decrypted = JSON.parse(await decrypt(item.configEnc));
-        Object.assign(config, decrypted);
-      } catch {
-        serverCache.set(item.id, {
-          widgetData: { _status: "error", _statusText: "Failed to decrypt credentials" },
-        });
-        return null;
-      }
+    if (item.config) {
+      Object.assign(config, item.config);
+    } else if (item.configEnc) {
+      // Fallback: if decryption failed during load, we can't poll this service.
+      serverCache.set(item.id, {
+        widgetData: { _status: "error", _statusText: "Credentials unavailable" },
+      });
+      return null;
     }
 
     return config;
