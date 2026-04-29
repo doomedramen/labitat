@@ -1,5 +1,6 @@
 export const PALETTES = [
   // Dark themes
+  { id: "dark", label: "Dark" },
   { id: "dracula", label: "Dracula" },
   { id: "catppuccin_frappe", label: "Catppuccin Frappé" },
   { id: "nord", label: "Nord" },
@@ -11,6 +12,7 @@ export const PALETTES = [
   { id: "everforest", label: "Everforest" },
   { id: "kanagawa", label: "Kanagawa" },
   // Light themes
+  { id: "light", label: "Light" },
   { id: "catppuccin_latte", label: "Catppuccin Latte" },
   { id: "nord_light", label: "Nord Light" },
   { id: "solarized_light", label: "Solarized Light" },
