@@ -87,10 +87,10 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
       apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
     },
-    appleWebApp: {
-      capable: true,
-      title: title,
-      statusBarStyle: "black",
+    other: {
+      "apple-mobile-web-app-capable": "yes",
+      "apple-mobile-web-app-status-bar-style": "black-translucent",
+      "mobile-web-app-capable": "yes",
     },
   };
 }
