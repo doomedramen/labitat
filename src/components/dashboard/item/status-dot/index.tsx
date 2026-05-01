@@ -111,7 +111,7 @@ export function StatusDot({
       aria-label={ariaLabel}
       className={cn(
         // Base styles - 16x16 container
-        "relative h-4 w-4 flex items-center justify-center transition-all duration-300",
+        "relative h-4 w-4 flex items-center justify-center transition-all ",
       )}
     >
       {/* Progress ring - always shown */}
@@ -154,7 +154,7 @@ export function StatusDot({
         style={{ width: `${dotSize}px`, height: `${dotSize}px` }}
         className={cn(
           // Base styles - 10px dot centered
-          "relative rounded-full transition-all duration-300 overflow-visible",
+          "relative rounded-full transition-all  overflow-visible",
           // Color
           dotColorClass ?? bgColors[visualState],
           // Glow effect for healthy/problematic states

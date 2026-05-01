@@ -13,7 +13,7 @@ export function ItemCard({ item }: { item: ItemRow }) {
         "group/item relative flex flex-col",
         "rounded-xl bg-card",
         "border border-border/40",
-        "transition-all duration-300 ease-out",
+        "transition-all  ease-out",
         [
           "hover:border-border/70 hover:bg-card/95",
           "hover:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.12),0_4px_12px_-4px_rgba(0,0,0,0.08)]",
@@ -27,7 +27,7 @@ export function ItemCard({ item }: { item: ItemRow }) {
     >
       <div
         className={cn(
-          "pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300",
+          "pointer-events-none absolute inset-0 opacity-0 transition-opacity ",
           "bg-gradient-to-b from-primary/[0.02] to-transparent",
           "group-hover/item:opacity-100",
         )}
@@ -66,7 +66,7 @@ function ItemCardContent({
       <div className="flex items-center gap-3 min-w-0">
         <div
           className={cn(
-            "shrink-0 transition-transform duration-300 ease-out",
+            "shrink-0 transition-transform  ease-out",
             "group-hover/item:scale-105 group-hover/item:rotate-[2deg]",
           )}
         >
@@ -81,7 +81,7 @@ function ItemCardContent({
           className={cn(
             "flex-1 min-w-0 truncate text-sm leading-tight font-semibold",
             "text-card-foreground/90",
-            "transition-colors duration-200",
+            "transition-colors ",
             "group-hover/item:text-foreground",
           )}
         >

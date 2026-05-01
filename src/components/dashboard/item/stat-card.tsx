@@ -28,7 +28,7 @@ export function StatCard({
     <div
       className={cn(
         "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center select-none",
-        "transition-all duration-200 hover:scale-105 hover:bg-secondary/80 active:scale-95",
+        "transition-all  hover:scale-105 hover:bg-secondary/80 active:scale-95",
       )}
     >
       <span className={cn("font-medium tabular-nums")}>{value}</span>

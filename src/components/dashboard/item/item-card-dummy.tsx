@@ -59,7 +59,7 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
             "ring-2 ring-ring/30",
           ],
           // Transition
-          "transition-all duration-200 ease-out",
+          "transition-all  ease-out",
         )}
         data-testid="item-card"
         data-item-id={item.id}
@@ -79,7 +79,7 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
             className={cn(
               "flex items-center gap-1.5",
               "text-muted-foreground/50",
-              "transition-all duration-200",
+              "transition-all ",
               "hover:text-muted-foreground hover:scale-105",
               "active:scale-95 active:cursor-grabbing",
               "cursor-grab",
@@ -97,7 +97,7 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
               className={cn(
                 "flex items-center gap-1 rounded-lg px-2 py-1",
                 "text-muted-foreground",
-                "transition-all duration-200",
+                "transition-all ",
                 "hover:bg-secondary hover:text-foreground hover:scale-105",
                 "active:scale-95",
               )}
@@ -111,7 +111,7 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
               className={cn(
                 "flex items-center gap-1 rounded-lg px-2 py-1",
                 "text-muted-foreground",
-                "transition-all duration-200",
+                "transition-all ",
                 "hover:bg-destructive/10 hover:text-destructive hover:scale-105",
                 "active:scale-95",
               )}
@@ -163,7 +163,7 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
           className={cn(
             "pointer-events-none absolute inset-0 opacity-0",
             "bg-gradient-to-b from-primary/[0.02] to-transparent",
-            "transition-opacity duration-300",
+            "transition-opacity ",
             "group-hover/item-dummy:opacity-100",
           )}
         />

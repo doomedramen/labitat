@@ -228,7 +228,7 @@ function EditableStatCard({ item, displayMode }: EditableStatCardProps) {
       aria-label="Drag to reorder stat card"
       data-testid="stat-card"
       className={cn(
-        "flex h-full cursor-grab flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground transition-all duration-200 select-none hover:scale-105 hover:bg-secondary/80 hover:shadow-md active:scale-95 active:cursor-grabbing",
+        "flex h-full cursor-grab flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground transition-all  select-none hover:scale-105 hover:bg-secondary/80 hover:shadow-md active:scale-95 active:cursor-grabbing",
         isDragging && "scale-110 rotate-3 opacity-50 shadow-lg",
       )}
     >
@@ -351,7 +351,7 @@ function UnusedStatCard({ item, displayMode }: { item: StatItem; displayMode: St
       aria-label="Drag to reorder stat card"
       data-testid="unused-stat-card"
       className={cn(
-        "flex h-full cursor-grab flex-col items-center justify-center rounded-md bg-muted/50 px-2 py-1.5 text-center text-muted-foreground transition-all duration-200 select-none hover:bg-muted/70 active:scale-95 active:cursor-grabbing",
+        "flex h-full cursor-grab flex-col items-center justify-center rounded-md bg-muted/50 px-2 py-1.5 text-center text-muted-foreground transition-all  select-none hover:bg-muted/70 active:scale-95 active:cursor-grabbing",
         isDragging && "scale-110 rotate-3 opacity-50 shadow-lg",
       )}
     >

@@ -70,25 +70,25 @@ export function GroupCardDummy({
           <button
             {...attributes}
             {...listeners}
-            className="cursor-grab text-muted-foreground/50 transition-all duration-200 hover:scale-110 hover:text-muted-foreground active:scale-95 active:cursor-grabbing"
+            className="cursor-grab text-muted-foreground/50 transition-all  hover:scale-110 hover:text-muted-foreground active:scale-95 active:cursor-grabbing"
             aria-label="Drag to reorder group"
           >
             <GripVertical className="h-4 w-4" />
           </button>
-          <h2 className="flex-1 text-sm font-medium text-muted-foreground transition-colors duration-200 select-none group-hover/group:text-foreground">
+          <h2 className="flex-1 text-sm font-medium text-muted-foreground transition-colors  select-none group-hover/group:text-foreground">
             {group.name}
           </h2>
           <div className="flex items-center gap-1">
             <button
               onClick={onEditGroup}
-              className="rounded p-1 text-muted-foreground transition-all duration-200 hover:scale-110 hover:bg-secondary hover:text-foreground active:scale-95"
+              className="rounded p-1 text-muted-foreground transition-all  hover:scale-110 hover:bg-secondary hover:text-foreground active:scale-95"
               aria-label="Edit group"
             >
               <Pencil className="h-4 w-4" />
             </button>
             <button
               onClick={() => setDeleteConfirmOpen(true)}
-              className="rounded p-1 text-muted-foreground transition-all duration-200 hover:scale-110 hover:bg-destructive/10 hover:text-destructive active:scale-95"
+              className="rounded p-1 text-muted-foreground transition-all  hover:scale-110 hover:bg-destructive/10 hover:text-destructive active:scale-95"
               aria-label="Delete group"
             >
               <Trash2 className="h-4 w-4" />
@@ -116,9 +116,9 @@ export function GroupCardDummy({
             <button
               type="button"
               onClick={onAddItem}
-              className="group/add-item flex min-h-20 items-center justify-center rounded-xl border-2 border-dashed border-border/50 text-sm text-muted-foreground transition-all duration-300 hover:scale-[1.02] hover:border-ring hover:bg-secondary/50 hover:text-foreground hover:shadow-md active:scale-[0.98]"
+              className="group/add-item flex min-h-20 items-center justify-center rounded-xl border-2 border-dashed border-border/50 text-sm text-muted-foreground transition-all  hover:scale-[1.02] hover:border-ring hover:bg-secondary/50 hover:text-foreground hover:shadow-md active:scale-[0.98]"
             >
-              <Plus className="mr-1.5 h-4 w-4 transition-transform duration-300 group-hover/add-item:rotate-90" />
+              <Plus className="mr-1.5 h-4 w-4 transition-transform  group-hover/add-item:rotate-90" />
               Add Item
             </button>
           </div>

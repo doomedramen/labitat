@@ -221,7 +221,7 @@ function TProgress({ pct, gradient }: { pct: number; gradient: string }) {
       <TRow label="Progress" value={`${Math.round(pct)}%`} />
       <div className="h-[3px] bg-border/50 rounded-full overflow-hidden mt-1.5">
         <div
-          className={cn("h-full rounded-full transition-all duration-300", gradient)}
+          className={cn("h-full rounded-full transition-all ", gradient)}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -282,7 +282,7 @@ function MediaTooltip({ item }: { item: MediaItem }) {
         />
         <div className="h-[3px] bg-border/50 rounded-full overflow-hidden mt-1.5">
           <div
-            className={cn("h-full rounded-full transition-all duration-300", gradient)}
+            className={cn("h-full rounded-full transition-all ", gradient)}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -350,7 +350,7 @@ export function ListItem({ item }: { item: ListItemData }) {
               "border border-border/30",
               "hover:from-secondary hover:to-secondary/80",
               "hover:border-border/50 hover:shadow-sm",
-              "transition-all duration-200 ease-out",
+              "transition-all  ease-out",
               "cursor-default",
             )}
             role="listitem"
@@ -379,7 +379,7 @@ export function ListItem({ item }: { item: ListItemData }) {
                     "text-[10px] font-bold",
                     status.className,
                     isActive && status.glowColor,
-                    "transition-all duration-200",
+                    "transition-all ",
                     "flex-shrink-0",
                   )}
                 >
@@ -416,7 +416,7 @@ export function ListItem({ item }: { item: ListItemData }) {
             {/* Row 3: Progress bar */}
             <div className="h-1.5 bg-border/30 rounded-full overflow-hidden">
               <div
-                className={cn("h-full rounded-full transition-all duration-500 ease-out", gradient)}
+                className={cn("h-full rounded-full transition-all  ease-out", gradient)}
                 style={{ width: `${Math.max(2, progressPct)}%` }}
               />
             </div>

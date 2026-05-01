@@ -9,16 +9,16 @@ import { Folder } from "lucide-react";
  */
 export function GroupCard({ group }: { group: GroupWithItems }) {
   return (
-    <section className={cn("group/group relative", "rounded-2xl", "transition-all duration-300")}>
+    <section className={cn("group/group relative", "rounded-2xl", "transition-all ")}>
       {/* Group header */}
-      <header className={cn("mb-3 flex items-center gap-2 px-1", "transition-all duration-200")}>
+      <header className={cn("mb-3 flex items-center gap-2 px-1", "transition-all ")}>
         {/* Group icon/indicator */}
         <div
           className={cn(
             "flex h-5 w-5 items-center justify-center rounded-md",
             "bg-gradient-to-br from-muted/80 to-muted/40",
             "text-muted-foreground/70",
-            "transition-all duration-200",
+            "transition-all ",
             "group-hover/group:from-muted group-hover/group:to-muted/60",
             "group-hover/group:text-muted-foreground",
           )}
@@ -31,7 +31,7 @@ export function GroupCard({ group }: { group: GroupWithItems }) {
           className={cn(
             "flex-1 text-sm font-semibold",
             "text-muted-foreground/80",
-            "transition-all duration-200",
+            "transition-all ",
             "select-none",
             "group-hover/group:text-foreground",
           )}

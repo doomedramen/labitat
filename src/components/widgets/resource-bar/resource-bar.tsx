@@ -35,7 +35,7 @@ export function ResourceBar({
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
         <div
-          className={cn("h-full rounded-full transition-all duration-500", barColor)}
+          className={cn("h-full rounded-full transition-all ", barColor)}
           style={{ width: `${pct}%` }}
         />
       </div>

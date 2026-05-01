@@ -20,7 +20,7 @@ function CoreBar({ pct }: { pct: number }) {
     <div className="flex items-center gap-1.5">
       <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-secondary">
         <div
-          className={cn("h-full rounded-full transition-all duration-500", barColor)}
+          className={cn("h-full rounded-full transition-all ", barColor)}
           style={{ width: `${pct}%` }}
         />
       </div>
