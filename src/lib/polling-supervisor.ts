@@ -1,9 +1,10 @@
 import { db } from "@/lib/db";
-import { items } from "@/lib/db/schema";
+import { items, groups } from "@/lib/db/schema";
 import { decrypt } from "@/lib/crypto";
 import { getService } from "@/lib/adapters";
 import { fetchWithTimeout } from "@/lib/adapters/fetch-with-timeout";
 import { serverCache } from "./server-cache";
+import { env } from "@/lib/env";
 
 // Environment defaults - extracted for clarity and testability
 const ENV_DEFAULTS = {
@@ -14,13 +15,11 @@ const ENV_DEFAULTS = {
 // Get env values safely with defaults
 function getEnvValue<T extends keyof typeof ENV_DEFAULTS>(key: T): (typeof ENV_DEFAULTS)[T] {
   try {
-    const env = process.env;
     switch (key) {
       case "IDLE_POLLING_ENABLED":
-        return (env.IDLE_POLLING_ENABLED === "true") as never;
+        return env.IDLE_POLLING_ENABLED as never;
       case "IDLE_POLLING_INTERVAL_MINUTES":
-        const val = env.IDLE_POLLING_INTERVAL_MINUTES;
-        return (val ? parseInt(val, 10) : ENV_DEFAULTS[key]) as never;
+        return env.IDLE_POLLING_INTERVAL_MINUTES as never;
       default:
         return ENV_DEFAULTS[key];
     }
@@ -30,8 +29,15 @@ function getEnvValue<T extends keyof typeof ENV_DEFAULTS>(key: T): (typeof ENV_D
 }
 
 const GRACE_PERIOD_MS = 5 * 60 * 1000;
-const PING_TIMEOUT_MS = 10_000;
+const PING_TIMEOUT_MS = () => {
+  try {
+    return env.SERVICE_POLLING_TIMEOUT;
+  } catch {
+    return 10_000;
+  }
+};
 const MIN_TICK_MS = 100;
+const MAX_CONCURRENT_POLLS = 15;
 const IDLE_POLLING_MS = () => getEnvValue("IDLE_POLLING_INTERVAL_MINUTES") * 60 * 1000;
 
 type PollingItem = {
@@ -44,6 +50,8 @@ type PollingItem = {
   pollingMs: number;
   lastPolledAt: number;
   retryCount: number;
+  _groupOrder: number;
+  _itemOrder: number;
 };
 
 interface SchedulerState {
@@ -104,10 +112,12 @@ class PollingSupervisor {
     const items = await this.getItems();
     const now = Date.now();
 
-    // Fire-and-forget all polls
-    items.forEach((item) => {
+    // Execute due polls up to MAX_CONCURRENT_POLLS
+    const dueItems = items.filter((item) => this.isDue(item, now));
+    for (const item of dueItems) {
+      if (this.running.size >= MAX_CONCURRENT_POLLS) break;
       this.executePoll(item, now);
-    });
+    }
 
     // Reschedule if still active
     this.scheduleNextTick();
@@ -168,9 +178,10 @@ class PollingSupervisor {
 
     // Execute due polls (fire-and-forget to not block scheduling)
     const dueItems = items.filter((item) => this.isDue(item, now));
-    dueItems.forEach((item) => {
+    for (const item of dueItems) {
+      if (this.running.size >= MAX_CONCURRENT_POLLS) break;
       this.executePoll(item, now);
-    });
+    }
 
     this.scheduleNextTick();
   }
@@ -271,7 +282,10 @@ class PollingSupervisor {
     if (now < this.cacheExpiresAt) return this.itemCache;
 
     try {
+      const allGroups = await db.select().from(groups);
       const allItems = await db.select().from(items);
+
+      const groupMap = new Map(allGroups.map((g) => [g.id, g]));
 
       // Preserve existing item state (lastPolledAt, retryCount, config)
       const existingMap = new Map(this.itemCache.map((i) => [i.id, i]));
@@ -285,7 +299,7 @@ class PollingSupervisor {
 
         let config: Record<string, string> | null = existing?.config ?? null;
 
-        // Decrypt only if the encrypted config changed or we don't have it yet
+        // Decrict only if the encrypted config changed or we don't have it yet
         if (item.configEnc && (!existing || existing.configEnc !== item.configEnc)) {
           try {
             config = JSON.parse(await decrypt(item.configEnc));
@@ -297,6 +311,8 @@ class PollingSupervisor {
           config = null;
         }
 
+        const group = groupMap.get(item.groupId);
+
         nextItems.push({
           id: item.id,
           serviceType: item.serviceType,
@@ -307,8 +323,17 @@ class PollingSupervisor {
           pollingMs: item.pollingMs ?? adapter?.defaultPollingMs ?? 30_000,
           lastPolledAt: existing?.lastPolledAt ?? 0,
           retryCount: existing?.retryCount ?? 0,
+          // Sort helper fields
+          _groupOrder: group?.order ?? 999,
+          _itemOrder: item.order ?? 999,
         });
       }
+
+      // Sort items by group order then item order (top to bottom)
+      nextItems.sort((a, b) => {
+        if (a._groupOrder !== b._groupOrder) return a._groupOrder - b._groupOrder;
+        return a._itemOrder - b._itemOrder;
+      });
 
       this.itemCache = nextItems;
 
@@ -348,7 +373,7 @@ class PollingSupervisor {
 
   private async pollUrl(item: PollingItem): Promise<void> {
     try {
-      const res = await fetchWithTimeout(item.href!, { method: "GET" }, PING_TIMEOUT_MS);
+      const res = await fetchWithTimeout(item.href!, { method: "GET" }, PING_TIMEOUT_MS());
 
       serverCache.set(item.id, {
         pingStatus: res.ok
@@ -359,7 +384,7 @@ class PollingSupervisor {
       const isTimeout = err instanceof DOMException && err.name === "TimeoutError";
       serverCache.set(item.id, {
         pingStatus: isTimeout
-          ? { state: "slow", reason: "Request timed out", timeoutMs: PING_TIMEOUT_MS }
+          ? { state: "slow", reason: "Request timed out", timeoutMs: PING_TIMEOUT_MS() }
           : { state: "unreachable", reason: "Request failed" },
       });
     }

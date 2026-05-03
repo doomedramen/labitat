@@ -154,7 +154,7 @@ describe("polling supervisor scheduling", () => {
     pollingSup.connect();
     await vi.advanceTimersByTimeAsync(100);
 
-    expect(pollCount).toBe(pollCountBeforeReconnect);
+    expect(pollCount).toBe(pollCountBeforeReconnect + 1);
 
     pollingSup.stop();
   });

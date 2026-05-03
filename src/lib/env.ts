@@ -21,6 +21,7 @@ export const env = createEnv({
     IDLE_POLLING_INTERVAL_MINUTES: z.number().min(1).max(60).default(5),
     STARTUP_WARMUP_ENABLED: z.boolean().default(true),
     COOKIE_SECURE: z.boolean().default(defaultCookieSecure),
+    SERVICE_POLLING_TIMEOUT: z.number().min(1000).max(60000).default(10000),
     // Used only by e2e helpers under /api/test/*
     TEST_SECRET: isTest ? z.string().default("e2e-test-reset-token") : z.string().optional(),
   },
@@ -39,6 +40,9 @@ export const env = createEnv({
       : 5,
     STARTUP_WARMUP_ENABLED: process.env.STARTUP_WARMUP_ENABLED === "true",
     COOKIE_SECURE: process.env.COOKIE_SECURE === "true",
+    SERVICE_POLLING_TIMEOUT: process.env.SERVICE_POLLING_TIMEOUT
+      ? parseInt(process.env.SERVICE_POLLING_TIMEOUT, 10)
+      : 10000,
     TEST_SECRET: process.env.TEST_SECRET,
   },
 });

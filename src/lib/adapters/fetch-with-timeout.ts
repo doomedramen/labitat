@@ -1,4 +1,29 @@
-const DEFAULT_TIMEOUT_MS = 10_000;
+import { env } from "@/lib/env";
+
+const GET_DEFAULT_TIMEOUT = () => {
+  try {
+    return env.SERVICE_POLLING_TIMEOUT;
+  } catch {
+    return 10_000;
+  }
+};
+
+// Lazy-loaded agents to avoid issues in client-side bundles
+let httpsAgent: any = null;
+let insecureHttpsAgent: any = null;
+
+async function getAgents() {
+  if (httpsAgent) return { httpsAgent, insecureHttpsAgent };
+
+  const https = await import("node:https");
+  httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 32 });
+  insecureHttpsAgent = new https.Agent({
+    keepAlive: true,
+    maxSockets: 32,
+    rejectUnauthorized: false,
+  });
+  return { httpsAgent, insecureHttpsAgent };
+}
 
 interface HttpsRequestOptions {
   hostname: string;
@@ -7,6 +32,7 @@ interface HttpsRequestOptions {
   method: string;
   headers?: Record<string, string>;
   rejectUnauthorized: boolean;
+  agent: any;
 }
 
 async function fetchWithHttps(
@@ -23,7 +49,8 @@ async function fetchWithHttps(
   }, timeoutMs);
 
   try {
-    const https = await import("https");
+    const { httpsAgent, insecureHttpsAgent } = await getAgents();
+    const https = await import("node:https");
     const urlObj = new URL(url);
 
     const opts: HttpsRequestOptions = {
@@ -33,6 +60,7 @@ async function fetchWithHttps(
       method: fetchInit?.method || "GET",
       headers: fetchInit?.headers as Record<string, string>,
       rejectUnauthorized: !insecure,
+      agent: insecure ? insecureHttpsAgent : httpsAgent,
     };
 
     return new Promise((resolve, reject) => {
@@ -96,7 +124,7 @@ async function fetchWithHttps(
 export async function fetchWithTimeout(
   input: RequestInfo | URL,
   init?: RequestInit & { insecure?: boolean },
-  timeoutMs: number = DEFAULT_TIMEOUT_MS,
+  timeoutMs: number = GET_DEFAULT_TIMEOUT(),
 ): Promise<Response> {
   const url = typeof input === "string" ? input : input.toString();
 

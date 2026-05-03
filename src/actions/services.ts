@@ -92,11 +92,19 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
 }
 
 export async function fetchAllServiceData(itemIds: string[]): Promise<Record<string, ServiceData>> {
-  const results = await Promise.all(
-    itemIds.map(async (id) => {
-      const data = await fetchServiceData(id);
-      return [id, data] as const;
-    }),
-  );
-  return Object.fromEntries(results);
+  const results: Record<string, ServiceData> = {};
+  const queue = [...itemIds];
+  const concurrency = 8;
+
+  const worker = async () => {
+    while (queue.length > 0) {
+      const id = queue.shift();
+      if (!id) break;
+      results[id] = await fetchServiceData(id);
+    }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(concurrency, itemIds.length) }, () => worker()));
+
+  return results;
 }
