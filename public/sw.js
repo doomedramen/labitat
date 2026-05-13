@@ -16,7 +16,6 @@ const PRECACHE_URLS = ["/", "/~offline", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)));
-  self.skipWaiting();
 });
 
 // ── Activate: clean up old caches ────────────────────────────────────────────
@@ -30,6 +29,14 @@ self.addEventListener("activate", (event) => {
       ),
   );
   self.clients.claim();
+});
+
+// ── Message: handle SKIP_WAITING from the registrar ──────────────────────────
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // ── Fetch: routing by strategy ───────────────────────────────────────────────
