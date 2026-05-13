@@ -44,7 +44,7 @@ export function ServiceWorkerRegistrar() {
         });
 
         // Check if there's already a waiting worker on load
-        if (registration.waiting) {
+        if (registration.waiting && navigator.serviceWorker.controller) {
           showUpdateToast(registration.waiting);
         }
       })
