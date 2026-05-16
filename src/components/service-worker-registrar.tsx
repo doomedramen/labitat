@@ -43,9 +43,12 @@ export function ServiceWorkerRegistrar() {
           });
         });
 
-        // Check if there's already a waiting worker on load
+        // Waiting SW on load means a previous update was never applied — activate silently
         if (registration.waiting && navigator.serviceWorker.controller) {
-          showUpdateToast(registration.waiting);
+          registration.waiting.postMessage({ type: "SKIP_WAITING" });
+          navigator.serviceWorker.addEventListener("controllerchange", () =>
+            window.location.reload(),
+          );
         }
       })
       .catch((err) => {
