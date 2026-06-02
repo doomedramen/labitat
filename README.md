@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://doomedramen.github.io/labitat/logo.svg" alt="Labitat logo" width="96">
+</p>
+
 # Labitat
 
 [![CI](https://github.com/DoomedRamen/labitat/actions/workflows/ci.yml/badge.svg)](https://github.com/DoomedRamen/labitat/actions/workflows/ci.yml)
@@ -15,6 +19,12 @@ Labitat is a self-hosted homelab dashboard for monitoring services, arranging li
 - Encrypted stored credentials with HTTP-only sessions
 - Docker, native Debian/Proxmox, and manual install options
 - Adapter scaffold for adding new services
+
+## Screenshots
+
+![Labitat dashboard](https://doomedramen.github.io/labitat/images/labitat_dash.png)
+
+![Labitat edit mode](https://doomedramen.github.io/labitat/images/labitat_dash_edit.png)
 
 ## Install
 
