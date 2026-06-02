@@ -1,27 +1,24 @@
 # Labitat
 
-[![CI/CD](https://github.com/DoomedRamen/labitat/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/DoomedRamen/labitat/actions/workflows/ci-cd.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/v/release/DoomedRamen/labitat)](https://github.com/DoomedRamen/labitat/releases)
-[![Docker Pulls](https://img.shields.io/github/downloads/DoomedRamen/labitat/total?label=downloads)](https://github.com/DoomedRamen/labitat/pkgs/container/labitat)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+[![CI](https://github.com/DoomedRamen/labitat/actions/workflows/ci.yml/badge.svg)](https://github.com/DoomedRamen/labitat/actions/workflows/ci.yml)
+[![Latest version](https://img.shields.io/github/v/tag/DoomedRamen/labitat?label=latest)](https://github.com/DoomedRamen/labitat/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-online-blue.svg)](https://doomedramen.github.io/labitat/)
 
-A modern, self-hosted homelab dashboard with live service widgets, drag-and-drop layout, and full PWA support.
+Labitat is a self-hosted homelab dashboard for monitoring services, arranging live widgets, and keeping a useful overview of your setup from desktop or mobile.
 
 ## Features
 
-- **Live Service Monitoring** — Real-time status and metrics for 20+ services (30+ with experimental adapters)
-- **Drag & Drop Layout** — Arrange widgets your way
-- **PWA Support** — Install on desktop or mobile for a native app experience
-- **Secure by Default** — AES-256-GCM encryption for credentials, HTTP-only sessions
-- **Lightweight** — Runs on a Raspberry Pi, scales to full servers
-- **Extensible** — Add your own services with a single TypeScript file
+- Live service widgets with server-side polling and cached data
+- Drag-and-drop dashboard layouts
+- PWA support for desktop and mobile installs
+- Encrypted stored credentials with HTTP-only sessions
+- Docker, native Debian/Proxmox, and manual install options
+- Adapter scaffold for adding new services
 
-## Quick Start
+## Install
 
-### Docker (Recommended)
-
-No config needed — a secret key is generated automatically on first run.
+### Docker
 
 ```bash
 docker run -d \
@@ -32,26 +29,24 @@ docker run -d \
   ghcr.io/doomedramen/labitat:latest
 ```
 
-Visit `http://localhost:3000` — you'll be guided to create your admin account on first visit.
+Open `http://localhost:3000` and create the admin account on first run.
 
-Or with Docker Compose (downloads just the compose file, no full clone needed):
+### Docker Compose
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DoomedRamen/labitat/main/docker-compose.yml -o docker-compose.yml
 docker compose up -d
 ```
 
-> **Secret key:** Auto-generated on first run and saved to `/app/data/.secret_key` inside the volume. Back up your `labitat_data` volume to preserve it. To set your own key: `export SECRET_KEY=$(openssl rand -base64 32)` before running.
-
-### Native Install (Debian/Proxmox)
+### Native Debian/Proxmox
 
 ```bash
 bash <(curl -s https://raw.githubusercontent.com/DoomedRamen/labitat/main/install.sh)
 ```
 
-The installer sets up dependencies and the service. Visit the dashboard URL to create your admin account.
+### Manual
 
-### Manual Setup
+Requires Node.js 22+ and pnpm.
 
 ```bash
 pnpm install
@@ -62,147 +57,47 @@ pnpm start
 
 ## Supported Services
 
-| Category         | Services                                                             |
-| ---------------- | -------------------------------------------------------------------- |
-| **Downloads**    | Radarr, Sonarr, Prowlarr, qBittorrent, SABnzbd, Bazarr               |
-| **Media**        | Plex, Unmanic, Tautulli, Overseerr (Seerr)                           |
-| **Networking**   | AdGuard Home, Nginx Proxy Manager                                    |
-| **Monitoring**   | APCUPS, UniFi, Glances (5 variants), Proxmox, Proxmox Backup Server  |
-| **Storage**      | Proxmox Backup Server                                                |
-| **Productivity** | Calibre Web                                                          |
-| **Info**         | Open-Meteo Weather, OpenWeatherMap, Date/Time, Search, Matrix, Pipes |
-| **General**      | Service Logo                                                         |
+- Downloads: Radarr, Sonarr, Prowlarr, qBittorrent, SABnzbd, Bazarr
+- Media: Plex, Unmanic, Tautulli, Overseerr/Seerr
+- Networking: AdGuard Home, Nginx Proxy Manager
+- Monitoring: APCUPS, UniFi, Glances, Proxmox, Proxmox Backup Server
+- Productivity: Calibre Web
+- Info and utility widgets: Open-Meteo, OpenWeatherMap, Date/Time, Search, Matrix, Pipes, Service Logo
 
-### Glances Variants
-
-The Glances adapter provides 5 separate widget types:
-
-| Widget             | Shows                           |
-| ------------------ | ------------------------------- |
-| Glances            | CPU, RAM, swap, load, uptime    |
-| Glances Timeseries | Historical CPU/RAM charts       |
-| Glances Per-CPU    | Per-core CPU usage              |
-| Glances Processes  | Top processes by CPU/memory     |
-| Glances Sensors    | Temperature sensors, fan speeds |
-| Glances Disk Usage | Disk space per mount point      |
-
-### Experimental (Available but Not Manually Tested)
-
-These adapters exist in the codebase but are not manually tested. Enable them by uncommenting the relevant lines in `lib/adapters/index.ts`:
-
-| Category       | Services                                 |
-| -------------- | ---------------------------------------- |
-| **Downloads**  | Lidarr, Readarr, Transmission, Jackett   |
-| **Media**      | Jellyfin, Emby, Immich                   |
-| **Networking** | Pi-hole, Traefik                         |
-| **Monitoring** | Portainer, Uptime Kuma, Grafana, Frigate |
-| **Automation** | Home Assistant                           |
-| **Generic**    | Ping, REST API                           |
-
-Missing something? [Add a service](#contributing) in under 50 lines of code.
+Additional adapters exist for services such as Lidarr, Readarr, Transmission, Jackett, Jellyfin, Emby, Immich, Pi-hole, Traefik, Portainer, Uptime Kuma, Grafana, Frigate, Home Assistant, Ping, and REST APIs.
 
 ## Configuration
 
-### First Run: Create Admin Account
+Docker generates and stores `SECRET_KEY` in `/app/data/.secret_key` on first run. Back up the `labitat_data` volume so encrypted credentials remain readable after restores or migrations.
 
-On your first visit, you'll be redirected to a setup page to create your admin account. Stored in the database — no config files to edit.
+Common environment variables:
 
-### Secret Key
-
-In Docker, `SECRET_KEY` is auto-generated on first run and saved to `/app/data/.secret_key` inside the volume. Back up your volume to preserve it.
-
-To set your own key instead: `export SECRET_KEY=$(openssl rand -base64 32)` before starting.
-
-This key encrypts stored service credentials using AES-256-GCM. Lose it and you lose access to saved credentials.
-
-## Environment Variables
-
-| Variable                          | Required | Description                                                                |
-| --------------------------------- | -------- | -------------------------------------------------------------------------- |
-| `SECRET_KEY`                      | No       | 32+ char random string for encryption. Auto-generated if not set (Docker). |
-| `DATABASE_URL`                    | No       | SQLite path (default: `file:./data/labitat.db`)                            |
-| `NODE_ENV`                        | No       | Set to `production` for deployment                                         |
-| `PORT`                            | No       | Override default port (3000)                                               |
-| `CACHE_DIR`                       | No       | Cache directory for widget cache (default: `/app/data/cache` in Docker)    |
-| `NEXT_PUBLIC_ALLOWED_DEV_ORIGINS` | No       | Allowed origins for development (e.g., `http://localhost:3000`)            |
+| Variable       | Default                     | Description                       |
+| -------------- | --------------------------- | --------------------------------- |
+| `SECRET_KEY`   | Auto-generated in Docker    | Key for encrypted service secrets |
+| `DATABASE_URL` | `file:./data/labitat.db`    | SQLite database path              |
+| `PORT`         | `3000`                      | HTTP port                         |
+| `CACHE_DIR`    | `/app/data/cache` in Docker | Widget cache directory            |
 
 ## Development
 
 ```bash
 pnpm install
-pnpm dev          # Development server (localhost:3000)
-pnpm build        # Production build
-pnpm db:push      # Push schema changes to SQLite
-pnpm db:studio    # Open database GUI
-pnpm test         # Run E2E tests
+pnpm dev
+pnpm check
+pnpm test
 ```
 
-### Adding a New Service
+Create a new service adapter:
 
 ```bash
 pnpm new-service
 ```
 
-This scaffolds a service adapter and widget. See [Contributing](./CONTRIBUTING.md) for a full guide.
+## Docs
 
-## Security
-
-- AES-256-GCM encryption for all stored credentials
-- HTTP-only, secure session cookies via `iron-session`
-- Security headers: X-Frame-Options, CSP, HSTS
-- Non-root Docker user (UID 1001)
-- Read-only application directory in Docker
-
-## PWA Installation
-
-- **Desktop:** Click the install icon in your browser's address bar
-- **iOS:** Share → Add to Home Screen
-- **Android:** Menu → Install app
-
-## Troubleshooting
-
-**Container won't start:**
-
-```bash
-docker compose logs labitat
-```
-
-**Database issues:**
-
-```bash
-# Reset database (WARNING: deletes all data)
-rm ./data/labitat.db && pnpm db:push
-```
-
-**Service widgets not loading:**
-
-- Check that the service URL is reachable from the Labitat host
-- Verify API keys and credentials
-- Check widget polling interval in dashboard settings
-
-**Systemd service (native install):**
-
-```bash
-journalctl -u labitat -f
-systemctl restart labitat
-```
-
-## Contributing
-
-Contributions are welcome! Here's how to get started:
-
-1. Fork the repo
-2. `pnpm install && pnpm dev`
-3. Make your changes
-4. Run `pnpm lint && pnpm typecheck && pnpm build`
-5. Open a PR
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guides on adding service adapters, commit conventions, and more.
+Full documentation is available at [doomedramen.github.io/labitat](https://doomedramen.github.io/labitat/).
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
-
----
-
-Built with [Next.js](https://nextjs.org/) and [shadcn/ui](https://ui.shadcn.com/). Icons from [selfh.st](https://selfh.st/icons).
+MIT. See [LICENSE](LICENSE).
