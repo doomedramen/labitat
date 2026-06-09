@@ -6,11 +6,18 @@ import { toast } from "sonner";
 /** Registers the service worker and handles updates */
 export function ServiceWorkerRegistrar() {
   const toastIdRef = useRef<string | number | null>(null);
+  const shownRef = useRef(false);
 
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
 
+    let controllerChangeHandler: (() => void) | null = null;
+
     const showUpdateToast = (worker: ServiceWorker) => {
+      if (shownRef.current) return;
+      shownRef.current = true;
+      if (toastIdRef.current != null) toast.dismiss(toastIdRef.current);
+
       toastIdRef.current = toast.info("Update available", {
         description: "A new version of Labitat is ready.",
         action: {
@@ -24,6 +31,18 @@ export function ServiceWorkerRegistrar() {
       });
     };
 
+    const addStateChangeListener = (worker: ServiceWorker) => {
+      const handleStateChange = () => {
+        console.log("[SW] Worker state:", worker.state);
+        if (worker.state === "installed" && navigator.serviceWorker.controller) {
+          showUpdateToast(worker);
+        }
+      };
+      // Worker may already be in "installed" state by now (if updatefound fired synchronously)
+      handleStateChange();
+      worker.addEventListener("statechange", handleStateChange);
+    };
+
     navigator.serviceWorker
       .register("/sw.js")
       .then((registration) => {
@@ -33,39 +52,32 @@ export function ServiceWorkerRegistrar() {
         registration.addEventListener("updatefound", () => {
           const newWorker = registration.installing;
           if (!newWorker) return;
-
-          newWorker.addEventListener("statechange", () => {
-            console.log("[SW] Worker state:", newWorker.state);
-
-            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-              showUpdateToast(newWorker);
-            }
-          });
+          addStateChangeListener(newWorker);
         });
+
+        // If an installing worker already exists, updatefound already fired synchronously
+        if (registration.installing) {
+          addStateChangeListener(registration.installing);
+        }
 
         // Waiting SW on load means a previous update was never applied — activate silently
         if (registration.waiting && navigator.serviceWorker.controller) {
           registration.waiting.postMessage({ type: "SKIP_WAITING" });
-          navigator.serviceWorker.addEventListener("controllerchange", () =>
-            window.location.reload(),
-          );
+          controllerChangeHandler = () => window.location.reload();
+          navigator.serviceWorker.addEventListener("controllerchange", controllerChangeHandler);
         }
       })
       .catch((err) => {
         console.error("[SW] Registration failed:", err);
       });
 
-    // If the page was reloaded because the user clicked "Refresh",
-    // dismiss any lingering toast
-    const cleanup = () => {
+    return () => {
       if (toastIdRef.current != null) {
         toast.dismiss(toastIdRef.current);
       }
-    };
-    window.addEventListener("beforeunload", cleanup);
-    return () => {
-      window.removeEventListener("beforeunload", cleanup);
-      cleanup();
+      if (controllerChangeHandler) {
+        navigator.serviceWorker.removeEventListener("controllerchange", controllerChangeHandler);
+      }
     };
   }, []);
 
