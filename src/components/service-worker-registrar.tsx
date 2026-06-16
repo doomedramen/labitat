@@ -13,6 +13,21 @@ export function ServiceWorkerRegistrar() {
 
     let controllerChangeHandler: (() => void) | null = null;
 
+    const getWorkerVersion = (worker: ServiceWorker): Promise<string> => {
+      return new Promise((resolve) => {
+        const channel = new MessageChannel();
+        const timer = setTimeout(() => {
+          channel.port1.close();
+          resolve("");
+        }, 1000);
+        channel.port1.onmessage = (event) => {
+          clearTimeout(timer);
+          resolve(event.data?.version ?? "");
+        };
+        worker.postMessage({ type: "GET_VERSION" }, [channel.port2]);
+      });
+    };
+
     const showUpdateToast = (worker: ServiceWorker) => {
       if (shownRef.current) return;
       shownRef.current = true;
@@ -35,12 +50,32 @@ export function ServiceWorkerRegistrar() {
       const handleStateChange = () => {
         console.log("[SW] Worker state:", worker.state);
         if (worker.state === "installed" && navigator.serviceWorker.controller) {
-          showUpdateToast(worker);
+          verifyAndNotify(worker);
         }
       };
-      // Worker may already be in "installed" state by now (if updatefound fired synchronously)
       handleStateChange();
       worker.addEventListener("statechange", handleStateChange);
+    };
+
+    const verifyAndNotify = async (worker: ServiceWorker) => {
+      if (!navigator.serviceWorker.controller) {
+        // No active controller — first install, don't show toast
+        return;
+      }
+
+      const [activeVersion, newVersion] = await Promise.all([
+        getWorkerVersion(navigator.serviceWorker.controller),
+        getWorkerVersion(worker),
+      ]);
+
+      if (activeVersion && newVersion && activeVersion === newVersion) {
+        // Byte-level difference but same version — spurious update
+        console.log("[SW] Version unchanged, skipping update notification");
+        worker.postMessage({ type: "SKIP_WAITING" });
+        return;
+      }
+
+      showUpdateToast(worker);
     };
 
     navigator.serviceWorker

@@ -10,6 +10,7 @@
  */
 
 const CACHE_NAME = "labitat-v2";
+const SW_VERSION = CACHE_NAME;
 const PRECACHE_URLS = ["/", "/~offline", "/manifest.webmanifest"];
 
 // ── Install: precache static assets ──────────────────────────────────────────
@@ -36,6 +37,9 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {
     self.skipWaiting();
+  }
+  if (event.data?.type === "GET_VERSION" && event.ports?.[0]) {
+    event.ports[0].postMessage({ version: SW_VERSION });
   }
 });
 
