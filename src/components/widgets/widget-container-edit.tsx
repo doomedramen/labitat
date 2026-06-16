@@ -24,6 +24,7 @@ interface WidgetContainerEditProps {
   statDisplayMode?: StatDisplayMode;
   statCardOrder?: StatCardOrder | null;
   itemId: string;
+  defaultActiveIds?: string[];
 }
 
 export function WidgetContainerEdit({
@@ -31,6 +32,7 @@ export function WidgetContainerEdit({
   statDisplayMode = "label",
   statCardOrder = null,
   itemId,
+  defaultActiveIds,
 }: WidgetContainerEditProps) {
   const handleOrderChange = useCallback(
     (order: StatCardOrder | null) => {
@@ -40,7 +42,7 @@ export function WidgetContainerEdit({
         updateStatCardOrder(itemId, null).catch(console.error);
       }
     },
-    [itemId]
+    [itemId],
   );
 
   return (
@@ -49,6 +51,7 @@ export function WidgetContainerEdit({
       order={statCardOrder}
       onOrderChange={handleOrderChange}
       displayMode={statDisplayMode}
+      defaultActiveIds={defaultActiveIds}
     />
   );
 }

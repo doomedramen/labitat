@@ -34,6 +34,7 @@ interface EditableStatGridProps {
   displayMode?: StatDisplayMode;
   order: StatCardOrder | null;
   onOrderChange: (order: StatCardOrder | null) => void;
+  defaultActiveIds?: string[];
 }
 
 export function EditableStatGrid({
@@ -41,6 +42,7 @@ export function EditableStatGrid({
   displayMode = "label",
   order,
   onOrderChange,
+  defaultActiveIds,
 }: EditableStatGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -54,6 +56,13 @@ export function EditableStatGrid({
     const itemMap = new Map(items.map((item) => [item.id, item]));
 
     if (!order) {
+      if (defaultActiveIds && defaultActiveIds.length > 0) {
+        const active = defaultActiveIds
+          .map((id) => itemMap.get(id))
+          .filter((item): item is StatItem => item !== undefined);
+        const unused = items.filter((item) => !defaultActiveIds.includes(item.id));
+        return { activeItems: active, unusedItems: unused };
+      }
       return { activeItems: items, unusedItems: [] as StatItem[] };
     }
 

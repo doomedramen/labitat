@@ -99,7 +99,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
     const queue = data.queue ?? {};
     const slots = queue.slots ?? [];
 
-    const downloads: DownloadItemData[] = slots.slice(0, 3).map((slot) => ({
+    const downloads: DownloadItemData[] = slots.map((slot) => ({
       title: slot.filename,
       progress: parseFloat(slot.percentage ?? "0"),
       timeLeft: slot.timeleft,

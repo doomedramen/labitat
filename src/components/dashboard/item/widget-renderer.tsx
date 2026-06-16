@@ -40,6 +40,7 @@ export function WidgetRenderer({
   );
 
   const hasPayload = !!payload;
+  const defaultActiveIds = payload?.defaultActiveIds;
 
   // Parse display settings from item
   const statDisplayMode = (item.statDisplayMode as "icon" | "label") ?? "label";
@@ -69,6 +70,7 @@ export function WidgetRenderer({
           statDisplayMode={statDisplayMode}
           statCardOrder={statCardOrder}
           itemId={item.id}
+          defaultActiveIds={defaultActiveIds}
         />
       );
     }
@@ -80,6 +82,7 @@ export function WidgetRenderer({
         statDisplayMode={statDisplayMode}
         statCardOrder={statCardOrder}
         editMode={false}
+        defaultActiveIds={defaultActiveIds}
       />
     );
   }

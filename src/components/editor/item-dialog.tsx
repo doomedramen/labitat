@@ -61,6 +61,7 @@ function StatCardEditor({ payload }: { payload: WidgetPayload }) {
       order={displaySettings?.statCardOrder ?? null}
       onOrderChange={displaySettings?.onOrderChange ?? (() => {})}
       displayMode={displaySettings?.statDisplayMode ?? "label"}
+      defaultActiveIds={displaySettings?.defaultActiveIds}
     />
   );
 }
@@ -857,6 +858,7 @@ function ItemDialogPreview({
         editMode: true,
         itemId,
         onOrderChange,
+        defaultActiveIds: preview.payload.defaultActiveIds,
       }}
     >
       <StatCardEditor payload={preview.payload} />

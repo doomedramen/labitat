@@ -20,6 +20,7 @@ interface WidgetContainerProps {
   statDisplayMode?: StatDisplayMode;
   statCardOrder?: StatCardOrder | null;
   editMode?: boolean;
+  defaultActiveIds?: string[];
 }
 
 export function WidgetContainer({
@@ -27,6 +28,7 @@ export function WidgetContainer({
   statDisplayMode = "label",
   statCardOrder = null,
   editMode = false,
+  defaultActiveIds,
 }: WidgetContainerProps) {
   const isEditMode = editMode;
 
@@ -62,7 +64,12 @@ export function WidgetContainer({
   }
 
   // Filter out unused stat cards when not in edit mode
-  const unusedIds = new Set(statCardOrder?.unused ?? []);
+  const allStatIds = payload.stats.map((s) => s.id);
+  const unusedIds = statCardOrder
+    ? new Set(statCardOrder.unused ?? [])
+    : defaultActiveIds
+      ? new Set(allStatIds.filter((id) => !defaultActiveIds.includes(id)))
+      : new Set();
   const visibleStats = isEditMode
     ? payload.stats
     : payload.stats.filter((stat) => !unusedIds.has(stat.id));
