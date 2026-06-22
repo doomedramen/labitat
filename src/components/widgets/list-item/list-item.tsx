@@ -294,8 +294,6 @@ function MediaTooltip({ item }: { item: MediaItem }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ListItem({ item }: { item: ListItemData }) {
-  const [tooltipOpen, setTooltipOpen] = React.useState(false);
-
   const download = item.kind === "download" ? item : null;
   const media = item.kind === "media" ? item : null;
 
@@ -333,91 +331,94 @@ export function ListItem({ item }: { item: ListItemData }) {
     statusKey === "Importing" ||
     statusKey === "playing";
 
-  return (
-    <TooltipProvider delayDuration={isMobile ? 0 : 500}>
-      <Tooltip open={isMobile ? tooltipOpen : undefined} onOpenChange={setTooltipOpen}>
-        <TooltipTrigger asChild>
+  const content = (
+    <div
+      className={cn(
+        "group/listitem flex flex-col gap-2 rounded-xl p-3",
+        "bg-gradient-to-b from-secondary/90 to-secondary/70",
+        "border border-border/30",
+        "hover:from-secondary hover:to-secondary/80",
+        "hover:border-border/50 hover:shadow-sm",
+        "transition-all  ease-out",
+        "cursor-default [touch-action:pan-y]",
+      )}
+      role="listitem"
+      aria-label={displayTitle}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      {/* Row 1: Title + Icon */}
+      <div className="flex items-center gap-2 min-w-0">
+        <span
+          className={cn(
+            "truncate flex-1 text-[13px] font-semibold tracking-tight",
+            "text-secondary-foreground/90",
+            "group-hover/listitem:text-secondary-foreground",
+          )}
+        >
+          {displayTitle}
+        </span>
+        {status && (
+          <span
+            className={cn(
+              "w-6 h-5 flex items-center justify-center rounded-md",
+              "text-[10px] font-bold",
+              status.className,
+              isActive && status.glowColor,
+              "transition-all ",
+              "flex-shrink-0",
+            )}
+          >
+            <BadgeIcon icon={status.icon} />
+          </span>
+        )}
+      </div>
+
+      {/* Row 2: Activity/User + Meta */}
+      <div className="flex items-center gap-2 min-w-0">
+        {media && (
           <div
             className={cn(
-              "group/listitem flex flex-col gap-2 rounded-xl p-3",
-              "bg-gradient-to-b from-secondary/90 to-secondary/70",
-              "border border-border/30",
-              "hover:from-secondary hover:to-secondary/80",
-              "hover:border-border/50 hover:shadow-sm",
-              "transition-all  ease-out",
-              "cursor-default",
+              "w-5 h-5 rounded-full flex items-center justify-center",
+              "bg-gradient-to-br from-primary/20 to-primary/5",
+              "border border-primary/20",
+              "text-[9px] font-bold text-primary/80",
+              "flex-shrink-0",
             )}
-            role="listitem"
-            aria-label={displayTitle}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (isMobile) {
-                setTooltipOpen(true);
-              }
-            }}
           >
-            {/* Row 1: Title + Icon */}
-            <div className="flex items-center gap-2 min-w-0">
-              <span
-                className={cn(
-                  "truncate flex-1 text-[13px] font-semibold tracking-tight",
-                  "text-secondary-foreground/90",
-                  "group-hover/listitem:text-secondary-foreground",
-                )}
-              >
-                {displayTitle}
-              </span>
-              {status && (
-                <span
-                  className={cn(
-                    "w-6 h-5 flex items-center justify-center rounded-md",
-                    "text-[10px] font-bold",
-                    status.className,
-                    isActive && status.glowColor,
-                    "transition-all ",
-                    "flex-shrink-0",
-                  )}
-                >
-                  <BadgeIcon icon={status.icon} />
-                </span>
-              )}
-            </div>
-
-            {/* Row 2: Activity/User + Meta */}
-            <div className="flex items-center gap-2 min-w-0">
-              {media && (
-                <div
-                  className={cn(
-                    "w-5 h-5 rounded-full flex items-center justify-center",
-                    "bg-gradient-to-br from-primary/20 to-primary/5",
-                    "border border-primary/20",
-                    "text-[9px] font-bold text-primary/80",
-                    "flex-shrink-0",
-                  )}
-                >
-                  {initials(media.user)}
-                </div>
-              )}
-              <span className="truncate text-[11px] text-secondary-foreground/60 font-medium">
-                {media ? media.user : subText}
-              </span>
-              {metaText && (
-                <span className="text-[11px] text-secondary-foreground/50 whitespace-nowrap flex-shrink-0">
-                  · {metaText}
-                </span>
-              )}
-            </div>
-
-            {/* Row 3: Progress bar */}
-            <div className="h-1.5 bg-border/30 rounded-full overflow-hidden">
-              <div
-                className={cn("h-full rounded-full transition-all  ease-out", gradient)}
-                style={{ width: `${Math.max(2, progressPct)}%` }}
-              />
-            </div>
+            {initials(media.user)}
           </div>
-        </TooltipTrigger>
+        )}
+        <span className="truncate text-[11px] text-secondary-foreground/60 font-medium">
+          {media ? media.user : subText}
+        </span>
+        {metaText && (
+          <span className="text-[11px] text-secondary-foreground/50 whitespace-nowrap flex-shrink-0">
+            · {metaText}
+          </span>
+        )}
+      </div>
+
+      {/* Row 3: Progress bar */}
+      <div className="h-1.5 bg-border/30 rounded-full overflow-hidden">
+        <div
+          className={cn("h-full rounded-full transition-all  ease-out", gradient)}
+          style={{ width: `${Math.max(2, progressPct)}%` }}
+        />
+      </div>
+    </div>
+  );
+
+  if (isMobile) {
+    return content;
+  }
+
+  return (
+    <TooltipProvider delayDuration={500}>
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
 
         <TooltipContent
           side="top"
