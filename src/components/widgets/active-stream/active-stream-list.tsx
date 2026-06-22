@@ -27,7 +27,7 @@ export function ActiveStreamList({ streams, onTogglePlayback }: ActiveStreamList
 
   return (
     <TooltipProvider delayDuration={isMobile ? 0 : 500}>
-      <div className="flex w-full flex-col gap-2 max-h-72 overflow-y-auto">
+      <div className="flex max-h-72 w-full flex-col gap-2 overflow-y-auto overscroll-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
         {sorted.map((stream) => (
           <ActiveStreamItem
             key={`${stream.title}-${stream.user}`}

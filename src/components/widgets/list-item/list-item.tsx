@@ -327,12 +327,6 @@ export function ListItem({ item }: { item: ListItemData }) {
   const subText = download?.activity ?? "";
   const isMobile = useIsMobile();
 
-  const handlePointerDown = (e: React.PointerEvent) => {
-    if (isMobile && e.pointerType === "touch") {
-      setTooltipOpen(true);
-    }
-  };
-
   const isActive =
     statusKey === "Downloading" ||
     statusKey === "Forced downloading" ||
@@ -358,8 +352,10 @@ export function ListItem({ item }: { item: ListItemData }) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (isMobile) {
+                setTooltipOpen(true);
+              }
             }}
-            onPointerDown={handlePointerDown}
           >
             {/* Row 1: Title + Icon */}
             <div className="flex items-center gap-2 min-w-0">
