@@ -344,7 +344,6 @@ class PollingSupervisor {
       }
 
       this.cacheExpiresAt = now + 10_000;
-      console.log(`[polling] Loaded ${this.itemCache.length} item(s)`);
     } catch (err) {
       console.error("[polling] Failed to load items:", err);
     }
