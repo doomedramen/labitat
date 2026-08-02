@@ -15,7 +15,6 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 import { useWebHaptics } from "web-haptics/react";
 import type { GroupWithCache, GroupWithItems, ItemWithCache } from "@/lib/types";
-import { useBackground } from "@/hooks/use-background";
 import { Header } from "./header";
 import { EditMode } from "./edit-mode";
 import { Dialogs } from "./dialogs";
@@ -32,7 +31,6 @@ interface DashboardClientProps {
 
 export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientProps) {
   const haptic = useWebHaptics();
-  useBackground();
   const router = useRouter();
   const editMode = true;
   const [localTitle, setLocalTitle] = useState<string | null>(null);

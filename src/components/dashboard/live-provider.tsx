@@ -54,6 +54,7 @@ export function LiveProvider({
     let attempt = 0;
     let es: EventSource | null = null;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let wasHidden = document.visibilityState === "hidden";
 
     function scheduleReconnect() {
       const delay = Math.min(1000 * 2 ** attempt, 30000) + Math.random() * 1000;
@@ -101,13 +102,20 @@ export function LiveProvider({
       };
     }
 
-    // Reconnect when tab becomes visible again
+    // Browsers can suspend an SSE socket while backgrounded without changing
+    // readyState from OPEN. Replace it on resume instead of trusting that state.
     function onVisibilityChange() {
-      if (document.visibilityState === "visible" && (!es || es.readyState === EventSource.CLOSED)) {
-        if (timeoutId) clearTimeout(timeoutId);
-        attempt = 0;
-        connect();
+      if (document.visibilityState === "hidden") {
+        wasHidden = true;
+        return;
       }
+      if (!wasHidden) return;
+
+      wasHidden = false;
+      if (timeoutId) clearTimeout(timeoutId);
+      es?.close();
+      attempt = 0;
+      connect();
     }
 
     document.addEventListener("visibilitychange", onVisibilityChange);

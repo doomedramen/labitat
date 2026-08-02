@@ -7,6 +7,7 @@ import type { ItemLive } from "@/lib/live-types";
 import { LiveProvider } from "@/components/dashboard/live-provider";
 import { DashboardViewChrome } from "@/components/dashboard/dashboard-view-chrome";
 import { GroupCard } from "@/components/dashboard/group";
+import { EmptyDashboard } from "@/components/dashboard/empty-dashboard";
 import { unstable_noStore as noStore } from "next/cache";
 
 // This page is always dynamic due to session auth, database queries, and cookie usage
@@ -58,21 +59,25 @@ async function DashboardContent() {
   const dashboardTitle = titleSetting?.value ?? "Labitat";
 
   return (
-    <div className={cn("min-h-svh p-6")}>
+    <main className={cn("min-h-svh px-4 pt-5 pb-10 sm:px-6 sm:pt-7 lg:px-8")}>
       <LiveProvider
         initialSnapshotById={initialSnapshotById}
         snapshotKey={snapshotKey}
         enableSse={true}
       >
         <DashboardViewChrome isLoggedIn={isLoggedIn} title={dashboardTitle}>
-          <div className="flex flex-col gap-8">
-            {groupsWithItems.map((group) => (
-              <GroupCard key={group.id} group={group} />
-            ))}
-          </div>
+          {groupsWithItems.length > 0 ? (
+            <div className="flex flex-col gap-10 sm:gap-12">
+              {groupsWithItems.map((group) => (
+                <GroupCard key={group.id} group={group} />
+              ))}
+            </div>
+          ) : (
+            <EmptyDashboard isLoggedIn={isLoggedIn} />
+          )}
         </DashboardViewChrome>
       </LiveProvider>
-    </div>
+    </main>
   );
 }
 

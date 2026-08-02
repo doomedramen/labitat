@@ -115,6 +115,13 @@ export async function createItem(groupId: string, formData: FormData): Promise<G
     order: nextOrder,
   });
   pollingSup.invalidateCache();
+
+  // Keep the view route and the currently-open edit route coherent. Without
+  // this, Next's client route cache can restore the pre-insert dashboard when
+  // the user leaves edit mode even though the edit screen has fresh local data.
+  safeRevalidatePath("/");
+  safeRevalidatePath("/edit");
+
   return refreshGroupsCache();
 }
 

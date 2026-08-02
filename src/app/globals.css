@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "../styles/themes/index.css";
-@import "../styles/backgrounds.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -114,14 +113,13 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply text-foreground;
-  }
-  html:not([data-background]) body,
-  html[data-background="none"] body {
-    @apply bg-background;
+    @apply bg-background text-foreground;
+    min-height: 100dvh;
+    text-rendering: optimizeLegibility;
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
   }
 }
 

@@ -9,10 +9,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatErrors } from "@/lib/utils";
 
+const emailSchema = z.string().email("Please enter a valid email address.");
+const passwordSchema = z.string().min(1, "Password is required.");
+
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address."),
-  password: z.string().min(1, "Password is required."),
+  email: emailSchema,
+  password: passwordSchema,
 });
+
+function validateField(schema: typeof emailSchema | typeof passwordSchema, value: string) {
+  const result = schema.safeParse(value);
+  return result.success ? undefined : result.error.issues[0]?.message;
+}
 
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState(login, null);
@@ -23,8 +31,7 @@ export function LoginForm() {
       password: "",
     },
     validators: {
-      onChange: loginSchema,
-      onBlur: loginSchema,
+      onSubmit: loginSchema,
     },
     onSubmit: async ({ value }) => {
       const formData = new FormData();
@@ -44,7 +51,12 @@ export function LoginForm() {
       }}
       className="space-y-4"
     >
-      <form.Field name="email">
+      <form.Field
+        name="email"
+        validators={{
+          onChange: ({ value }) => validateField(emailSchema, value),
+        }}
+      >
         {(field) => {
           const isInvalid = field.state.meta.errors.length > 0;
           return (
@@ -54,7 +66,10 @@ export function LoginForm() {
                 id={field.name}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
+                onBlur={() => {
+                  field.handleBlur();
+                  void field.validate("change");
+                }}
                 type="email"
                 placeholder="admin@example.org"
                 autoComplete="email"
@@ -67,7 +82,12 @@ export function LoginForm() {
           );
         }}
       </form.Field>
-      <form.Field name="password">
+      <form.Field
+        name="password"
+        validators={{
+          onChange: ({ value }) => validateField(passwordSchema, value),
+        }}
+      >
         {(field) => {
           const isInvalid = field.state.meta.errors.length > 0;
           return (
@@ -77,7 +97,10 @@ export function LoginForm() {
                 id={field.name}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
+                onBlur={() => {
+                  field.handleBlur();
+                  void field.validate("change");
+                }}
                 type="password"
                 placeholder="Your password"
                 autoComplete="current-password"

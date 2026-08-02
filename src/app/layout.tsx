@@ -1,4 +1,4 @@
-import { Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import type { Viewport, Metadata } from "next";
 import { cookies } from "next/headers";
 
@@ -13,20 +13,14 @@ import { ConnectivityProvider } from "@/components/connectivity-provider";
 
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 });
 
 const PALETTE_COOKIE = "labitat-palette";
-const BACKGROUND_COOKIE = "labitat-background";
-const SCALE_COOKIE = "labitat-bg-scale";
-const OPACITY_COOKIE = "labitat-bg-opacity";
 const DEFAULT_PALETTE = "nord";
-const DEFAULT_BACKGROUND = "none";
-const DEFAULT_SCALE = "1";
-const DEFAULT_OPACITY = "1";
 
 async function getPalette(): Promise<string> {
   try {
@@ -34,33 +28,6 @@ async function getPalette(): Promise<string> {
     return cookieStore.get(PALETTE_COOKIE)?.value ?? DEFAULT_PALETTE;
   } catch {
     return DEFAULT_PALETTE;
-  }
-}
-
-async function getBackground(): Promise<string> {
-  try {
-    const cookieStore = await cookies();
-    return cookieStore.get(BACKGROUND_COOKIE)?.value ?? DEFAULT_BACKGROUND;
-  } catch {
-    return DEFAULT_BACKGROUND;
-  }
-}
-
-async function getBgScale(): Promise<string> {
-  try {
-    const cookieStore = await cookies();
-    return cookieStore.get(SCALE_COOKIE)?.value ?? DEFAULT_SCALE;
-  } catch {
-    return DEFAULT_SCALE;
-  }
-}
-
-async function getBgOpacity(): Promise<string> {
-  try {
-    const cookieStore = await cookies();
-    return cookieStore.get(OPACITY_COOKIE)?.value ?? DEFAULT_OPACITY;
-  } catch {
-    return DEFAULT_OPACITY;
   }
 }
 
@@ -107,26 +74,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [palette, background, bgScale, bgOpacity] = await Promise.all([
-    getPalette(),
-    getBackground(),
-    getBgScale(),
-    getBgOpacity(),
-  ]);
+  const palette = await getPalette();
 
   return (
     <html
       lang="en"
       suppressHydrationWarning
       data-palette={palette}
-      data-background={background}
-      className={cn("font-sans antialiased", inter.variable, fontMono.variable)}
-      style={
-        {
-          "--bg-scale": bgScale,
-          "--bg-opacity": bgOpacity,
-        } as React.CSSProperties
-      }
+      className={cn("font-sans antialiased", geist.variable, fontMono.variable)}
     >
       <SplashScreenLinks />
       <body>

@@ -33,7 +33,7 @@ export function TitleForm({ title, localTitle, onTitleChange, onExitEdit }: Titl
         e.preventDefault();
         form.handleSubmit();
       }}
-      className="w-full max-w-xs"
+      className="min-w-0 flex-1 sm:max-w-sm"
     >
       <form.Field name="title">
         {(field) => {
@@ -46,7 +46,8 @@ export function TitleForm({ title, localTitle, onTitleChange, onExitEdit }: Titl
                 onTitleChange(e.target.value);
               }}
               onBlur={field.handleBlur}
-              className="h-8"
+              className="h-9 text-base font-semibold tracking-[-0.02em]"
+              aria-label="Dashboard title"
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
                   onTitleChange(null);

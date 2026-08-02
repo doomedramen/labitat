@@ -58,8 +58,9 @@ test.describe("SSR Rendering", () => {
     // ── Palette picker button visible ──
     expect(html).toContain("Theme settings");
 
-    // ── Background picker button visible ──
-    expect(html).toContain("Background settings");
+    // ── Removed background controls stay out of the shell ──
+    expect(html).not.toContain("Background settings");
+    expect(html).not.toContain("data-background");
 
     // ── Sign-in button visible (not authenticated) ──
     expect(html).toMatch(/<button[^>]*>.*Sign in.*<\/button>/i);
@@ -215,8 +216,8 @@ test.describe("SSR Rendering", () => {
     // ── Palette picker button visible ──
     await expect(page.getByRole("button", { name: "Theme settings" })).toBeVisible();
 
-    // ── Background picker button visible ──
-    await expect(page.getByRole("button", { name: "Background settings" })).toBeVisible();
+    // ── Removed background controls stay out of the shell ──
+    await expect(page.getByRole("button", { name: "Background settings" })).toHaveCount(0);
 
     // ── Sign-in button visible ──
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();

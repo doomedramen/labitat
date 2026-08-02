@@ -68,8 +68,15 @@ export function ServiceWorkerRegistrar() {
         getWorkerVersion(worker),
       ]);
 
-      if (activeVersion && newVersion && activeVersion === newVersion) {
-        // Byte-level difference but same version — spurious update
+      if (!activeVersion || !newVersion) {
+        // A timed-out version probe is not evidence of an update. Avoid telling
+        // the user an update exists when the candidate cannot be verified.
+        console.log("[SW] Could not verify worker versions, skipping update notification");
+        return;
+      }
+
+      if (activeVersion === newVersion) {
+        // Byte-level difference but same app version — activate silently.
         console.log("[SW] Version unchanged, skipping update notification");
         worker.postMessage({ type: "SKIP_WAITING" });
         return;

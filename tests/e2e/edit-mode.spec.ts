@@ -10,7 +10,7 @@ test.describe("Edit Mode", () => {
     await page.goto("/");
     await page.getByRole("button", { name: "Edit" }).click();
     await expect(page).toHaveURL("/edit");
-    await expect(page.getByText("Drag to reorder. Click items to edit.")).toBeVisible();
+    await expect(page.getByText("Drag to reorder. Select a card to edit it.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Done" })).toBeVisible();
 
     await page.getByRole("button", { name: "Done" }).click();
@@ -26,9 +26,9 @@ test.describe("Edit Mode", () => {
     expect(count).toBe(0);
   });
 
-  test("shows Add Group button in edit mode", async ({ page }) => {
+  test("shows Add group button in edit mode", async ({ page }) => {
     await page.goto("/edit");
-    await expect(page.getByText("Add Group")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add group" })).toBeVisible();
   });
 
   test("shows edit and delete controls on groups", async ({ page }) => {
@@ -37,15 +37,15 @@ test.describe("Edit Mode", () => {
     await expect(page.getByLabel("Delete group").first()).toBeVisible();
   });
 
-  test("shows Add Item button in each group", async ({ page }) => {
+  test("shows Add item button in each group", async ({ page }) => {
     await page.goto("/edit");
-    const addButtons = page.getByText("Add Item");
+    const addButtons = page.getByRole("button", { name: "Add item" });
     await expect(addButtons).toHaveCount(2);
   });
 
   test("adds a new group", async ({ page }) => {
     await page.goto("/edit");
-    await page.getByText("Add Group").click();
+    await page.getByRole("button", { name: "Add group" }).click();
 
     await expect(page.getByRole("heading", { name: "New Group" })).toBeVisible();
     await page.locator("#name").fill("Monitoring");
@@ -80,7 +80,7 @@ test.describe("Edit Mode", () => {
 
   test("adds a new item to a group", async ({ page }) => {
     await page.goto("/edit");
-    await page.getByText("Add Item").first().click();
+    await page.getByRole("button", { name: "Add item" }).first().click();
 
     await expect(page.getByRole("heading", { name: "New Item" })).toBeVisible();
     await page.locator("#label").fill("Home Assistant");
@@ -88,6 +88,26 @@ test.describe("Edit Mode", () => {
     await page.getByRole("button", { name: "Create" }).click();
 
     await expect(page.getByText("Home Assistant")).toBeVisible();
+    await page.getByRole("button", { name: "Done" }).click();
+    await expect(page).toHaveURL("/");
+    await expect(page.getByTestId("item-card").filter({ hasText: "Home Assistant" })).toBeVisible();
+  });
+
+  test("selects an item icon by name from the selfh.st catalog", async ({ page }) => {
+    await page.route("**/api/icons", (route) =>
+      route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify([{ name: "13 Feet Ladder", slug: "13-feet-ladder" }]),
+      }),
+    );
+    await page.goto("/edit");
+    await page.getByRole("button", { name: "Add item" }).first().click();
+
+    const icon = page.getByRole("combobox", { name: "Icon" });
+    await icon.fill("13 feet");
+    await page.getByRole("option", { name: "13 Feet Ladder" }).click();
+
+    await expect(icon).toHaveValue("13-feet-ladder");
   });
 
   test("edits an existing item", async ({ page }) => {

@@ -60,7 +60,11 @@ export default async function EditPage() {
   const dashboardTitle = titleSetting?.value ?? "Labitat";
 
   return (
-    <div className={cn("min-h-svh p-6")}>
+    <main
+      className={cn(
+        "mx-auto min-h-svh w-full max-w-[1600px] px-4 pt-5 pb-28 sm:px-6 sm:pt-7 lg:px-8",
+      )}
+    >
       <LiveProvider
         initialSnapshotById={initialSnapshotById}
         snapshotKey={snapshotKey}
@@ -68,6 +72,6 @@ export default async function EditPage() {
       >
         <DashboardClient groups={enrichedGroups} isLoggedIn title={dashboardTitle} />
       </LiveProvider>
-    </div>
+    </main>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { useBackground } from "@/hooks/use-background";
 import { Header } from "@/components/dashboard/header";
 import { Footer } from "@/components/dashboard/footer";
 import { SseBanner } from "@/components/dashboard/sse-banner";
@@ -24,14 +23,13 @@ export function DashboardViewChrome({
   title: string;
   children: ReactNode;
 }) {
-  useBackground();
   const router = useRouter();
 
   const [localTitle, setLocalTitle] = useState<string | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
 
   return (
-    <>
+    <div className="mx-auto w-full max-w-[1600px]">
       <SseBanner />
       <Header
         editMode={false}
@@ -56,6 +54,6 @@ export function DashboardViewChrome({
           <LoginForm />
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

@@ -55,7 +55,7 @@ export function EditMode({
       onDragEnd={onDragEnd}
     >
       <SortableContext items={groups.map((g) => g.id)} strategy={verticalListSortingStrategy}>
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6 sm:gap-8">
           {groups.map((group) => (
             <GroupCardDummy
               key={group.id}
@@ -70,9 +70,10 @@ export function EditMode({
           <button
             type="button"
             onClick={onAddGroup}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/50 py-4 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border/70 bg-card/20 py-5 text-sm font-medium text-muted-foreground transition-[border-color,background-color,color] duration-200 hover:border-ring hover:bg-muted/40 hover:text-foreground"
           >
-            Add Group
+            <span className="text-lg leading-none">+</span>
+            Add group
           </button>
         </div>
       </SortableContext>

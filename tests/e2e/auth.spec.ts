@@ -35,6 +35,21 @@ test.describe("Authentication", () => {
 
       await expect(dialog.getByText("Invalid email or password")).toBeVisible();
     });
+
+    test("clears the password validation error once a password is entered", async ({ page }) => {
+      await page.goto("/");
+      await page.getByRole("button", { name: "Sign in" }).click();
+
+      const dialog = page.getByRole("dialog");
+      const password = dialog.getByLabel("Password");
+      await password.focus();
+      await password.blur();
+      await expect(dialog.getByText("Password is required.")).toBeVisible();
+
+      await password.fill(ADMIN_PASSWORD);
+      await expect(dialog.getByText("Password is required.")).not.toBeVisible();
+      await expect(password).not.toHaveAttribute("aria-invalid", "true");
+    });
   });
 
   test.describe("Logout", () => {

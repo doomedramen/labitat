@@ -45,61 +45,37 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
         ref={setNodeRef}
         style={style}
         className={cn(
-          // Base container
-          "group/item-dummy relative flex flex-col",
-          "rounded-xl overflow-hidden",
-          // Background with subtle gradient
-          "bg-gradient-to-b from-card to-card/95",
-          // Border
-          "border-2 border-ring/40",
-          // Dragging state
-          isDragging && [
-            "rotate-1 scale-[1.02]",
-            "shadow-[0_20px_40px_-12px_rgba(0,0,0,0.3)]",
-            "ring-2 ring-ring/30",
-          ],
-          // Transition
-          "transition-all  ease-out",
+          "group/item-dummy relative flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card",
+          isDragging && ["scale-[1.01] shadow-xl", "ring-2 ring-ring/40"],
+          "transition-[transform,box-shadow,border-color] duration-200 ease-out",
         )}
         data-testid="item-card"
         data-item-id={item.id}
       >
-        {/* Top action bar */}
-        <div
-          className={cn(
-            "flex items-center justify-between px-3 py-2",
-            "bg-gradient-to-r from-muted/50 via-muted/30 to-muted/50",
-            "border-b border-border/30",
-          )}
-        >
-          {/* Drag handle */}
+        <div className="flex items-center justify-between border-b border-border/50 bg-muted/25 px-2.5 py-2">
           <button
+            type="button"
             {...attributes}
             {...listeners}
             className={cn(
               "flex items-center gap-1.5",
-              "text-muted-foreground/50",
-              "transition-all ",
-              "hover:text-muted-foreground hover:scale-105",
-              "active:scale-95 active:cursor-grabbing",
-              "cursor-grab",
+              "cursor-grab rounded-md px-1.5 py-1 text-muted-foreground",
+              "transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing",
             )}
             aria-label="Drag to reorder"
           >
             <GripVertical className="h-4 w-4" />
-            <span className="text-[10px] font-medium uppercase tracking-wider">Move</span>
+            <span className="text-[0.65rem] font-semibold tracking-[0.08em] uppercase">Move</span>
           </button>
 
           {/* Edit/Delete buttons */}
           <div className="flex items-center gap-1">
             <button
+              type="button"
               onClick={() => onEdit(item)}
               className={cn(
-                "flex items-center gap-1 rounded-lg px-2 py-1",
-                "text-muted-foreground",
-                "transition-all ",
-                "hover:bg-secondary hover:text-foreground hover:scale-105",
-                "active:scale-95",
+                "flex items-center gap-1 rounded-md px-2 py-1 text-muted-foreground",
+                "transition-colors hover:bg-muted hover:text-foreground",
               )}
               aria-label="Edit item"
             >
@@ -107,13 +83,11 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
               <span className="text-[10px] font-medium">Edit</span>
             </button>
             <button
+              type="button"
               onClick={() => setDeleteConfirmOpen(true)}
               className={cn(
-                "flex items-center gap-1 rounded-lg px-2 py-1",
-                "text-muted-foreground",
-                "transition-all ",
-                "hover:bg-destructive/10 hover:text-destructive hover:scale-105",
-                "active:scale-95",
+                "flex items-center gap-1 rounded-md px-2 py-1 text-muted-foreground",
+                "transition-colors hover:bg-destructive/10 hover:text-destructive",
               )}
               aria-label="Delete item"
             >
@@ -123,8 +97,7 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex items-center gap-3.5 px-3 py-3.5">
+        <div className="flex min-h-20 items-center gap-3.5 px-3 py-3.5">
           <div className="shrink-0">
             <ItemIcon
               iconUrl={item.iconUrl}
@@ -133,8 +106,9 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
             />
           </div>
           <div className="min-w-0 flex-1">
-            {/* Title */}
-            <p className="truncate text-sm font-semibold text-card-foreground">{item.label}</p>
+            <p className="truncate text-sm font-semibold tracking-[-0.01em] text-card-foreground">
+              {item.label}
+            </p>
 
             {/* Metadata */}
             <div className="mt-1 flex flex-col gap-0.5">
@@ -157,16 +131,6 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
             </div>
           </div>
         </div>
-
-        {/* Subtle gradient overlay on hover */}
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-0 opacity-0",
-            "bg-gradient-to-b from-primary/[0.02] to-transparent",
-            "transition-opacity ",
-            "group-hover/item-dummy:opacity-100",
-          )}
-        />
       </div>
 
       <ConfirmDialog

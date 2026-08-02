@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { GroupWithItems } from "@/lib/types";
 import { ItemCard } from "./item/item-card";
-import { Folder } from "lucide-react";
 
 /**
  * Server-only GroupCard for view mode.
@@ -9,47 +8,30 @@ import { Folder } from "lucide-react";
  */
 export function GroupCard({ group }: { group: GroupWithItems }) {
   return (
-    <section className={cn("group/group relative", "rounded-2xl", "transition-all ")}>
-      {/* Group header */}
-      <header className={cn("mb-3 flex items-center gap-2 px-1", "transition-all ")}>
-        {/* Group icon/indicator */}
-        <div
-          className={cn(
-            "flex h-5 w-5 items-center justify-center rounded-md",
-            "bg-gradient-to-br from-muted/80 to-muted/40",
-            "text-muted-foreground/70",
-            "transition-all ",
-            "group-hover/group:from-muted group-hover/group:to-muted/60",
-            "group-hover/group:text-muted-foreground",
-          )}
-        >
-          <Folder className="h-3 w-3" />
-        </div>
-
-        {/* Group title */}
-        <h2
-          className={cn(
-            "flex-1 text-sm font-semibold",
-            "text-muted-foreground/80",
-            "transition-all ",
-            "select-none",
-            "group-hover/group:text-foreground",
-          )}
-        >
+    <section className="relative">
+      <header className="mb-4 flex items-center gap-3 border-b border-border/50 pb-2.5">
+        <span className="h-4 w-0.5 rounded-full bg-primary/70" aria-hidden />
+        <h2 className="min-w-0 flex-1 truncate text-sm font-semibold tracking-[-0.01em]">
           {group.name}
         </h2>
+        <span className="text-xs tabular-nums text-muted-foreground">
+          {group.items.length} {group.items.length === 1 ? "item" : "items"}
+        </span>
       </header>
 
-      {/* Items grid */}
       <div
         className={cn(
-          "grid items-start gap-3",
+          "grid items-start gap-3.5",
           "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
         )}
       >
-        {group.items.map((item) => (
-          <ItemCard key={item.id} item={item} />
-        ))}
+        {group.items.length > 0 ? (
+          group.items.map((item) => <ItemCard key={item.id} item={item} />)
+        ) : (
+          <p className="col-span-full rounded-xl border border-dashed border-border/60 px-4 py-8 text-center text-sm text-muted-foreground">
+            No items in this group.
+          </p>
+        )}
       </div>
     </section>
   );

@@ -64,43 +64,52 @@ export function GroupCardDummy({
 
   return (
     <>
-      <div ref={setNodeRef} style={style} className="group/group relative">
-        {/* Group header */}
-        <div className="mb-2 flex items-center gap-2">
+      <section
+        ref={setNodeRef}
+        style={style}
+        className="group/group relative rounded-2xl border border-border/60 bg-card/25 p-3 sm:p-4"
+      >
+        <header className="mb-3 flex items-center gap-2 border-b border-border/50 pb-3">
           <button
+            type="button"
             {...attributes}
             {...listeners}
-            className="cursor-grab text-muted-foreground/50 transition-all  hover:scale-110 hover:text-muted-foreground active:scale-95 active:cursor-grabbing"
+            className="-ml-1 flex size-8 cursor-grab items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
             aria-label="Drag to reorder group"
           >
             <GripVertical className="h-4 w-4" />
           </button>
-          <h2 className="flex-1 text-sm font-medium text-muted-foreground transition-colors  select-none group-hover/group:text-foreground">
+          <h2 className="min-w-0 flex-1 truncate text-sm font-semibold tracking-[-0.01em]">
             {group.name}
           </h2>
+          <span className="hidden text-xs tabular-nums text-muted-foreground sm:inline">
+            {group.items.length} {group.items.length === 1 ? "item" : "items"}
+          </span>
           <div className="flex items-center gap-1">
             <button
+              type="button"
               onClick={onEditGroup}
-              className="rounded p-1 text-muted-foreground transition-all  hover:scale-110 hover:bg-secondary hover:text-foreground active:scale-95"
+              className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="Edit group"
             >
               <Pencil className="h-4 w-4" />
             </button>
             <button
+              type="button"
               onClick={() => setDeleteConfirmOpen(true)}
-              className="rounded p-1 text-muted-foreground transition-all  hover:scale-110 hover:bg-destructive/10 hover:text-destructive active:scale-95"
+              className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
               aria-label="Delete group"
             >
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
-        </div>
+        </header>
 
         {/* Items grid */}
         <SortableContext items={group.items.map((i) => i.id)} strategy={rectSortingStrategy}>
           <div
             className={cn(
-              "grid items-start gap-3",
+              "grid items-start gap-3.5",
               "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
             )}
           >
@@ -116,14 +125,14 @@ export function GroupCardDummy({
             <button
               type="button"
               onClick={onAddItem}
-              className="group/add-item flex min-h-20 items-center justify-center rounded-xl border-2 border-dashed border-border/50 text-sm text-muted-foreground transition-all  hover:scale-[1.02] hover:border-ring hover:bg-secondary/50 hover:text-foreground hover:shadow-md active:scale-[0.98]"
+              className="group/add-item flex min-h-24 items-center justify-center rounded-xl border border-dashed border-border/70 bg-background/20 text-sm font-medium text-muted-foreground transition-[border-color,background-color,color] duration-200 hover:border-ring hover:bg-muted/50 hover:text-foreground"
             >
-              <Plus className="mr-1.5 h-4 w-4 transition-transform  group-hover/add-item:rotate-90" />
-              Add Item
+              <Plus className="mr-1.5 h-4 w-4 transition-transform duration-200 group-hover/add-item:rotate-90" />
+              Add item
             </button>
           </div>
         </SortableContext>
-      </div>
+      </section>
 
       <ConfirmDialog
         open={deleteConfirmOpen}

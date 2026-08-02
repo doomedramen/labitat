@@ -26,6 +26,9 @@ test.describe("Dashboard", () => {
     await seedAndAuth(page);
     await page.goto("/");
     await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your dashboard is ready" })).toBeVisible();
+    await page.getByRole("link", { name: "Add your first group" }).click();
+    await expect(page).toHaveURL("/edit");
   });
 
   test("displays seeded groups and items", async ({ page }) => {

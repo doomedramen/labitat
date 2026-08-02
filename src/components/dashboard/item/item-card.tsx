@@ -10,29 +10,14 @@ export function ItemCard({ item }: { item: ItemRow }) {
   return (
     <div
       className={cn(
-        "group/item relative flex flex-col",
-        "rounded-xl bg-card",
-        "border border-border/40",
-        "transition-all  ease-out",
-        [
-          "hover:border-border/70 hover:bg-card/95",
-          "hover:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.12),0_4px_12px_-4px_rgba(0,0,0,0.08)]",
-          "hover:-translate-y-0.5",
-          "dark:hover:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.35),0_4px_12px_-4px_rgba(0,0,0,0.25)]",
-          "active:translate-y-0 active:scale-[0.995]",
-        ],
+        "group/item relative flex flex-col overflow-hidden rounded-xl border border-border/50 bg-card",
+        "shadow-xs",
+        "transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out",
+        "hover:-translate-y-0.5 hover:border-border hover:bg-card/95 hover:shadow-lg",
+        "active:translate-y-0 active:scale-[0.995]",
         item.href && "cursor-pointer",
-        "overflow-hidden",
       )}
     >
-      <div
-        className={cn(
-          "pointer-events-none absolute inset-0 opacity-0 transition-opacity ",
-          "bg-gradient-to-b from-primary/[0.02] to-transparent",
-          "group-hover/item:opacity-100",
-        )}
-      />
-
       {item.href ? (
         <a
           href={item.href}
@@ -59,17 +44,12 @@ function ItemCardContent({
 }) {
   return (
     <div
-      className={cn("relative flex flex-col px-4 py-3.5 gap-3")}
+      className="relative flex flex-col gap-3 px-4 py-3.5"
       data-testid="item-card"
       data-item-id={item.id}
     >
-      <div className="flex items-center gap-3 min-w-0">
-        <div
-          className={cn(
-            "shrink-0 transition-transform  ease-out",
-            "group-hover/item:scale-105 group-hover/item:rotate-[2deg]",
-          )}
-        >
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="shrink-0 transition-transform duration-200 ease-out group-hover/item:scale-[1.04]">
           <ItemIcon
             iconUrl={item.iconUrl}
             label={item.label}
@@ -79,9 +59,8 @@ function ItemCardContent({
 
         <h3
           className={cn(
-            "flex-1 min-w-0 truncate text-sm leading-tight font-semibold",
-            "text-card-foreground/90",
-            "transition-colors ",
+            "min-w-0 flex-1 truncate text-sm leading-tight font-semibold tracking-[-0.01em]",
+            "text-card-foreground/90 transition-colors duration-200",
             "group-hover/item:text-foreground",
           )}
         >

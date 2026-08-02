@@ -36,26 +36,29 @@ export function Footer({ editMode }: FooterProps) {
   // Generate sync text based on connection state and last update time
   let syncText: string;
   if (!mounted) {
-    syncText = "Loading...";
+    syncText = "Loading…";
   } else if (!isConnected) {
-    syncText = "Reconnecting...";
+    syncText = "Reconnecting…";
   } else if (meta.lastUpdateAt === null) {
-    syncText = "Waiting for data...";
+    syncText = "Waiting for data…";
   } else {
     syncText = `Last synced ${formatDistanceToNow(meta.lastUpdateAt, { addSuffix: true })}`;
   }
 
   return (
-    <footer className="mt-12 flex items-center justify-center gap-4 py-4 text-xs text-muted-foreground/60">
+    <footer
+      className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-border/40 py-6 text-xs text-muted-foreground"
+      aria-live="polite"
+    >
       <div className="flex items-center gap-1.5">
         {isConnected ? (
           <Wifi className="h-3 w-3 text-green-500" />
         ) : (
           <WifiOff className="h-3 w-3 text-amber-500" />
         )}
-        <span>{isConnected ? "Live" : "Reconnecting..."}</span>
+        <span>{isConnected ? "Live" : "Reconnecting…"}</span>
       </div>
-      <span className="text-muted-foreground/30">|</span>
+      <span className="h-3 w-px bg-border" aria-hidden />
       <div className="flex items-center gap-1.5">
         <RefreshCw className="h-3 w-3" />
         <span key={tick}>{syncText}</span>

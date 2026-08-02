@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { formatErrors } from "@/lib/utils";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { IconCombobox } from "@/components/editor/icon-combobox";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -32,6 +33,7 @@ import { useWebHaptics } from "web-haptics/react";
 import { createItem, updateItem, getItemConfig } from "@/actions/items";
 import { getAllServices } from "@/lib/adapters";
 import type { ServiceDefinition } from "@/lib/adapters";
+import type { IconOption } from "@/lib/icon-catalog";
 import type { WidgetPayload } from "@/lib/adapters/widget-types";
 import type { ItemWithCache, GroupWithItems } from "@/lib/types";
 import {
@@ -66,10 +68,20 @@ function StatCardEditor({ payload }: { payload: WidgetPayload }) {
   );
 }
 
+const iconSchema = z.string().refine(
+  (value) => {
+    const trimmed = value.trim();
+    if (!trimmed) return true;
+    if (/^https?:\/\//i.test(trimmed)) return isValidUrl(trimmed);
+    return /^[a-z0-9][a-z0-9._-]*$/i.test(trimmed);
+  },
+  { message: "Choose an icon name or enter a valid image URL." },
+);
+
 const itemSchema = z.object({
   label: z.string().min(1, "Label is required."),
   href: urlSchema,
-  iconUrl: urlSchema,
+  iconUrl: iconSchema,
   pollingMs: z.number().min(1, "Must be at least 1 second."),
 });
 
@@ -262,7 +274,14 @@ export function ItemDialog({
   onGroupsChanged,
 }: ItemDialogProps) {
   const haptic = useWebHaptics();
-  const services = getAllServices();
+  const services = useMemo(() => getAllServices(), []);
+  const fallbackIcons: IconOption[] = useMemo(
+    () =>
+      services
+        .filter((service): service is ServiceDefinition & { icon: string } => Boolean(service.icon))
+        .map((service) => ({ name: service.name, slug: service.icon })),
+    [services],
+  );
   const [serviceType, setServiceType] = useState(item?.serviceType ?? "");
   const [configFields, setConfigFields] = useState<Record<string, string>>({});
   const [configLoading, setConfigLoading] = useState(false);
@@ -502,15 +521,18 @@ export function ItemDialog({
                     field.state.meta.isTouched && field.state.meta.errors.length > 0;
                   return (
                     <div className="space-y-2">
-                      <Label htmlFor={field.name}>Icon URL</Label>
-                      <Input
+                      <Label htmlFor={field.name}>Icon</Label>
+                      <IconCombobox
                         id={field.name}
                         value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
+                        onChange={field.handleChange}
                         onBlur={field.handleBlur}
-                        placeholder="https://cdn.jsdelivr.net/gh/selfhst/icons/png/service.png"
-                        aria-invalid={isInvalid || undefined}
+                        fallbackIcons={fallbackIcons}
+                        invalid={isInvalid}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Search the selfh.st icon library by name, or paste a custom image URL.
+                      </p>
                       {isInvalid && (
                         <p className="text-sm text-destructive">
                           {formatErrors(field.state.meta.errors)}
