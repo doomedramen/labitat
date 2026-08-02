@@ -16,6 +16,27 @@ test.describe("Palette Switching", () => {
     }
   });
 
+  test("uses a full-width modal picker on small screens", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.reload();
+    await page.getByRole("button", { name: "Theme settings" }).click();
+
+    const dialog = page.getByRole("dialog", { name: "Choose a theme" });
+    await expect(dialog).toBeVisible();
+
+    const bounds = await dialog.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.width).toBeGreaterThanOrEqual(288);
+    await expect(page.getByRole("button", { name: "Close" })).toBeVisible();
+
+    const nordLight = page.getByRole("radio", { name: "Nord Light", exact: true });
+    await nordLight.scrollIntoViewIfNeeded();
+    await nordLight.click();
+
+    await expect(page.locator("html")).toHaveAttribute("data-palette", "nord_light");
+    await expect(dialog).toBeHidden();
+  });
+
   test("switches palette and applies data-palette attribute", async ({ page }) => {
     const nord = PALETTES.find((p) => p.id === "nord")!;
     await page.getByRole("button", { name: "Theme settings" }).click();
