@@ -249,8 +249,8 @@ class PollingSupervisor {
     try {
       await this.runPoll(item);
       item.retryCount = 0;
-    } catch (err) {
-      console.error(`[polling] Error polling ${item.id}:`, err);
+    } catch {
+      this.recordServiceFailure(item.id);
       item.retryCount++;
     } finally {
       this.running.delete(item.id);
@@ -369,6 +369,23 @@ class PollingSupervisor {
 
     const data = await adapter.fetchData(config);
     serverCache.set(item.id, { widgetData: data });
+  }
+
+  private recordServiceFailure(itemId: string): void {
+    const cached = serverCache.get(itemId)?.widgetData;
+
+    serverCache.set(itemId, {
+      widgetData: cached
+        ? {
+            ...cached,
+            _status: "warn",
+            _statusText: "Showing cached data - unable to reach service",
+          }
+        : {
+            _status: "error",
+            _statusText: "Unable to reach service",
+          },
+    });
   }
 
   private async pollUrl(item: PollingItem): Promise<void> {

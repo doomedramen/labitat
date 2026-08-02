@@ -158,6 +158,68 @@ describe("polling supervisor scheduling", () => {
 
     pollingSup.stop();
   });
+
+  it("records an unreachable service without logging the expected poll failure", async () => {
+    const pollError = new Error("connect ECONNREFUSED 192.168.1.78:3551");
+    const cacheSet = vi.fn();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    vi.doMock("@/lib/db", () => ({
+      db: {
+        select: () => ({
+          from: () => [
+            {
+              id: "offline-item",
+              serviceType: "offline-service",
+              href: null,
+              serviceUrl: "http://offline.test",
+              configEnc: null,
+              pollingMs: 1000,
+            },
+          ],
+        }),
+      },
+    }));
+
+    vi.doMock("@/lib/adapters", () => ({
+      getService: () => ({
+        defaultPollingMs: 1000,
+        fetchData: vi.fn().mockRejectedValue(pollError),
+      }),
+    }));
+
+    vi.doMock("@/lib/crypto", () => ({
+      decrypt: async () => "{}",
+    }));
+
+    vi.doMock("@/lib/adapters/fetch-with-timeout", () => ({
+      fetchWithTimeout: vi.fn(),
+    }));
+
+    vi.doMock("@/lib/server-cache", () => ({
+      serverCache: {
+        get: vi.fn(() => null),
+        set: cacheSet,
+      },
+    }));
+
+    const { pollingSup } = await import("@/lib/polling-supervisor");
+
+    pollingSup.stop();
+    pollingSup.invalidateCache();
+    pollingSup.connect();
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(consoleError).not.toHaveBeenCalled();
+    expect(cacheSet).toHaveBeenCalledWith("offline-item", {
+      widgetData: {
+        _status: "error",
+        _statusText: "Unable to reach service",
+      },
+    });
+
+    pollingSup.stop();
+  });
 });
 
 describe("server cache freshness", () => {
