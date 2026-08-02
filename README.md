@@ -22,9 +22,17 @@ Labitat is a self-hosted homelab dashboard for monitoring services, arranging li
 
 ## Screenshots
 
-![Labitat dashboard](https://doomedramen.github.io/labitat/images/labitat_dash.png)
+### Dashboard overview
 
-![Labitat edit mode](https://doomedramen.github.io/labitat/images/labitat_dash_edit.png)
+![Labitat dashboard showing infrastructure and media service metrics](docs/public/images/dashboard-overview.jpg)
+
+### Live activity
+
+![Labitat showing active Plex sessions and download progress](docs/public/images/live-activity.jpg)
+
+### Edit mode
+
+![Labitat dashboard editor with draggable groups and service cards](docs/public/images/edit-mode.jpg)
 
 ## Install
 

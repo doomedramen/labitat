@@ -40,6 +40,13 @@ features:
     details: Add your own services with a single TypeScript file. Clean adapter API makes contributions a breeze.
 ---
 
+## See Your Homelab at a Glance
+
+Bring infrastructure health, network activity, media libraries, and download queues into one
+focused dashboard.
+
+![Labitat dashboard showing infrastructure and media service metrics](/images/dashboard-overview.jpg)
+
 ## Supported Ecosystem
 
 ::: tip

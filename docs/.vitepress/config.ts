@@ -128,7 +128,13 @@ export default defineConfig({
     ["meta", { property: "og:locale", content: "en" }],
     ["meta", { property: "og:title", content: "Labitat | Homelab Dashboard" }],
     ["meta", { property: "og:site_name", content: "Labitat" }],
-    ["meta", { property: "og:image", content: "/images/labitat_dash.png" }],
+    [
+      "meta",
+      {
+        property: "og:image",
+        content: "https://doomedramen.github.io/labitat/images/dashboard-overview.jpg",
+      },
+    ],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
   ],
 

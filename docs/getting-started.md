@@ -44,15 +44,23 @@ Once you're logged in, you can start building your perfect dashboard:
 
 ### Dashboard Overview
 
-Monitor all your services from a single, unified interface. Widgets update in real-time.
+Monitor infrastructure, networking, media, and downloads from a single interface. Each service
+surfaces the metrics that matter at a glance.
 
-![Labitat Dashboard](/images/labitat_dash.png)
+![Labitat dashboard showing infrastructure and media service metrics](/images/dashboard-overview.jpg)
+
+### Live Activity
+
+See what's playing and downloading without opening another app. Active media sessions show
+playback state and progress, while download queues include status, ETA, size, and completion.
+
+![Active Plex sessions and download queues in Labitat](/images/live-activity.jpg)
 
 ### Edit Mode
 
 Enter **Edit Mode** to rearrange your dashboard. Use drag-and-drop to organize services into groups that make sense for your workflow.
 
-![Dashboard Edit Mode](/images/labitat_dash_edit.png)
+![Labitat dashboard editor with draggable groups and service cards](/images/edit-mode.jpg)
 
 ::: info Need Help?
 If you run into issues, check our [Troubleshooting](/troubleshooting) guide or open an issue on [GitHub](https://github.com/DoomedRamen/labitat).
