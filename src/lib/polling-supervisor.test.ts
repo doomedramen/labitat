@@ -12,6 +12,44 @@ describe("polling supervisor scheduling", () => {
     vi.useRealTimers();
   });
 
+  it("does not log item counts when refreshing the polling cache", async () => {
+    const consoleLog = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+    vi.doMock("@/lib/db", () => ({
+      db: {
+        select: () => ({
+          from: () => [
+            {
+              id: "item-1",
+              serviceType: null,
+              href: null,
+              serviceUrl: null,
+              configEnc: null,
+              pollingMs: 60_000,
+            },
+          ],
+        }),
+      },
+    }));
+
+    vi.doMock("@/lib/adapters", () => ({ getService: vi.fn() }));
+    vi.doMock("@/lib/crypto", () => ({ decrypt: vi.fn() }));
+    vi.doMock("@/lib/adapters/fetch-with-timeout", () => ({ fetchWithTimeout: vi.fn() }));
+    vi.doMock("@/lib/server-cache", () => ({
+      serverCache: { get: vi.fn(() => null), set: vi.fn() },
+    }));
+
+    const { pollingSup } = await import("@/lib/polling-supervisor");
+    pollingSup.stop();
+    pollingSup.invalidateCache();
+    pollingSup.connect();
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(consoleLog).not.toHaveBeenCalledWith(expect.stringMatching(/Loaded \d+ item\(s\)/));
+
+    pollingSup.stop();
+  });
+
   it("does not fall back to a 100ms timer while a due poll is still in flight", async () => {
     let resolvePoll: (() => void) | undefined;
 
