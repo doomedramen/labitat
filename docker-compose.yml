@@ -16,6 +16,8 @@ services:
       - SECRET_KEY=${SECRET_KEY:-}
       - NODE_ENV=production
       - DATABASE_URL=file:/app/data/labitat.db
+      # Optional: set to false to allow public dashboard editing
+      - AUTH_ENABLED=${AUTH_ENABLED:-true}
       # Optional: customize port
       # - PORT=3000
       # Cache directory for widget cache persistence

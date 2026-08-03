@@ -2,15 +2,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock getSession before importing guard
 const mockGetSession = vi.fn();
+const mockEnv = vi.hoisted(() => ({ AUTH_ENABLED: true }));
 vi.mock("@/lib/auth/index", () => ({
   getSession: () => mockGetSession(),
 }));
+vi.mock("@/lib/env", () => ({ env: mockEnv }));
 
-import { requireAuth, isAuthenticated } from "@/lib/auth/guard";
+import { requireAuth, isAuthenticated, hasEditAccess } from "@/lib/auth/guard";
 
 describe("guard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockEnv.AUTH_ENABLED = true;
   });
 
   describe("requireAuth", () => {
@@ -22,6 +25,13 @@ describe("guard", () => {
 
       const userId = await requireAuth();
       expect(userId).toBe("user-123");
+    });
+
+    it("allows public mutations without reading a session when auth is disabled", async () => {
+      mockEnv.AUTH_ENABLED = false;
+
+      await expect(requireAuth()).resolves.toBe("public-access");
+      expect(mockGetSession).not.toHaveBeenCalled();
     });
 
     it("throws when loggedIn is false", async () => {
@@ -87,6 +97,22 @@ describe("guard", () => {
       });
 
       expect(await isAuthenticated()).toBe(false);
+    });
+  });
+
+  describe("hasEditAccess", () => {
+    it("returns true without reading a session when auth is disabled", async () => {
+      mockEnv.AUTH_ENABLED = false;
+
+      await expect(hasEditAccess()).resolves.toBe(true);
+      expect(mockGetSession).not.toHaveBeenCalled();
+    });
+
+    it("uses the session when auth is enabled", async () => {
+      mockGetSession.mockResolvedValue({ loggedIn: false, userId: "" });
+
+      await expect(hasEditAccess()).resolves.toBe(false);
+      expect(mockGetSession).toHaveBeenCalledOnce();
     });
   });
 });

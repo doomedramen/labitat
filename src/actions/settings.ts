@@ -1,16 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getSession } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth/guard";
 import { db } from "@/lib/db";
 import { settings } from "@/lib/db/schema";
 import { refreshSettingCache } from "@/lib/structural-cache";
 
 export async function updateDashboardTitle(title: string) {
-  const session = await getSession();
-  if (!session.loggedIn) {
-    throw new Error("Unauthorized");
-  }
+  await requireAuth();
 
   if (!title || typeof title !== "string") {
     throw new Error("Invalid title");

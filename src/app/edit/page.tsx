@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { hasEditAccess } from "@/lib/auth/guard";
+import { env } from "@/lib/env";
 import { serverCache } from "@/lib/server-cache";
 import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache";
 import type { GroupWithCache, ItemWithCache } from "@/lib/types";
@@ -15,13 +16,13 @@ export const revalidate = 0;
 export default async function EditPage() {
   // Ensure Next never serves a cached RSC response for this route.
   noStore();
-  const [session, groupsWithItems, titleSetting] = await Promise.all([
-    getSession(),
+  const [canEdit, groupsWithItems, titleSetting] = await Promise.all([
+    hasEditAccess(),
     getOrSeedGroups(),
     getOrSeedSetting("dashboardTitle"),
   ]);
 
-  if (!session.loggedIn) redirect("/");
+  if (!canEdit) redirect("/");
 
   const itemIds = groupsWithItems.flatMap((g) => g.items.map((i) => i.id));
   const uniqueItemIds = [...new Set(itemIds)];
@@ -70,7 +71,11 @@ export default async function EditPage() {
         snapshotKey={snapshotKey}
         enableSse={false}
       >
-        <DashboardClient groups={enrichedGroups} isLoggedIn title={dashboardTitle} />
+        <DashboardClient
+          groups={enrichedGroups}
+          authEnabled={env.AUTH_ENABLED}
+          title={dashboardTitle}
+        />
       </LiveProvider>
     </main>
   );

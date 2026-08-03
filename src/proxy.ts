@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { getSessionOptions, type SessionData } from "@/lib/auth/session";
 import { hasAdminUser } from "@/lib/db/admin";
+import { env } from "@/lib/env";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (!env.AUTH_ENABLED) {
+    if (pathname === "/setup") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    return NextResponse.next();
+  }
 
   const adminExists = await hasAdminUser();
 

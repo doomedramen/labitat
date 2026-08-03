@@ -15,11 +15,11 @@ import {
 import { LoginForm } from "@/components/auth/login-form";
 
 export function DashboardViewChrome({
-  isLoggedIn,
+  canEdit,
   title,
   children,
 }: {
-  isLoggedIn: boolean;
+  canEdit: boolean;
   title: string;
   children: ReactNode;
 }) {
@@ -33,7 +33,7 @@ export function DashboardViewChrome({
       <SseBanner />
       <Header
         editMode={false}
-        isLoggedIn={isLoggedIn}
+        canEdit={canEdit}
         title={title}
         localTitle={localTitle}
         onTitleChange={setLocalTitle}

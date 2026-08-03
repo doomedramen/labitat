@@ -90,12 +90,13 @@ Docker generates and stores `SECRET_KEY` in `/app/data/.secret_key` on first run
 
 Common environment variables:
 
-| Variable       | Default                     | Description                       |
-| -------------- | --------------------------- | --------------------------------- |
-| `SECRET_KEY`   | Auto-generated in Docker    | Key for encrypted service secrets |
-| `DATABASE_URL` | `file:./data/labitat.db`    | SQLite database path              |
-| `PORT`         | `3000`                      | HTTP port                         |
-| `CACHE_DIR`    | `/app/data/cache` in Docker | Widget cache directory            |
+| Variable       | Default                     | Description                                      |
+| -------------- | --------------------------- | ------------------------------------------------ |
+| `SECRET_KEY`   | Auto-generated in Docker    | Key for encrypted service secrets                |
+| `DATABASE_URL` | `file:./data/labitat.db`    | SQLite database path                             |
+| `AUTH_ENABLED` | `true`                      | Set to `false` to allow public dashboard editing |
+| `PORT`         | `3000`                      | HTTP port                                        |
+| `CACHE_DIR`    | `/app/data/cache` in Docker | Widget cache directory                           |
 
 ## Development
 

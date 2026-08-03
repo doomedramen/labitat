@@ -23,7 +23,7 @@ import { TitleForm } from "./title-form";
 
 interface HeaderProps {
   editMode: boolean;
-  isLoggedIn: boolean;
+  canEdit: boolean;
   title: string;
   localTitle: string | null;
   onTitleChange: (title: string | null) => void;
@@ -33,7 +33,7 @@ interface HeaderProps {
 
 export function Header({
   editMode,
-  isLoggedIn,
+  canEdit,
   title,
   localTitle,
   onTitleChange,
@@ -101,7 +101,7 @@ export function Header({
           </DropdownMenu>
         )}
 
-        {isLoggedIn ? (
+        {canEdit ? (
           !editMode ? (
             <Button
               size="sm"

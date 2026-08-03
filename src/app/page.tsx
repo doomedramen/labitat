@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth";
+import { hasEditAccess } from "@/lib/auth/guard";
 import { serverCache } from "@/lib/server-cache";
 import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache";
 import { runStartupWarmup } from "@/lib/startup";
@@ -25,10 +25,10 @@ async function DashboardContent() {
     warmupTriggered = true;
     runStartupWarmup();
   }
-  let session, groupsWithItems, titleSetting;
+  let canEdit, groupsWithItems, titleSetting;
   try {
-    [session, groupsWithItems, titleSetting] = await Promise.all([
-      getSession(),
+    [canEdit, groupsWithItems, titleSetting] = await Promise.all([
+      hasEditAccess(),
       getOrSeedGroups(),
       getOrSeedSetting("dashboardTitle"),
     ]);
@@ -55,7 +55,6 @@ async function DashboardContent() {
     };
   }
 
-  const isLoggedIn = !!session.loggedIn;
   const dashboardTitle = titleSetting?.value ?? "Labitat";
 
   return (
@@ -65,7 +64,7 @@ async function DashboardContent() {
         snapshotKey={snapshotKey}
         enableSse={true}
       >
-        <DashboardViewChrome isLoggedIn={isLoggedIn} title={dashboardTitle}>
+        <DashboardViewChrome canEdit={canEdit} title={dashboardTitle}>
           {groupsWithItems.length > 0 ? (
             <div className="flex flex-col gap-10 sm:gap-12">
               {groupsWithItems.map((group) => (
@@ -73,7 +72,7 @@ async function DashboardContent() {
               ))}
             </div>
           ) : (
-            <EmptyDashboard isLoggedIn={isLoggedIn} />
+            <EmptyDashboard canEdit={canEdit} />
           )}
         </DashboardViewChrome>
       </LiveProvider>

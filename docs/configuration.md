@@ -8,9 +8,9 @@ Labitat is designed to be zero-config, but we offer powerful environment variabl
 | -------------- | ------------------------ | ------------------------------------------------------------------- |
 | `SECRET_KEY`   | _(Auto)_                 | Used for encryption of service credentials. Must be 32+ characters. |
 | `DATABASE_URL` | `file:./data/labitat.db` | Connection URL for the SQLite database.                             |
+| `AUTH_ENABLED` | `true`                   | Set to `false` to allow public dashboard editing.                   |
 | `NODE_ENV`     | `development`            | Set to `production` when deploying for optimized performance.       |
 | `PORT`         | `3000`                   | The port Labitat listens on.                                        |
-| `SECRET_KEY`   | _(None)_                 | Key for encrypting service credentials. **Back this up.**           |
 
 ---
 
@@ -21,6 +21,10 @@ One of Labitat's core principles is **secure credential storage**.
 ### The Secret Key
 
 Labitat uses **AES-256-GCM** to encrypt your API keys and passwords. The encryption key is derived from your `SECRET_KEY` using **HKDF-SHA256**.
+
+::: danger Public editing
+Setting `AUTH_ENABLED=false` lets anyone who can reach Labitat add, edit, reorder, and delete dashboard content, including service configuration. Only use it on a trusted network.
+:::
 
 ::: warning Keep it safe
 If you lose your `SECRET_KEY`, you lose access to all stored service credentials.

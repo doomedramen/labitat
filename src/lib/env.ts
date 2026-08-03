@@ -17,6 +17,7 @@ export const env = createEnv({
       .string()
       .default(isTest ? "file:./data/labitat.test.db" : "file:./data/labitat.db"),
     CACHE_DIR: z.string().optional(),
+    AUTH_ENABLED: z.boolean().default(true),
     IDLE_POLLING_ENABLED: z.boolean().default(true),
     IDLE_POLLING_INTERVAL_MINUTES: z.number().min(1).max(60).default(5),
     STARTUP_WARMUP_ENABLED: z.boolean().default(true),
@@ -33,6 +34,7 @@ export const env = createEnv({
     SECRET_KEY: process.env.SECRET_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
     CACHE_DIR: process.env.CACHE_DIR,
+    AUTH_ENABLED: process.env.AUTH_ENABLED !== "false",
     NEXT_PUBLIC_ALLOWED_DEV_ORIGINS: process.env.NEXT_PUBLIC_ALLOWED_DEV_ORIGINS,
     IDLE_POLLING_ENABLED: process.env.IDLE_POLLING_ENABLED === "true",
     IDLE_POLLING_INTERVAL_MINUTES: process.env.IDLE_POLLING_INTERVAL_MINUTES

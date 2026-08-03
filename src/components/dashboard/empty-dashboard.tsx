@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LayoutGrid, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function EmptyDashboard({ isLoggedIn }: { isLoggedIn: boolean }) {
+export function EmptyDashboard({ canEdit }: { canEdit: boolean }) {
   return (
     <section className="flex min-h-[22rem] items-center justify-center rounded-2xl border border-dashed border-border/70 bg-card/30 px-6 py-12 text-center">
       <div className="max-w-sm">
@@ -11,11 +11,11 @@ export function EmptyDashboard({ isLoggedIn }: { isLoggedIn: boolean }) {
         </div>
         <h2 className="text-lg font-semibold tracking-tight">Your dashboard is ready</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground text-pretty">
-          {isLoggedIn
+          {canEdit
             ? "Create a group, then add the services and links you want to keep within reach."
             : "No services have been added yet. Sign in to start building this dashboard."}
         </p>
-        {isLoggedIn && (
+        {canEdit && (
           <Button asChild className="mt-6">
             <Link href="/edit">
               <Plus className="size-4" />

@@ -25,11 +25,11 @@ import { updateDashboardTitle } from "@/actions/settings";
 
 interface DashboardClientProps {
   groups: GroupWithCache[];
-  isLoggedIn: boolean;
+  authEnabled: boolean;
   title: string;
 }
 
-export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientProps) {
+export function DashboardClient({ groups, authEnabled, title }: DashboardClientProps) {
   const haptic = useWebHaptics();
   const router = useRouter();
   const editMode = true;
@@ -224,7 +224,7 @@ export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientPr
     <>
       <Header
         editMode={editMode}
-        isLoggedIn={isLoggedIn}
+        canEdit
         title={title}
         localTitle={localTitle}
         onTitleChange={setLocalTitle}
@@ -262,8 +262,9 @@ export function DashboardClient({ groups, isLoggedIn, title }: DashboardClientPr
         />
       </div>
 
-      {editMode && isLoggedIn && (
+      {editMode && (
         <EditBar
+          showSignOut={authEnabled}
           onDone={async () => {
             await handleSaveTitle();
             router.push("/");
