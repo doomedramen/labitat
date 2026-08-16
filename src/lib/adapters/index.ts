@@ -13,6 +13,7 @@ import { tautulliDefinition } from "./tautulli";
 import { plexDefinition } from "./plex";
 import { unmanicDefinition } from "./unmanic";
 import { apcupsDefinition } from "./apcups";
+import { nutDefinition } from "./nut";
 import { unifiDefinition } from "./unifi";
 import { nginxProxyManagerDefinition } from "./nginx-proxy-manager";
 import { proxmoxDefinition } from "./proxmox";
@@ -110,6 +111,7 @@ export const registry = buildRegistry([
   plexDefinition,
   unmanicDefinition,
   apcupsDefinition,
+  nutDefinition,
   unifiDefinition,
   nginxProxyManagerDefinition,
   proxmoxDefinition,

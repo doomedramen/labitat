@@ -359,3 +359,43 @@ export const apcupsMocks = {
       status,
     ),
 };
+
+// ── NUT (Network UPS Tools) Mocks ────────────────────────────────────────────────
+//
+// NUT's upsd protocol is a plain-text TCP protocol (no HTTP interface), so these
+// factories return raw wire-format strings rather than MockResponse objects — they
+// aren't wired into the fetch-based `mocks` registry in ./index.ts for that reason.
+
+export const nutMocks = {
+  success: (opts?: {
+    upsName?: string;
+    status?: string;
+    batteryCharge?: number;
+    runtimeSeconds?: number;
+    loadPercent?: number;
+  }): string => {
+    const upsName = opts?.upsName ?? "ups";
+    return [
+      `BEGIN LIST VAR ${upsName}`,
+      `VAR ${upsName} ups.status "${opts?.status ?? "OL"}"`,
+      `VAR ${upsName} battery.charge "${opts?.batteryCharge ?? 95}"`,
+      `VAR ${upsName} battery.runtime "${opts?.runtimeSeconds ?? 1800}"`,
+      `VAR ${upsName} ups.load "${opts?.loadPercent ?? 35}"`,
+      `END LIST VAR ${upsName}`,
+      "",
+    ].join("\n");
+  },
+
+  empty: (upsName = "ups"): string =>
+    [
+      `BEGIN LIST VAR ${upsName}`,
+      `VAR ${upsName} ups.status "OL"`,
+      `VAR ${upsName} battery.charge "0"`,
+      `VAR ${upsName} battery.runtime "0"`,
+      `VAR ${upsName} ups.load "0"`,
+      `END LIST VAR ${upsName}`,
+      "",
+    ].join("\n"),
+
+  error: (message = "ERR UNKNOWN-UPS"): string => `${message}\n`,
+};

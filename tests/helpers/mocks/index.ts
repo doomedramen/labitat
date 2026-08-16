@@ -145,6 +145,7 @@ export {
   openweathermapMocks,
   unifiMocks,
   apcupsMocks,
+  nutMocks,
 } from "./network-monitoring-adapters";
 
 export {
