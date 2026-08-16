@@ -13,6 +13,28 @@ type NutData = {
 // NUT `ups.status` is a space-separated set of status codes (e.g. "OL" or "OB LB").
 const WARN_STATUS_CODES = new Set(["OB", "LB", "RB", "DISCHRG", "BYPASS", "OVER"]);
 
+const STATUS_LABELS: Record<string, string> = {
+  OL: "Online",
+  OB: "On Battery",
+  LB: "Low Battery",
+  RB: "Replace Battery",
+  CHRG: "Charging",
+  DISCHRG: "Discharging",
+  BYPASS: "Bypass",
+  CAL: "Calibrating",
+  OFF: "Off",
+  OVER: "Overload",
+  TRIM: "Trimming",
+  BOOST: "Boosting",
+  FSD: "Forced Shutdown",
+};
+
+function formatNutStatus(status: string): string {
+  const codes = (status ?? "").split(/\s+/).filter(Boolean);
+  if (codes.length === 0) return "Unknown";
+  return codes.map((code) => STATUS_LABELS[code] ?? code).join(", ");
+}
+
 function mapNutStatus(status: string): "ok" | "warn" | "none" {
   const codes = (status ?? "").split(/\s+/).filter(Boolean);
   if (codes.length === 0) return "none";
@@ -39,7 +61,7 @@ function nutToPayload(data: NutData) {
     stats: [
       {
         id: "status",
-        value: data.status ?? "Unknown",
+        value: formatNutStatus(data.status),
         label: "Status",
         icon: Zap,
       },

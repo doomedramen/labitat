@@ -343,7 +343,7 @@ describe("nut definition", () => {
         runtimeSeconds: 2100,
       });
       expect(payload.stats).toHaveLength(4);
-      expect(payload.stats[0].value).toBe("OL");
+      expect(payload.stats[0].value).toBe("Online");
       expect(payload.stats[0].label).toBe("Status");
       expect(payload.stats[1].value).toBe("45%");
       expect(payload.stats[1].label).toBe("Load");
@@ -385,6 +385,28 @@ describe("nut definition", () => {
         runtimeSeconds: 30,
       });
       expect(payload.stats[3].value).toBe("30s");
+    });
+
+    it("formats multi-code status as comma-separated labels", () => {
+      const payload = nutDefinition.toPayload!({
+        _status: "warn",
+        status: "OB LB",
+        loadPercent: 80,
+        batteryCharge: 10,
+        runtimeSeconds: 30,
+      });
+      expect(payload.stats[0].value).toBe("On Battery, Low Battery");
+    });
+
+    it("falls back to raw code for unrecognized status", () => {
+      const payload = nutDefinition.toPayload!({
+        _status: "none",
+        status: "WEIRD",
+        loadPercent: 0,
+        batteryCharge: 0,
+        runtimeSeconds: 0,
+      });
+      expect(payload.stats[0].value).toBe("WEIRD");
     });
 
     it("shows 0m when runtime is zero", () => {
