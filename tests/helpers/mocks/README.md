@@ -258,6 +258,19 @@ All adapters provide these standard mock patterns:
 - `success(baseUrl, options?)` - Successful response with customizable data
 - `empty(baseUrl)` - Empty state (no data)
 - `error(baseUrl, status?)` - Error response (default 500)
+
+## Live observation fixtures
+
+`live-observations.ts` provides stable identities for polling and cache tests:
+
+- `liveObservationFixtures.successful` — fresh value with matching attempt and success times.
+- `liveObservationFixtures.failedAfterSuccess` — failed attempt that retains the prior successful value and timestamp.
+- `liveObservationFixtures.freshDegraded` — new data with a warning status; it is still fresh.
+- `liveObservationFixtures.legacyCache` — pre-metadata cache row whose success provenance is unknown.
+- `pollScheduleFixtures.queued` and `.slow` — queued and in-flight scheduler states.
+
+These fixtures are data-only. E2E tests must use the isolated `LABITAT_E2E_PORT` server and `data/labitat.test.db`; never reset or seed the user's dashboard database.
+
 - `unauthorized(baseUrl)` - 401 Unauthorized (where applicable)
 
 ### Media Servers

@@ -1,4 +1,5 @@
 import { test, expect, seedAndAuth, SEED_GROUPS } from "../fixtures";
+import { dragAndDropManual } from "../helpers/dnd";
 
 test.describe("Edit Mode", () => {
   test.beforeEach(async ({ page }) => {
@@ -132,5 +133,74 @@ test.describe("Edit Mode", () => {
 
     await expect(page.getByTestId("item-card").filter({ hasText: "Proxmox" })).toHaveCount(0);
     await expect(page.getByTestId("item-card").filter({ hasText: "Grafana" })).toBeVisible();
+  });
+
+  test.fail(
+    true,
+    "Baseline reproduction: a failed title mutation leaves Done on /edit instead of recovering the draft",
+  );
+  test("reproduces all edit-to-view changes without a hard reload", async ({ page }) => {
+    await seedAndAuth(page, {
+      groups: [
+        {
+          name: "Primary",
+          items: [
+            { label: "First", href: "https://first.test" },
+            { label: "Second", href: "https://second.test" },
+          ],
+        },
+        { name: "Secondary", items: [{ label: "Third", href: "https://third.test" }] },
+      ],
+    });
+
+    await page.goto("/edit");
+
+    // Group mutation.
+    await page.getByLabel("Edit group").first().click();
+    await page.locator("#name").fill("Renamed Primary");
+    await page.getByRole("button", { name: "Update" }).click();
+    await expect(page.locator("h2", { hasText: "Renamed Primary" })).toBeVisible();
+
+    // Item and service configuration mutation.
+    const firstCard = page.getByTestId("item-card").filter({ hasText: "First" });
+    await firstCard.getByLabel("Edit item").click();
+    await page.locator("#label").fill("Configured First");
+    await page.getByRole("combobox", { name: "Service Type" }).click();
+    await page.getByRole("option", { name: "Generic Ping" }).click();
+    await page.locator("#config_url").fill("https://configured.test");
+    await page.getByRole("button", { name: "Update" }).click();
+    await expect(page.getByText("Configured First")).toBeVisible();
+
+    // Membership mutation.
+    await page.getByRole("button", { name: "Add item" }).first().click();
+    await page.locator("#label").fill("Added Without Reload");
+    await page.locator("#href").fill("https://added.test");
+    await page.getByRole("button", { name: "Create" }).click();
+    await expect(page.getByText("Added Without Reload")).toBeVisible();
+
+    // Item ordering mutation.
+    const handles = page.locator('[aria-label="Drag to reorder"]');
+    await dragAndDropManual(page, handles.nth(1), handles.nth(0));
+    await expect(page.getByTestId("item-card").nth(0)).toContainText("Second");
+
+    // Title mutation and Done navigation.
+    const titleInput = page.getByLabel("Dashboard title");
+    await titleInput.fill("No Reload Dashboard");
+    await page.getByRole("button", { name: "Done" }).click();
+    await expect(page).toHaveURL("/");
+
+    await expect(page.locator("h1")).toContainText("No Reload Dashboard");
+    await expect(page.getByText("Renamed Primary")).toBeVisible();
+    await expect(page.getByText("Configured First")).toBeVisible();
+    await expect(page.getByText("Added Without Reload")).toBeVisible();
+
+    // Browser history must retain the canonical edit and view structures.
+    await page.goBack();
+    await expect(page).toHaveURL("/edit");
+    await expect(page.getByText("Renamed Primary")).toBeVisible();
+    await expect(page.getByText("Configured First")).toBeVisible();
+    await page.goForward();
+    await expect(page).toHaveURL("/");
+    await expect(page.locator("h1")).toContainText("No Reload Dashboard");
   });
 });

@@ -19,8 +19,8 @@
 
 **Goal / checkpoint**: Separate the reported symptom from source suspicions; keep evidence runnable.
 
-- [ ] T003 Add a controlled edit/save/Done/back-forward reproduction matrix to tests/e2e/edit-mode.spec.ts and tests/e2e/navigation.spec.ts; cover group/item/title/config/order/membership without page.reload, and record which cases fail in specs/001-ui-ux-remediation/validation.md. (Tickets 025.)
-- [ ] T004 Extend deterministic service fixtures in tests/helpers/mocks/ for slow, failed, fresh-degraded, queued, and legacy-cache observations; document fixture identities and safe server setup in specs/001-ui-ux-remediation/validation.md. Inspect adapter outcome meanings before changing freshness semantics. (Tickets 022, 023.)
+- [x] T003 Add a controlled edit/save/Done/back-forward reproduction matrix to tests/e2e/edit-mode.spec.ts and tests/e2e/navigation.spec.ts; cover group/item/title/config/order/membership without page.reload, and record which cases fail in specs/001-ui-ux-remediation/validation.md. (Tickets 025.)
+- [x] T004 Extend deterministic service fixtures in tests/helpers/mocks/ for slow, failed, fresh-degraded, queued, and legacy-cache observations; document fixture identities and safe server setup in specs/001-ui-ux-remediation/validation.md. Inspect adapter outcome meanings before changing freshness semantics. (Tickets 022, 023.)
 
 ## Phase 3: US1 — Immediate persistence and recovery
 

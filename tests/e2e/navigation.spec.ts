@@ -24,4 +24,25 @@ test.describe("Navigation & Middleware", () => {
     await page.goto("/");
     await expect(page).toHaveURL(/\/setup/);
   });
+
+  test("back and forward preserve saved structure without reload", async ({ page }) => {
+    await seedAndAuth(page, {
+      groups: [{ name: "Navigation Group", items: [{ label: "Navigation Item" }] }],
+    });
+
+    await page.goto("/edit");
+    await page.getByLabel("Edit group").click();
+    await page.locator("#name").fill("Saved Navigation Group");
+    await page.getByRole("button", { name: "Update" }).click();
+    await page.getByRole("button", { name: "Done" }).click();
+
+    await expect(page).toHaveURL("/");
+    await expect(page.getByText("Saved Navigation Group")).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL("/edit");
+    await expect(page.getByText("Saved Navigation Group")).toBeVisible();
+    await page.goForward();
+    await expect(page).toHaveURL("/");
+    await expect(page.getByText("Saved Navigation Group")).toBeVisible();
+  });
 });

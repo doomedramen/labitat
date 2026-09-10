@@ -111,6 +111,14 @@ export {
 } from "../adapter-mocks";
 
 export type { MockResponse, MockAdapter, RecordedRequest } from "../adapter-mocks";
+export {
+  LIVE_FIXTURE_CONFIGURATION_REVISION,
+  LIVE_FIXTURE_ITEM_ID,
+  liveObservationFixtures,
+  mockObservationDelayMs,
+  pollScheduleFixtures,
+} from "./live-observations";
+export type { ObservationFixture, PollScheduleFixture } from "./live-observations";
 
 // Import types for internal use
 import type { MockResponse, MockAdapter } from "../adapter-mocks";

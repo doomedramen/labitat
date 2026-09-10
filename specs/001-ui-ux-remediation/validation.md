@@ -17,7 +17,18 @@ Date: 2026-09-10
   - `pnpm check-doc-coverage` — 46/46 adapters documented.
   - `pnpm test:unit` — 70 files, 693 tests passed.
 - 100-card profile procedure: use the same seeded 100-card fixture, browser, hardware, and polling interval for a 30-second before/after capture; record React commit frequency, scripting time, responsiveness, hidden/resumed behavior, and reduced-motion behavior. No performance claim is made until this comparison runs.
+- Adapter outcome inspection: `generic-ping` and `generic-rest` catch transport failures and return `_status: "error"`; `apcups` can return `_status: "warn"` with newly fetched UPS data. A resolved promise or warning alone is not used as freshness proof. T004 fixtures preserve these distinctions.
 
 ## Story evidence
 
 Evidence will be appended after each task or story checkpoint. Tasks remain unchecked until their targeted validation passes.
+
+## T003–T004 foundational reproduction
+
+Date: 2026-09-11
+
+- `CI=1 LABITAT_E2E_PORT=3100 pnpm exec playwright test tests/e2e/edit-mode.spec.ts tests/e2e/navigation.spec.ts --grep "reproduces all edit-to-view|back and forward"` ran against the isolated production server.
+- Browser reproduction confirmed group, item/service configuration, membership, and order changes were visible in `/edit` before Done. The combined title path failed: after entering `No Reload Dashboard`, Done remained on `/edit`; this is retained as a baseline expected-failure test until title failure/pending handling is fixed.
+- Browser history reproduction failed after a successful group rename: Back returned to `/edit` with the pre-save `Navigation Group` instead of `Saved Navigation Group`. No hard reload was used. This confirms the reported route/browser symptom at the user-flow boundary.
+- Initial Playwright attempt was blocked by missing Chromium; `pnpm exec playwright install chromium` installed the locked browser build before the reproduction run.
+- Fixture identities added under `tests/helpers/mocks/live-observations.ts`: `fixture-item-1`, configuration revision `7`, plus `successful`, `failedAfterSuccess`, `freshDegraded`, `legacyCache`, `queued`, and `slow` fixtures. They encode transport failure separately from fresh degraded data and do not access production DB state.
