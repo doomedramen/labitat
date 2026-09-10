@@ -1,9 +1,8 @@
 import { test, expect, seedAndAuth } from "../fixtures";
-import { dragAndDrop, dragAndDropManual } from "../helpers/dnd";
+import { dragAndDropManual } from "../helpers/dnd";
 
-test.describe.skip("Drag and Drop Reordering", () => {
+test.describe("Drag and Drop Reordering", () => {
   test.beforeEach(async ({ page }) => {
-    // TODO: Fix seedAndAuth fixture - session not being set correctly in production mode
     await seedAndAuth(page, {
       groups: [
         {
@@ -41,7 +40,7 @@ test.describe.skip("Drag and Drop Reordering", () => {
     const responsePromise = page.waitForResponse(
       (resp) => resp.request().method() === "POST" && resp.status() === 200,
     );
-    await dragAndDrop(page, thirdHandle, firstHandle);
+    await dragAndDropManual(page, thirdHandle, firstHandle);
     await responsePromise;
   });
 
@@ -74,8 +73,8 @@ test.describe.skip("Drag and Drop Reordering", () => {
 
   test("cancelling drag reverts position", async ({ page }) => {
     const itemCards = page.getByTestId("item-card");
-    const firstItem = itemCards.nth(0);
-    const box = await firstItem.boundingBox();
+    const firstHandle = page.locator('[aria-label="Drag to reorder"]').nth(0);
+    const box = await firstHandle.boundingBox();
     if (!box) return;
 
     // Start a drag
@@ -89,5 +88,24 @@ test.describe.skip("Drag and Drop Reordering", () => {
 
     // Items should be in original order
     await expect(itemCards.nth(0)).toContainText("Item 1");
+  });
+
+  test("failed item reorder restores the pre-drag arrangement", async ({ page }) => {
+    await page.route("**/*", async (route) => {
+      const request = route.request();
+      if (request.method() === "POST" && request.headers()["next-action"]) {
+        await route.abort("failed");
+        return;
+      }
+      await route.continue();
+    });
+
+    const itemCards = page.getByTestId("item-card");
+    const handles = page.locator('[aria-label="Drag to reorder"]');
+    await dragAndDropManual(page, handles.nth(2), handles.nth(0));
+
+    await expect(itemCards.nth(0)).toContainText("Item 1");
+    await expect(itemCards.nth(1)).toContainText("Item 2");
+    await expect(itemCards.nth(2)).toContainText("Item 3");
   });
 });

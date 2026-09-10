@@ -32,3 +32,15 @@ Date: 2026-09-11
 - Browser history reproduction failed after a successful group rename: Back returned to `/edit` with the pre-save `Navigation Group` instead of `Saved Navigation Group`. No hard reload was used. This confirms the reported route/browser symptom at the user-flow boundary.
 - Initial Playwright attempt was blocked by missing Chromium; `pnpm exec playwright install chromium` installed the locked browser build before the reproduction run.
 - Fixture identities added under `tests/helpers/mocks/live-observations.ts`: `fixture-item-1`, configuration revision `7`, plus `successful`, `failedAfterSuccess`, `freshDegraded`, `legacyCache`, `queued`, and `slow` fixtures. They encode transport failure separately from fresh degraded data and do not access production DB state.
+
+## T005–T012 US1 checkpoint
+
+Date: 2026-09-11
+
+- Focused Vitest regression: `pnpm exec vitest run src/lib/live-store.test.ts src/components/dashboard/live-provider.test.tsx src/components/dashboard/use-item-live.test.tsx src/components/editor/item-dialog.preview.test.tsx src/actions/items.test.ts` — 5 files, 13 tests passed.
+- Type safety: `pnpm typecheck` — passed.
+- Development browser matrix: `LABITAT_E2E_MODE=development LABITAT_E2E_PORT=3114 pnpm exec playwright test tests/e2e/edit-mode.spec.ts tests/e2e/navigation.spec.ts tests/e2e/drag-drop.spec.ts tests/e2e/dashboard-title.spec.ts --project=chromium` — 26 tests passed.
+- Production browser matrix: `LABITAT_E2E_MODE=production LABITAT_E2E_PORT=3120 pnpm exec playwright test tests/e2e/edit-mode.spec.ts tests/e2e/navigation.spec.ts tests/e2e/drag-drop.spec.ts tests/e2e/dashboard-title.spec.ts --project=chromium` — 26 tests passed. The corrected history scenarios start at `/` and enter `/edit` through the visible Edit action; focused rerun on port `3118` and this clean matrix both passed.
+- The final Done race was reproduced in production: a layout Server Action could still reconcile the client tree while a synthetic click targeted the replaced button node. Layout pending now remains true through two animation frames after the canonical response; the no-reload sequence uses an enabled-state wait and a real click. The focused production test passed on port `3113`.
+- Mutation recovery evidence: failed reorder restores the pre-drag order; Escape cancellation restores the original order; failed title save stays on `/edit`, preserves the draft, and exposes an error; group/item/config/membership/order/title changes survive view navigation and back/forward without `page.reload()`.
+- Additive schema evidence: migration `drizzle/0006_loose_ted_forrester.sql` adds nonsecret `configuration_revision` metadata. Legacy cache timestamps remain unknown success provenance in the initial snapshot.

@@ -7,6 +7,7 @@ import {
   type DragStartEvent,
   type DragOverEvent,
   type DragEndEvent,
+  type DragCancelEvent,
   type SensorDescriptor,
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -21,6 +22,7 @@ interface EditModeProps {
   onDragStart: (event: DragStartEvent) => void;
   onDragOver: (event: DragOverEvent) => void;
   onDragEnd: (event: DragEndEvent) => void;
+  onDragCancel: (event: DragCancelEvent) => void;
   onEditGroup: (group: GroupWithCache) => void;
   onAddItem: (groupId: string) => void;
   onEditItem: (item: ItemWithCache) => void;
@@ -35,6 +37,7 @@ export function EditMode({
   onDragStart,
   onDragOver,
   onDragEnd,
+  onDragCancel,
   onEditGroup,
   onAddItem,
   onEditItem,
@@ -48,11 +51,13 @@ export function EditMode({
 
   return (
     <DndContext
+      id="edit-dashboard-dnd"
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
+      onDragCancel={onDragCancel}
     >
       <SortableContext items={groups.map((g) => g.id)} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-6 sm:gap-8">

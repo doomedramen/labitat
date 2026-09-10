@@ -9,10 +9,19 @@ interface TitleFormProps {
   title: string;
   localTitle: string | null;
   onTitleChange: (title: string | null) => void;
+  error?: string | null;
+  saving?: boolean;
   onExitEdit: () => void;
 }
 
-export function TitleForm({ title, localTitle, onTitleChange, onExitEdit }: TitleFormProps) {
+export function TitleForm({
+  title,
+  localTitle,
+  onTitleChange,
+  error = null,
+  saving = false,
+  onExitEdit,
+}: TitleFormProps) {
   const form = useForm({
     defaultValues: { title },
     validators: {
@@ -48,6 +57,8 @@ export function TitleForm({ title, localTitle, onTitleChange, onExitEdit }: Titl
               onBlur={field.handleBlur}
               className="h-9 text-base font-semibold tracking-[-0.02em]"
               aria-label="Dashboard title"
+              aria-describedby={error ? "dashboard-title-error" : undefined}
+              disabled={saving}
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
                   onTitleChange(null);
@@ -60,6 +71,11 @@ export function TitleForm({ title, localTitle, onTitleChange, onExitEdit }: Titl
           );
         }}
       </form.Field>
+      {error ? (
+        <p id="dashboard-title-error" role="alert" className="mt-1 text-xs text-destructive">
+          {error}
+        </p>
+      ) : null}
     </form>
   );
 }

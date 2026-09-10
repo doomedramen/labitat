@@ -135,10 +135,6 @@ test.describe("Edit Mode", () => {
     await expect(page.getByTestId("item-card").filter({ hasText: "Grafana" })).toBeVisible();
   });
 
-  test.fail(
-    true,
-    "Baseline reproduction: a failed title mutation leaves Done on /edit instead of recovering the draft",
-  );
   test("reproduces all edit-to-view changes without a hard reload", async ({ page }) => {
     await seedAndAuth(page, {
       groups: [
@@ -153,7 +149,9 @@ test.describe("Edit Mode", () => {
       ],
     });
 
-    await page.goto("/edit");
+    await page.goto("/");
+    await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
 
     // Group mutation.
     await page.getByLabel("Edit group").first().click();
@@ -186,7 +184,9 @@ test.describe("Edit Mode", () => {
     // Title mutation and Done navigation.
     const titleInput = page.getByLabel("Dashboard title");
     await titleInput.fill("No Reload Dashboard");
-    await page.getByRole("button", { name: "Done" }).click();
+    const doneButton = page.getByRole("button", { name: "Done" });
+    await expect(doneButton).toBeEnabled();
+    await doneButton.click();
     await expect(page).toHaveURL("/");
 
     await expect(page.locator("h1")).toContainText("No Reload Dashboard");

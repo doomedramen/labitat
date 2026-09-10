@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   KeyboardSensor,
@@ -10,6 +10,7 @@ import {
   type DragStartEvent,
   type DragOverEvent,
   type DragEndEvent,
+  type DragCancelEvent,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { toast } from "sonner";
@@ -20,7 +21,7 @@ import { EditMode } from "./edit-mode";
 import { Dialogs } from "./dialogs";
 import { EditBar } from "./edit-bar";
 import { reorderGroups } from "@/actions/groups";
-import { reorderItems } from "@/actions/items";
+import { moveItem, reorderItems } from "@/actions/items";
 import { updateDashboardTitle } from "@/actions/settings";
 
 interface DashboardClientProps {
@@ -40,6 +41,10 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
   const [editingGroup, setEditingGroup] = useState<GroupWithCache | null>(null);
   const [editingItem, setEditingItem] = useState<ItemWithCache | null>(null);
   const [targetGroupId, setTargetGroupId] = useState<string>("");
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [titleSaving, setTitleSaving] = useState(false);
+  const [donePending, setDonePending] = useState(false);
+  const [layoutMutationPending, setLayoutMutationPending] = useState(false);
 
   // Optimistic state for DnD
   const [localGroups, setLocalGroups] = useState<GroupWithCache[]>(groups);
@@ -93,21 +98,75 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
   );
 
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [dragStartGroupId, setDragStartGroupId] = useState<string | null>(null);
+  const dragSnapshotRef = useRef<GroupWithCache[] | null>(null);
+  const dragStartGroupIdRef = useRef<string | null>(null);
+  const layoutMutationPromiseRef = useRef<Promise<void>>(Promise.resolve());
+  const layoutMutationPendingRef = useRef(false);
+  const layoutMutationErrorRef = useRef<string | null>(null);
+
+  function cloneGroups(source: GroupWithCache[]): GroupWithCache[] {
+    return source.map((group) => ({ ...group, items: [...group.items] }));
+  }
+
+  function waitForLayoutCommit() {
+    return new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+  }
+
+  function restoreDragSnapshot() {
+    if (dragSnapshotRef.current) setLocalGroups(dragSnapshotRef.current);
+    dragSnapshotRef.current = null;
+    dragStartGroupIdRef.current = null;
+    setActiveId(null);
+  }
+
+  function queueLayoutMutation(
+    snapshot: GroupWithCache[],
+    mutation: () => Promise<GroupWithItems[]>,
+    failureMessage: string,
+  ) {
+    layoutMutationPendingRef.current = true;
+    setLayoutMutationPending(true);
+    layoutMutationErrorRef.current = null;
+    const run = async () => {
+      try {
+        const updated = await mutation();
+        handleGroupsUpdated(updated);
+        // Keep the editor locked through the RSC reconciliation and the local
+        // optimistic update. This prevents Done from targeting a transient DOM
+        // node while a server-action flight response is being applied.
+        await waitForLayoutCommit();
+      } catch {
+        layoutMutationErrorRef.current = failureMessage;
+        setLocalGroups(snapshot);
+        toast.error(failureMessage);
+      } finally {
+        layoutMutationPendingRef.current = false;
+        setLayoutMutationPending(false);
+      }
+    };
+    const pending = layoutMutationPromiseRef.current.then(run, run);
+    layoutMutationPromiseRef.current = pending;
+    return pending;
+  }
 
   function findItemGroupId(itemId: string, from = localGroups) {
     return from.find((g) => g.items.some((i) => i.id === itemId))?.id;
   }
 
   function handleDragStart(event: DragStartEvent) {
+    if (layoutMutationPendingRef.current) return;
     const id = event.active.id as string;
     setActiveId(id);
+    dragSnapshotRef.current = cloneGroups(localGroups);
     if (event.active.data.current?.type === "item") {
-      setDragStartGroupId(findItemGroupId(id) ?? null);
+      dragStartGroupIdRef.current = findItemGroupId(id) ?? null;
     }
   }
 
   function handleDragOver(event: DragOverEvent) {
+    if (layoutMutationPendingRef.current || donePending) return;
     const { active, over } = event;
     if (!over || active.data.current?.type !== "item") return;
 
@@ -133,12 +192,15 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
   }
 
   function handleDragEnd(event: DragEndEvent) {
+    if (layoutMutationPendingRef.current || donePending) {
+      restoreDragSnapshot();
+      return;
+    }
     const { active, over } = event;
     setActiveId(null);
 
     if (!over) {
-      setLocalGroups(groups);
-      setDragStartGroupId(null);
+      restoreDragSnapshot();
       return;
     }
 
@@ -153,17 +215,18 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
       const newIndex = localGroups.findIndex((g) => g.id === overId);
       if (oldIndex !== newIndex) {
         const reordered = arrayMove(localGroups, oldIndex, newIndex);
-        const snapshot = localGroups;
+        const snapshot = dragSnapshotRef.current ?? cloneGroups(localGroups);
         setLocalGroups(reordered);
-        reorderGroups(reordered.map((g) => g.id)).catch(() => {
-          setLocalGroups(snapshot);
-          toast.error("Failed to reorder groups");
-        });
+        queueLayoutMutation(
+          snapshot,
+          () => reorderGroups(reordered.map((g) => g.id)),
+          "Failed to reorder groups",
+        );
       }
     } else if (type === "item") {
       const currentGroupId = findItemGroupId(activeId);
       if (!currentGroupId) {
-        setDragStartGroupId(null);
+        restoreDragSnapshot();
         return;
       }
 
@@ -172,51 +235,99 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
       const overIdx = currentGroup.items.findIndex((i) => i.id === overId);
 
       let finalItems = currentGroup.items;
+      const snapshot = dragSnapshotRef.current ?? cloneGroups(localGroups);
       if (overIdx !== -1 && activeIdx !== overIdx) {
         finalItems = arrayMove(currentGroup.items, activeIdx, overIdx);
-        const snapshot = localGroups;
         setLocalGroups((prev) =>
           prev.map((g) => (g.id === currentGroupId ? { ...g, items: finalItems } : g)),
         );
-        reorderItems(
-          currentGroupId,
-          finalItems.map((i) => i.id),
-        ).catch(() => {
-          setLocalGroups(snapshot);
-          toast.error("Failed to reorder items");
-        });
-      } else {
-        reorderItems(
-          currentGroupId,
-          finalItems.map((i) => i.id),
-        ).catch(() => {
-          toast.error("Failed to save item order");
-        });
       }
 
-      if (dragStartGroupId && dragStartGroupId !== currentGroupId) {
-        const srcGroup = localGroups.find((g) => g.id === dragStartGroupId);
-        if (srcGroup)
-          reorderItems(
-            dragStartGroupId,
-            srcGroup.items.map((i) => i.id),
+      const sourceGroupId = dragStartGroupIdRef.current;
+      if (sourceGroupId && sourceGroupId !== currentGroupId) {
+        const srcGroup = localGroups.find((g) => g.id === sourceGroupId);
+        const destGroup = localGroups.find((g) => g.id === currentGroupId);
+        if (srcGroup && destGroup) {
+          queueLayoutMutation(
+            snapshot,
+            () =>
+              moveItem(
+                activeId,
+                sourceGroupId,
+                currentGroupId,
+                srcGroup.items.map((i) => i.id),
+                finalItems.map((i) => i.id),
+              ),
+            "Failed to move item",
           );
+        }
+      } else if (overIdx !== -1 && activeIdx !== overIdx) {
+        queueLayoutMutation(
+          snapshot,
+          () =>
+            reorderItems(
+              currentGroupId,
+              finalItems.map((i) => i.id),
+            ),
+          "Failed to reorder items",
+        );
       }
     }
 
-    setDragStartGroupId(null);
+    dragSnapshotRef.current = null;
+    dragStartGroupIdRef.current = null;
   }
 
-  async function handleSaveTitle() {
-    if (localTitle && localTitle.trim()) {
-      try {
-        await updateDashboardTitle(localTitle.trim());
-        toast.success("Dashboard saved");
-        haptic.trigger("success");
-      } catch {
-        toast.error("Failed to save title");
-        haptic.trigger("error");
+  function handleDragCancel(_event: DragCancelEvent) {
+    restoreDragSnapshot();
+  }
+
+  async function handleSaveTitle(): Promise<boolean> {
+    const nextTitle = (localTitle ?? title).trim();
+    if (!nextTitle) {
+      setTitleError("Dashboard title is required.");
+      return false;
+    }
+
+    if (nextTitle === title.trim()) {
+      setTitleError(null);
+      return true;
+    }
+
+    setTitleSaving(true);
+    setTitleError(null);
+    try {
+      await updateDashboardTitle(nextTitle);
+      toast.success("Dashboard saved");
+      haptic.trigger("success");
+      return true;
+    } catch {
+      setTitleError("Could not save dashboard title. Your draft is still here; try again.");
+      toast.error("Failed to save title");
+      haptic.trigger("error");
+      return false;
+    } finally {
+      setTitleSaving(false);
+    }
+  }
+
+  async function handleDone() {
+    if (donePending) return;
+    setDonePending(true);
+    try {
+      if (layoutMutationPendingRef.current) {
+        await layoutMutationPromiseRef.current;
+        if (layoutMutationErrorRef.current) return;
       }
+      const saved = await handleSaveTitle();
+      if (!saved) return;
+      // Let the title action's Flight response reconcile before changing
+      // history, otherwise back/forward can observe a partially applied tree.
+      await waitForLayoutCommit();
+      router.push("/");
+      haptic.trigger("light");
+    } finally {
+      setDonePending(false);
     }
   }
 
@@ -228,6 +339,8 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
         title={title}
         localTitle={localTitle}
         onTitleChange={setLocalTitle}
+        titleError={titleError}
+        titleSaving={titleSaving}
         onToggleEditMode={() => router.push("/")}
         onSignInClick={() => setLoginOpen(true)}
       />
@@ -240,6 +353,7 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
           onGroupsChanged={handleGroupsUpdated}
           onEditGroup={(group) => {
             setEditingGroup(group);
@@ -265,11 +379,8 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
       {editMode && (
         <EditBar
           showSignOut={authEnabled}
-          onDone={async () => {
-            await handleSaveTitle();
-            router.push("/");
-            haptic.trigger("light");
-          }}
+          onDone={handleDone}
+          pending={donePending || titleSaving || layoutMutationPending}
         />
       )}
 

@@ -63,7 +63,7 @@ export async function seedAndAuth(
       const cookie: any = {
         name: name!.trim(),
         value: value!.trim(),
-        domain: "localhost",
+        domain: new URL(response.url()).hostname,
         path: "/",
       };
 

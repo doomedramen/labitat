@@ -12,7 +12,13 @@ The commands below using LABITAT_E2E_PORT are valid only after T001. Set up the 
 
 For production-mode browser tests, use `CI=1 LABITAT_E2E_PORT=3100 pnpm exec playwright test <suite>`. Playwright creates the isolated production server, rejects reuse of any existing process, and runs database reset/seed against `data/labitat.test.db` only.
 
-For an isolated development server, use a different port and the same test database explicitly, for example `DATABASE_URL=file:./data/labitat.test.db PORT=3200 pnpm dev`; stop it before running production-mode tests. Never point either command at the default `data/labitat.db` when resetting or seeding.
+For isolated development-mode browser tests, use the Playwright mode switch with a different port:
+
+```sh
+CI=1 LABITAT_E2E_MODE=development LABITAT_E2E_PORT=3101 pnpm exec playwright test <suite>
+```
+
+The development and production modes each reset `data/labitat.test.db` before starting and never share a port concurrently. Never point either mode at the default `data/labitat.db` when resetting or seeding.
 
 ## Targeted checks
 

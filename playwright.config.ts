@@ -3,9 +3,13 @@ import path from "node:path";
 
 const testDbUrl = `file:${path.resolve(process.cwd(), "data", "labitat.test.db")}`;
 const e2ePort = Number.parseInt(process.env.LABITAT_E2E_PORT ?? "3100", 10);
+const e2eMode = process.env.LABITAT_E2E_MODE ?? "production";
 
 if (!Number.isInteger(e2ePort) || e2ePort < 1024 || e2ePort > 65535) {
   throw new Error("LABITAT_E2E_PORT must be an integer between 1024 and 65535");
+}
+if (e2eMode !== "development" && e2eMode !== "production") {
+  throw new Error('LABITAT_E2E_MODE must be "development" or "production"');
 }
 
 const e2eBaseUrl = `http://127.0.0.1:${e2ePort}`;
@@ -33,13 +37,15 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: `node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm build && npx next start -p ${e2ePort}`,
+    command:
+      e2eMode === "development"
+        ? `node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm exec next dev --turbopack --hostname 127.0.0.1 -p ${e2ePort}`
+        : `node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm build && npx next start -p ${e2ePort}`,
     url: e2eBaseUrl,
     reuseExistingServer: false,
     timeout: 300 * 1000,
     env: {
-      // Next build/start expect production env; test behavior is driven by explicit vars below.
-      NODE_ENV: "production",
+      NODE_ENV: e2eMode === "development" ? "development" : "production",
       DISABLE_STANDALONE: "1",
       PORT: String(e2ePort),
       DATABASE_URL: testDbUrl,

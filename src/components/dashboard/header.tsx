@@ -27,6 +27,8 @@ interface HeaderProps {
   title: string;
   localTitle: string | null;
   onTitleChange: (title: string | null) => void;
+  titleError?: string | null;
+  titleSaving?: boolean;
   onToggleEditMode: () => void;
   onSignInClick: () => void;
 }
@@ -37,6 +39,8 @@ export function Header({
   title,
   localTitle,
   onTitleChange,
+  titleError = null,
+  titleSaving = false,
   onToggleEditMode,
   onSignInClick,
 }: HeaderProps) {
@@ -52,6 +56,8 @@ export function Header({
           title={title}
           localTitle={localTitle}
           onTitleChange={onTitleChange}
+          error={titleError}
+          saving={titleSaving}
           onExitEdit={onToggleEditMode}
         />
       ) : (

@@ -1,0 +1,1 @@
+ALTER TABLE `items` ADD `configuration_revision` integer DEFAULT 0 NOT NULL;

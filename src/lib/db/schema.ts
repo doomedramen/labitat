@@ -35,6 +35,8 @@ export const items = sqliteTable(
     serviceType: text("service_type"),
     serviceUrl: text("service_url"),
     configEnc: text("config_enc"),
+    /** Non-secret generation for service configuration and endpoint changes. */
+    configurationRevision: integer("configuration_revision").notNull().default(0),
     order: integer("order").notNull(),
     pollingMs: integer("polling_ms").default(10000),
     /** Controls whether the card header shows the icon or the label */

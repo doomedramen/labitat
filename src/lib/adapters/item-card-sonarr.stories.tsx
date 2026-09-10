@@ -39,6 +39,7 @@ type ItemRow = {
   serviceType: string | null;
   serviceUrl: string | null;
   configEnc: string | null;
+  configurationRevision: number;
   order: number;
   pollingMs: number;
   displayMode: string;
@@ -62,6 +63,7 @@ const baseItem: ItemWithCache = {
   serviceType: "sonarr",
   serviceUrl: "https://sonarr.example.org",
   configEnc: null,
+  configurationRevision: 0,
   order: 0,
   pollingMs: 10_000,
   displayMode: "label",

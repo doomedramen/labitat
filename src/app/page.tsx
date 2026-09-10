@@ -39,7 +39,11 @@ async function DashboardContent() {
 
   const itemIds = groupsWithItems.flatMap((g) => g.items.map((i) => i.id));
   const uniqueItemIds = [...new Set(itemIds)];
-  const snapshotKey = uniqueItemIds.sort().join(",");
+  const snapshotKey = groupsWithItems
+    .flatMap((group) => group.items)
+    .map((item) => `${item.id}:${item.configurationRevision ?? 0}`)
+    .sort()
+    .join(",");
 
   // Reload from DB so SSR snapshots reflect the latest persisted cache even if the
   // request is served by a different server instance than the writer.
@@ -47,10 +51,18 @@ async function DashboardContent() {
   const initialSnapshotById: Record<string, ItemLive> = {};
   for (const id of uniqueItemIds) {
     const cached = allCache.get(id) ?? null;
+    const item = groupsWithItems
+      .flatMap((group) => group.items)
+      .find((candidate) => candidate.id === id);
     initialSnapshotById[id] = {
       widgetData: cached?.widgetData ?? null,
       pingStatus: cached?.pingStatus ?? null,
-      lastFetchedAt: cached?.lastFetchedAt ? cached.lastFetchedAt : null,
+      configurationRevision: item?.configurationRevision ?? 0,
+      observationUpdatedAt: cached?.lastFetchedAt ?? null,
+      lastAttemptAt: null,
+      lastSuccessAt: null,
+      freshness: "unknown",
+      lastFetchedAt: cached?.lastFetchedAt ?? null,
       itemLastUpdateAt: null,
     };
   }

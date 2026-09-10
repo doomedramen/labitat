@@ -36,17 +36,18 @@ export function LiveProvider({
   enableSse: boolean;
   children: ReactNode;
 }) {
+  // Stable getter for useSyncExternalStore's third argument
+  const snapshotRef = useRef(initialSnapshotById);
+  const getServerSnapshot = useCallback((id: string) => snapshotRef.current[id] ?? null, []);
+
   // initOnce in useMemo with client guard — safe, runs once, before any
   // child useSyncExternalStore reads getSnapshot during hydration
   useMemo(() => {
     if (typeof window === "undefined") return;
     liveStore.initOnce(initialSnapshotById, snapshotKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-init only when snapshotKey changes
-  }, [snapshotKey]);
-
-  // Stable getter for useSyncExternalStore's third argument
-  const snapshotRef = useRef(initialSnapshotById);
-  const getServerSnapshot = useCallback((id: string) => snapshotRef.current[id] ?? null, []);
+    snapshotRef.current = initialSnapshotById;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reconcile when server snapshot changes
+  }, [initialSnapshotById, snapshotKey]);
 
   useEffect(() => {
     if (!enableSse) return;
@@ -87,8 +88,11 @@ export function LiveProvider({
         if (!event.success) return;
 
         if (event.data.type === "reconnect") {
+          liveStore.setSseState("disconnected");
           es?.close();
           scheduleReconnect();
+        } else if (event.data.type === "poll-state") {
+          liveStore.updatePollState(event.data);
         } else if (event.data.type === "update") {
           liveStore.updateFromSse(event.data.itemId, event.data);
           liveStore.touchLastUpdate(event.data.fetchedAt);

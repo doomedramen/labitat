@@ -1,6 +1,8 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LiveProvider } from "@/components/dashboard/live-provider";
+import { liveStore } from "@/lib/live-store";
+import type { ItemLive } from "@/lib/live-types";
 
 const originalVisibilityState = Object.getOwnPropertyDescriptor(document, "visibilityState");
 
@@ -55,5 +57,59 @@ describe("LiveProvider app resume", () => {
 
     expect(staleConnection.close).toHaveBeenCalledOnce();
     expect(MockEventSource.instances).toHaveLength(2);
+  });
+
+  it("reconciles a changed membership snapshot without resetting connection metadata", () => {
+    const empty: ItemLive = {
+      widgetData: null,
+      pingStatus: null,
+      configurationRevision: 0,
+      observationUpdatedAt: null,
+      lastAttemptAt: null,
+      lastSuccessAt: null,
+      freshness: "unknown",
+      lastFetchedAt: null,
+      itemLastUpdateAt: null,
+    };
+
+    const { rerender } = render(
+      <LiveProvider
+        initialSnapshotById={{ a: empty, b: empty }}
+        snapshotKey="members-a"
+        enableSse={false}
+      >
+        <div />
+      </LiveProvider>,
+    );
+
+    act(() => {
+      liveStore.setSseState("connected");
+      liveStore.updateFromSse("a", {
+        widgetData: { value: "live" },
+        pingStatus: null,
+        fetchedAt: 2_000,
+        configurationRevision: 0,
+        observationUpdatedAt: 2_000,
+        freshness: "fresh",
+      });
+    });
+
+    rerender(
+      <LiveProvider
+        initialSnapshotById={{
+          a: { ...empty, observationUpdatedAt: 1_000, lastFetchedAt: 1_000 },
+          c: { ...empty, widgetData: { value: "new" } },
+        }}
+        snapshotKey="members-b"
+        enableSse={false}
+      >
+        <div />
+      </LiveProvider>,
+    );
+
+    expect(liveStore.getSnapshot("a")?.widgetData).toEqual({ value: "live" });
+    expect(liveStore.getSnapshot("b")).toBeNull();
+    expect(liveStore.getSnapshot("c")?.widgetData).toEqual({ value: "new" });
+    expect(liveStore.getMeta().sseState).toBe("connected");
   });
 });

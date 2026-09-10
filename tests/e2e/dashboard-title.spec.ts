@@ -35,4 +35,28 @@ test.describe("Dashboard Title", () => {
     await page.reload();
     await expect(page.locator("h1")).toContainText("My Homelab");
   });
+
+  test("keeps the title draft when saving fails", async ({ page }) => {
+    await seedAndAuth(page, { groups: SEED_GROUPS });
+    await page.goto("/edit");
+
+    await page.route("**/*", async (route) => {
+      const request = route.request();
+      if (request.method() === "POST" && request.headers()["next-action"]) {
+        await route.abort("failed");
+        return;
+      }
+      await route.continue();
+    });
+
+    const titleInput = page.getByLabel("Dashboard title");
+    await titleInput.fill("Draft That Must Stay");
+    await page.getByRole("button", { name: "Done" }).click();
+
+    await expect(page).toHaveURL(/\/edit/);
+    await expect(titleInput).toHaveValue("Draft That Must Stay");
+    await expect(page.locator("#dashboard-title-error")).toContainText(
+      "Could not save dashboard title",
+    );
+  });
 });

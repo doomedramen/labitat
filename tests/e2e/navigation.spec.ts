@@ -30,7 +30,9 @@ test.describe("Navigation & Middleware", () => {
       groups: [{ name: "Navigation Group", items: [{ label: "Navigation Item" }] }],
     });
 
-    await page.goto("/edit");
+    await page.goto("/");
+    await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page).toHaveURL("/edit");
     await page.getByLabel("Edit group").click();
     await page.locator("#name").fill("Saved Navigation Group");
     await page.getByRole("button", { name: "Update" }).click();

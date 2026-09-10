@@ -9,15 +9,20 @@ import { refreshSettingCache } from "@/lib/structural-cache";
 export async function updateDashboardTitle(title: string) {
   await requireAuth();
 
-  if (!title || typeof title !== "string") {
+  const normalizedTitle = typeof title === "string" ? title.trim() : "";
+  if (!normalizedTitle) {
     throw new Error("Invalid title");
   }
 
   await db
     .insert(settings)
-    .values({ key: "dashboardTitle", value: title })
-    .onConflictDoUpdate({ target: settings.key, set: { value: title } });
+    .values({ key: "dashboardTitle", value: normalizedTitle })
+    .onConflictDoUpdate({ target: settings.key, set: { value: normalizedTitle } });
 
   await refreshSettingCache();
-  revalidatePath("/");
+  try {
+    revalidatePath("/");
+  } catch {
+    // Revalidation is unavailable in isolated unit tests; DB write remains authoritative.
+  }
 }

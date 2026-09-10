@@ -35,6 +35,12 @@ function isStatCardOrder(value: unknown): value is { active: string[]; unused: s
   );
 }
 
+function stableConfig(value: Record<string, string>): string {
+  return JSON.stringify(
+    Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b))),
+  );
+}
+
 async function buildServiceConfig(
   serviceType: string | null,
   formData: FormData,
@@ -168,6 +174,15 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
       ? await encrypt(JSON.stringify(config))
       : (existingItem?.configEnc ?? null);
 
+  const configurationChanged = Boolean(
+    existingItem &&
+    (existingItem.serviceType !== serviceType ||
+      existingItem.serviceUrl !== nextServiceUrl ||
+      stableConfig(oldConfig) !== stableConfig(config)),
+  );
+  const configurationRevision =
+    (existingItem?.configurationRevision ?? 0) + (configurationChanged ? 1 : 0);
+
   const pollingMsStr = formData.get("pollingMs") as string;
   const pollingMs = pollingMsStr ? parseInt(pollingMsStr, 10) : null;
 
@@ -195,12 +210,18 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
       serviceType,
       serviceUrl: nextServiceUrl,
       configEnc,
+      configurationRevision,
       pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
       displayMode,
       statDisplayMode,
       statCardOrder: statCardOrderStr ?? existingItem?.statCardOrder ?? null,
     })
     .where(eq(items.id, id));
+  if (configurationChanged) {
+    // Values from the old generation must not appear under the new service
+    // configuration while the next poll establishes fresh provenance.
+    await serverCache.delete(id);
+  }
   pollingSup.invalidateCache();
 
   // Ensure both view and edit routes get fresh data after mutations.
@@ -228,11 +249,52 @@ export async function reorderItems(
   orderedIds: string[],
 ): Promise<GroupWithItems[]> {
   await requireAuth();
-  await Promise.all(
-    orderedIds.map((id, index) =>
-      db.update(items).set({ order: index, groupId }).where(eq(items.id, id)),
-    ),
-  );
+  db.transaction((tx) => {
+    orderedIds.forEach((id, index) => {
+      tx.update(items).set({ order: index, groupId }).where(eq(items.id, id)).run();
+    });
+  });
+  pollingSup.invalidateCache();
+  safeRevalidatePath("/");
+  safeRevalidatePath("/edit");
+  return refreshGroupsCache();
+}
+
+export async function moveItem(
+  itemId: string,
+  sourceGroupId: string,
+  destinationGroupId: string,
+  sourceOrderedIds: string[],
+  destinationOrderedIds: string[],
+): Promise<GroupWithItems[]> {
+  await requireAuth();
+
+  if (sourceGroupId === destinationGroupId) {
+    return reorderItems(destinationGroupId, destinationOrderedIds);
+  }
+
+  db.transaction((tx) => {
+    const current = tx
+      .select({ groupId: items.groupId })
+      .from(items)
+      .where(eq(items.id, itemId))
+      .get();
+
+    if (!current || current.groupId !== sourceGroupId) {
+      throw new Error("Item move is stale; reload the dashboard and try again.");
+    }
+
+    sourceOrderedIds.forEach((id, index) => {
+      tx.update(items).set({ groupId: sourceGroupId, order: index }).where(eq(items.id, id)).run();
+    });
+    destinationOrderedIds.forEach((id, index) => {
+      tx.update(items)
+        .set({ groupId: destinationGroupId, order: index })
+        .where(eq(items.id, id))
+        .run();
+    });
+  });
+
   pollingSup.invalidateCache();
   safeRevalidatePath("/");
   safeRevalidatePath("/edit");

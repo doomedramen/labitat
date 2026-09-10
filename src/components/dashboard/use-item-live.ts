@@ -5,6 +5,11 @@ import { liveStore, type MetaState } from "@/lib/live-store";
 import type { ItemLive } from "@/lib/live-types";
 import { useServerSnapshot } from "@/components/dashboard/live-provider";
 
+const serverMetaSnapshot: MetaState = {
+  sseState: "connecting",
+  lastUpdateAt: null,
+};
+
 export function useItemLive(itemId: string): ItemLive | null {
   const getServerSnapshot = useServerSnapshot();
 
@@ -18,9 +23,6 @@ export function useLiveMeta(): MetaState {
   const subscribe = useCallback((cb: () => void) => liveStore.subscribeMeta(cb), []);
   const getSnapshot = useCallback(() => liveStore.getMeta(), []);
 
-  // Meta has no SSR hydration value — return safe default
-  return useSyncExternalStore(subscribe, getSnapshot, () => ({
-    sseState: "connecting" as const,
-    lastUpdateAt: null,
-  }));
+  // Meta has no SSR hydration value — return a stable safe default.
+  return useSyncExternalStore(subscribe, getSnapshot, () => serverMetaSnapshot);
 }

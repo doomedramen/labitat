@@ -9,6 +9,11 @@ import type { ItemLive } from "@/lib/live-types";
 const mockItemLive: ItemLive = {
   widgetData: null,
   pingStatus: null,
+  configurationRevision: 0,
+  observationUpdatedAt: null,
+  lastAttemptAt: null,
+  lastSuccessAt: null,
+  freshness: "unknown",
   lastFetchedAt: null,
   itemLastUpdateAt: null,
 };
