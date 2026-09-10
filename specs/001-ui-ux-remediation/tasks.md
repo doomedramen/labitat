@@ -12,8 +12,8 @@
 
 **Goal / checkpoint**: Establish isolated, reproducible tooling before touching application behavior.
 
-- [ ] T001 Make Playwright accept LABITAT_E2E_PORT consistently for baseURL/server command/server URL, reject arbitrary server reuse, and retain the isolated test DB in playwright.config.ts; document dev/production invocation in specs/001-ui-ux-remediation/quickstart.md.
-- [ ] T002 Read AGENTS.md and installed Next.js mutation/cache guides; run relevant existing baseline checks and record versions, failures, test DB/port verification, and the 100-card profile procedure in specs/001-ui-ux-remediation/validation.md.
+- [x] T001 Make Playwright accept LABITAT_E2E_PORT consistently for baseURL/server command/server URL, reject arbitrary server reuse, and retain the isolated test DB in playwright.config.ts; document dev/production invocation in specs/001-ui-ux-remediation/quickstart.md.
+- [x] T002 Read AGENTS.md and installed Next.js mutation/cache guides; run relevant existing baseline checks and record versions, failures, test DB/port verification, and the 100-card profile procedure in specs/001-ui-ux-remediation/validation.md.
 
 ## Phase 2: Foundational baseline
 
