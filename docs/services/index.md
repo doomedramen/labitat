@@ -48,6 +48,8 @@ Labitat supports 30+ services out of the box, organized by category.
 | [Grafana](/services/monitoring/grafana)         | Metrics dashboard    |
 | [Glances](/services/monitoring/glances)         | System monitoring    |
 | [APC UPS](/services/monitoring/apcups)          | UPS monitoring       |
+| [NUT UPS](/services/monitoring/nut)             | UPS monitoring       |
+| [PVE UPS](/services/monitoring/pve-ups)         | UPS power monitoring |
 | [Unifi](/services/monitoring/unifi)             | Network controller   |
 
 ## Automation

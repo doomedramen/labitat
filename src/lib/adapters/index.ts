@@ -19,6 +19,7 @@ import { nginxProxyManagerDefinition } from "./nginx-proxy-manager";
 import { proxmoxDefinition } from "./proxmox";
 import { proxmoxBackupServerDefinition } from "./proxmox-backup-server";
 import { calibreWebDefinition } from "./calibre-web";
+import { pveUpsDefinition } from "./pve-ups";
 
 // ── General widgets ──────────────────────────────────────────────────────────
 import { openmeteoDefinition } from "./openmeteo";
@@ -117,6 +118,7 @@ export const registry = buildRegistry([
   proxmoxDefinition,
   proxmoxBackupServerDefinition,
   calibreWebDefinition,
+  pveUpsDefinition,
 
   // General widgets
   openmeteoDefinition,
