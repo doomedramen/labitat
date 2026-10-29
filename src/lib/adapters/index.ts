@@ -1,6 +1,7 @@
 import type { ServiceDefinition, ServiceRegistry } from "./types";
 
 // ── Active adapters (manually tested) ─────────────────────────────────────────
+import { stashDefinition } from "./stash";
 import { whisparrDefinition } from "./whisparr";
 import { radarrDefinition } from "./radarr";
 import { sonarrDefinition } from "./sonarr";
@@ -101,6 +102,7 @@ const glancesProcessesWithWidget: typeof glancesProcessesDefinition = {
 
 export const registry = buildRegistry([
   // Active adapters (manually tested)
+  stashDefinition,
   whisparrDefinition,
   radarrDefinition,
   sonarrDefinition,
