@@ -10,7 +10,7 @@ Dockge’s reviewed standard events can provide **running containers**, but cann
 - `serviceStatusList` executes `docker compose ps --format json` **without `--all`**. It groups returned containers by service, using status `Health || State`. It does not enumerate all stopped containers. [Stack method](https://github.com/louislam/dockge/blob/master/backend/stack.ts), [Compose ps reference](https://docs.docker.com/reference/cli/docker/compose/ps/).
 - `stackList` reduces `docker compose ls --all` status strings such as `exited(1), running(1)` to a single stack status code, losing the embedded counts. It also omits standalone non-Compose containers and may omit Dockge’s own unmanaged stack. [Stack enumeration and conversion](https://github.com/louislam/dockge/blob/master/backend/stack.ts).
 
-To satisfy exact total/running counts, use a separately configured read-only Docker metrics endpoint (e.g. Docker `/containers/json?all=true` through an appropriately restricted proxy), or add an upstream Dockge event exposing those counts. Do not enable Dockge’s interactive console just to run arbitrary Docker commands for a widget.
+To satisfy exact total/running counts, use a separately configured read-only Docker metrics endpoint, or add an upstream Dockge event exposing those counts. Do not enable Dockge’s interactive console just to run arbitrary Docker commands for a widget.
 
 ## Socket.IO authentication sequence
 
@@ -52,3 +52,15 @@ Health may replace state (`healthy`, `unhealthy`, `starting`), so status does no
 ## Avoid `getStack` for counting
 
 It only adds `composeYAML`, `composeENV`, and `primaryHostname` to the summary. It does not add container instances/counts, and retrieving it exposes potentially secret environment values. [Stack serialization](https://github.com/louislam/dockge/blob/master/backend/stack.ts).
+
+## Selected implementation: Docker Engine GET /info
+
+Configure a distinct Docker API/proxy URL while preserving the Dockge web URL as the item launch destination. `GET /info` responds with Docker’s `SystemInfo` JSON, including:
+
+- `Containers`: integer, **total number of containers on the host**.
+- `ContainersRunning`: integer, **number of containers with status running**.
+- Additional upstream fields such as `ContainersPaused` and `ContainersStopped` need not be forwarded to the widget.
+
+This is directly defined in the [official Engine API v1.45 SystemInfo reference](https://docs.docker.com/reference/api/engine/version/v1.45/#tag/System/operation/SystemInfo), [versioned official OpenAPI source](https://github.com/moby/moby/blob/v26.1.0/docs/api/v1.45.yaml) (`SystemInfo` properties and `/info` GET), and [current Go response type](https://github.com/moby/moby/blob/master/api/types/system/info.go). It yields actual daemon-wide container counts, including containers outside Dockge-managed stacks. It does not require Socket.IO or a Socket.IO dependency.
+
+The integration requires an existing reachable Docker API or restricted read-only proxy endpoint; adding this adapter does not deploy or expose such an endpoint. Do not change network exposure or mount the Docker socket as part of this widget implementation. Validate both fields as nonnegative integers, reject unavailable/malformed responses instead of showing zero, and return only the desired aggregate counts.
