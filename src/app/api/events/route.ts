@@ -10,9 +10,28 @@ const MAX_CONNECTION_AGE_MS = 5 * 60 * 1000; // 5 minutes — forces client reco
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();
 
+  let cleanup = () => {};
   const stream = new ReadableStream({
     start(controller) {
       let closed = false;
+
+      let heartbeat: ReturnType<typeof setInterval>;
+      let maxAgeTimer: ReturnType<typeof setTimeout>;
+      let unsubscribe = () => {};
+      cleanup = () => {
+        if (closed) return;
+        closed = true;
+        clearInterval(heartbeat);
+        clearTimeout(maxAgeTimer);
+        unsubscribe();
+        request.signal.removeEventListener("abort", cleanup);
+        pollingSup.disconnect();
+        try {
+          controller.close();
+        } catch {
+          /* consumer may have cancelled */
+        }
+      };
 
       const wasIdle = pollingSup.getConnectionCount() === 0;
       pollingSup.connect();
@@ -30,21 +49,19 @@ export async function GET(request: NextRequest) {
         try {
           controller.enqueue(encoder.encode(`: heartbeat\n\n`));
         } catch {
-          closed = true;
-          clearInterval(heartbeat);
+          cleanup();
         }
       };
 
-      const heartbeat = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
+      heartbeat = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
 
-      const maxAgeTimer = setTimeout(() => {
+      maxAgeTimer = setTimeout(() => {
         try {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "reconnect" })}\n\n`));
         } catch {
           // stream already closed
         }
-        closed = true;
-        clearInterval(heartbeat);
+        cleanup();
       }, MAX_CONNECTION_AGE_MS);
 
       const send = (data: unknown) => {
@@ -52,13 +69,12 @@ export async function GET(request: NextRequest) {
         try {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
         } catch {
-          closed = true;
-          clearInterval(heartbeat);
+          cleanup();
         }
       };
 
       // Subscribe to cache updates
-      const unsubscribe = serverCache.onUpdate((itemId, widgetData, pingStatus) => {
+      unsubscribe = serverCache.onUpdate((itemId, widgetData, pingStatus) => {
         send({
           type: "update",
           itemId,
@@ -69,14 +85,11 @@ export async function GET(request: NextRequest) {
       });
 
       // Cleanup on disconnect
-      request.signal.addEventListener("abort", () => {
-        closed = true;
-        clearInterval(heartbeat);
-        clearTimeout(maxAgeTimer);
-        unsubscribe();
-        pollingSup.disconnect();
-        controller.close();
-      });
+      request.signal.addEventListener("abort", cleanup, { once: true });
+      if (request.signal.aborted) cleanup();
+    },
+    cancel() {
+      cleanup();
     },
   });
 
