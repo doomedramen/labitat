@@ -1,6 +1,7 @@
 import type { ServiceDefinition, ServiceRegistry } from "./types";
 
 // ── Active adapters (manually tested) ─────────────────────────────────────────
+import { dockgeDefinition } from "./dockge";
 import { shelfmarkDefinition } from "./shelfmark";
 import { bambuddyDefinition } from "./bambuddy";
 import { norishDefinition } from "./norish";
@@ -105,6 +106,7 @@ const glancesProcessesWithWidget: typeof glancesProcessesDefinition = {
 
 export const registry = buildRegistry([
   // Active adapters (manually tested)
+  dockgeDefinition,
   shelfmarkDefinition,
   bambuddyDefinition,
   norishDefinition,
