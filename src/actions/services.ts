@@ -1,5 +1,7 @@
 "use server";
 
+import { serviceFailureReason } from "@/lib/service-failure";
+
 import { db } from "@/lib/db";
 import { items } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -71,20 +73,15 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       return {
         ...cached.widgetData,
         _status: "warn" as const,
-        _statusText: "Showing cached data - unable to reach service",
+        _statusText: `Showing cached data — ${serviceFailureReason(err)}`,
       };
     }
 
     console.error(`[labitat] Failed to fetch data for item ${itemId} (${item.serviceType}):`, err);
 
-    const isProduction = process.env.NODE_ENV === "production";
     const errorResponse: ServiceData = {
       _status: "error",
-      _statusText: isProduction
-        ? "Failed to fetch service data"
-        : err instanceof Error
-          ? err.message
-          : "Failed to fetch data",
+      _statusText: serviceFailureReason(err),
     };
     serverCache.set(itemId, { widgetData: errorResponse });
     return errorResponse;

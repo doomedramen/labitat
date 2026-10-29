@@ -29,6 +29,15 @@ describe("Whisparr", () => {
       version === "2" ? "Series" : "Scenes / movies",
     );
   });
+  it("preserves timeout failures for safe diagnostics", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new DOMException("Request timed out", "TimeoutError")),
+    );
+    await expect(
+      whisparrDefinition.fetchData!({ url: "https://example.org", apiKey: "test" }),
+    ).rejects.toMatchObject({ name: "TimeoutError" });
+  });
   it("rejects unsupported versions", async () => {
     await expect(whisparrDefinition.fetchData!({ version: "4" })).rejects.toThrow(
       "version must be",

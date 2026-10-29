@@ -198,7 +198,7 @@ describe("polling supervisor scheduling", () => {
   });
 
   it("records an unreachable service without logging the expected poll failure", async () => {
-    const pollError = new Error("connect ECONNREFUSED 192.168.1.78:3551");
+    const pollError = new Error("Whisparr error: 401");
     const cacheSet = vi.fn();
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
@@ -252,7 +252,7 @@ describe("polling supervisor scheduling", () => {
     expect(cacheSet).toHaveBeenCalledWith("offline-item", {
       widgetData: {
         _status: "error",
-        _statusText: "Unable to reach service",
+        _statusText: "Service authentication failed (HTTP 401)",
       },
     });
 

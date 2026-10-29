@@ -36,6 +36,7 @@ export const whisparrDefinition: ServiceDefinition = {
     try {
       return await adapter.fetchData!(config);
     } catch (error) {
+      if (error instanceof DOMException && error.name === "TimeoutError") throw error;
       if (error instanceof Error) {
         throw new Error(
           error.message.replaceAll("Radarr", "Whisparr").replaceAll("Sonarr", "Whisparr"),

@@ -1,3 +1,4 @@
+import { serviceFailureReason } from "@/lib/service-failure";
 import { db } from "@/lib/db";
 import { items, groups } from "@/lib/db/schema";
 import { decrypt } from "@/lib/crypto";
@@ -249,8 +250,8 @@ class PollingSupervisor {
     try {
       await this.runPoll(item);
       item.retryCount = 0;
-    } catch {
-      this.recordServiceFailure(item.id);
+    } catch (error) {
+      this.recordServiceFailure(item.id, error);
       item.retryCount++;
     } finally {
       this.running.delete(item.id);
@@ -370,7 +371,8 @@ class PollingSupervisor {
     serverCache.set(item.id, { widgetData: data });
   }
 
-  private recordServiceFailure(itemId: string): void {
+  private recordServiceFailure(itemId: string, error: unknown): void {
+    const reason = serviceFailureReason(error);
     const cached = serverCache.get(itemId)?.widgetData;
 
     serverCache.set(itemId, {
@@ -378,11 +380,11 @@ class PollingSupervisor {
         ? {
             ...cached,
             _status: "warn",
-            _statusText: "Showing cached data - unable to reach service",
+            _statusText: `Showing cached data — ${reason}`,
           }
         : {
             _status: "error",
-            _statusText: "Unable to reach service",
+            _statusText: reason,
           },
     });
   }
