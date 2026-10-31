@@ -46,11 +46,27 @@ export const whisparrDefinition: ServiceDefinition = {
     }
   },
   toPayload(data) {
+    if (
+      !data ||
+      !Number.isFinite(data.queued) ||
+      !Number.isFinite(data.missing) ||
+      !Number.isFinite(data.wanted)
+    ) {
+      return { stats: [], error: "Whisparr data is unavailable" };
+    }
+
     if ("series" in data) {
+      if (!Number.isFinite(data.series)) {
+        return { stats: [], error: "Whisparr data is unavailable" };
+      }
       return sonarrDefinition.toPayload!(
         data as Awaited<ReturnType<NonNullable<typeof sonarrDefinition.fetchData>>>,
       );
     }
+    if (!Number.isFinite(data.movies)) {
+      return { stats: [], error: "Whisparr data is unavailable" };
+    }
+
     const payload = radarrDefinition.toPayload!(
       data as Awaited<ReturnType<NonNullable<typeof radarrDefinition.fetchData>>>,
     );

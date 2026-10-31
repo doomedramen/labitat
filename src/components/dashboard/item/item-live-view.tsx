@@ -18,8 +18,15 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
   const hasStatus = (!!item.href || !!item.serviceType) && !isClientSide;
 
   const serviceStatus: ServiceStatus = useMemo(() => {
+    const widgetStatus = live?.widgetData ? dataToStatus(live.widgetData) : null;
+
+    // A reachable base URL doesn't mean the widget API request succeeded.
+    // Surface adapter failures ahead of the separate ping result.
+    if (widgetStatus?.state === "error" || widgetStatus?.state === "degraded") {
+      return widgetStatus;
+    }
     if (live?.pingStatus) return live.pingStatus;
-    if (live?.widgetData) return dataToStatus(live.widgetData);
+    if (widgetStatus) return widgetStatus;
     return { state: "unknown" };
   }, [live?.pingStatus, live?.widgetData]);
 

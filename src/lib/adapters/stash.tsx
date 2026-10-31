@@ -65,7 +65,12 @@ export const stashDefinition: ServiceDefinition<StashData> = {
   toPayload(data) {
     // Persisted widget data can outlive the adapter shape that produced it.
     // Treat an incompatible cache entry as unavailable instead of crashing SSR.
-    if (!data || typeof data.counts !== "object" || data.counts === null) {
+    if (
+      !data ||
+      typeof data.counts !== "object" ||
+      data.counts === null ||
+      fields.some(([id]) => !Number.isFinite(data.counts[id]))
+    ) {
       return { stats: [], error: "Stash statistics are unavailable" };
     }
 

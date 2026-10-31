@@ -49,9 +49,13 @@ export function WidgetContainer({
     );
   }
 
-  // Show error state - don't render during SSR, client will handle
+  // Keep adapter failures visible even when the last cached data is unusable.
   if (payload.error) {
-    return null;
+    return (
+      <div role="status" className="text-xs text-muted-foreground">
+        {payload.error}
+      </div>
+    );
   }
 
   const hasStats = payload.stats.length > 0;

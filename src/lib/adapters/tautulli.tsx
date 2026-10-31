@@ -17,6 +17,17 @@ type TautulliData = {
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
 function tautulliToPayload(data: TautulliData) {
+  if (
+    !data ||
+    !Number.isFinite(data.streamCount) ||
+    typeof data.totalBandwidth !== "string" ||
+    !Number.isFinite(data.transcodeStreams) ||
+    !Number.isFinite(data.directPlayStreams) ||
+    !Number.isFinite(data.directStreamStreams)
+  ) {
+    return { stats: [], error: "Tautulli data is unavailable" };
+  }
+
   return {
     stats: [
       {

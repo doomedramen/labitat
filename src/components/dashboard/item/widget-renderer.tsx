@@ -31,13 +31,23 @@ export function WidgetRenderer({
   // Custom widget takes precedence, otherwise use toPayload
   const hasCustomWidget = !!serviceDef?.renderWidget && !isClientSide;
 
-  const payload = useMemo(
-    () =>
-      effectiveData && serviceDef?.toPayload && !hasCustomWidget
-        ? serviceDef.toPayload(effectiveData)
-        : null,
-    [effectiveData, serviceDef, hasCustomWidget],
-  );
+  const payload = useMemo(() => {
+    if (!effectiveData || !serviceDef?.toPayload || hasCustomWidget) return null;
+    if (effectiveData._status === "error") {
+      return {
+        stats: [],
+        error: effectiveData._statusText || "Service data is unavailable",
+      };
+    }
+
+    try {
+      return serviceDef.toPayload(effectiveData);
+    } catch {
+      // Persisted cache rows can outlive the data shape that created them.
+      // Keep one malformed widget from taking down the full SSR response.
+      return { stats: [], error: "Widget data is unavailable" };
+    }
+  }, [effectiveData, serviceDef, hasCustomWidget]);
 
   const hasPayload = !!payload;
   const defaultActiveIds = payload?.defaultActiveIds;
