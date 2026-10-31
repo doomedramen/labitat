@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
 import { Header } from "@/components/dashboard/header";
 import { Footer } from "@/components/dashboard/footer";
 import { SseBanner } from "@/components/dashboard/sse-banner";
@@ -23,8 +22,6 @@ export function DashboardViewChrome({
   title: string;
   children: ReactNode;
 }) {
-  const router = useRouter();
-
   const [localTitle, setLocalTitle] = useState<string | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
 
@@ -37,7 +34,7 @@ export function DashboardViewChrome({
         title={title}
         localTitle={localTitle}
         onTitleChange={setLocalTitle}
-        onToggleEditMode={() => router.push("/edit")}
+        onToggleEditMode={() => window.location.assign("/edit")}
         onSignInClick={() => setLoginOpen(true)}
       />
 

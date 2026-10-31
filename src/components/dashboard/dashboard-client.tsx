@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   KeyboardSensor,
   PointerSensor,
@@ -32,7 +31,6 @@ interface DashboardClientProps {
 
 export function DashboardClient({ groups, authEnabled, title }: DashboardClientProps) {
   const haptic = useWebHaptics();
-  const router = useRouter();
   const editMode = true;
   const [localTitle, setLocalTitle] = useState<string | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -321,11 +319,12 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
       }
       const saved = await handleSaveTitle();
       if (!saved) return;
-      // Let the title action's Flight response reconcile before changing
-      // history, otherwise back/forward can observe a partially applied tree.
+      // The dashboard route may already be in Next's client cache from before
+      // these mutations. A document navigation makes the landing page read the
+      // committed groups and title instead of showing that stale RSC payload.
       await waitForLayoutCommit();
-      router.push("/");
       haptic.trigger("light");
+      window.location.assign("/");
     } finally {
       setDonePending(false);
     }
@@ -341,7 +340,7 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
         onTitleChange={setLocalTitle}
         titleError={titleError}
         titleSaving={titleSaving}
-        onToggleEditMode={() => router.push("/")}
+        onToggleEditMode={() => window.location.assign("/")}
         onSignInClick={() => setLoginOpen(true)}
       />
 
