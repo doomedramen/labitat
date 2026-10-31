@@ -4,12 +4,12 @@ Home automation platform.
 
 ## Configuration
 
-| Field                      | Type     | Required | Description             |
-| -------------------------- | -------- | -------- | ----------------------- |
-| URL                        | URL      | Yes      | Home Assistant URL      |
-| API Key (Long-lived token) | Password | Yes      | Long-lived access token |
+| Field                   | Type     | Required | Description             |
+| ----------------------- | -------- | -------- | ----------------------- |
+| URL                     | URL      | Yes      | Home Assistant URL      |
+| Long-Lived Access Token | Password | Yes      | Long-lived access token |
 
-## Finding Your API Key
+## Finding Your Long-Lived Access Token
 
 1. Open Home Assistant
 2. Click your profile → **Long-Lived Access Tokens**
@@ -17,6 +17,7 @@ Home automation platform.
 
 ## Widget Displays
 
-- Active automations
-- Device count
-- Entity states
+- Entity count
+- Sensor count
+- Light count
+- Switch count
