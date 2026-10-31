@@ -256,19 +256,25 @@ export const nginxProxyManagerDefinition: ServiceDefinition<NginxProxyManagerDat
         });
 
         if (!retryRes.ok) {
-          return [];
+          throw new Error(`NPM proxy hosts error: ${retryRes.status}`);
         }
 
         const data = await retryRes.json();
-        return Array.isArray(data) ? data : [];
+        if (!Array.isArray(data)) {
+          throw new Error("NPM invalid proxy hosts response");
+        }
+        return data;
       }
 
       if (!res.ok) {
-        return [];
+        throw new Error(`NPM proxy hosts error: ${res.status}`);
       }
 
       const data = await res.json();
-      return Array.isArray(data) ? data : [];
+      if (!Array.isArray(data)) {
+        throw new Error("NPM invalid proxy hosts response");
+      }
+      return data;
     }
 
     const hosts = await fetchWithRetry(`${baseUrl}/api/nginx/proxy-hosts`);

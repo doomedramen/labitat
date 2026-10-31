@@ -105,7 +105,7 @@ describe("nginx-proxy-manager definition", () => {
       ).rejects.toThrow("NPM login failed (401): Unauthorized");
     });
 
-    it("handles failed endpoint gracefully", async () => {
+    it("reports proxy host endpoint failures instead of showing zero counts", async () => {
       const mockFetch = vi.fn((url: string) => {
         if (url.includes("/api/tokens")) {
           return Promise.resolve({
@@ -128,14 +128,13 @@ describe("nginx-proxy-manager definition", () => {
       });
       vi.stubGlobal("fetch", mockFetch);
 
-      const result = await nginxProxyManagerDefinition.fetchData!({
-        url: "https://npm.example.com",
-        email: "admin@example.org",
-        password: "secret",
-      });
-
-      expect(result._status).toBe("ok");
-      expect(result.hosts).toHaveLength(0);
+      await expect(
+        nginxProxyManagerDefinition.fetchData!({
+          url: "https://npm.example.com",
+          email: "admin@example.org",
+          password: "secret",
+        }),
+      ).rejects.toThrow("NPM proxy hosts error: 500");
     });
 
     it("throws specific error for 2FA challenge response", async () => {
