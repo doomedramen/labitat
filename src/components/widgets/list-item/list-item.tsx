@@ -335,11 +335,7 @@ export function ListItem({ item }: { item: ListItemData }) {
     <div
       className={cn(
         "group/listitem flex flex-col gap-2 rounded-xl p-3",
-        "bg-gradient-to-b from-secondary/90 to-secondary/70",
-        "border border-border/30",
-        "hover:from-secondary hover:to-secondary/80",
-        "hover:border-border/50 hover:shadow-sm",
-        "transition-all  ease-out",
+        "bg-background/20 border border-border/40",
         "cursor-default [touch-action:pan-y]",
       )}
       role="listitem"
@@ -391,21 +387,28 @@ export function ListItem({ item }: { item: ListItemData }) {
             {initials(media.user)}
           </div>
         )}
-        <span className="truncate text-[11px] text-secondary-foreground/60 font-medium">
+        <span className="min-w-0 truncate text-[11px] text-muted-foreground font-medium">
           {media ? media.user : subText}
         </span>
         {metaText && (
-          <span className="text-[11px] text-secondary-foreground/50 whitespace-nowrap flex-shrink-0">
-            · {metaText}
-          </span>
+          <span className="min-w-0 text-[11px] text-muted-foreground">· {metaText}</span>
         )}
       </div>
 
       {/* Row 3: Progress bar */}
-      <div className="h-1.5 bg-border/30 rounded-full overflow-hidden">
+      <div
+        role="progressbar"
+        aria-label={`${displayTitle} progress`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.max(0, Math.min(100, Number.isFinite(progressPct) ? progressPct : 0))}
+        className="h-1 bg-border/30 rounded-full overflow-hidden"
+      >
         <div
-          className={cn("h-full rounded-full transition-all  ease-out", gradient)}
-          style={{ width: `${Math.max(2, progressPct)}%` }}
+          className={cn("h-full rounded-full", gradient)}
+          style={{
+            width: `${Math.max(0, Math.min(100, Number.isFinite(progressPct) ? progressPct : 0))}%`,
+          }}
         />
       </div>
     </div>

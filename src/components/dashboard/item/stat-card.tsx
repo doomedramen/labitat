@@ -1,10 +1,6 @@
-/**
- * Server-compatible StatCard.
- * Renders label + value during SSR. No icons (Lucide components are client-only).
- */
-
+import type { ComponentType } from "react";
 import { cn } from "@/lib/utils";
-
+import styles from "./service-card.module.css";
 interface StatCardProps {
   id: string;
   value: string | number;
@@ -12,31 +8,23 @@ interface StatCardProps {
   tooltip?: string;
   valueClassName?: string;
   displayMode?: "icon" | "label";
+  icon?: ComponentType<{ className?: string }>;
 }
-
 export function StatCard({
   value,
   label,
   tooltip,
-  // valueClassName,
+  valueClassName,
   displayMode = "label",
+  icon: Icon,
 }: StatCardProps) {
-  const showLabel = displayMode === "label";
-  const effectiveTooltip = displayMode === "icon" ? (tooltip ?? label) : undefined;
-
   return (
-    <div
-      className={cn(
-        "flex h-full flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center select-none",
-        "transition-all  hover:scale-105 hover:bg-secondary/80 active:scale-95",
-      )}
-    >
-      <span className={cn("font-medium tabular-nums")}>{value}</span>
-      {showLabel ? (
-        <span className="">{label}</span>
-      ) : effectiveTooltip ? (
-        <span className="sr-only">{effectiveTooltip}</span>
-      ) : null}
+    <div className={styles.stat} title={tooltip ?? label}>
+      <span className={cn(styles.value, valueClassName)}>{value}</span>
+      <span className={styles.statLabel}>
+        {displayMode === "icon" && Icon && <Icon className="size-3 shrink-0" />}
+        <span className={displayMode === "icon" && Icon ? "sr-only" : undefined}>{label}</span>
+      </span>
     </div>
   );
 }

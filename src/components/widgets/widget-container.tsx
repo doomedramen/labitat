@@ -78,15 +78,17 @@ export function WidgetContainer({
     ? payload.stats
     : payload.stats.filter((stat) => !unusedIds.has(stat.id));
 
+  const activeOrder = statCardOrder?.active ?? [];
+  const orderedStats = [...visibleStats].sort((a, b) => {
+    const aIndex = activeOrder.indexOf(a.id);
+    const bIndex = activeOrder.indexOf(b.id);
+    return (aIndex < 0 ? Infinity : aIndex) - (bIndex < 0 ? Infinity : bIndex);
+  });
+
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-5">
       {hasStats && !isEditMode && (
-        <WidgetStatGrid
-          items={visibleStats.map((stat) => ({
-            ...stat,
-            displayMode: statDisplayMode,
-          }))}
-        />
+        <WidgetStatGrid items={orderedStats} displayMode={statDisplayMode} />
       )}
 
       {/* Edit mode is client-only - EditableStatGrid is rendered by the client component */}
