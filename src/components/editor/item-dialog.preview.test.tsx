@@ -41,6 +41,7 @@ describe("ItemDialog preview", () => {
       </LiveProvider>,
     );
 
+    fireEvent.click(screen.getByText("Appearance", { exact: true }));
     const iconInput = screen.getByRole("combobox", { name: "Icon" });
     fireEvent.change(iconInput, { target: { value: "13 feet" } });
 

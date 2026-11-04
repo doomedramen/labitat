@@ -53,6 +53,7 @@ describe("Bambuddy", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith(expect.any(String), {
       headers: {},
+      cache: "no-store",
       signal: expect.any(AbortSignal),
     });
   });

@@ -7,12 +7,17 @@ export interface CachedItem {
   widgetData: ServiceData | null;
   pingStatus: ServiceStatus | null;
   lastFetchedAt: number;
+  configurationRevision: number | null;
+  lastAttemptAt: number | null;
+  lastSuccessAt: number | null;
+  freshness: "fresh" | "stale" | "unknown";
 }
 
 type UpdateCallback = (
   itemId: string,
   widgetData: ServiceData | null,
   pingStatus: ServiceStatus | null,
+  observation: CachedItem,
 ) => void;
 
 /** Max age before cached data is considered stale for SSR (5 minutes). */
@@ -37,10 +42,15 @@ class ServerCache {
     try {
       const rows = db.select().from(widgetCache).all();
       for (const row of rows) {
-        const fromDb = {
+        const fromDb: CachedItem = {
           widgetData: (row.widgetData as ServiceData) ?? null,
           pingStatus: (row.pingStatus as ServiceStatus) ?? null,
           lastFetchedAt: row.updatedAt ? new Date(row.updatedAt).getTime() : 0,
+          configurationRevision: row.configurationRevision ?? null,
+          lastAttemptAt: row.lastAttemptAt ?? null,
+          lastSuccessAt: row.lastSuccessAt ?? null,
+          freshness:
+            row.freshness === "fresh" || row.freshness === "stale" ? row.freshness : "unknown",
         };
         const existing = this.cache.get(row.itemId);
         if (!existing || existing.lastFetchedAt <= fromDb.lastFetchedAt) {
@@ -61,16 +71,37 @@ class ServerCache {
     return this.cache.get(itemId) ?? null;
   }
 
-  set(itemId: string, data: Partial<CachedItem>): void {
-    const existing = this.cache.get(itemId) ?? {
+  set(
+    itemId: string,
+    data: Partial<CachedItem>,
+    outcome: { successful?: boolean; attemptAt?: number; configurationRevision?: number } = {},
+  ): void {
+    this.loadFromDb();
+    const saved = this.cache.get(itemId);
+    const compatible =
+      saved &&
+      (outcome.configurationRevision === undefined ||
+        saved.configurationRevision === null ||
+        saved.configurationRevision === outcome.configurationRevision);
+    const existing = (compatible ? saved : null) ?? {
       widgetData: null,
       pingStatus: null,
       lastFetchedAt: 0,
+      configurationRevision: null,
+      lastAttemptAt: null,
+      lastSuccessAt: null,
+      freshness: "unknown" as const,
     };
-    const updated = {
+    const now = Date.now();
+    const successful = outcome.successful ?? data.widgetData?._status !== "error";
+    const updated: CachedItem = {
       ...existing,
       ...data,
-      lastFetchedAt: Date.now(),
+      lastFetchedAt: now,
+      configurationRevision: outcome.configurationRevision ?? existing.configurationRevision,
+      lastAttemptAt: outcome.attemptAt ?? now,
+      lastSuccessAt: successful ? (outcome.attemptAt ?? now) : existing.lastSuccessAt,
+      freshness: successful ? "fresh" : "stale",
     };
     this.cache.set(itemId, updated);
     this.loaded = true;
@@ -85,14 +116,22 @@ class ServerCache {
         itemId,
         widgetData: wd,
         pingStatus: ps,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(now).toISOString(),
+        configurationRevision: updated.configurationRevision,
+        lastAttemptAt: updated.lastAttemptAt,
+        lastSuccessAt: updated.lastSuccessAt,
+        freshness: updated.freshness,
       })
       .onConflictDoUpdate({
         target: widgetCache.itemId,
         set: {
           widgetData: wd,
           pingStatus: ps,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date(now).toISOString(),
+          configurationRevision: updated.configurationRevision,
+          lastAttemptAt: updated.lastAttemptAt,
+          lastSuccessAt: updated.lastSuccessAt,
+          freshness: updated.freshness,
         },
       })
       .catch((err) => {
@@ -106,7 +145,7 @@ class ServerCache {
     // );
     for (const cb of this.listeners) {
       try {
-        cb(itemId, updated.widgetData, updated.pingStatus);
+        cb(itemId, updated.widgetData, updated.pingStatus, updated);
       } catch (err) {
         console.error("[server-cache] Error in update listener:", err);
       }
@@ -133,7 +172,12 @@ class ServerCache {
     if (shouldReload) {
       this.loadFromDb(true);
     }
-    return [...this.cache.entries()].filter(([, item]) => now - item.lastFetchedAt < maxAgeMs);
+    return [...this.cache.entries()].filter(
+      ([, item]) =>
+        item.freshness === "fresh" &&
+        item.lastSuccessAt !== null &&
+        now - item.lastSuccessAt < maxAgeMs,
+    );
   }
 
   /** Subscribe to cache updates. Returns unsubscribe function. */
@@ -145,10 +189,16 @@ class ServerCache {
   }
 
   async seed(itemId: string, widgetData: ServiceData): Promise<void> {
+    this.loadFromDb();
+    const now = Date.now();
     const entry: CachedItem = {
       widgetData,
       pingStatus: null,
-      lastFetchedAt: Date.now(),
+      lastFetchedAt: now,
+      configurationRevision: null,
+      lastAttemptAt: now,
+      lastSuccessAt: widgetData._status === "error" ? null : now,
+      freshness: widgetData._status === "error" ? "stale" : "fresh",
     };
     this.cache.set(itemId, entry);
     this.loaded = true;
@@ -163,14 +213,22 @@ class ServerCache {
           itemId,
           widgetData: wd,
           pingStatus: null,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date(now).toISOString(),
+          lastAttemptAt: entry.lastAttemptAt,
+          lastSuccessAt: entry.lastSuccessAt,
+          freshness: entry.freshness,
+          configurationRevision: null,
         })
         .onConflictDoUpdate({
           target: widgetCache.itemId,
           set: {
             widgetData: wd,
             pingStatus: null,
-            updatedAt: new Date().toISOString(),
+            updatedAt: new Date(now).toISOString(),
+            lastAttemptAt: entry.lastAttemptAt,
+            lastSuccessAt: entry.lastSuccessAt,
+            freshness: entry.freshness,
+            configurationRevision: null,
           },
         });
     } catch (err) {

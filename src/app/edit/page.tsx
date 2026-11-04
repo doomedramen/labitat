@@ -38,18 +38,23 @@ export default async function EditPage() {
   const allCache = new Map(serverCache.getAllReloaded());
   const initialSnapshotById: Record<string, ItemLive> = {};
   for (const id of uniqueItemIds) {
-    const cached = allCache.get(id) ?? null;
+    const saved = allCache.get(id) ?? null;
     const item = groupsWithItems
       .flatMap((group) => group.items)
       .find((candidate) => candidate.id === id);
+    const cached =
+      saved?.configurationRevision == null ||
+      saved.configurationRevision === item?.configurationRevision
+        ? saved
+        : null;
     initialSnapshotById[id] = {
       widgetData: cached?.widgetData ?? null,
       pingStatus: cached?.pingStatus ?? null,
       configurationRevision: item?.configurationRevision ?? 0,
       observationUpdatedAt: cached?.lastFetchedAt ?? null,
-      lastAttemptAt: null,
-      lastSuccessAt: null,
-      freshness: "unknown",
+      lastAttemptAt: cached?.lastAttemptAt ?? null,
+      lastSuccessAt: cached?.lastSuccessAt ?? null,
+      freshness: cached?.freshness ?? "unknown",
       lastFetchedAt: cached?.lastFetchedAt ?? null,
       itemLastUpdateAt: null,
     };

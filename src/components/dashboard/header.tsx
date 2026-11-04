@@ -62,9 +62,6 @@ export function Header({
         />
       ) : (
         <div className="min-w-0">
-          <p className="mb-0.5 text-[0.68rem] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
-            Dashboard
-          </p>
           <h1 className="truncate text-2xl font-semibold tracking-[-0.035em] sm:text-[1.75rem]">
             {dashboardTitle}
           </h1>
@@ -92,16 +89,7 @@ export function Header({
             <DropdownMenuTrigger asChild>
               <ThemeButton />
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="max-h-[min(32rem,75vh)] w-72 overflow-y-auto p-2"
-            >
-              <div className="px-1.5 pt-1 pb-2">
-                <p className="text-sm font-semibold tracking-tight">Choose a theme</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                  Applied instantly and saved on this device.
-                </p>
-              </div>
+            <DropdownMenuContent align="end" className="w-40 p-1">
               <PaletteSwitcher />
             </DropdownMenuContent>
           </DropdownMenu>

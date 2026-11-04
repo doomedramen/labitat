@@ -85,6 +85,7 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
       key: "enableQueue",
       label: "Show download queue",
       type: "boolean",
+      defaultChecked: true,
       required: false,
       helperText: "Enable or disable the download queue display",
     },

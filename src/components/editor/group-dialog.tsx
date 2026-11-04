@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createGroup, updateGroup } from "@/actions/groups";
-import { toast } from "sonner";
 import { useWebHaptics } from "web-haptics/react";
 import type { GroupWithCache, GroupWithItems } from "@/lib/types";
 
@@ -33,15 +32,22 @@ interface GroupDialogProps {
 
 export function GroupDialog({ open, onOpenChange, group, onGroupsChanged }: GroupDialogProps) {
   const haptic = useWebHaptics();
+  const [saving, setSaving] = React.useState(false);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
+  const savingRef = React.useRef(false);
+  function requestClose(next: boolean) {
+    if (!savingRef.current) onOpenChange(next);
+  }
   const form = useForm({
     defaultValues: {
       name: group?.name ?? "",
     },
-    validators: {
-      onChange: groupSchema,
-      onBlur: groupSchema,
-    },
+    validators: { onSubmit: groupSchema },
     onSubmit: async ({ value }) => {
+      if (savingRef.current) return;
+      savingRef.current = true;
+      setSaving(true);
+      setSaveError(null);
       try {
         const formData = new FormData();
         formData.append("name", value.name);
@@ -55,8 +61,11 @@ export function GroupDialog({ open, onOpenChange, group, onGroupsChanged }: Grou
         haptic.trigger("success");
         onOpenChange(false);
       } catch {
-        toast.error(group ? "Failed to update group" : "Failed to create group");
+        setSaveError("Could not save. Your changes are still here; try again.");
         haptic.trigger("error");
+      } finally {
+        savingRef.current = false;
+        setSaving(false);
       }
     },
   });
@@ -64,14 +73,15 @@ export function GroupDialog({ open, onOpenChange, group, onGroupsChanged }: Grou
   // Reset form when dialog opens/closes
   React.useEffect(() => {
     if (open) {
-      form.setFieldValue("name", group?.name ?? "");
+      form.reset({ name: group?.name ?? "" });
+      setSaveError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
-  }, [open, group?.name]);
+  }, [open, group?.id]);
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={requestClose}>
         <DialogContent>
           <form
             onSubmit={(e) => {
@@ -111,11 +121,23 @@ export function GroupDialog({ open, onOpenChange, group, onGroupsChanged }: Grou
                 }}
               </form.Field>
             </div>
+            {saveError && (
+              <p role="alert" className="mb-3 text-sm text-destructive">
+                {saveError}
+              </p>
+            )}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={saving}
+                onClick={() => requestClose(false)}
+              >
                 Cancel
               </Button>
-              <Button type="submit">{group ? "Update" : "Create"}</Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? "Saving…" : group ? "Update" : "Create"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

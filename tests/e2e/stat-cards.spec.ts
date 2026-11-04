@@ -62,7 +62,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     // Drag the second stat card to the first position
     // Use the stat cards themselves as drag handles (they have aria-label and are the actual draggable elements)
     const firstStatCard = statCards.nth(0);
-    const secondStatCard = statCards.nth(1);
+    const secondStatCard = statCards.nth(1).getByRole("button", { name: /^Drag / });
 
     await dragAndDropInDialog(page, secondStatCard, firstStatCard);
 
@@ -106,7 +106,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     const statLabel = await statCard.textContent();
 
     // Drag to unused zone
-    const firstHandle = dialog.locator('[aria-label="Drag to reorder stat card"]').nth(0);
+    const firstHandle = dialog.locator('button[aria-label^="Drag "]').nth(0);
     const unusedZone = dialog.locator('[aria-label="Unused stat cards"]');
 
     await dragAndDropInDialog(page, firstHandle, unusedZone);
@@ -119,7 +119,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(unusedItems.first()).toContainText(statLabel ?? "");
   });
 
-  test.skip("enables stat card by dragging from unused zone", async ({ page }) => {
+  test("enables stat card by dragging from unused zone", async ({ page }) => {
     await page.goto("/");
 
     // Wait for stat cards to load
@@ -140,7 +140,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     const dialog = page.getByRole("dialog", { name: "Edit Item" });
 
     // First, drag a stat card to unused zone
-    const firstHandle = dialog.locator('[aria-label="Drag to reorder stat card"]').nth(0);
+    const firstHandle = dialog.locator('button[aria-label^="Drag "]').nth(0);
     const unusedZone = dialog.locator('[aria-label="Unused stat cards"]');
     await dragAndDropInDialog(page, firstHandle, unusedZone);
 
@@ -153,7 +153,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     const unusedLabel = await unusedItems.first().textContent();
 
     // Now drag it back to active zone - re-query to ensure we get the freshly rendered element
-    const unusedHandle = unusedItems.first();
+    const unusedHandle = unusedItems.first().getByRole("button", { name: /^Drag / });
     await expect(unusedHandle).toBeVisible();
 
     const activeStatCard = dialog.locator('[data-testid="stat-card"]').first();
@@ -170,7 +170,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(activeStatCards.first()).toContainText(unusedLabel ?? "");
   });
 
-  test.skip("persists stat card order after saving", async ({ page }) => {
+  test("persists stat card order after saving", async ({ page }) => {
     await page.goto("/");
 
     // Wait for stat cards to load
@@ -195,7 +195,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     const initialSecondLabel = await statCards.nth(1).textContent();
 
     // Reorder: drag second to first
-    const handles = dialog.locator('[aria-label="Drag to reorder stat card"]');
+    const handles = dialog.locator('button[aria-label^="Drag "]');
     await dragAndDropInDialog(page, handles.nth(1), handles.nth(0));
 
     // Wait for order to update in the UI before saving (avoids racing React state updates)
@@ -262,7 +262,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(dialog.getByText("Unused (0)")).toBeVisible();
 
     // Drag a stat card to unused zone
-    const firstHandle = dialog.locator('[aria-label="Drag to reorder stat card"]').nth(0);
+    const firstHandle = dialog.locator('button[aria-label^="Drag "]').nth(0);
     const unusedZone = dialog.locator('[aria-label="Unused stat cards"]');
     await dragAndDropInDialog(page, firstHandle, unusedZone);
 

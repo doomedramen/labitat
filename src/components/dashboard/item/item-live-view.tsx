@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import { getService } from "@/lib/adapters";
 import { dataToStatus, type ServiceStatus } from "@/lib/adapters/types";
 import type { ItemRow } from "@/lib/types";
-import { useItemLive } from "@/components/dashboard/use-item-live";
+import { useVisibleClock } from "@/hooks/use-visible-clock";
+import { useLiveConnection, useItemLive } from "@/components/dashboard/use-item-live";
 import { WidgetRenderer } from "./widget-renderer";
 import { formatAge, formatAgeVerbose } from "@/lib/utils/age";
 import styles from "./service-card.module.css";
@@ -25,13 +26,8 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
   const serviceDef = item.serviceType ? getService(item.serviceType) : null;
   const isClientSide = serviceDef?.clientSide ?? false;
   const hasStatus = (!!item.href || !!item.serviceType) && !isClientSide;
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    if (!hasStatus) return;
-    setNow(Date.now());
-    const timer = setInterval(() => setNow(Date.now()), 30000);
-    return () => clearInterval(timer);
-  }, [hasStatus]);
+  const now = useVisibleClock();
+  const connection = useLiveConnection();
 
   const serviceStatus: ServiceStatus = useMemo(() => {
     const widgetStatus = live?.widgetData ? dataToStatus(live.widgetData) : null;
@@ -41,16 +37,19 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
   }, [live?.pingStatus, live?.widgetData]);
   const pollingMs = item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30000;
   const ageMs =
-    now !== null && live?.lastFetchedAt != null ? Math.max(0, now - live.lastFetchedAt) : null;
+    now !== null && live?.lastSuccessAt != null ? Math.max(0, now - live.lastSuccessAt) : null;
+  const hasValues = !!live?.widgetData && live.widgetData._status !== "error";
   const cached =
-    !!live &&
-    live.lastFetchedAt !== null &&
-    (live.itemLastUpdateAt === null || live.freshness === "stale");
+    hasValues &&
+    (live.freshness !== "fresh" ||
+      connection !== "connected" ||
+      ageMs === null ||
+      ageMs > Math.max(pollingMs * 2, 30_000));
   const reason = "reason" in serviceStatus ? serviceStatus.reason : null;
   const problem = ["error", "unreachable", "degraded", "slow"].includes(serviceStatus.state);
   const statusLabel = cached
     ? problem
-      ? `Cached · ${STATUS_LABELS[serviceStatus.state]}`
+      ? "Update failed"
       : "Cached data"
     : STATUS_LABELS[serviceStatus.state];
 
@@ -65,7 +64,7 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
           item={item}
         />
         {!live?.widgetData && serviceDef && !isClientSide && (
-          <p className="py-2 text-xs text-muted-foreground">Waiting for the first update…</p>
+          <p className="py-2 text-xs text-muted-foreground">Waiting for data…</p>
         )}
       </div>
       {hasStatus && (
@@ -80,10 +79,14 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
               <span className={styles.statusLabel}>{statusLabel}</span>
               <span className="tabular-nums">
                 {ageMs === null
-                  ? "No update yet"
+                  ? hasValues
+                    ? "Age unknown"
+                    : "No data yet"
                   : ageMs < 10000
-                    ? "Just updated"
-                    : `${formatAge(ageMs)} ago`}
+                    ? cached
+                      ? "Last good: now"
+                      : "Just updated"
+                    : `${formatAge(ageMs)} ${cached ? "old" : "ago"}`}
               </span>
               <ChevronDown size={12} className={styles.chevron} aria-hidden="true" />
             </summary>
@@ -91,10 +94,14 @@ export function ItemLiveView({ item }: { item: ItemRow }) {
               {reason && <p>{reason}</p>}
               <p>
                 {ageMs !== null
-                  ? `Last observation ${formatAgeVerbose(ageMs)}.`
-                  : "No observation received yet."}
+                  ? `Last successful update ${formatAgeVerbose(ageMs)}.`
+                  : "No successful update time is known."}
               </p>
+              {live?.lastAttemptAt != null && now !== null && (
+                <p>Last attempt {formatAgeVerbose(Math.max(0, now - live.lastAttemptAt))}.</p>
+              )}
               <p>Checks every {pollingMs / 1000} seconds.</p>
+              {connection !== "connected" && <p>Live updates are disconnected.</p>}
               {cached && <p>Showing saved data while waiting for a fresh update.</p>}
             </div>
           </details>

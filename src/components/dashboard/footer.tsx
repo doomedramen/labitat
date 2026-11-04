@@ -52,9 +52,9 @@ export function Footer({ editMode }: FooterProps) {
     >
       <div className="flex items-center gap-1.5">
         {isConnected ? (
-          <Wifi className="h-3 w-3 text-green-500" />
+          <Wifi className="h-3 w-3 text-success" />
         ) : (
-          <WifiOff className="h-3 w-3 text-amber-500" />
+          <WifiOff className="h-3 w-3 text-warning" />
         )}
         <span>{isConnected ? "Live" : "Reconnecting…"}</span>
       </div>

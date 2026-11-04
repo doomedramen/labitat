@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import type { ServiceDefinition } from "./types";
 
 type GlancesPerCpuData = {
@@ -11,38 +10,15 @@ type GlancesPerCpuData = {
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
-function CoreBar({ pct }: { pct: number }) {
-  const barColor = pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-warning" : "bg-primary";
-  const textColor =
-    pct >= 90 ? "text-destructive" : pct >= 70 ? "text-warning" : "text-secondary-foreground/60";
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-secondary">
-        <div
-          className={cn("h-full rounded-full transition-all ", barColor)}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className={cn("w-7 shrink-0 text-right tabular-nums", textColor)}>{pct}%</span>
-    </div>
-  );
-}
-
-function GlancesPerCpuWidget({ coreUsages }: GlancesPerCpuData) {
-  const usages = coreUsages ?? [];
-
-  if (usages.length === 0) {
-    return <div className="text-xs text-secondary-foreground/50">No core data</div>;
-  }
-
-  return (
-    <div className="flex flex-col gap-1 text-xs">
-      {usages.map((pct, i) => (
-        <CoreBar key={i} pct={pct} />
-      ))}
-    </div>
-  );
+function glancesPerCpuToPayload({ coreUsages }: GlancesPerCpuData) {
+  return {
+    stats: (coreUsages ?? []).map((usage, index) => ({
+      id: `core-${index}`,
+      label: `CPU ${index + 1}`,
+      value: `${usage}%`,
+      valueClassName: usage >= 90 ? "text-destructive" : usage >= 70 ? "text-warning" : undefined,
+    })),
+  };
 }
 
 export const glancesPerCpuDefinition: ServiceDefinition<GlancesPerCpuData> = {
@@ -101,5 +77,5 @@ export const glancesPerCpuDefinition: ServiceDefinition<GlancesPerCpuData> = {
       coreUsages: cpuValues,
     };
   },
-  renderWidget: GlancesPerCpuWidget,
+  toPayload: glancesPerCpuToPayload,
 };

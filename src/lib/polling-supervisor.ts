@@ -5,6 +5,7 @@ import { decrypt } from "@/lib/crypto";
 import { getService } from "@/lib/adapters";
 import { fetchWithTimeout } from "@/lib/adapters/fetch-with-timeout";
 import { serverCache } from "./server-cache";
+import { isCurrentConfiguration, saveServiceObservation } from "./service-observation";
 import { env } from "@/lib/env";
 
 // Environment defaults - extracted for clarity and testability
@@ -49,6 +50,7 @@ type PollingItem = {
   configEnc: string | null;
   config: Record<string, string> | null;
   pollingMs: number;
+  configurationRevision: number;
   lastPolledAt: number;
   retryCount: number;
   _groupOrder: number;
@@ -251,7 +253,7 @@ class PollingSupervisor {
       await this.runPoll(item);
       item.retryCount = 0;
     } catch (error) {
-      this.recordServiceFailure(item.id, error);
+      this.recordServiceFailure(item, error);
       item.retryCount++;
     } finally {
       this.running.delete(item.id);
@@ -296,7 +298,10 @@ class PollingSupervisor {
         if (!item.serviceType && !item.href) continue;
 
         const adapter = item.serviceType ? getService(item.serviceType) : null;
-        const existing = existingMap.get(item.id);
+        if (adapter?.clientSide) continue;
+        const prior = existingMap.get(item.id);
+        const existing =
+          prior?.configurationRevision === item.configurationRevision ? prior : undefined;
 
         let config: Record<string, string> | null = existing?.config ?? null;
 
@@ -316,6 +321,7 @@ class PollingSupervisor {
 
         nextItems.push({
           id: item.id,
+          configurationRevision: item.configurationRevision,
           serviceType: item.serviceType,
           href: item.href,
           serviceUrl: item.serviceUrl,
@@ -368,24 +374,16 @@ class PollingSupervisor {
     if (!config) return;
 
     const data = await adapter.fetchData(config);
-    serverCache.set(item.id, { widgetData: data });
+    saveServiceObservation(item.id, item.configurationRevision, item.lastPolledAt, {
+      ...data,
+      _status: data._status ?? "ok",
+    });
   }
 
-  private recordServiceFailure(itemId: string, error: unknown): void {
-    const reason = serviceFailureReason(error);
-    const cached = serverCache.get(itemId)?.widgetData;
-
-    serverCache.set(itemId, {
-      widgetData: cached
-        ? {
-            ...cached,
-            _status: "warn",
-            _statusText: `Showing cached data — ${reason}`,
-          }
-        : {
-            _status: "error",
-            _statusText: reason,
-          },
+  private recordServiceFailure(item: PollingItem, error: unknown): void {
+    saveServiceObservation(item.id, item.configurationRevision, item.lastPolledAt, {
+      _status: "error",
+      _statusText: serviceFailureReason(error),
     });
   }
 
@@ -393,18 +391,36 @@ class PollingSupervisor {
     try {
       const res = await fetchWithTimeout(item.href!, { method: "GET" }, PING_TIMEOUT_MS());
 
-      serverCache.set(item.id, {
-        pingStatus: res.ok
-          ? { state: "reachable" }
-          : { state: "error", reason: `HTTP ${res.status}`, httpStatus: res.status },
-      });
+      if (!isCurrentConfiguration(item.id, item.configurationRevision)) return;
+      serverCache.set(
+        item.id,
+        {
+          pingStatus: res.ok
+            ? { state: "reachable" }
+            : { state: "error", reason: `HTTP ${res.status}`, httpStatus: res.status },
+        },
+        {
+          successful: res.ok,
+          attemptAt: item.lastPolledAt,
+          configurationRevision: item.configurationRevision,
+        },
+      );
     } catch (err) {
+      if (!isCurrentConfiguration(item.id, item.configurationRevision)) return;
       const isTimeout = err instanceof DOMException && err.name === "TimeoutError";
-      serverCache.set(item.id, {
-        pingStatus: isTimeout
-          ? { state: "slow", reason: "Request timed out", timeoutMs: PING_TIMEOUT_MS() }
-          : { state: "unreachable", reason: "Request failed" },
-      });
+      serverCache.set(
+        item.id,
+        {
+          pingStatus: isTimeout
+            ? { state: "slow", reason: "Request timed out", timeoutMs: PING_TIMEOUT_MS() }
+            : { state: "unreachable", reason: "Request failed" },
+        },
+        {
+          successful: false,
+          attemptAt: item.lastPolledAt,
+          configurationRevision: item.configurationRevision,
+        },
+      );
     }
   }
 
@@ -416,9 +432,7 @@ class PollingSupervisor {
       Object.assign(config, item.config);
     } else if (item.configEnc) {
       // Fallback: if decryption failed during load, we can't poll this service.
-      serverCache.set(item.id, {
-        widgetData: { _status: "error", _statusText: "Credentials unavailable" },
-      });
+      this.recordServiceFailure(item, new Error("Credentials unavailable"));
       return null;
     }
 

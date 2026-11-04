@@ -22,6 +22,7 @@ import { EditBar } from "./edit-bar";
 import { reorderGroups } from "@/actions/groups";
 import { moveItem, reorderItems } from "@/actions/items";
 import { updateDashboardTitle } from "@/actions/settings";
+import { logout } from "@/actions/auth";
 
 interface DashboardClientProps {
   groups: GroupWithCache[];
@@ -309,7 +310,7 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
     }
   }
 
-  async function handleDone() {
+  async function handleDone(signOut = false) {
     if (donePending) return;
     setDonePending(true);
     try {
@@ -324,7 +325,8 @@ export function DashboardClient({ groups, authEnabled, title }: DashboardClientP
       // committed groups and title instead of showing that stale RSC payload.
       await waitForLayoutCommit();
       haptic.trigger("light");
-      window.location.assign("/");
+      if (signOut) await logout();
+      else window.location.assign("/");
     } finally {
       setDonePending(false);
     }

@@ -29,43 +29,43 @@ test.describe("Palette Switching", () => {
     expect(bounds!.width).toBeGreaterThanOrEqual(288);
     await expect(page.getByRole("button", { name: "Close" })).toBeVisible();
 
-    const nordLight = page.getByRole("radio", { name: "Nord Light", exact: true });
+    const nordLight = page.getByRole("button", { name: "Light", exact: true });
     await nordLight.scrollIntoViewIfNeeded();
     await nordLight.click();
 
-    await expect(page.locator("html")).toHaveAttribute("data-palette", "nord_light");
+    await expect(page.locator("html")).toHaveAttribute("data-palette", "light");
     await expect(dialog).toBeHidden();
   });
 
   test("switches palette and applies data-palette attribute", async ({ page }) => {
-    const nord = PALETTES.find((p) => p.id === "nord")!;
+    const nord = PALETTES.find((p) => p.id === "dark")!;
     await page.getByRole("button", { name: "Theme settings" }).click();
     await page.getByRole("menuitemradio", { name: nord.label, exact: true }).click();
 
-    await expect(page.locator("html")).toHaveAttribute("data-palette", "nord");
+    await expect(page.locator("html")).toHaveAttribute("data-palette", "dark");
   });
 
   test("palette persists on page reload", async ({ page }) => {
-    const dracula = PALETTES.find((p) => p.id === "dracula")!;
+    const dracula = PALETTES.find((p) => p.id === "light")!;
     await page.getByRole("button", { name: "Theme settings" }).click();
     await page.getByRole("menuitemradio", { name: dracula.label, exact: true }).click();
 
     await page.reload();
-    await expect(page.locator("html")).toHaveAttribute("data-palette", "dracula");
+    await expect(page.locator("html")).toHaveAttribute("data-palette", "light");
   });
 
   test("can switch between multiple palettes", async ({ page }) => {
     const html = page.locator("html");
-    const gruvbox = PALETTES.find((p) => p.id === "gruvbox")!;
-    const catppuccin = PALETTES.find((p) => p.id === "catppuccin_frappe")!;
+    const gruvbox = PALETTES.find((p) => p.id === "light")!;
+    const catppuccin = PALETTES.find((p) => p.id === "dark")!;
 
     await page.getByRole("button", { name: "Theme settings" }).click();
     await page.getByRole("menuitemradio", { name: gruvbox.label, exact: true }).click();
-    await expect(html).toHaveAttribute("data-palette", "gruvbox");
+    await expect(html).toHaveAttribute("data-palette", "light");
 
     await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "Theme settings" }).click();
     await page.getByRole("menuitemradio", { name: catppuccin.label, exact: true }).click();
-    await expect(html).toHaveAttribute("data-palette", "catppuccin_frappe");
+    await expect(html).toHaveAttribute("data-palette", "dark");
   });
 });

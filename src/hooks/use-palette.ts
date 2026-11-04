@@ -1,20 +1,21 @@
 "use client";
 
 import * as React from "react";
+import { normalizePalette } from "@/lib/palettes";
 
 const COOKIE_NAME = "labitat-palette";
-const DEFAULT_PALETTE = "nord";
+const DEFAULT_PALETTE = "dark";
 
 function getInitialPalette(): string {
   if (typeof window === "undefined") {
     return DEFAULT_PALETTE;
   }
   try {
-    return (
+    return normalizePalette(
       document.cookie
         .split("; ")
         .find((row) => row.startsWith(`${COOKIE_NAME}=`))
-        ?.split("=")[1] ?? DEFAULT_PALETTE
+        ?.split("=")[1] ?? DEFAULT_PALETTE,
     );
   } catch {
     return DEFAULT_PALETTE;
@@ -38,7 +39,7 @@ export function usePalette() {
   }, [palette]);
 
   const updatePalette = React.useCallback((value: string) => {
-    setPaletteState(value);
+    setPaletteState(normalizePalette(value));
   }, []);
 
   return { palette, setPalette: updatePalette };

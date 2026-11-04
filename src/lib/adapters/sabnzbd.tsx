@@ -66,6 +66,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
       key: "showDownloads",
       label: "Show active downloads",
       type: "boolean",
+      defaultChecked: true,
       helperText: "Display currently downloading items",
     },
   ],

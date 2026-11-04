@@ -156,7 +156,11 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
   const adapter = serviceType ? getService(serviceType) : null;
   if (adapter) {
     for (const field of adapter.configFields) {
-      if (field.type === "password" && !config[field.key] && oldConfig[field.key]) {
+      if (
+        existingItem?.serviceType === serviceType &&
+        oldConfig[field.key] !== undefined &&
+        (!formData.has(`config_${field.key}`) || (field.type === "password" && !config[field.key]))
+      ) {
         config[field.key] = oldConfig[field.key];
       }
     }
@@ -167,16 +171,21 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
     (f) => f.type === "url" && formData.has("config_" + f.key),
   );
   const nextServiceUrl =
-    !serviceUrlProvided && existingItem?.serviceUrl ? existingItem.serviceUrl : serviceUrl;
+    !serviceUrlProvided && existingItem?.serviceType === serviceType && existingItem?.serviceUrl
+      ? existingItem.serviceUrl
+      : serviceUrl;
 
   const configEnc =
     Object.keys(config).length > 0
       ? await encrypt(JSON.stringify(config))
-      : (existingItem?.configEnc ?? null);
+      : existingItem?.serviceType === serviceType
+        ? (existingItem?.configEnc ?? null)
+        : null;
 
   const configurationChanged = Boolean(
     existingItem &&
     (existingItem.serviceType !== serviceType ||
+      existingItem.href !== ((formData.get("href") as string) || null) ||
       existingItem.serviceUrl !== nextServiceUrl ||
       stableConfig(oldConfig) !== stableConfig(config)),
   );
@@ -214,7 +223,10 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
       pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
       displayMode,
       statDisplayMode,
-      statCardOrder: statCardOrderStr ?? existingItem?.statCardOrder ?? null,
+      statCardOrder:
+        rawStatCardOrder === "null"
+          ? null
+          : (statCardOrderStr ?? existingItem?.statCardOrder ?? null),
     })
     .where(eq(items.id, id));
   if (configurationChanged) {
@@ -312,8 +324,8 @@ export async function getItemConfig(id: string): Promise<Record<string, string>>
   try {
     const decrypted = await decrypt(item.configEnc);
     return JSON.parse(decrypted);
-  } catch (err) {
-    console.warn("[items] Failed to decrypt config for item", id, err);
-    return {};
+  } catch {
+    console.warn("[items] Failed to decrypt config for item", id);
+    throw new Error("Saved credentials could not be loaded");
   }
 }

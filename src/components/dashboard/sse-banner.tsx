@@ -6,19 +6,17 @@ import { OverlayPortal } from "@/components/ui/overlay-portal";
 
 export function SseBanner() {
   const meta = useLiveMeta();
+  const connected = meta.sseState === "connected";
   const [visible, setVisible] = React.useState(false);
-  const hasConnectedRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (meta.sseState === "connected") {
-      hasConnectedRef.current = true;
+    if (connected) {
       setVisible(false);
       return;
     }
-    if (!hasConnectedRef.current) return;
     const timer = setTimeout(() => setVisible(true), 3000);
     return () => clearTimeout(timer);
-  }, [meta.sseState]);
+  }, [connected]);
 
   if (!visible) return null;
 
@@ -26,9 +24,10 @@ export function SseBanner() {
     <OverlayPortal slot="top">
       <div
         data-testid="sse-banner"
-        className="pointer-events-auto mt-2 rounded-full bg-danger/90 px-3 py-1 text-xs font-medium text-white shadow-lg"
+        role="status"
+        className="pointer-events-auto mt-2 rounded-full bg-warning px-3 py-1 text-xs font-medium text-background shadow-lg"
       >
-        Reconnecting...
+        Live updates unavailable. Reconnecting…
       </div>
     </OverlayPortal>
   );

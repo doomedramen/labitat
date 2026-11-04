@@ -73,3 +73,13 @@ On your first visit, Labitat will guide you through the **Setup Wizard**. This p
 ::: info Account Security
 All users created in Labitat are stored locally in your SQLite database. Labitat does not call home or use external authentication providers.
 :::
+
+## Dashboard appearance and metrics
+
+Choose **Light** or **Dark** from Theme. Earlier palette preferences map to the corresponding light or dark theme.
+
+Widgets show up to four metrics by default. In Edit, open an item and use **Stat Card Layout** to show metrics from **Unused**, hide them, or change their order. Dragging and the labeled buttons both work. Explicit selections may contain more than four metrics; new metrics stay unused. **Reset to defaults** restores the widget's default selection.
+
+Moves save immediately. Item and group dialogs save with **Update** or **Create**; Cancel discards their draft. Appearance and refresh settings are collapsed in the item dialog. Download and stream details expand on demand in view mode.
+
+The card's status details show the last successful update separately from the last attempt. Failed updates retain useful saved values and label them as cached. Saved records from earlier versions have an unknown successful-update time until a live fetch succeeds.

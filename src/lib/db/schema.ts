@@ -64,6 +64,10 @@ export const widgetCache = sqliteTable("widget_cache", {
   widgetData: text("widget_data", { mode: "json" }),
   pingStatus: text("ping_status", { mode: "json" }),
   updatedAt: text("updated_at").default(sql`(current_timestamp)`),
+  configurationRevision: integer("configuration_revision"),
+  lastAttemptAt: integer("last_attempt_at"),
+  lastSuccessAt: integer("last_success_at"),
+  freshness: text("freshness").default("unknown"),
 });
 
 // ── Relations ─────────────────────────────────────────────────────────────────

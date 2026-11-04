@@ -16,10 +16,8 @@ describe("palettes", () => {
     }
   });
 
-  it("includes 'nord' palette", () => {
-    const nordPalette = PALETTES.find((p) => p.id === "nord");
-    expect(nordPalette).toBeDefined();
-    expect(nordPalette?.label).toBe("Nord");
+  it("offers exactly two maintained themes", () => {
+    expect(PALETTES.map((p) => p.id)).toEqual(["dark", "light"]);
   });
 
   it("has unique IDs", () => {

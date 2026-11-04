@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import { decrypt } from "@/lib/crypto";
 import { getService } from "@/lib/adapters";
 import { serverCache } from "@/lib/server-cache";
+import { saveServiceObservation } from "@/lib/service-observation";
 import type { ServiceData } from "@/lib/adapters/types";
 
 export async function fetchServiceData(itemId: string): Promise<ServiceData> {
@@ -28,8 +29,13 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
   const pollingMs = item.pollingMs ?? adapter.defaultPollingMs ?? 10000;
 
   const cached = serverCache.get(itemId);
-  if (cached?.widgetData) {
-    const age = Date.now() - cached.lastFetchedAt;
+  if (
+    cached?.widgetData &&
+    cached.freshness === "fresh" &&
+    cached.lastSuccessAt !== null &&
+    cached.configurationRevision === item.configurationRevision
+  ) {
+    const age = Date.now() - cached.lastSuccessAt;
     if (age < pollingMs) return cached.widgetData;
   }
 
@@ -51,6 +57,7 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
     }
   }
 
+  const attemptAt = Date.now();
   try {
     if (!adapter.fetchData) {
       return { _status: "none" as const, ...config };
@@ -66,25 +73,12 @@ export async function fetchServiceData(itemId: string): Promise<ServiceData> {
       ...data,
       _status: data._status ?? "ok",
     };
-    serverCache.set(itemId, { widgetData: responseData });
-    return responseData;
+    return saveServiceObservation(itemId, item.configurationRevision, attemptAt, responseData);
   } catch (err) {
-    if (cached?.widgetData) {
-      return {
-        ...cached.widgetData,
-        _status: "warn" as const,
-        _statusText: `Showing cached data — ${serviceFailureReason(err)}`,
-      };
-    }
-
-    console.error(`[labitat] Failed to fetch data for item ${itemId} (${item.serviceType}):`, err);
-
-    const errorResponse: ServiceData = {
+    return saveServiceObservation(itemId, item.configurationRevision, attemptAt, {
       _status: "error",
       _statusText: serviceFailureReason(err),
-    };
-    serverCache.set(itemId, { widgetData: errorResponse });
-    return errorResponse;
+    });
   }
 }
 

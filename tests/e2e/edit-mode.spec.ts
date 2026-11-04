@@ -11,7 +11,9 @@ test.describe("Edit Mode", () => {
     await page.goto("/");
     await page.getByRole("button", { name: "Edit" }).click();
     await expect(page).toHaveURL("/edit");
-    await expect(page.getByText("Drag to reorder. Select a card to edit it.")).toBeVisible();
+    await expect(
+      page.getByText("Moves save automatically. Use Edit to change an item."),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: "Done" })).toBeVisible();
 
     await page.getByRole("button", { name: "Done" }).click();
@@ -104,6 +106,7 @@ test.describe("Edit Mode", () => {
     await page.goto("/edit");
     await page.getByRole("button", { name: "Add item" }).first().click();
 
+    await page.getByText("Appearance", { exact: true }).click();
     const icon = page.getByRole("combobox", { name: "Icon" });
     await icon.fill("13 feet");
     await page.getByRole("option", { name: "13 Feet Ladder" }).click();

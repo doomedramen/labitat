@@ -112,7 +112,7 @@ describe("server-cache", () => {
       const cache = serverCache as any;
       const item = cache.cache.get("stale-item");
       if (item) {
-        item.lastFetchedAt = Date.now() - 1000000;
+        item.lastSuccessAt = Date.now() - 1000000;
       }
 
       const fresh = serverCache.getAllFresh(60000); // 1 minute

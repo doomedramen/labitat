@@ -84,6 +84,7 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
       key: "showDownloads",
       label: "Show active downloads",
       type: "boolean",
+      defaultChecked: true,
       helperText: "Display currently downloading items",
     },
   ],

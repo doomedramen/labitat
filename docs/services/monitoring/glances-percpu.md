@@ -21,3 +21,5 @@ Individual CPU core utilization monitoring from Glances.
 ## Notes
 
 Shows utilization for each CPU core individually, labeled as C0, C1, C2, etc. Useful for identifying uneven CPU load distribution across cores.
+
+The default shows the first four CPU cores. Add additional cores from Unused in the item editor.

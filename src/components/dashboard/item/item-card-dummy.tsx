@@ -20,7 +20,7 @@ interface ItemCardDummyProps {
   item: ItemWithCache;
   editMode: boolean;
   onEdit: (item: ItemWithCache) => void;
-  onDeleted: (itemId: string) => void;
+  onDeleted: (itemId: string) => void | Promise<void>;
 }
 
 export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDummyProps) {
@@ -74,25 +74,25 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
               type="button"
               onClick={() => onEdit(item)}
               className={cn(
-                "flex items-center gap-1 rounded-md px-2 py-1 text-muted-foreground",
+                "flex items-center gap-1 rounded-md px-2 py-2 text-muted-foreground",
                 "transition-colors hover:bg-muted hover:text-foreground",
               )}
               aria-label="Edit item"
             >
               <Pencil className="h-3.5 w-3.5" />
-              <span className="text-[10px] font-medium">Edit</span>
+              <span className="text-xs font-medium">Edit</span>
             </button>
             <button
               type="button"
               onClick={() => setDeleteConfirmOpen(true)}
               className={cn(
-                "flex items-center gap-1 rounded-md px-2 py-1 text-muted-foreground",
+                "flex items-center gap-1 rounded-md px-2 py-2 text-muted-foreground",
                 "transition-colors hover:bg-destructive/10 hover:text-destructive",
               )}
               aria-label="Delete item"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              <span className="text-[10px] font-medium">Delete</span>
+              <span className="text-xs font-medium">Delete</span>
             </button>
           </div>
         </div>
@@ -112,22 +112,12 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
 
             {/* Metadata */}
             <div className="mt-1 flex flex-col gap-0.5">
-              {serviceDef && (
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-primary/80">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60" />
-                  {serviceDef.name}
-                </span>
-              )}
               {item.href && (
                 <span className="flex items-center gap-1.5 truncate text-xs text-muted-foreground/70">
                   <ExternalLink className="h-3 w-3 shrink-0" />
                   {item.href}
                 </span>
               )}
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/60">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
-                {(item.pollingMs ?? serviceDef?.defaultPollingMs ?? 30_000) / 1000}s refresh
-              </span>
             </div>
           </div>
         </div>
@@ -138,10 +128,7 @@ export function ItemCardDummy({ item, editMode, onEdit, onDeleted }: ItemCardDum
         onOpenChange={setDeleteConfirmOpen}
         title="Delete item"
         description={`Are you sure you want to delete "${item.label}"? This cannot be undone.`}
-        onConfirm={() => {
-          onDeleted(item.id);
-          setDeleteConfirmOpen(false);
-        }}
+        onConfirm={() => onDeleted(item.id)}
       />
     </>
   );

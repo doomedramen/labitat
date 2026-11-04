@@ -139,10 +139,10 @@ describe("glances definition", () => {
     });
   });
 
-  describe("renderWidget", () => {
+  describe("toPayload", () => {
     it("is defined", () => {
-      expect(glancesDefinition.renderWidget).toBeDefined();
-      expect(typeof glancesDefinition.renderWidget).toBe("function");
+      expect(glancesDefinition.toPayload).toBeDefined();
+      expect(typeof glancesDefinition.toPayload).toBe("function");
     });
   });
 });

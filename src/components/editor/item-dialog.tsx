@@ -26,7 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useWebHaptics } from "web-haptics/react";
 
@@ -35,6 +34,7 @@ import { getAllServices } from "@/lib/adapters";
 import type { ServiceDefinition } from "@/lib/adapters";
 import type { IconOption } from "@/lib/icon-catalog";
 import type { WidgetPayload } from "@/lib/adapters/widget-types";
+import type { ServiceData } from "@/lib/adapters/types";
 import type { ItemWithCache, GroupWithItems } from "@/lib/types";
 import {
   WidgetDisplayProvider,
@@ -44,7 +44,6 @@ import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid
 import { parseStatCardOrder, type StatCardOrder } from "@/hooks/use-stat-card-order";
 import { useItemLive } from "@/components/dashboard/use-item-live";
 import { fetchServiceData } from "@/actions/services";
-import { liveStore } from "@/lib/live-store";
 
 /**
  * Stat card editor that only shows stat cards for reordering.
@@ -102,6 +101,7 @@ function ServiceCombobox({
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const sorted = [...services].sort((a, b) => a.name.localeCompare(b.name));
   const filtered = query
@@ -129,6 +129,7 @@ function ServiceCombobox({
     setOpen(false);
     setQuery("");
     setActiveIndex(-1);
+    triggerRef.current?.focus();
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -141,6 +142,9 @@ function ServiceCombobox({
       return;
     }
     if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      triggerRef.current?.focus();
       setOpen(false);
       setQuery("");
       setActiveIndex(-1);
@@ -160,6 +164,7 @@ function ServiceCombobox({
     <div ref={containerRef} className="relative" onKeyDown={handleKeyDown}>
       <button
         type="button"
+        ref={triggerRef}
         role="combobox"
         id={comboboxId}
         aria-expanded={open}
@@ -203,7 +208,14 @@ function ServiceCombobox({
                 setQuery(e.target.value);
                 setActiveIndex(0);
               }}
-              role="searchbox"
+              role="combobox"
+              aria-expanded="true"
+              aria-controls={`${comboboxId}-listbox`}
+              aria-activedescendant={
+                activeIndex >= 0 && activeIndex < options.length
+                  ? `${comboboxId}-option-${activeIndex}`
+                  : undefined
+              }
               aria-label="Search services"
             />
           </div>
@@ -211,6 +223,8 @@ function ServiceCombobox({
             {!query && (
               <button
                 type="button"
+                id={`${comboboxId}-option-0`}
+                tabIndex={-1}
                 role="option"
                 aria-selected={value === ""}
                 onClick={() => select("")}
@@ -232,11 +246,12 @@ function ServiceCombobox({
                   <button
                     key={s.id}
                     type="button"
+                    id={`${comboboxId}-option-${optIndex}`}
                     role="option"
                     aria-selected={value === s.id}
-                    tabIndex={activeIndex === optIndex ? 0 : -1}
+                    tabIndex={-1}
                     ref={(el) => {
-                      if (activeIndex === optIndex && el) el.scrollIntoView({ block: "nearest" });
+                      if (activeIndex === optIndex && el) el.scrollIntoView?.({ block: "nearest" });
                     }}
                     onClick={() => select(s.id)}
                     className={cn(
@@ -284,7 +299,18 @@ export function ItemDialog({
   );
   const [serviceType, setServiceType] = useState(item?.serviceType ?? "");
   const [configFields, setConfigFields] = useState<Record<string, string>>({});
-  const [configLoading, setConfigLoading] = useState(false);
+  const storedConfigKeysRef = useRef(new Set<string>());
+  const editedConfigKeysRef = useRef(new Set<string>());
+  function editConfigField(key: string, value: string) {
+    editedConfigKeysRef.current.add(key);
+    setConfigFields((prev) => ({ ...prev, [key]: value }));
+  }
+  const [configLoading, setConfigLoading] = useState(!!item?.serviceType);
+  const [configError, setConfigError] = useState<string | null>(null);
+  const [loadRetry, setLoadRetry] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const savingRef = useRef(false);
   const [statDisplayMode, setStatDisplayMode] = useState<"icon" | "label">(
     (item?.statDisplayMode as "icon" | "label") ?? "label",
   );
@@ -307,21 +333,23 @@ export function ItemDialog({
       iconUrl: item?.iconUrl ?? "",
       pollingMs: item?.pollingMs ? item.pollingMs / 1000 : 10,
     },
-    validators: {
-      onChange: itemSchema,
-      onChangeAsync: async ({ value }) => {
-        const result = itemSchema.safeParse(value);
-        if (!result.success) {
-          return {
-            fields: result.error.flatten().fieldErrors,
-          };
-        }
-        return undefined;
-      },
-      onChangeAsyncDebounceMs: 300,
-      onBlur: itemSchema,
-    },
+    validators: { onSubmit: itemSchema },
     onSubmit: async ({ value }) => {
+      if (savingRef.current || configLoading || configError) return;
+      for (const field of selectedService?.configFields ?? []) {
+        const fieldValue = configFields[field.key]?.trim();
+        if (
+          (field.required && !fieldValue && (!item || serviceType !== item.serviceType)) ||
+          (field.type === "url" && fieldValue && !isValidUrl(fieldValue))
+        ) {
+          setSaveError(`Check ${field.label}.`);
+          document.getElementById(`config_${field.key}`)?.focus();
+          return;
+        }
+      }
+      savingRef.current = true;
+      setSaving(true);
+      setSaveError(null);
       try {
         const formData = new FormData();
         formData.append("label", value.label);
@@ -334,13 +362,18 @@ export function ItemDialog({
 
         // Add stat card order
         const latestOrder = localStatCardOrderRef.current;
-        if (latestOrder) {
-          formData.append("statCardOrder", JSON.stringify(latestOrder));
-        }
+        formData.append("statCardOrder", JSON.stringify(latestOrder));
 
         // Add config fields
         Object.entries(configFields).forEach(([key, val]) => {
-          formData.append(`config_${key}`, val);
+          if (
+            !item ||
+            serviceType !== item.serviceType ||
+            storedConfigKeysRef.current.has(key) ||
+            editedConfigKeysRef.current.has(key)
+          ) {
+            formData.append(`config_${key}`, val);
+          }
         });
 
         if (item) {
@@ -353,46 +386,30 @@ export function ItemDialog({
         haptic.trigger("success");
         onOpenChange(false);
       } catch {
-        toast.error(item ? "Failed to update item" : "Failed to create item");
+        setSaveError("Could not save. Your changes are still here; try again.");
         haptic.trigger("error");
+      } finally {
+        savingRef.current = false;
+        setSaving(false);
       }
     },
   });
 
-  // Sync state when item changes (including when switching from edit to new)
+  // Only a new editing session resets a draft, never a background server render.
   useEffect(() => {
+    if (!open) return;
     setServiceType(item?.serviceType ?? "");
     setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label");
     setLocalStatCardOrder(parseStatCardOrder(item?.statCardOrder));
+    setSaveError(null);
     form.reset({
       label: item?.label ?? "",
       href: item?.href ?? "",
       iconUrl: item?.iconUrl ?? "",
-      pollingMs: item?.pollingMs ? item.pollingMs / 1000 : 10,
+      pollingMs: (item?.pollingMs ?? 10000) / 1000,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
-  }, [item?.id, item, open]);
-
-  // Reset form when dialog closes, or initialize when dialog opens with item
-  useEffect(() => {
-    if (!open) {
-      // Dialog closing - reset state
-      setServiceType("");
-      setConfigFields({});
-      setStatDisplayMode("label");
-      setLocalStatCardOrder(null);
-      form.reset({
-        label: "",
-        href: "",
-        iconUrl: "",
-        pollingMs: 10,
-      });
-    } else if (item) {
-      // Dialog opening with item - ensure statCardOrder is synced
-      setLocalStatCardOrder(parseStatCardOrder(item.statCardOrder));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable reference from useForm
-  }, [open, item]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- item ID and open define the draft session
+  }, [item?.id, open]);
 
   // Auto-set label based on service type when creating a new item
   useEffect(() => {
@@ -409,46 +426,54 @@ export function ItemDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when serviceType changes
   }, [item, serviceType]);
 
-  // Load config when editing an existing item
   useEffect(() => {
-    if (item?.id) {
-      setConfigLoading(true);
-      getItemConfig(item.id)
-        .then((stored) => {
-          if (selectedService) {
-            const merged = { ...stored };
-            for (const field of selectedService.configFields) {
-              if (field.type === "boolean" && merged[field.key] === undefined) {
-                merged[field.key] = field.defaultChecked ? "true" : "false";
-              }
-            }
-            setConfigFields(merged);
-          } else {
-            setConfigFields(stored);
-          }
-        })
-        .finally(() => setConfigLoading(false));
-    } else {
-      // New item — apply defaults for the selected service
-      if (selectedService) {
-        const defaults: Record<string, string> = {};
-        for (const field of selectedService.configFields) {
-          if (field.type === "boolean") {
-            defaults[field.key] = field.defaultChecked ? "true" : "false";
-          }
-        }
-        setConfigFields(defaults);
-      } else {
-        setConfigFields({});
-      }
+    if (!open) return;
+    let cancelled = false;
+    setConfigError(null);
+    storedConfigKeysRef.current.clear();
+    editedConfigKeysRef.current.clear();
+    const defaults: Record<string, string> = {};
+    if (item?.serviceType === serviceType && item.serviceUrl) defaults.url = item.serviceUrl;
+    for (const field of selectedService?.configFields ?? []) {
+      if (field.type === "boolean") defaults[field.key] = field.defaultChecked ? "true" : "false";
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item?.id, serviceType]);
+    if (!item || serviceType !== item.serviceType || !selectedService) {
+      setConfigFields(defaults);
+      setConfigLoading(false);
+      return;
+    }
+    setConfigLoading(true);
+    setConfigFields({});
+    getItemConfig(item.id)
+      .then((stored) => {
+        if (!cancelled) {
+          storedConfigKeysRef.current = new Set(Object.keys(stored));
+          setConfigFields({ ...defaults, ...stored });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setConfigError("Could not load the saved connection. Retry before saving.");
+      })
+      .finally(() => {
+        if (!cancelled) setConfigLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedService follows serviceType
+  }, [open, item?.id, serviceType, loadRetry]);
+
+  function requestClose(next: boolean) {
+    if (!savingRef.current) onOpenChange(next);
+  }
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent key={item?.id ?? "new"} className="max-h-[80vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={requestClose}>
+        <DialogContent
+          key={item?.id ?? "new"}
+          className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg"
+        >
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -458,9 +483,7 @@ export function ItemDialog({
             <DialogHeader>
               <DialogTitle>{item ? "Edit Item" : "New Item"}</DialogTitle>
               <DialogDescription>
-                {item
-                  ? "Update the item configuration."
-                  : "Add a new service or link to your dashboard."}
+                Changes apply when you {item ? "update" : "create"} this item.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -497,6 +520,9 @@ export function ItemDialog({
                   return (
                     <div className="space-y-2">
                       <Label htmlFor={field.name}>URL</Label>
+                      <p className="text-xs text-muted-foreground">
+                        The address opened when you select the card.
+                      </p>
                       <Input
                         id={field.name}
                         value={field.state.value}
@@ -515,33 +541,38 @@ export function ItemDialog({
                 }}
               </form.Field>
 
-              <form.Field name="iconUrl">
-                {(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && field.state.meta.errors.length > 0;
-                  return (
-                    <div className="space-y-2">
-                      <Label htmlFor={field.name}>Icon</Label>
-                      <IconCombobox
-                        id={field.name}
-                        value={field.state.value}
-                        onChange={field.handleChange}
-                        onBlur={field.handleBlur}
-                        fallbackIcons={fallbackIcons}
-                        invalid={isInvalid}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Search the selfh.st icon library by name, or paste a custom image URL.
-                      </p>
-                      {isInvalid && (
-                        <p className="text-sm text-destructive">
-                          {formatErrors(field.state.meta.errors)}
-                        </p>
-                      )}
-                    </div>
-                  );
-                }}
-              </form.Field>
+              <details className="rounded-lg border border-border p-3">
+                <summary className="cursor-pointer text-sm font-medium">Appearance</summary>
+                <div className="pt-3">
+                  <form.Field name="iconUrl">
+                    {(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched && field.state.meta.errors.length > 0;
+                      return (
+                        <div className="space-y-2">
+                          <Label htmlFor={field.name}>Icon</Label>
+                          <IconCombobox
+                            id={field.name}
+                            value={field.state.value}
+                            onChange={field.handleChange}
+                            onBlur={field.handleBlur}
+                            fallbackIcons={fallbackIcons}
+                            invalid={isInvalid}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Search the selfh.st icon library by name, or paste a custom image URL.
+                          </p>
+                          {isInvalid && (
+                            <p className="text-sm text-destructive">
+                              {formatErrors(field.state.meta.errors)}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }}
+                  </form.Field>
+                </div>
+              </details>
 
               {/* Service type */}
               <div className="space-y-2">
@@ -549,14 +580,33 @@ export function ItemDialog({
                 <ServiceCombobox
                   services={services}
                   value={serviceType}
-                  onChange={(id) => setServiceType(id)}
+                  onChange={(id) => {
+                    setServiceType(id);
+                    setLocalStatCardOrder(null);
+                  }}
                 />
               </div>
 
               {/* Service config fields */}
               {selectedService && (
                 <div className="space-y-3 rounded-lg border p-3">
-                  <p className="text-sm font-medium">{selectedService.name} Config</p>
+                  <p className="text-sm font-medium">Connection</p>
+                  <p className="text-xs text-muted-foreground">
+                    Used by Labitat to fetch data from {selectedService.name}.
+                  </p>
+                  {configError && (
+                    <div role="alert" className="text-sm text-destructive">
+                      {configError}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="mt-2"
+                        onClick={() => setLoadRetry((value) => value + 1)}
+                      >
+                        Retry connection load
+                      </Button>
+                    </div>
+                  )}
                   {configLoading ? (
                     <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
                       <Loader2 className="size-4 animate-spin" />
@@ -574,24 +624,16 @@ export function ItemDialog({
                                 id={`config_${field.key}`}
                                 checked={fieldValue === "true"}
                                 onCheckedChange={(checked) =>
-                                  setConfigFields((prev) => ({
-                                    ...prev,
-                                    [field.key]: checked ? "true" : "false",
-                                  }))
+                                  editConfigField(field.key, checked ? "true" : "false")
                                 }
                               />
                             </div>
                           ) : field.type === "select" && field.options ? (
                             <Select
                               value={fieldValue ?? ""}
-                              onValueChange={(v) =>
-                                setConfigFields((prev) => ({
-                                  ...prev,
-                                  [field.key]: v,
-                                }))
-                              }
+                              onValueChange={(v) => editConfigField(field.key, v)}
                             >
-                              <SelectTrigger>
+                              <SelectTrigger id={`config_${field.key}`}>
                                 <SelectValue placeholder={field.placeholder} />
                               </SelectTrigger>
                               <SelectContent>
@@ -602,53 +644,6 @@ export function ItemDialog({
                                 ))}
                               </SelectContent>
                             </Select>
-                          ) : field.type === "url" ? (
-                            <form.Field
-                              // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic config fields are not in the form schema
-                              name={`config_${field.key}` as any}
-                              defaultValue={fieldValue ?? ""}
-                              validators={{
-                                onChange: ({ value }) =>
-                                  value && !isValidUrl(value)
-                                    ? "Must be a valid URL (e.g., example.com or https://example.com)"
-                                    : undefined,
-                                onChangeAsyncDebounceMs: 300,
-                                onBlur: ({ value }) =>
-                                  value && !isValidUrl(value)
-                                    ? "Must be a valid URL (e.g., example.com or https://example.com)"
-                                    : undefined,
-                              }}
-                            >
-                              {(configField) => {
-                                const isInvalid =
-                                  configField.state.meta.isTouched &&
-                                  !configField.state.meta.isValid;
-                                return (
-                                  <div className="space-y-1">
-                                    <Input
-                                      id={`config_${field.key}`}
-                                      type="text"
-                                      value={configField.state.value}
-                                      onChange={(e) => {
-                                        configField.handleChange(e.target.value);
-                                        setConfigFields((prev) => ({
-                                          ...prev,
-                                          [field.key]: e.target.value,
-                                        }));
-                                      }}
-                                      onBlur={configField.handleBlur}
-                                      placeholder={field.placeholder}
-                                      aria-invalid={isInvalid || undefined}
-                                    />
-                                    {isInvalid && (
-                                      <p className="text-xs text-destructive">
-                                        {formatErrors(configField.state.meta.errors)}
-                                      </p>
-                                    )}
-                                  </div>
-                                );
-                              }}
-                            </form.Field>
                           ) : (
                             <div className="space-y-1">
                               <Input
@@ -661,12 +656,7 @@ export function ItemDialog({
                                       : "text"
                                 }
                                 value={fieldValue ?? ""}
-                                onChange={(e) =>
-                                  setConfigFields((prev) => ({
-                                    ...prev,
-                                    [field.key]: e.target.value,
-                                  }))
-                                }
+                                onChange={(e) => editConfigField(field.key, e.target.value)}
                                 placeholder={field.placeholder}
                               />
                             </div>
@@ -681,52 +671,39 @@ export function ItemDialog({
                 </div>
               )}
 
-              {/* Polling interval */}
-              <form.Field name="pollingMs">
-                {(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && field.state.meta.errors.length > 0;
-                  return (
-                    <div className="space-y-2">
-                      <Label htmlFor={field.name}>Polling Interval (seconds)</Label>
-                      <Input
-                        id={field.name}
-                        value={String(field.state.value)}
-                        onChange={(e) => {
-                          const val = e.target.value === "" ? "" : Number(e.target.value);
-                          field.handleChange(typeof val === "number" ? val : 0);
-                        }}
-                        onBlur={field.handleBlur}
-                        type="number"
-                        placeholder="10"
-                        aria-invalid={isInvalid || undefined}
-                      />
-                      {isInvalid && (
-                        <p className="text-sm text-destructive">
-                          {formatErrors(field.state.meta.errors)}
-                        </p>
-                      )}
-                    </div>
-                  );
-                }}
-              </form.Field>
-
-              {/* Stat display mode - only for widgets using toPayload, not custom renderWidget */}
-              {selectedService && !selectedService.renderWidget && (
-                <div className="flex items-center justify-between gap-4">
-                  <Label htmlFor="statDisplayMode" className="leading-snug">
-                    Stat card icons
-                    <span className="block text-xs font-normal text-muted-foreground">
-                      Show icons instead of labels
-                    </span>
-                  </Label>
-                  <Switch
-                    id="statDisplayMode"
-                    checked={statDisplayMode === "icon"}
-                    onCheckedChange={(checked) => setStatDisplayMode(checked ? "icon" : "label")}
-                  />
+              <details className="rounded-lg border border-border p-3">
+                <summary className="cursor-pointer text-sm font-medium">Refresh settings</summary>
+                <div className="pt-3">
+                  <form.Field name="pollingMs">
+                    {(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched && field.state.meta.errors.length > 0;
+                      return (
+                        <div className="space-y-2">
+                          <Label htmlFor={field.name}>Polling Interval (seconds)</Label>
+                          <Input
+                            id={field.name}
+                            value={String(field.state.value)}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? "" : Number(e.target.value);
+                              field.handleChange(typeof val === "number" ? val : 0);
+                            }}
+                            onBlur={field.handleBlur}
+                            type="number"
+                            placeholder="10"
+                            aria-invalid={isInvalid || undefined}
+                          />
+                          {isInvalid && (
+                            <p className="text-sm text-destructive">
+                              {formatErrors(field.state.meta.errors)}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }}
+                  </form.Field>
                 </div>
-              )}
+              </details>
 
               {/* Stat card layout preview - only for widgets using toPayload, not custom renderWidget */}
               {selectedService &&
@@ -738,7 +715,7 @@ export function ItemDialog({
                   <div className="space-y-2">
                     <Label>Stat Card Layout</Label>
                     <p className="text-xs text-muted-foreground">
-                      Drag to reorder · Drop into the unused area to hide
+                      Up to 4 shown by default. Add from Unused, hide, or reorder.
                     </p>
                     <ItemDialogPreview
                       open={open}
@@ -762,11 +739,23 @@ export function ItemDialog({
                   </div>
                 )}
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            {saveError && (
+              <p role="alert" className="mb-3 text-sm text-destructive">
+                {saveError}
+              </p>
+            )}
+            <DialogFooter className="sticky -bottom-4 bg-popover">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={saving}
+                onClick={() => requestClose(false)}
+              >
                 Cancel
               </Button>
-              <Button type="submit">{item ? "Update" : "Create"}</Button>
+              <Button type="submit" disabled={saving || configLoading || !!configError}>
+                {saving ? "Saving…" : item ? "Update" : "Create"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -811,43 +800,37 @@ function ItemDialogPreview({
   const live = useItemLive(itemId);
 
   const [preview, setPreview] = useState<PreviewState>({ status: "loading" });
-  const fetchedRef = useRef(false);
-
   useEffect(() => {
     if (!open) return;
-    if (fetchedRef.current) return; // only once per open
-    fetchedRef.current = true;
-
-    const cached = live?.widgetData ?? null;
-    if (cached) {
-      const payload = adapter.toPayload ? adapter.toPayload(cached) : null;
-      if (payload) {
-        setPreview({ status: "idle", payload: withPlaceholderValues(payload) });
-        return;
+    let cancelled = false;
+    function payloadFor(data: ServiceData | null) {
+      if (!data || data._status === "error") return null;
+      try {
+        return adapter.toPayload ? withPlaceholderValues(adapter.toPayload(data)) : null;
+      } catch {
+        return null;
       }
     }
-
+    const cachedPayload = payloadFor(live?.widgetData ?? null);
+    if (cachedPayload) {
+      setPreview({ status: "idle", payload: cachedPayload });
+      return;
+    }
     setPreview({ status: "loading" });
     fetchServiceData(itemId)
       .then((data) => {
-        const existing = liveStore.getSnapshot(itemId);
-        liveStore.updateFromSse(itemId, {
-          widgetData: data,
-          pingStatus: existing?.pingStatus ?? null,
-          fetchedAt: Date.now(),
-        });
-
-        const payload = adapter.toPayload ? adapter.toPayload(data) : null;
-        if (!payload) {
-          setPreview({ status: "error" });
-          return;
-        }
-
-        setPreview({ status: "idle", payload: withPlaceholderValues(payload) });
+        if (cancelled) return;
+        const payload = payloadFor(data);
+        setPreview(payload ? { status: "idle", payload } : { status: "error" });
       })
-      .catch(() => setPreview({ status: "error" }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once per dialog open
-  }, []);
+      .catch(() => {
+        if (!cancelled) setPreview({ status: "error" });
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh on a new preview session, not every live update
+  }, [open, itemId, adapter]);
 
   if (!open) return null;
 

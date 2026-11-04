@@ -1,33 +1,23 @@
-/**
- * Editable stat card grid with drag-to-reorder and unused area.
- * Used in the item dialog for configuring stat card visibility and order.
- *
- * Fully rewritten for proper @dnd-kit compatibility.
- */
-
 "use client";
 
+import { useMemo, useState } from "react";
 import {
   DndContext,
-  pointerWithin,
+  DragOverlay,
   PointerSensor,
+  pointerWithin,
+  useDroppable,
   useSensor,
   useSensors,
-  useDroppable,
-  DragOverlay,
   type DragEndEvent,
-  type DragStartEvent,
 } from "@dnd-kit/core";
-import { useSortable, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
+import { SortableContext, rectSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useCallback, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, EyeOff, GripVertical, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { BlockLinkPropagation } from "@/components/dashboard/item/block-link-propagation";
-import type { StatDisplayMode } from "@/lib/types";
+import { resolveStatCardLayout, type StatCardOrder } from "@/lib/stat-card-layout";
 import type { StatItem } from "@/components/widgets";
-import type { StatCardOrder } from "@/hooks/use-stat-card-order";
-import { EyeOff } from "lucide-react";
+import type { StatDisplayMode } from "@/lib/types";
 
 interface EditableStatGridProps {
   items: StatItem[];
@@ -39,172 +29,166 @@ interface EditableStatGridProps {
 
 export function EditableStatGrid({
   items,
-  displayMode = "label",
   order,
   onOrderChange,
   defaultActiveIds,
 }: EditableStatGridProps) {
-  const [activeId, setActiveId] = useState<string | null>(null);
-
-  const sensor = useSensor(PointerSensor, {
-    activationConstraint: { distance: 8 },
-  });
-  const sensors = useSensors(sensor);
-
-  // Build active and unused item lists
-  const { activeItems, unusedItems } = useMemo(() => {
-    const itemMap = new Map(items.map((item) => [item.id, item]));
-
-    if (!order) {
-      if (defaultActiveIds && defaultActiveIds.length > 0) {
-        const active = defaultActiveIds
-          .map((id) => itemMap.get(id))
-          .filter((item): item is StatItem => item !== undefined);
-        const unused = items.filter((item) => !defaultActiveIds.includes(item.id));
-        return { activeItems: active, unusedItems: unused };
-      }
-      return { activeItems: items, unusedItems: [] as StatItem[] };
-    }
-
-    const active = order.active
-      .map((id) => itemMap.get(id))
-      .filter((item): item is StatItem => item !== undefined);
-
-    const unused = order.unused
-      .map((id) => itemMap.get(id))
-      .filter((item): item is StatItem => item !== undefined);
-
-    return { activeItems: active, unusedItems: unused };
-  }, [items, order]);
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      setActiveId(null);
-
-      if (!over) return;
-
-      const activeIdStr = active.id as string;
-      const overIdStr = over.id as string;
-
-      // Find which lists contain the items
-      const activeIds = new Set(activeItems.map((i: StatItem) => i.id));
-      const unusedIdsSet = new Set(unusedItems.map((i: StatItem) => i.id));
-
-      const isFromActive = activeIds.has(activeIdStr);
-      const isFromUnused = unusedIdsSet.has(activeIdStr);
-      const isOverActive = activeIds.has(overIdStr);
-      const isOverUnused = overIdStr === "unused-zone";
-
-      // Build new order
-      let newActive = [...activeItems];
-      let newUnused = [...unusedItems];
-
-      if (isFromActive && isOverActive) {
-        // Reorder within active list
-        const oldIndex = newActive.findIndex((i) => i.id === activeIdStr);
-        const newIndex = newActive.findIndex((i) => i.id === overIdStr);
-        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-          const [moved] = newActive.splice(oldIndex, 1);
-          newActive.splice(newIndex, 0, moved);
-        }
-      } else if (isFromActive && isOverUnused) {
-        // Move from active to unused
-        const item = newActive.find((i) => i.id === activeIdStr);
-        if (item) {
-          newActive = newActive.filter((i) => i.id !== activeIdStr);
-          newUnused = [...newUnused, item];
-        }
-      } else if (isFromUnused && isOverActive) {
-        // Move from unused to active (insert at position)
-        const item = newUnused.find((i) => i.id === activeIdStr);
-        if (item) {
-          newUnused = newUnused.filter((i) => i.id !== activeIdStr);
-          const overIndex = newActive.findIndex((i) => i.id === overIdStr);
-          if (overIndex !== -1) {
-            newActive.splice(overIndex, 0, item);
-          } else {
-            newActive = [...newActive, item];
-          }
-        }
-      } else if (isFromUnused && isOverUnused) {
-        // Reorder within unused list
-        return;
-      }
-
-      onOrderChange({
-        active: newActive.map((i) => i.id),
-        unused: newUnused.map((i) => i.id),
-      });
-    },
-    [activeItems, unusedItems, onOrderChange],
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  const { activeItems, unusedItems } = useMemo(
+    () => resolveStatCardLayout(items, order, defaultActiveIds),
+    [items, order, defaultActiveIds],
   );
+  const activeIds = activeItems.map((item) => item.id);
+  const unusedIds = unusedItems.map((item) => item.id);
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  }, []);
-
-  const activeItem = activeId
-    ? [...activeItems, ...unusedItems].find((i) => i.id === activeId)
-    : null;
-
-  // Get adaptive grid classes based on item count
-  const getGridClasses = (count: number): string => {
-    switch (count) {
-      case 1:
-        return "grid-cols-1";
-      case 2:
-        return "grid-cols-2";
-      case 3:
-        return "grid-cols-3";
-      case 4:
-      default:
-        return "grid-cols-2 sm:grid-cols-4";
+  function change(active: string[], unused: string[]) {
+    onOrderChange({ active, unused });
+  }
+  function toggle(id: string) {
+    if (activeIds.includes(id))
+      change(
+        activeIds.filter((value) => value !== id),
+        [...unusedIds, id],
+      );
+    else
+      change(
+        [...activeIds, id],
+        unusedIds.filter((value) => value !== id),
+      );
+  }
+  function move(id: string, direction: number) {
+    const next = [...activeIds];
+    const index = next.indexOf(id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= next.length) return;
+    [next[index], next[target]] = [next[target], next[index]];
+    change(next, unusedIds);
+  }
+  function drop({ active, over }: DragEndEvent) {
+    setDraggedId(null);
+    if (!over || active.id === over.id) return;
+    const id = String(active.id);
+    const target = String(over.id);
+    const fromActive = activeIds.includes(id);
+    if (target === "unused-zone" || unusedIds.includes(target)) {
+      if (fromActive) toggle(id);
+      return;
     }
-  };
-
+    if (target !== "active-zone" && !activeIds.includes(target)) return;
+    const next = activeIds.filter((value) => value !== id);
+    const index = target === "active-zone" ? next.length : activeIds.indexOf(target);
+    next.splice(index, 0, id);
+    change(
+      next,
+      unusedIds.filter((value) => value !== id),
+    );
+  }
+  const dragged = items.find((item) => item.id === draggedId);
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={pointerWithin}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
+      collisionDetection={(args) => {
+        const collisions = pointerWithin(args);
+        const cards = collisions.filter(({ id }) => id !== "active-zone" && id !== "unused-zone");
+        return cards.length ? cards : collisions;
+      }}
+      onDragStart={({ active }) => setDraggedId(String(active.id))}
+      onDragEnd={drop}
+      onDragCancel={() => setDraggedId(null)}
     >
       <div className="space-y-3">
-        {/* Active items - adaptive layout */}
-        <SortableContext
-          items={activeItems.map((i: StatItem) => i.id)}
-          strategy={horizontalListSortingStrategy}
+        <MetricZone id="active-zone" label={`Shown (${activeItems.length})`}>
+          <SortableContext items={activeIds} strategy={rectSortingStrategy}>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {activeItems.map((item, index) => (
+                <Metric
+                  key={item.id}
+                  item={item}
+                  active
+                  onToggle={() => toggle(item.id)}
+                  onMove={(direction) => move(item.id, direction)}
+                  first={index === 0}
+                  last={index === activeItems.length - 1}
+                />
+              ))}
+            </div>
+          </SortableContext>
+          {!activeItems.length && (
+            <p className="py-3 text-xs text-muted-foreground">
+              Drop metrics here, or select Show below.
+            </p>
+          )}
+        </MetricZone>
+        <MetricZone id="unused-zone" label={`Unused (${unusedItems.length})`}>
+          <SortableContext items={unusedIds} strategy={rectSortingStrategy}>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {unusedItems.map((item) => (
+                <Metric key={item.id} item={item} active={false} onToggle={() => toggle(item.id)} />
+              ))}
+            </div>
+          </SortableContext>
+          {!unusedItems.length && (
+            <p className="py-3 text-xs text-muted-foreground">Drop here to hide.</p>
+          )}
+        </MetricZone>
+        <button
+          type="button"
+          className="text-xs text-muted-foreground underline underline-offset-4"
+          onClick={() => onOrderChange(null)}
         >
-          <div className={cn("grid gap-1.5 text-xs", getGridClasses(activeItems.length))}>
-            {activeItems.map((item) => (
-              <EditableStatCard key={item.id} item={item} displayMode={displayMode} />
-            ))}
-          </div>
-        </SortableContext>
-
-        {/* Unused drop zone */}
-        <UnusedZone items={unusedItems} displayMode={displayMode} />
+          Reset to defaults (up to 4)
+        </button>
       </div>
-
-      {/* Drag overlay */}
       <DragOverlay dropAnimation={null}>
-        {activeItem ? (
-          <div className="pointer-events-none">
-            <StatCardOverlay item={activeItem} displayMode={displayMode} />
-          </div>
-        ) : null}
+        {dragged && (
+          <div className="rounded-md border bg-popover p-3 text-sm shadow-md">{dragged.label}</div>
+        )}
       </DragOverlay>
     </DndContext>
   );
 }
 
-interface EditableStatCardProps {
-  item: StatItem;
-  displayMode: StatDisplayMode;
+function MetricZone({
+  id,
+  label,
+  children,
+}: {
+  id: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <section
+      ref={setNodeRef}
+      aria-label={id === "active-zone" ? "Shown stat cards" : "Unused stat cards"}
+      className={cn(
+        "rounded-lg border border-dashed p-3",
+        isOver ? "border-primary bg-accent" : "border-border",
+      )}
+    >
+      <h4 className="mb-2 text-xs font-medium text-muted-foreground">{label}</h4>
+      {children}
+    </section>
+  );
 }
 
-function EditableStatCard({ item, displayMode }: EditableStatCardProps) {
+function Metric({
+  item,
+  active,
+  onToggle,
+  onMove,
+  first,
+  last,
+}: {
+  item: StatItem;
+  active: boolean;
+  onToggle: () => void;
+  onMove?: (direction: number) => void;
+  first?: boolean;
+  last?: boolean;
+}) {
   const {
     attributes,
     listeners,
@@ -214,210 +198,61 @@ function EditableStatCard({ item, displayMode }: EditableStatCardProps) {
     transition,
     isDragging,
   } = useSortable({ id: item.id });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : undefined,
-  };
-
-  const showIcon = displayMode === "icon" && item.icon;
-  const showLabel = displayMode === "label";
-  const effectiveTooltip = showIcon ? (item.tooltip ?? item.label) : undefined;
-
-  const content = (
-    <div
-      ref={(el) => {
-        setNodeRef(el);
-        setActivatorNodeRef(el);
-      }}
-      style={style}
-      {...attributes}
-      {...listeners}
-      aria-label="Drag to reorder stat card"
-      data-testid="stat-card"
-      className={cn(
-        "flex h-full cursor-grab flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground transition-all  select-none hover:scale-105 hover:bg-secondary/80 hover:shadow-md active:scale-95 active:cursor-grabbing",
-        isDragging && "scale-110 rotate-3 opacity-50 shadow-lg",
-      )}
-    >
-      <span
-        className={cn(
-          "font-medium tabular-nums",
-          item.valueClassName ?? "text-secondary-foreground",
-        )}
-      >
-        {item.value}
-      </span>
-      {showIcon && item.icon && (
-        <div className="mt-0.5 text-secondary-foreground/50">
-          <item.icon className="h-3 w-3" />
-        </div>
-      )}
-      {showLabel ? (
-        <span className="text-secondary-foreground/60">{item.label}</span>
-      ) : !showIcon && effectiveTooltip ? (
-        <span className="sr-only">{effectiveTooltip}</span>
-      ) : null}
-    </div>
-  );
-
-  if (effectiveTooltip) {
-    return (
-      <BlockLinkPropagation>
-        <HoverCard>
-          <HoverCardTrigger asChild>{content}</HoverCardTrigger>
-          <HoverCardContent side="top" align="center" className="w-auto">
-            {effectiveTooltip}
-          </HoverCardContent>
-        </HoverCard>
-      </BlockLinkPropagation>
-    );
-  }
-
-  return content;
-}
-
-function UnusedZone({ items, displayMode }: { items: StatItem[]; displayMode: StatDisplayMode }) {
-  const { setNodeRef, isOver } = useDroppable({ id: "unused-zone" });
-
-  // Get adaptive grid classes based on item count
-  const getGridClasses = (count: number): string => {
-    switch (count) {
-      case 1:
-        return "grid-cols-1";
-      case 2:
-        return "grid-cols-2";
-      case 3:
-        return "grid-cols-3";
-      case 4:
-      default:
-        return "grid-cols-2 sm:grid-cols-4";
-    }
-  };
-
+  const actionClass =
+    "grid size-8 shrink-0 place-items-center rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-30";
   return (
     <div
       ref={setNodeRef}
-      aria-label="Unused stat cards"
-      className={cn(
-        "rounded-lg border-2 border-dashed p-3 transition-colors",
-        isOver ? "border-primary/50 bg-primary/5" : "border-border/50 bg-muted/30",
-      )}
-    >
-      <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-        <EyeOff className="h-3.5 w-3.5" />
-        <span>Unused ({items.length})</span>
-      </div>
-      {items.length > 0 ? (
-        <SortableContext
-          items={items.map((i: StatItem) => i.id)}
-          strategy={horizontalListSortingStrategy}
-        >
-          <div className={cn("grid gap-1.5 text-xs", getGridClasses(items.length))}>
-            {items.map((item) => (
-              <UnusedStatCard key={item.id} item={item} displayMode={displayMode} />
-            ))}
-          </div>
-        </SortableContext>
-      ) : (
-        <p className="text-center text-xs text-muted-foreground/60">Drop here to hide</p>
-      )}
-    </div>
-  );
-}
-
-function UnusedStatCard({ item, displayMode }: { item: StatItem; displayMode: StatDisplayMode }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : undefined,
-  };
-
-  const showIcon = displayMode === "icon" && item.icon;
-  const showLabel = displayMode === "label";
-  const effectiveTooltip = showIcon ? (item.tooltip ?? item.label) : undefined;
-
-  const content = (
-    <div
-      ref={(el) => {
-        setNodeRef(el);
-        setActivatorNodeRef(el);
+      style={{
+        transform: CSS.Translate.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
       }}
-      style={style}
-      {...attributes}
-      {...listeners}
-      aria-label="Drag to reorder stat card"
-      data-testid="unused-stat-card"
-      className={cn(
-        "flex h-full cursor-grab flex-col items-center justify-center rounded-md bg-muted/50 px-2 py-1.5 text-center text-muted-foreground transition-all  select-none hover:bg-muted/70 active:scale-95 active:cursor-grabbing",
-        isDragging && "scale-110 rotate-3 opacity-50 shadow-lg",
-      )}
+      data-testid={active ? "stat-card" : "unused-stat-card"}
+      className="flex min-w-0 items-center gap-1 rounded-md bg-muted p-1 text-xs"
     >
-      <span className="font-medium text-muted-foreground tabular-nums">{item.value}</span>
-      {showIcon && item.icon && (
-        <div className="mt-0.5 text-muted-foreground/50">
-          <item.icon className="h-3 w-3" />
-        </div>
-      )}
-      {showLabel ? (
-        <span className="text-muted-foreground/60">{item.label}</span>
-      ) : !showIcon && effectiveTooltip ? (
-        <span className="sr-only">{effectiveTooltip}</span>
-      ) : null}
-    </div>
-  );
-
-  if (effectiveTooltip) {
-    return (
-      <BlockLinkPropagation>
-        <HoverCard>
-          <HoverCardTrigger asChild>{content}</HoverCardTrigger>
-          <HoverCardContent side="top" align="center" className="w-auto">
-            {effectiveTooltip}
-          </HoverCardContent>
-        </HoverCard>
-      </BlockLinkPropagation>
-    );
-  }
-
-  return content;
-}
-
-function StatCardOverlay({ item, displayMode }: { item: StatItem; displayMode: StatDisplayMode }) {
-  const showIcon = displayMode === "icon" && item.icon;
-  const showLabel = displayMode === "label";
-
-  return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center rounded-md bg-secondary px-2 py-1.5 text-center text-secondary-foreground shadow-lg ring-2 ring-ring/20",
-      )}
-    >
-      <span
-        className={cn(
-          "font-medium tabular-nums",
-          item.valueClassName ?? "text-secondary-foreground",
-        )}
+      <button
+        ref={setActivatorNodeRef}
+        type="button"
+        {...attributes}
+        {...listeners}
+        aria-label={`Drag ${item.label}`}
+        className={cn(actionClass, "cursor-grab touch-none")}
       >
-        {item.value}
-      </span>
-      {showIcon && item.icon && (
-        <div className="mt-0.5 text-secondary-foreground/50">
-          <item.icon className="h-3 w-3" />
-        </div>
+        <GripVertical size={14} />
+      </button>
+      <span className="min-w-0 flex-1 break-words">{item.label}</span>
+      {active && (
+        <>
+          <button
+            type="button"
+            className={actionClass}
+            disabled={first}
+            onClick={() => onMove?.(-1)}
+            aria-label={`Move ${item.label} earlier`}
+          >
+            <ArrowLeft size={14} />
+          </button>
+          <button
+            type="button"
+            className={actionClass}
+            disabled={last}
+            onClick={() => onMove?.(1)}
+            aria-label={`Move ${item.label} later`}
+          >
+            <ArrowRight size={14} />
+          </button>
+        </>
       )}
-      {showLabel ? <span className="text-secondary-foreground/60">{item.label}</span> : null}
+      <button
+        type="button"
+        className={actionClass}
+        onClick={onToggle}
+        aria-label={`${active ? "Hide" : "Show"} ${item.label}`}
+        title={active ? "Hide" : "Show"}
+      >
+        {active ? <EyeOff size={14} /> : <Plus size={14} />}
+      </button>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { AppToaster } from "@/components/ui/app-toaster";
 import { OverlayHost } from "@/components/ui/overlay-host";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { normalizePalette } from "@/lib/palettes";
 import { db } from "@/lib/db";
 import { SplashScreenLinks } from "@/components/splash-screen-links";
 import { ConnectivityProvider } from "@/components/connectivity-provider";
@@ -20,12 +21,12 @@ const fontMono = Geist_Mono({
 });
 
 const PALETTE_COOKIE = "labitat-palette";
-const DEFAULT_PALETTE = "nord";
+const DEFAULT_PALETTE = "dark";
 
 async function getPalette(): Promise<string> {
   try {
     const cookieStore = await cookies();
-    return cookieStore.get(PALETTE_COOKIE)?.value ?? DEFAULT_PALETTE;
+    return normalizePalette(cookieStore.get(PALETTE_COOKIE)?.value);
   } catch {
     return DEFAULT_PALETTE;
   }
@@ -66,7 +67,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#2e3440",
+  themeColor: "#141820",
 };
 
 export default async function RootLayout({

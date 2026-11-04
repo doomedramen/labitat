@@ -14,5 +14,7 @@ Cross-platform system monitoring.
 
 - CPU usage
 - Memory usage
-- Disk usage
-- Network I/O
+- Swap usage
+- Load per CPU core
+
+Uptime is available in Unused. Choose metrics in the item editor; the default shows four.

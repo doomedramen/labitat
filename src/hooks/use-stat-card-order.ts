@@ -4,37 +4,8 @@ import { useCallback, useMemo } from "react";
 import type { StatItem } from "@/components/widgets";
 import { updateStatCardOrder } from "@/actions/stat-cards";
 
-/** Stored order: which stat cards are active vs unused */
-export type StatCardOrder = {
-  active: string[];
-  unused: string[];
-};
-
-/** Validate an unknown value as a StatCardOrder, returning null if invalid */
-export function parseStatCardOrder(value: unknown): StatCardOrder | null {
-  let candidate: unknown = value;
-
-  // statCardOrder is stored as a JSON string in the database and passed through
-  // as-is from the server component. Parse it before validation.
-  if (typeof candidate === "string") {
-    try {
-      candidate = JSON.parse(candidate);
-    } catch {
-      return null;
-    }
-  }
-
-  if (!candidate || typeof candidate !== "object") return null;
-  if (!("active" in candidate) || !("unused" in candidate)) return null;
-
-  const active = (candidate as StatCardOrder).active;
-  const unused = (candidate as StatCardOrder).unused;
-  if (!Array.isArray(active) || !Array.isArray(unused)) return null;
-  if (!active.every((v) => typeof v === "string")) return null;
-  if (!unused.every((v) => typeof v === "string")) return null;
-
-  return { active, unused };
-}
+import { resolveStatCardLayout, type StatCardOrder } from "@/lib/stat-card-layout";
+export { parseStatCardOrder, type StatCardOrder } from "@/lib/stat-card-layout";
 
 /**
  * Hook for managing stat card order within a widget grid.
@@ -46,39 +17,10 @@ export function useStatCardOrder(
   storedOrder: StatCardOrder | null,
   defaultActiveIds?: string[],
 ) {
-  // Build active and unused item lists
-  const { activeItems, unusedItems } = useMemo(() => {
-    const itemMap = new Map(allItems.map((item) => [item.id, item]));
-
-    // If no stored order, use default active IDs if provided
-    if (!storedOrder) {
-      if (defaultActiveIds && defaultActiveIds.length > 0) {
-        const active = defaultActiveIds
-          .map((id) => itemMap.get(id))
-          .filter((item): item is StatItem => item !== undefined);
-
-        const unused = allItems.filter((item) => !defaultActiveIds.includes(item.id));
-
-        return { activeItems: active, unusedItems: unused };
-      }
-      // No defaults - all items active
-      return { activeItems: allItems, unusedItems: [] as StatItem[] };
-    }
-
-    const active = storedOrder.active
-      .map((id) => itemMap.get(id))
-      .filter((item): item is StatItem => item !== undefined);
-
-    const unused = storedOrder.unused
-      .map((id) => itemMap.get(id))
-      .filter((item): item is StatItem => item !== undefined);
-
-    // Include any items not in stored order (newly added stats) as active
-    const storedIds = new Set([...storedOrder.active, ...storedOrder.unused]);
-    const newItems = allItems.filter((item) => !storedIds.has(item.id));
-
-    return { activeItems: [...active, ...newItems], unusedItems: unused };
-  }, [allItems, storedOrder, defaultActiveIds]);
+  const { activeItems, unusedItems } = useMemo(
+    () => resolveStatCardLayout(allItems, storedOrder, defaultActiveIds),
+    [allItems, storedOrder, defaultActiveIds],
+  );
 
   const persist = useCallback(
     async (active: string[], unused: string[]) => {

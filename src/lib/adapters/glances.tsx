@@ -1,8 +1,6 @@
 import type { ServiceDefinition } from "./types";
 import { formatBytes, formatDuration } from "@/lib/utils/format";
-import { ResourceBar } from "@/components/widgets";
-import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid";
-import { ArrowDownUp, Activity, Clock } from "lucide-react";
+import { ArrowDownUp, Activity, Clock, Cpu, MemoryStick } from "lucide-react";
 
 type GlancesData = {
   _status?: "ok" | "warn" | "error";
@@ -16,47 +14,22 @@ type GlancesData = {
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
-function GlancesWidget({
-  cpuPercent,
-  memPercent,
-  memUsed,
-  swapPercent,
-  load1,
-  uptime,
-}: GlancesData) {
-  const cpu = cpuPercent ?? 0;
-  const mem = memPercent ?? 0;
-  const swap = swapPercent ?? 0;
-  const load = load1 ?? 0;
-
-  return (
-    <div className="flex flex-col gap-2 text-xs">
-      <ResourceBar label="CPU" value={cpu} />
-      <ResourceBar label="RAM" value={mem} hint={memUsed} />
-      <WidgetStatGrid
-        items={[
-          {
-            id: "swap",
-            value: `${swap}%`,
-            label: "Swap",
-            icon: ArrowDownUp,
-          },
-          {
-            id: "load",
-            value: load.toFixed(2),
-            label: "Load",
-            icon: Activity,
-          },
-          {
-            id: "uptime",
-            value: uptime ?? "—",
-            label: "Uptime",
-            icon: Clock,
-          },
-        ]}
-      />
-    </div>
-  );
+function glancesToPayload(data: GlancesData) {
+  return {
+    stats: [
+      { id: "cpu", value: `${data.cpuPercent ?? 0}%`, label: "CPU", icon: Cpu },
+      {
+        id: "memory",
+        value: `${data.memPercent ?? 0}%`,
+        label: "RAM",
+        tooltip: data.memUsed,
+        icon: MemoryStick,
+      },
+      { id: "swap", value: `${data.swapPercent ?? 0}%`, label: "Swap", icon: ArrowDownUp },
+      { id: "load", value: (data.load1 ?? 0).toFixed(2), label: "Load", icon: Activity },
+      { id: "uptime", value: data.uptime ?? "—", label: "Uptime", icon: Clock },
+    ],
+  };
 }
 
 export const glancesDefinition: ServiceDefinition<GlancesData> = {
@@ -133,5 +106,5 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
       uptime,
     };
   },
-  renderWidget: GlancesWidget,
+  toPayload: glancesToPayload,
 };

@@ -4,12 +4,13 @@
  *
  * Strategies:
  * - Precache: static assets (JS, CSS, icons)
- * - NetworkFirst: API routes, data files
+ * - Network only: live and health APIs
+ * - NetworkFirst: icon APIs and data files
  * - CacheFirst: static images, fonts
  * - StaleWhileRevalidate: everything else
  */
 
-const CACHE_NAME = "labitat-v2";
+const CACHE_NAME = "labitat-v3";
 const SW_VERSION = CACHE_NAME;
 const PRECACHE_URLS = ["/", "/~offline", "/manifest.webmanifest"];
 
@@ -61,9 +62,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // API routes → NetworkFirst
+  // Live streams and health checks must reach the network. Cache API ignores
+  // Cache-Control, and replaying an old event stream falsely looks connected.
   if (url.pathname.startsWith("/api/")) {
-    event.respondWith(networkFirst(request));
+    if (url.pathname === "/api/icon" || url.pathname === "/api/icons") {
+      event.respondWith(networkFirst(request));
+    }
     return;
   }
 

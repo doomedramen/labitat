@@ -104,10 +104,10 @@ describe("glances-percpu definition", () => {
     });
   });
 
-  describe("renderWidget", () => {
+  describe("toPayload", () => {
     it("is defined", () => {
-      expect(glancesPerCpuDefinition.renderWidget).toBeDefined();
-      expect(typeof glancesPerCpuDefinition.renderWidget).toBe("function");
+      expect(glancesPerCpuDefinition.toPayload).toBeDefined();
+      expect(typeof glancesPerCpuDefinition.toPayload).toBe("function");
     });
   });
 });

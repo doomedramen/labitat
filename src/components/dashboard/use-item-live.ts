@@ -26,3 +26,12 @@ export function useLiveMeta(): MetaState {
   // Meta has no SSR hydration value — return a stable safe default.
   return useSyncExternalStore(subscribe, getSnapshot, () => serverMetaSnapshot);
 }
+
+/** Subscribe only to connection changes, not every widget update. */
+export function useLiveConnection() {
+  return useSyncExternalStore(
+    liveStore.subscribeMeta,
+    () => liveStore.getMeta().sseState,
+    () => "connecting" as const,
+  );
+}

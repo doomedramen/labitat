@@ -22,44 +22,51 @@ describe("usePalette", () => {
 
   it("returns default palette initially", () => {
     const { result } = renderHook(() => usePalette());
-    expect(result.current.palette).toBe("nord");
+    expect(result.current.palette).toBe("dark");
   });
 
   it("reads palette from cookie if available", () => {
-    cookies = "labitat-palette=nord; path=/";
+    cookies = "labitat-palette=dark; path=/";
 
     const { result } = renderHook(() => usePalette());
-    expect(result.current.palette).toBe("nord");
+    expect(result.current.palette).toBe("dark");
   });
 
   it("updates palette when setPalette is called", () => {
     const { result } = renderHook(() => usePalette());
 
     act(() => {
-      result.current.setPalette("nord");
+      result.current.setPalette("dark");
     });
 
-    expect(result.current.palette).toBe("nord");
+    expect(result.current.palette).toBe("dark");
   });
 
   it("sets cookie when palette changes", () => {
     const { result } = renderHook(() => usePalette());
 
     act(() => {
-      result.current.setPalette("dracula");
+      result.current.setPalette("light");
     });
 
-    expect(cookies).toContain("labitat-palette=dracula");
+    expect(cookies).toContain("labitat-palette=light");
   });
 
   it("sets data-palette attribute on document element", () => {
     const { result } = renderHook(() => usePalette());
 
     act(() => {
-      result.current.setPalette("catppuccin");
+      result.current.setPalette("light");
     });
 
-    expect(document.documentElement.getAttribute("data-palette")).toBe("catppuccin");
+    expect(document.documentElement.getAttribute("data-palette")).toBe("light");
+  });
+
+  it("maps a legacy light palette to light before applying it", () => {
+    cookies = "labitat-palette=nord_light";
+    const { result } = renderHook(() => usePalette());
+    expect(result.current.palette).toBe("light");
+    expect(document.documentElement).toHaveAttribute("data-palette", "light");
   });
 
   it("handles cookie errors gracefully", () => {
@@ -71,10 +78,10 @@ describe("usePalette", () => {
 
     // Should not throw
     act(() => {
-      result.current.setPalette("gruvbox");
+      result.current.setPalette("dark");
     });
 
-    expect(result.current.palette).toBe("gruvbox");
+    expect(result.current.palette).toBe("dark");
   });
 
   it("handles cookie read errors gracefully", () => {
@@ -83,6 +90,6 @@ describe("usePalette", () => {
     });
 
     const { result } = renderHook(() => usePalette());
-    expect(result.current.palette).toBe("nord");
+    expect(result.current.palette).toBe("dark");
   });
 });

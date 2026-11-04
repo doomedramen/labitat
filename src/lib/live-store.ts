@@ -153,15 +153,20 @@ export const liveStore = {
       data.lastAttemptAt === undefined &&
       data.lastSuccessAt === undefined &&
       data.freshness === undefined;
+    const base =
+      data.configurationRevision != null &&
+      data.configurationRevision !== current.configurationRevision
+        ? emptyItemLive(data.configurationRevision)
+        : current;
     const candidate: ItemLive = {
-      ...current,
+      ...base,
       widgetData: data.widgetData,
       pingStatus: data.pingStatus,
       configurationRevision: data.configurationRevision ?? current.configurationRevision,
       observationUpdatedAt: data.observationUpdatedAt ?? data.fetchedAt,
-      lastAttemptAt: data.lastAttemptAt ?? current.lastAttemptAt,
-      lastSuccessAt: data.lastSuccessAt ?? current.lastSuccessAt,
-      freshness: isLegacy ? "unknown" : (data.freshness ?? current.freshness),
+      lastAttemptAt: data.lastAttemptAt === undefined ? base.lastAttemptAt : data.lastAttemptAt,
+      lastSuccessAt: data.lastSuccessAt === undefined ? base.lastSuccessAt : data.lastSuccessAt,
+      freshness: isLegacy ? "unknown" : (data.freshness ?? base.freshness),
       lastFetchedAt: data.fetchedAt,
       itemLastUpdateAt: data.observationUpdatedAt ?? data.fetchedAt,
     };

@@ -17,17 +17,21 @@ describe("polling supervisor scheduling", () => {
 
     vi.doMock("@/lib/db", () => ({
       db: {
-        select: () => ({
-          from: () => [
-            {
-              id: "item-1",
-              serviceType: null,
-              href: null,
-              serviceUrl: null,
-              configEnc: null,
-              pollingMs: 60_000,
-            },
-          ],
+        select: (fields?: unknown) => ({
+          from: () =>
+            fields
+              ? { where: () => ({ get: () => ({ revision: 0 }) }) }
+              : [
+                  {
+                    id: "item-1",
+                    serviceType: null,
+                    href: null,
+                    serviceUrl: null,
+                    configEnc: null,
+                    configurationRevision: 0,
+                    pollingMs: 60_000,
+                  },
+                ],
         }),
       },
     }));
@@ -55,17 +59,21 @@ describe("polling supervisor scheduling", () => {
 
     vi.doMock("@/lib/db", () => ({
       db: {
-        select: () => ({
-          from: () => [
-            {
-              id: "slow-item",
-              serviceType: "slow-service",
-              href: null,
-              serviceUrl: "http://slow.test",
-              configEnc: null,
-              pollingMs: 1000,
-            },
-          ],
+        select: (fields?: unknown) => ({
+          from: () =>
+            fields
+              ? { where: () => ({ get: () => ({ revision: 0 }) }) }
+              : [
+                  {
+                    id: "slow-item",
+                    serviceType: "slow-service",
+                    href: null,
+                    serviceUrl: "http://slow.test",
+                    configEnc: null,
+                    configurationRevision: 0,
+                    pollingMs: 1000,
+                  },
+                ],
         }),
       },
     }));
@@ -119,33 +127,39 @@ describe("polling supervisor scheduling", () => {
 
     vi.doMock("@/lib/db", () => ({
       db: {
-        select: () => ({
-          from: () => [
-            {
-              id: "item-1",
-              serviceType: "svc-1",
-              href: null,
-              serviceUrl: "http://one.test",
-              configEnc: null,
-              pollingMs: 60_000,
-            },
-            {
-              id: "item-2",
-              serviceType: "svc-2",
-              href: null,
-              serviceUrl: "http://two.test",
-              configEnc: null,
-              pollingMs: 60_000,
-            },
-            {
-              id: "item-3",
-              serviceType: "svc-3",
-              href: null,
-              serviceUrl: "http://three.test",
-              configEnc: null,
-              pollingMs: 60_000,
-            },
-          ],
+        select: (fields?: unknown) => ({
+          from: () =>
+            fields
+              ? { where: () => ({ get: () => ({ revision: 0 }) }) }
+              : [
+                  {
+                    id: "item-1",
+                    serviceType: "svc-1",
+                    href: null,
+                    serviceUrl: "http://one.test",
+                    configEnc: null,
+                    configurationRevision: 0,
+                    pollingMs: 60_000,
+                  },
+                  {
+                    id: "item-2",
+                    serviceType: "svc-2",
+                    href: null,
+                    serviceUrl: "http://two.test",
+                    configEnc: null,
+                    configurationRevision: 0,
+                    pollingMs: 60_000,
+                  },
+                  {
+                    id: "item-3",
+                    serviceType: "svc-3",
+                    href: null,
+                    serviceUrl: "http://three.test",
+                    configEnc: null,
+                    configurationRevision: 0,
+                    pollingMs: 60_000,
+                  },
+                ],
         }),
       },
     }));
@@ -204,17 +218,21 @@ describe("polling supervisor scheduling", () => {
 
     vi.doMock("@/lib/db", () => ({
       db: {
-        select: () => ({
-          from: () => [
-            {
-              id: "offline-item",
-              serviceType: "offline-service",
-              href: null,
-              serviceUrl: "http://offline.test",
-              configEnc: null,
-              pollingMs: 1000,
-            },
-          ],
+        select: (fields?: unknown) => ({
+          from: () =>
+            fields
+              ? { where: () => ({ get: () => ({ revision: 0 }) }) }
+              : [
+                  {
+                    id: "offline-item",
+                    serviceType: "offline-service",
+                    href: null,
+                    serviceUrl: "http://offline.test",
+                    configEnc: null,
+                    configurationRevision: 0,
+                    pollingMs: 1000,
+                  },
+                ],
         }),
       },
     }));
@@ -249,12 +267,16 @@ describe("polling supervisor scheduling", () => {
     await vi.advanceTimersByTimeAsync(1);
 
     expect(consoleError).not.toHaveBeenCalled();
-    expect(cacheSet).toHaveBeenCalledWith("offline-item", {
-      widgetData: {
-        _status: "error",
-        _statusText: "Service authentication failed (HTTP 401)",
+    expect(cacheSet).toHaveBeenCalledWith(
+      "offline-item",
+      {
+        widgetData: {
+          _status: "error",
+          _statusText: "Service authentication failed (HTTP 401)",
+        },
       },
-    });
+      { successful: false, attemptAt: expect.any(Number), configurationRevision: 0 },
+    );
 
     pollingSup.stop();
   });
@@ -339,6 +361,8 @@ describe("server cache freshness", () => {
                   widgetData: { _status: "ok", value: "cached" },
                   pingStatus: null,
                   updatedAt: new Date().toISOString(),
+                  lastSuccessAt: Date.now(),
+                  freshness: "fresh",
                 },
               ],
             }),

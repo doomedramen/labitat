@@ -20,6 +20,22 @@ const mockUpdate = {
 };
 
 describe("liveStore", () => {
+  it("does not carry success history from an old configuration into a failed new one", () => {
+    liveStore.initOnce(
+      { newConfig: { ...mockItemLive, configurationRevision: 1, lastSuccessAt: 100 } },
+      "new-config-error",
+    );
+    liveStore.updateFromSse("newConfig", {
+      widgetData: { _status: "error" },
+      pingStatus: null,
+      fetchedAt: 200,
+      configurationRevision: 2,
+      lastAttemptAt: 150,
+      lastSuccessAt: null,
+      freshness: "stale",
+    });
+    expect(liveStore.getSnapshot("newConfig")?.lastSuccessAt).toBeNull();
+  });
   it("only notifies listeners for the updated item", () => {
     liveStore.initOnce({ a: mockItemLive, b: mockItemLive }, "key_only_notifies");
     const cbA = vi.fn();

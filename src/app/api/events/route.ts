@@ -33,17 +33,6 @@ export async function GET(request: NextRequest) {
         }
       };
 
-      const wasIdle = pollingSup.getConnectionCount() === 0;
-      pollingSup.connect();
-
-      // If no clients were connected, trigger immediate poll to freshen cache.
-      // The client will receive updates via SSE as polling completes.
-      if (wasIdle) {
-        pollingSup.pollNow().catch((err) => {
-          console.error("[events] Immediate poll failed:", err);
-        });
-      }
-
       const sendHeartbeat = () => {
         if (closed) return;
         try {
@@ -73,16 +62,40 @@ export async function GET(request: NextRequest) {
         }
       };
 
-      // Subscribe to cache updates
-      unsubscribe = serverCache.onUpdate((itemId, widgetData, pingStatus) => {
+      // Subscribe before starting polls so immediate results cannot be missed.
+      const sendObservation = (
+        itemId: string,
+        observation: import("@/lib/server-cache").CachedItem,
+      ) =>
         send({
           type: "update",
           itemId,
-          widgetData,
-          pingStatus,
-          fetchedAt: Date.now(),
+          widgetData: observation.widgetData,
+          pingStatus: observation.pingStatus,
+          fetchedAt: observation.lastFetchedAt,
+          observationUpdatedAt: observation.lastFetchedAt,
+          configurationRevision: observation.configurationRevision,
+          lastAttemptAt: observation.lastAttemptAt,
+          lastSuccessAt: observation.lastSuccessAt,
+          freshness: observation.freshness,
         });
-      });
+      unsubscribe = serverCache.onUpdate((itemId, _widgetData, _pingStatus, observation) =>
+        sendObservation(itemId, observation),
+      );
+      // A resumed tab may have missed every update since its original SSR snapshot.
+      for (const [itemId, observation] of serverCache.getAll())
+        sendObservation(itemId, observation);
+
+      const wasIdle = pollingSup.getConnectionCount() === 0;
+      pollingSup.connect();
+
+      // If no clients were connected, trigger immediate poll to freshen cache.
+      // The client will receive updates via SSE as polling completes.
+      if (wasIdle) {
+        pollingSup.pollNow().catch((err) => {
+          console.error("[events] Immediate poll failed:", err);
+        });
+      }
 
       // Cleanup on disconnect
       request.signal.addEventListener("abort", cleanup, { once: true });
@@ -96,7 +109,8 @@ export async function GET(request: NextRequest) {
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
+      "X-Accel-Buffering": "no",
       Connection: "keep-alive",
     },
   });

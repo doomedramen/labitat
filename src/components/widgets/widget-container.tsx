@@ -10,7 +10,7 @@
 import { cn } from "@/lib/utils";
 import { WidgetStatGrid } from "@/components/dashboard/item/widget-stat-grid";
 import type { WidgetPayload } from "@/lib/adapters/widget-types";
-import type { StatCardOrder } from "@/hooks/use-stat-card-order";
+import { resolveStatCardLayout, type StatCardOrder } from "@/lib/stat-card-layout";
 import type { StatDisplayMode } from "@/lib/types";
 import { ActiveStreamList } from "./active-stream/active-stream-list";
 import { DownloadList } from "./download/download-list";
@@ -67,35 +67,37 @@ export function WidgetContainer({
     return null;
   }
 
-  // Filter out unused stat cards when not in edit mode
-  const allStatIds = payload.stats.map((s) => s.id);
-  const unusedIds = statCardOrder
-    ? new Set(statCardOrder.unused ?? [])
-    : defaultActiveIds
-      ? new Set(allStatIds.filter((id) => !defaultActiveIds.includes(id)))
-      : new Set();
-  const visibleStats = isEditMode
-    ? payload.stats
-    : payload.stats.filter((stat) => !unusedIds.has(stat.id));
-
-  const activeOrder = statCardOrder?.active ?? [];
-  const orderedStats = [...visibleStats].sort((a, b) => {
-    const aIndex = activeOrder.indexOf(a.id);
-    const bIndex = activeOrder.indexOf(b.id);
-    return (aIndex < 0 ? Infinity : aIndex) - (bIndex < 0 ? Infinity : bIndex);
-  });
+  const { activeItems: orderedStats } = resolveStatCardLayout(
+    payload.stats,
+    statCardOrder,
+    defaultActiveIds ?? payload.defaultActiveIds,
+  );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       {hasStats && !isEditMode && (
         <WidgetStatGrid items={orderedStats} displayMode={statDisplayMode} />
       )}
 
       {/* Edit mode is client-only - EditableStatGrid is rendered by the client component */}
 
-      {hasStreams && <ActiveStreamList streams={payload.streams!} />}
+      {hasStreams && (
+        <details className="widget-activity">
+          <summary>
+            {payload.streams!.length} active {payload.streams!.length === 1 ? "stream" : "streams"}
+          </summary>
+          <ActiveStreamList streams={payload.streams!} />
+        </details>
+      )}
 
-      {hasDownloads && <DownloadList downloads={payload.downloads!} />}
+      {hasDownloads && (
+        <details className="widget-activity">
+          <summary>
+            {payload.downloads!.length} {payload.downloads!.length === 1 ? "download" : "downloads"}
+          </summary>
+          <DownloadList downloads={payload.downloads!} />
+        </details>
+      )}
 
       {payload.customComponent}
     </div>

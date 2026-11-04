@@ -63,7 +63,7 @@ async function fetchWithHttps(
       agent: insecure ? insecureHttpsAgent : httpsAgent,
     };
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const req = https.request(opts, (res) => {
         const chunks: Buffer[] = [];
         res.on("data", (chunk) => chunks.push(chunk));
@@ -105,11 +105,9 @@ async function fetchWithHttps(
       }
       req.end();
 
-      controller.signal.addEventListener("abort", () => {
-        if (!timedOut) {
-          req.destroy();
-        }
-      });
+      const abortRequest = () => req.destroy(new DOMException("Request timed out", "TimeoutError"));
+      controller.signal.addEventListener("abort", abortRequest, { once: true });
+      if (controller.signal.aborted) abortRequest();
     });
   } finally {
     clearTimeout(timeoutId);
@@ -154,7 +152,7 @@ export async function fetchWithTimeout(
   }
 
   try {
-    return await globalThis.fetch(input, { ...init, signal });
+    return await globalThis.fetch(input, { cache: "no-store", ...init, signal });
   } catch (err) {
     if (timedOut && err instanceof DOMException && err.name === "AbortError") {
       throw new DOMException("Request timed out", "TimeoutError");
