@@ -1,10 +1,12 @@
 # Operator dashboard
 
-The overview presents services as compact rows inside group panels. Phones use one vertical list; larger screens balance whole panels across two, three, or four columns. Saved reading order stays stable, and live data never moves panels. Rows show up to four selected metrics, a launch link on the service name, and a separate **Inspect** button over the metrics. Failed, warning, and stale observations have a visible reason. Missing observations show **Data unavailable** rather than invented zeroes.
+The overview presents services in compact group panels. Phones use one vertical list; wider screens use two, three, or four service columns inside each panel. Saved reading order stays stable, and live data never moves panels. Services show up to four selected metrics, a launch link on the service name, and a separate **Inspect** button over the metrics. Failed, warning, and stale observations have a visible reason. Missing observations show **Data unavailable** rather than invented zeroes.
+
+**Live activity** shows available downloads and streams above the groups, with their source service and any supplied progress, playback state, speed, or remaining time. The preview shows up to three entries per list; expand it to see the rest of the available observations. Some services limit the number of entries they supply. Activity respects each service's display settings, and stale or failed sources are identified rather than presented as current activity. Select an activity entry to inspect its source.
 
 ## Find and inspect
 
-Search matches service names, adapter names, and groups. Press `/` or `⌘/Ctrl+K` to focus it. **All**, **Needs attention**, and **Stale** count services; a service can need attention and be stale at the same time. Filtering and live updates never save a different order.
+Search matches service names, adapter names, and groups. Press `/` or `⌘/Ctrl+K` to focus it. Use the group picker to narrow services and activity to one group. **All**, **Needs attention**, and **Stale** count services; a service can need attention and be stale at the same time. Filtering and live updates never save a different order.
 
 Inspect opens a 440px side panel on desktop or a full-screen sheet below 768px. The URL's `service` parameter restores the panel after refresh and supports browser Back/Forward. Closing returns keyboard focus to the tile. Full metric values, activity, history, and update diagnostics live here. Date/time runs locally; specialized Glances charts/process tables and decorative widgets run only when inspected. The search utility sends the entered query to the selected supported search engine.
 

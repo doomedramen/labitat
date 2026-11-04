@@ -28,7 +28,7 @@ test.describe("Widget Rendering", () => {
     await page.goto("/");
 
     // The item label should be visible
-    await expect(page.getByText("Radarr")).toBeVisible();
+    await expect(page.getByTestId("item-card").getByText("Radarr", { exact: true })).toBeVisible();
 
     // Stat cards should render with the cached values.
     // The server action will fail (radarr.test is unreachable) but useItemData
@@ -68,7 +68,7 @@ test.describe("Widget Rendering", () => {
     await page.goto("/");
 
     // The item should still appear
-    await expect(page.getByText("Radarr")).toBeVisible();
+    await expect(page.getByTestId("item-card").getByText("Radarr", { exact: true })).toBeVisible();
 
     // An error status dot should appear with an accessible error label
     const radarrCard = page.getByTestId("item-card").filter({ hasText: "Radarr" });

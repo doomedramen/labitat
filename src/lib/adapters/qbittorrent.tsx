@@ -189,8 +189,11 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
 
           return {
             title: t.name,
-            progress: Math.round(t.progress * 100),
+            ...(typeof t.progress === "number" && Number.isFinite(t.progress)
+              ? { progress: Math.round(t.progress * 100) }
+              : {}),
             timeLeft: formatDuration(t.eta),
+            ...(typeof t.dlspeed === "number" ? { speed: formatSpeed(t.dlspeed) } : {}),
             activity,
             size: formatBytes(t.size),
           };

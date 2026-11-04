@@ -29,7 +29,7 @@ export function DownloadList({ downloads }: DownloadListProps) {
     if (isActiveA && !isActiveB) return -1;
     if (!isActiveA && isActiveB) return 1;
 
-    return b.progress - a.progress;
+    return (b.progress ?? -1) - (a.progress ?? -1);
   });
 
   return (

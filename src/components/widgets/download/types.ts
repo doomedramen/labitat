@@ -6,8 +6,10 @@
 export type DownloadItemData = {
   title: string;
   subtitle?: string;
-  progress: number;
+  progress?: number;
   timeLeft?: string;
+  /** Per-download rate, when supplied by the source. */
+  speed?: string;
   activity?: string;
   size?: string;
 };

@@ -103,7 +103,11 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
 
     const downloads: DownloadItemData[] = slots.map((slot) => ({
       title: slot.filename,
-      progress: parseFloat(slot.percentage ?? "0"),
+      ...(typeof slot.percentage === "string" &&
+      slot.percentage.trim() !== "" &&
+      Number.isFinite(Number(slot.percentage))
+        ? { progress: Number(slot.percentage) }
+        : {}),
       timeLeft: slot.timeleft,
       activity: "downloading",
       size: slot.mb ? `${parseFloat(slot.mb).toFixed(0)} MB` : undefined,

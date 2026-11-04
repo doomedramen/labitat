@@ -34,8 +34,8 @@ test.describe("Dashboard", () => {
     await seedAndAuth(page, { groups: SEED_GROUPS });
     await page.goto("/");
 
-    await expect(page.getByText("Infrastructure")).toBeVisible();
-    await expect(page.getByText("Media")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Infrastructure" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Media" })).toBeVisible();
     await expect(page.getByText("Proxmox")).toBeVisible();
     await expect(page.getByText("Grafana")).toBeVisible();
     await expect(page.getByText("Jellyfin")).toBeVisible();

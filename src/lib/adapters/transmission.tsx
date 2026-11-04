@@ -187,8 +187,13 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
       )
       .map((t: Record<string, unknown>) => ({
         title: (t.name as string) ?? "Unknown",
-        progress: ((t.percentDone as number) ?? 0) * 100,
+        ...(typeof t.percentDone === "number" && Number.isFinite(t.percentDone)
+          ? { progress: t.percentDone * 100 }
+          : {}),
         timeLeft: formatDuration((t.eta as number) ?? -1),
+        ...(typeof t.rateDownload === "number"
+          ? { speed: `${formatBytes(t.rateDownload)}/s` }
+          : {}),
         activity: "downloading",
         size: formatBytes((t.sizeWhenDone as number) ?? 0),
       }));

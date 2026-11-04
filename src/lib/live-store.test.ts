@@ -20,6 +20,21 @@ const mockUpdate = {
 };
 
 describe("liveStore", () => {
+  it("notifies a listener once if it resubscribes during notification", () => {
+    liveStore.initOnce({ resubscribe: mockItemLive }, "resubscribe");
+    const keepSubscribed = liveStore.subscribeItem("resubscribe", () => {});
+    let unsubscribe = () => {};
+    const callback = vi.fn(() => {
+      unsubscribe();
+      if (callback.mock.calls.length < 3)
+        unsubscribe = liveStore.subscribeItem("resubscribe", callback);
+    });
+    unsubscribe = liveStore.subscribeItem("resubscribe", callback);
+    liveStore.updateFromSse("resubscribe", { ...mockUpdate, fetchedAt: 1000 });
+    expect(callback).toHaveBeenCalledOnce();
+    unsubscribe();
+    keepSubscribed();
+  });
   it("does not carry success history from an old configuration into a failed new one", () => {
     liveStore.initOnce(
       { newConfig: { ...mockItemLive, configurationRevision: 1, lastSuccessAt: 100 } },

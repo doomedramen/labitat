@@ -28,8 +28,8 @@ test("24 services fit at 1440 × 900 in both themes; mobile and 200% zoom reflow
   const rects = await cards.evaluateAll((elements) =>
     elements.map((element) => element.getBoundingClientRect().toJSON()),
   );
-  expect(rects.every((rect) => rect.height === 80 && rect.bottom <= 900)).toBe(true);
-  expect(new Set(rects.slice(0, 8).map((rect) => rect.x)).size).toBe(1);
+  expect(rects.every((rect) => rect.height === 72 && rect.bottom <= 900)).toBe(true);
+  expect(new Set(rects.slice(0, 8).map((rect) => rect.x)).size).toBe(4);
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(
     true,
   );
@@ -38,8 +38,8 @@ test("24 services fit at 1440 × 900 in both themes; mobile and 200% zoom reflow
   await page.getByRole("menuitemradio", { name: "Light", exact: true }).click();
   await page.screenshot({ path: "test-results/operator-24-light.png", fullPage: true });
   for (const [width, columns, height] of [
-    [1024, 1, 80],
-    [640, 1, 96],
+    [1024, 3, 96],
+    [640, 2, 96],
     [320, 1, 96],
   ]) {
     await page.setViewportSize({ width, height: 900 });

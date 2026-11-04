@@ -35,7 +35,7 @@ interface DownloadItem {
   kind: "download";
   title: string;
   subtitle?: string;
-  progress: number;
+  progress?: number;
   timeLeft?: string;
   activity: ActivityState;
   size?: string;
@@ -244,7 +244,7 @@ function DownloadTooltip({ item }: { item: DownloadItem }) {
       <TRow label="Status" value={item.activity} />
       {item.size && <TRow label="Size" value={item.size} />}
       {item.timeLeft && <TRow label="Time left" value={item.timeLeft} />}
-      <TProgress pct={item.progress} gradient={gradient} />
+      {item.progress != null && <TProgress pct={item.progress} gradient={gradient} />}
     </div>
   );
 }
@@ -310,9 +310,11 @@ export function ListItem({ item }: { item: ListItemData }) {
   const status = STATUS_CONFIG[statusKey];
   const gradient = getProgressGradient(statusKey as ActivityState | MediaState);
 
-  const progressPct =
-    download?.progress ??
-    (media && media.duration > 0 ? (media.progress / media.duration) * 100 : 0);
+  const progressPct = download
+    ? download.progress
+    : media && media.duration > 0
+      ? (media.progress / media.duration) * 100
+      : undefined;
 
   const metaText = download
     ? [download.timeLeft && download.timeLeft !== "0m" ? download.timeLeft : null, download.size]
@@ -396,21 +398,23 @@ export function ListItem({ item }: { item: ListItemData }) {
       </div>
 
       {/* Row 3: Progress bar */}
-      <div
-        role="progressbar"
-        aria-label={`${displayTitle} progress`}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.max(0, Math.min(100, Number.isFinite(progressPct) ? progressPct : 0))}
-        className="h-1 bg-border/30 rounded-full overflow-hidden"
-      >
+      {progressPct != null && Number.isFinite(progressPct) && (
         <div
-          className={cn("h-full rounded-full", gradient)}
-          style={{
-            width: `${Math.max(0, Math.min(100, Number.isFinite(progressPct) ? progressPct : 0))}%`,
-          }}
-        />
-      </div>
+          role="progressbar"
+          aria-label={`${displayTitle} progress`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.max(0, Math.min(100, Number.isFinite(progressPct) ? progressPct : 0))}
+          className="h-1 bg-border/30 rounded-full overflow-hidden"
+        >
+          <div
+            className={cn("h-full rounded-full", gradient)}
+            style={{
+              width: `${Math.max(0, Math.min(100, Number.isFinite(progressPct) ? progressPct : 0))}%`,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 

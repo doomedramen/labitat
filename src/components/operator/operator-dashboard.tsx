@@ -41,7 +41,6 @@ import type { GroupWithItems, GroupWithCache, ItemRow, ItemWithCache } from "@/l
 import type { ItemLive } from "@/lib/live-types";
 import { getService } from "@/lib/adapters";
 import { serviceHealth } from "@/lib/service-health";
-import { placeDashboardGroups, type BoardStyle } from "@/lib/dashboard-board";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { useItemLive, useLiveConnection } from "@/components/dashboard/use-item-live";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
@@ -73,6 +72,7 @@ import { updateDashboardTitle } from "@/actions/settings";
 import { logout } from "@/actions/auth";
 import { ServiceTile, type HealthSummary } from "./service-tile";
 import { ServiceDetails } from "./service-details";
+import { LiveActivity } from "./live-activity";
 import styles from "./operator.module.css";
 
 type Filter = "all" | "attention" | "stale";
@@ -141,6 +141,7 @@ export function OperatorDashboard({
   );
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState("");
   const [health, setHealth] = useState<Record<string, HealthSummary>>(() =>
     Object.fromEntries(
       groups.flatMap((group) =>
@@ -264,6 +265,7 @@ export function OperatorDashboard({
     setDraft(clone(canonical));
     setQuery("");
     setFilter("all");
+    setSelectedGroup("");
     setLayoutError(null);
     setConflict(null);
     updateUrl("arrange", "1");
@@ -314,26 +316,29 @@ export function OperatorDashboard({
   const visible = draft ?? canonical;
   const items = useMemo(() => canonical.flatMap((group) => group.items), [canonical]);
   const queryText = query.trim().toLowerCase();
-  const matches = (item: ItemRow, group: GroupWithItems) =>
-    (arranging ||
-      !queryText ||
-      [item.label, item.serviceType, getService(item.serviceType ?? "")?.name, group.name].some(
-        (text) => text?.toLowerCase().includes(queryText),
-      )) &&
-    (arranging ||
-      filter === "all" ||
-      (filter === "attention" ? health[item.id]?.attention : health[item.id]?.stale));
-  const filtered = visible
-    .map((group) => ({ ...group, items: group.items.filter((item) => matches(item, group)) }))
-    .filter(
-      (group) =>
-        arranging ||
-        group.items.length ||
-        (!queryText &&
-          filter === "all" &&
-          !visible.find((original) => original.id === group.id)?.items.length),
-    );
-  const placement = useMemo(() => placeDashboardGroups(filtered), [filtered]);
+  const filtered = useMemo(() => {
+    const matches = (item: ItemRow, group: GroupWithItems) =>
+      (arranging ||
+        !queryText ||
+        [item.label, item.serviceType, getService(item.serviceType ?? "")?.name, group.name].some(
+          (text) => text?.toLowerCase().includes(queryText),
+        )) &&
+      (arranging ||
+        filter === "all" ||
+        (filter === "attention" ? health[item.id]?.attention : health[item.id]?.stale));
+    return visible
+      .filter((group) => arranging || !selectedGroup || group.id === selectedGroup)
+      .map((group) => ({ ...group, items: group.items.filter((item) => matches(item, group)) }))
+      .filter(
+        (group) =>
+          arranging ||
+          group.items.length ||
+          (!queryText &&
+            filter === "all" &&
+            !visible.find((original) => original.id === group.id)?.items.length),
+      );
+  }, [visible, arranging, selectedGroup, queryText, filter, health]);
+  const activityItems = useMemo(() => filtered.flatMap((group) => group.items), [filtered]);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -503,6 +508,26 @@ export function OperatorDashboard({
           ))}
         </div>
       )}
+      {!arranging && (
+        <>
+          <label className={styles.groupPicker}>
+            <span>Group</span>
+            <select
+              aria-label="Filter by group"
+              value={selectedGroup}
+              onChange={(event) => setSelectedGroup(event.target.value)}
+            >
+              <option value="">All groups</option>
+              {canonical.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <LiveActivity items={activityItems} initialNow={serverNow} onDetails={openDetails} />
+        </>
+      )}
       {arranging && (
         <div className={styles.arrangeBar}>
           <p>Arrange groups and services. Changes apply when you save.</p>
@@ -544,7 +569,6 @@ export function OperatorDashboard({
             {filtered.map((group) => (
               <OperatorGroup
                 initialNow={serverNow}
-                boardStyle={placement[group.id]}
                 key={group.id}
                 group={group}
                 arranging={arranging}
@@ -723,7 +747,6 @@ export function OperatorDashboard({
 }
 
 function OperatorGroup({
-  boardStyle,
   initialNow,
   group,
   arranging,
@@ -737,7 +760,6 @@ function OperatorGroup({
   onDelete,
   canEdit,
 }: {
-  boardStyle: BoardStyle;
   initialNow: number;
   group: GroupWithItems;
   arranging: boolean;
@@ -778,7 +800,6 @@ function OperatorGroup({
       className={styles.group}
       data-group-id={group.id}
       style={{
-        ...boardStyle,
         transform: CSS.Translate.toString(sortable.transform),
         transition: sortable.transition,
         opacity: sortable.isDragging ? 0.4 : 1,

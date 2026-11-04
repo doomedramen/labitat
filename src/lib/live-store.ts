@@ -83,7 +83,9 @@ function normalizeSnapshot(item: ItemLive): ItemLive {
 }
 
 function notifyItem(itemId: string) {
-  itemListeners.get(itemId)?.forEach((cb) => cb());
+  // Subscribers may unsubscribe and re-subscribe synchronously while React renders.
+  // Snapshot the set so a re-added listener is not revisited in the same update.
+  Array.from(itemListeners.get(itemId) ?? []).forEach((cb) => cb());
 }
 
 export const liveStore = {
