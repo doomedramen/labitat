@@ -63,6 +63,7 @@ const sources: Record<string, Record<string, [string, MetricUnit]>> = {
   immich: { storage: ["storage", "bytes"] },
   proxmox: { cpu: ["cpuUsage", "percent"], memory: ["memoryUsage", "percent"] },
   "proxmox-backup-server": {
+    failed: ["failedTasks", "count"],
     usage: ["usagePercent", "percent"],
     cpu: ["cpuUsage", "percent"],
     memory: ["memoryUsage", "percent"],
@@ -74,6 +75,25 @@ const sources: Record<string, Record<string, [string, MetricUnit]>> = {
     parental: ["parentalBlocked", "count"],
     safe: ["safeSearchBlocked", "count"],
   },
+  emby: {
+    active: ["activeStreams", "count"],
+    movies: ["movies", "count"],
+    shows: ["shows", "count"],
+    episodes: ["episodes", "count"],
+    songs: ["songs", "count"],
+  },
+  frigate: { cameras: ["cameras", "count"], uptime: ["uptime", "seconds"] },
+  traefik: {
+    routers: ["routers", "count"],
+    services: ["services", "count"],
+    middlewares: ["middlewares", "count"],
+  },
+  lidarr: {
+    wanted: ["wanted", "count"],
+    queued: ["queued", "count"],
+    artists: ["artists", "count"],
+  },
+  jackett: { configured: ["configured", "count"], errored: ["errored", "count"] },
   portainer: {
     running: ["running", "count"],
     stopped: ["stopped", "count"],
@@ -126,6 +146,14 @@ function nativeObservation(
     Number.isFinite(candidate.value)
   )
     return candidate;
+  const milliseconds =
+    serviceId === "adguard" && stat.id === "latency"
+      ? data.latency
+      : serviceId === "generic-ping" && stat.id === "response"
+        ? data.responseTime
+        : undefined;
+  if (typeof milliseconds === "number" && Number.isFinite(milliseconds))
+    return { value: milliseconds / 1000, unit: "seconds" };
   if (serviceId === "openweathermap") {
     const key = (
       {
@@ -212,13 +240,30 @@ export function getServicePresentation(
 export function compactMetric(metric: ServiceMetric): string {
   if (metric.numericValue !== undefined && metric.unit === "percent")
     return `${new Intl.NumberFormat("en", { maximumFractionDigits: 1 }).format(metric.numericValue)}%`;
-  if (
-    metric.numericValue === undefined ||
-    Math.abs(metric.numericValue) < 10000 ||
-    metric.unit !== "count"
-  )
-    return metric.displayValue;
-  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(
-    metric.numericValue,
-  );
+  if (metric.numericValue === undefined || metric.unit !== "count") return metric.displayValue;
+  return new Intl.NumberFormat("en", {
+    notation: Math.abs(metric.numericValue) >= 10000 ? "compact" : "standard",
+    maximumFractionDigits: 2,
+  }).format(metric.numericValue);
+}
+
+/** Details retain every native digit and its unit, including capped overview counts. */
+export function fullMetric(metric: ServiceMetric): string {
+  if (metric.numericValue === undefined || !metric.unit) return metric.displayValue;
+  const units: Record<MetricUnit, string> = {
+    count: "",
+    percent: "%",
+    bytes: " B",
+    "bytes/s": " B/s",
+    seconds: " s",
+    celsius: "°C",
+    fahrenheit: "°F",
+    rpm: " RPM",
+    watts: " W",
+    volts: " V",
+    "m/s": " m/s",
+    mph: " mph",
+    "km/h": " km/h",
+  };
+  return `${new Intl.NumberFormat("en", { maximumFractionDigits: 20 }).format(metric.numericValue)}${units[metric.unit]}`;
 }

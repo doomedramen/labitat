@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getServicePresentation } from "./service-presentation";
+import { fullMetric, getServicePresentation } from "./service-presentation";
 import { getService } from "./adapters";
 describe("serializable service metrics", () => {
   it("preserves IDs and values without copying JSX, icons or CSS", () => {
@@ -47,4 +47,30 @@ it("marks missing native fields unavailable while preserving real zero", () => {
   const metrics = getServicePresentation(getService("glances"), { cpuPercent: 0 }).metrics;
   expect(metrics.find((metric) => metric.id === "cpu")?.numericValue).toBe(0);
   expect(metrics.find((metric) => metric.id === "memory")?.displayValue).toBe("—");
+});
+
+it("retains capped and localized counts as native measurements and full detail values", () => {
+  const pbs = getServicePresentation(getService("proxmox-backup-server"), {
+    _status: "ok",
+    failedTasks: 12345,
+  });
+  const failed = pbs.metrics.find((metric) => metric.id === "failed")!;
+  expect(failed).toMatchObject({ numericValue: 12345, unit: "count", displayValue: "99+" });
+  expect(fullMetric(failed)).toBe("12,345");
+  expect(
+    getServicePresentation(getService("emby"), { movies: 12345 }).metrics.find(
+      (metric) => metric.id === "movies",
+    ),
+  ).toMatchObject({ numericValue: 12345, unit: "count" });
+});
+it("keeps native duration units without parsing display strings", () => {
+  const result = getServicePresentation(getService("generic-ping"), {
+    _status: "ok",
+    online: true,
+    responseTime: 12.5,
+  });
+  expect(result.metrics.find((metric) => metric.id === "response")).toMatchObject({
+    numericValue: 0.0125,
+    unit: "seconds",
+  });
 });

@@ -7,9 +7,9 @@ import type { WidgetPayload } from "./widget-types";
 type GlancesSensorsData = {
   _status?: "ok" | "warn" | "error";
   _statusText?: string;
-  cpuTemp: number;
-  maxTemp: number;
-  fanSpeed: number;
+  cpuTemp: number | null;
+  maxTemp: number | null;
+  fanSpeed: number | null;
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
@@ -29,13 +29,13 @@ function glancesSensorsToPayload(data: GlancesSensorsData): WidgetPayload {
       },
       {
         id: "max-temp",
-        value: `${max}°C`,
+        value: data.maxTemp == null ? "—" : `${max}°C`,
         label: "Max Temp",
         icon: Thermometer,
       },
       {
         id: "fan-speed",
-        value: fan > 0 ? `${fan} RPM` : "N/A",
+        value: data.fanSpeed == null ? "—" : `${fan} RPM`,
         label: "Fan Speed",
         icon: Fan,
       },
@@ -45,7 +45,7 @@ function glancesSensorsToPayload(data: GlancesSensorsData): WidgetPayload {
         <ResourceBar
           label="CPU Temp"
           value={tempPct}
-          hint={`${cpu}°C`}
+          hint={data.cpuTemp == null ? "Unavailable" : `${cpu}°C`}
           warningAt={60}
           criticalAt={80}
         />
@@ -67,7 +67,7 @@ function GlancesSensorsWidget({ cpuTemp, maxTemp, fanSpeed }: GlancesSensorsData
       <ResourceBar
         label="CPU Temp"
         value={tempPct}
-        hint={`${cpu}°C`}
+        hint={cpuTemp == null ? "Unavailable" : `${cpu}°C`}
         warningAt={60}
         criticalAt={80}
       />
@@ -75,13 +75,13 @@ function GlancesSensorsWidget({ cpuTemp, maxTemp, fanSpeed }: GlancesSensorsData
         items={[
           {
             id: "max",
-            value: `${max}°C`,
+            value: maxTemp == null ? "—" : `${max}°C`,
             label: "Max",
             icon: Thermometer,
           },
           {
             id: "fan",
-            value: fan > 0 ? `${fan} RPM` : "N/A",
+            value: fanSpeed == null ? "—" : `${fan} RPM`,
             label: "Fan",
             icon: Fan,
           },
@@ -147,12 +147,20 @@ export const glancesSensorsDefinition: ServiceDefinition<GlancesSensorsData> = {
 
     const fanSensors = sensorList.filter((s: { type: string }) => s.type === "fan_speed");
 
-    const temps = tempSensors.map((s: { value: number }) => s.value ?? 0);
-    const cpuTemp = temps.length > 0 ? Math.round(temps[0]) : 0;
-    const maxTemp = temps.length > 0 ? Math.round(Math.max(...temps)) : 0;
+    const temps = tempSensors
+      .map((s: { value: number }) => s.value)
+      .filter(
+        (value: unknown): value is number => typeof value === "number" && Number.isFinite(value),
+      );
+    const cpuTemp = temps.length > 0 ? temps[0] : null;
+    const maxTemp = temps.length > 0 ? Math.max(...temps) : null;
 
-    const fans = fanSensors.map((s: { value: number }) => s.value ?? 0);
-    const fanSpeed = fans.length > 0 ? Math.round(fans[0]) : 0;
+    const fans = fanSensors
+      .map((s: { value: number }) => s.value)
+      .filter(
+        (value: unknown): value is number => typeof value === "number" && Number.isFinite(value),
+      );
+    const fanSpeed = fans.length > 0 ? fans[0] : null;
 
     return {
       _status: "ok",

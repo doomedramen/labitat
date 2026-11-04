@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import { getService } from "@/lib/adapters";
-import { getServicePresentation } from "@/lib/service-presentation";
+import { fullMetric, getServicePresentation } from "@/lib/service-presentation";
 import { parseStatCardOrder, resolveStatCardLayout } from "@/lib/stat-card-layout";
 import type { ItemRow } from "@/lib/types";
 import { useItemLive, useLiveConnection } from "@/components/dashboard/use-item-live";
@@ -146,9 +146,7 @@ function DetailsContent({
           {metrics.map((metric) => (
             <div className="min-w-0" key={metric.id}>
               <dt className="mb-1 text-xs text-muted-foreground">{metric.label}</dt>
-              <dd className="break-words text-xl font-medium tabular-nums">
-                {metric.displayValue}
-              </dd>
+              <dd className="break-words text-xl font-medium tabular-nums">{fullMetric(metric)}</dd>
             </div>
           ))}
         </dl>

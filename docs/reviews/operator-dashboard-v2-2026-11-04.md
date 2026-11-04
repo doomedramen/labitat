@@ -20,7 +20,7 @@ Local date/time, the search utility, and the dedicated Glances chart/process ren
 
 Validated on Next.js 16.2.3 with Node 22.23.4 and isolated test databases:
 
-- Unit suite: **889 tests, 96 files passed**.
+- Unit suite: **891 tests, 96 files passed**.
 - Complete production Playwright suite: **82 passed**, with **6 pre-existing disabled cases**. The suite builds the production app before running. A separate capture check verifies the final 1440 × 900 and 320px screenshots against that production build.
 - Production build, TypeScript, lint, and formatting: passed.
 - Adapter validation: **53 adapters**; documentation coverage: **53/53**.

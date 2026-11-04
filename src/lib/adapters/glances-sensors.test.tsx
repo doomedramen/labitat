@@ -72,9 +72,9 @@ describe("glances-sensors definition", () => {
         url: "https://glances.example.com",
       });
 
-      expect(result.cpuTemp).toBe(0);
-      expect(result.maxTemp).toBe(0);
-      expect(result.fanSpeed).toBe(0);
+      expect(result.cpuTemp).toBeNull();
+      expect(result.maxTemp).toBeNull();
+      expect(result.fanSpeed).toBeNull();
     });
 
     it("uses Basic auth when credentials provided", async () => {
@@ -137,7 +137,7 @@ describe("glances-sensors definition", () => {
         fanSpeed: 0,
       });
 
-      expect(payload.stats[2].value).toBe("N/A");
+      expect(payload.stats[2].value).toBe("0 RPM");
     });
   });
 });
