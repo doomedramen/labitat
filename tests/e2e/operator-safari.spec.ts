@@ -71,3 +71,31 @@ test("landscape touch board preserves geometry and full tap targets", async ({ p
   expect((await row.getByRole("button").boundingBox())!.height).toBeGreaterThanOrEqual(44);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+test("touch menus survive native trigger focus and retain normal dismissal", async ({ page }) => {
+  await seedAndAuth(page, {
+    groups: [{ name: "Apps", items: [{ label: "One", href: "https://one.test" }] }],
+  });
+  await page.goto("/");
+  const trigger = page.getByRole("button", { name: "Manage dashboard" });
+  await trigger.tap();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  const arrange = page.getByRole("menuitem", { name: "Arrange dashboard" });
+  expect(
+    await arrange.evaluate((element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return range.getClientRects().length;
+    }),
+  ).toBe(1);
+  await arrange.tap();
+  await expect(page.getByRole("button", { name: "Save arrangement" })).toBeVisible();
+  await page.getByRole("button", { name: "Cancel", exact: true }).tap();
+  await trigger.tap();
+  await page.getByRole("heading", { level: 1 }).tap();
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await trigger.tap();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});

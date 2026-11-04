@@ -59,3 +59,63 @@ test("mobile-first mixed service board", async ({ page }) => {
   await page.screenshot({ path: "test-results/operator-design-phone-light.png", fullPage: true });
   await page.screenshot({ path: "test-results/operator-design-phone-viewport.png" });
 });
+
+test("three-digit health filters fit a 320px screen", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await seedAndAuth(page, {
+    groups: [
+      {
+        name: "Infrastructure",
+        items: Array.from({ length: 100 }, (_, i) => ({
+          label: `Host ${i + 1}`,
+          serviceType: "glances",
+          cachedWidgetData: { cpuPercent: 0, memPercent: 50, swapPercent: 0, load1: 1 },
+        })),
+      },
+    ],
+  });
+  await page.goto("/");
+  const ids = await page
+    .getByTestId("item-card")
+    .evaluateAll((items) => items.map((item) => item.getAttribute("data-item-id")));
+  const observedAt = Date.now() + 1000;
+  await page.route("**/api/events", (route) =>
+    route.fulfill({
+      contentType: "text/event-stream",
+      body: ids
+        .map(
+          (itemId) =>
+            `data: ${JSON.stringify({
+              type: "update",
+              itemId,
+              widgetData: {
+                _status: "warn",
+                _statusText: "Awaiting upstream",
+                cpuPercent: 0,
+                memPercent: 50,
+                swapPercent: 0,
+                load1: 1,
+              },
+              pingStatus: null,
+              fetchedAt: observedAt,
+              observationUpdatedAt: observedAt,
+              lastSuccessAt: observedAt - 3600000,
+              lastAttemptAt: observedAt,
+              freshness: "stale",
+              configurationRevision: 0,
+            })}\n\n`,
+        )
+        .join(""),
+    }),
+  );
+  await page.reload();
+  for (const name of ["All 100", "Needs attention 100", "Stale 100"]) {
+    const filter = page.getByRole("button", { name, exact: true });
+    await expect(filter).toBeVisible();
+    const bounds = (await filter.boundingBox())!;
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
+    expect(await filter.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

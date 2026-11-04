@@ -65,6 +65,10 @@ jobs:
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    # Keep this aligned with the Playwright version in pnpm-lock.yaml.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      options: --ipc=host
     steps:
       - uses: actions/checkout@v5
 
@@ -79,14 +83,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - uses: actions/cache@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
-      - run: pnpm exec playwright install --with-deps chromium webkit
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()

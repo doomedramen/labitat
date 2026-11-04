@@ -18,7 +18,7 @@ Panel placement depends on saved configuration, never on observation values. Sav
 ## Validation
 
 - 899 unit tests pass, including fine-pointer and touch panel placement without overlap.
-- Production browser suite: 85 passed; six existing disabled cases remain disabled.
+- Production browser suite: 87 passed; six existing disabled cases remain disabled.
 - Additional final checks cover phone and landscape WebKit, 16px search/select inputs, separate launch/inspect tap targets, full-screen details, and cross-group arrangement cancellation.
 - A synthetic 34-service fixture exercises six unequal groups, native rates, unavailable observations, failures, link-only services, and both themes at 320, 390, 600, 1440, and 1800px.
 - The separate 24-service fixture fits a 1440 × 900 viewport. Existing checks cover zoom reflow, keyboard focus, URL restoration, history, save failures, concurrency rejection, and 100-service render isolation.
@@ -27,3 +27,15 @@ Panel placement depends on saved configuration, never on observation values. Sav
 Screenshots are synthetic fixtures, not a connection to the deployed homelab. Mobile WebKit emulation verifies layout and browser behavior; physical phone keyboard behavior, Safari browser chrome, and touch feel still need checking on hardware.
 
 See the [operator guide](../operator-dashboard.md) and [performance notes](../performance.md) for current geometry and behavior. This review supersedes the row dimensions in the earlier operator v2 review.
+
+## Linux WebKit follow-up
+
+CI exposed a non-modal menu failure that macOS WebKit did not reproduce. The minimized case needs only one service and two taps: Manage, then Arrange. Linux WebKit focuses the trigger after Radix focuses the newly opened menu; treating that handoff as outside focus dismisses the menu before the second tap. Disabling animation did not fix it.
+
+| Before                                                           | After                                                                        | Why                                                                                 |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Native trigger focus immediately dismissed its newly opened menu | Ignore only a focus handoff from menu content back to its associated trigger | Keep the menu usable while retaining outside-tap and Escape dismissal               |
+| Icon-trigger width constrained menu labels to two lines          | Menus size to their content within the available viewport                    | Keep action names readable without reducing text size                               |
+| CI installed Linux browser dependencies on every cold run        | Use the official Playwright 1.59.1 image, matching the lockfile              | Reproduce the Linux browser environment locally and avoid slow package installation |
+
+The permanent touch regression covers opening, selection, outside-tap dismissal, Escape, and focus return. Linux WebKit passed the original phone flow, landscape layout, and dismissal regression three consecutive times. A separate 320px fixture caught a three-digit count overflow in Chromium; reduced horizontal padding keeps all health filters visible with 100 services while preserving text size and 44px touch height. No forced clicks, fixed waits, or disabled animations are needed for the interaction fix.
