@@ -81,6 +81,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
+      - name: Trust the container checkout for lifecycle hooks
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm test:e2e
