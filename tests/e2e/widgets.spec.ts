@@ -72,9 +72,9 @@ test.describe("Widget Rendering", () => {
 
     // An error status dot should appear with an accessible error label
     const radarrCard = page.getByTestId("item-card").filter({ hasText: "Radarr" });
-    const statusDot = radarrCard.locator('[role="status"]');
+    const statusDot = radarrCard.getByRole("img", { name: "Needs attention" });
     await expect(statusDot).toBeVisible({ timeout: 15_000 });
-    await expect(statusDot).toHaveAttribute("aria-label", /Error:/i);
+    await expect(statusDot).toHaveAttribute("aria-label", /Needs attention/i);
   });
 
   test("renders empty state with zero values", async ({ page }) => {
@@ -187,7 +187,7 @@ test.describe("Widget Rendering", () => {
     await expect(link).toBeVisible();
   });
 
-  test("hides widgets and status dots in edit mode", async ({ page }) => {
+  test("Arrange keeps live metrics and health visible", async ({ page }) => {
     await seedAndAuth(page, {
       groups: [
         {
@@ -195,39 +195,57 @@ test.describe("Widget Rendering", () => {
           items: [
             {
               label: "Radarr",
-              href: RADARR_URL,
               serviceType: "radarr",
-              serviceUrl: RADARR_URL,
-              cachedWidgetData: {
-                queued: 5,
-                missing: 0,
-                wanted: 0,
-                movies: 42,
-              },
+              cachedWidgetData: { _status: "ok", queued: 5, missing: 0, wanted: 0, movies: 42 },
             },
           ],
         },
       ],
     });
-    await page.goto("/");
-
-    // Wait for data to load
-    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
-
-    // Enter edit mode
-    await page.getByRole("button", { name: "Edit" }).click();
-    await expect(page).toHaveURL("/edit");
-
-    // Stat labels should be hidden in edit mode
-    await expect(page.getByText("Movies")).not.toBeVisible();
-    await expect(page.getByText("Queued")).not.toBeVisible();
-
-    // Status dot should be hidden (check within the item card context)
-    const radarrCard = page.getByTestId("item-card").filter({ hasText: "Radarr" });
-    const statusDot = radarrCard.locator('[role="status"]');
-    await expect(statusDot).toHaveCount(0);
-
-    // Edit controls should appear
-    await expect(page.getByText("Done")).toBeVisible();
+    await page.goto("/edit");
+    await expect(page.getByText("Movies", { exact: true })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Healthy" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save arrangement" })).toBeVisible();
   });
+});
+
+test("specialized Glances charts and processes render only in details", async ({ page }) => {
+  const now = Date.now();
+  await seedAndAuth(page, {
+    groups: [
+      {
+        name: "System",
+        items: [
+          {
+            label: "Trends",
+            serviceType: "glances-timeseries",
+            cachedWidgetData: {
+              _status: "ok",
+              history: [
+                { timestamp: now - 60000, cpu: 10, mem: 40 },
+                { timestamp: now, cpu: 12, mem: 42 },
+              ],
+            },
+          },
+          {
+            label: "Processes",
+            serviceType: "glances-processes",
+            cachedWidgetData: {
+              _status: "ok",
+              sortBy: "cpu",
+              processes: [{ name: "encoder", cpu: 80, memory: 5, pid: 42, status: "R" }],
+            },
+          },
+        ],
+      },
+    ],
+  });
+  await page.goto("/");
+  await expect(page.locator(".recharts-wrapper")).toHaveCount(0);
+  await expect(page.getByText("encoder", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Inspect Trends", exact: true }).click();
+  await expect(page.getByRole("dialog").locator(".recharts-wrapper").first()).toBeVisible();
+  await page.getByRole("button", { name: "Close", exact: true }).click();
+  await page.getByRole("button", { name: "Inspect Processes", exact: true }).click();
+  await expect(page.getByRole("dialog").getByText("encoder", { exact: true })).toBeVisible();
 });

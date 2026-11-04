@@ -7,7 +7,7 @@ import { HardDrive, FolderOpen, Archive } from "lucide-react";
 type GlancesDiskUsageData = {
   _status?: "ok" | "warn" | "error";
   _statusText?: string;
-  usedPercent: number;
+  usedPercent: number | null;
   used: string;
   total: string;
   free: string;
@@ -103,15 +103,30 @@ export const glancesDiskUsageDefinition: ServiceDefinition<GlancesDiskUsageData>
     const total = data.size ?? 0;
     const used = data.used ?? 0;
     const free = data.free ?? 0;
-    const usedPercent = total > 0 ? Math.round((used / total) * 100) : 0;
+    const usedPercent = total > 0 && typeof data.used === "number" ? (used / total) * 100 : null;
 
     return {
       _status: "ok",
       usedPercent,
-      used: formatBytes(used),
-      total: formatBytes(total),
-      free: formatBytes(free),
+      _numeric: {
+        ...(typeof data.used === "number" ? { used: { value: used, unit: "bytes" as const } } : {}),
+        ...(typeof data.free === "number" ? { free: { value: free, unit: "bytes" as const } } : {}),
+        ...(typeof data.size === "number"
+          ? { total: { value: total, unit: "bytes" as const } }
+          : {}),
+      },
+      used: typeof data.used === "number" ? formatBytes(used) : "—",
+      total: typeof data.size === "number" ? formatBytes(total) : "—",
+      free: typeof data.free === "number" ? formatBytes(free) : "—",
     };
   },
+  toPayload: (data) => ({
+    stats: [
+      { id: "disk", label: "Disk", value: data.usedPercent == null ? "—" : `${data.usedPercent}%` },
+      { id: "used", label: "Used", value: data.used },
+      { id: "free", label: "Free", value: data.free },
+      { id: "total", label: "Total", value: data.total },
+    ],
+  }),
   renderWidget: GlancesDiskUsageWidget,
 };

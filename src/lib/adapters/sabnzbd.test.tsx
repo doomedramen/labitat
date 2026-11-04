@@ -110,7 +110,7 @@ describe("sabnzbd definition", () => {
         apiKey: "test-key",
       });
 
-      expect(result.speed).toBe("0 B/s");
+      expect(result.speed).toBe("—");
       expect(result.remaining).toBe("—");
       expect(result.queueSize).toBe(0);
       expect(result.downloading).toBe(false);

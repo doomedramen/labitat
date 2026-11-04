@@ -79,6 +79,7 @@ export default async function RootLayout({
 
   return (
     <html
+      data-scroll-behavior="smooth"
       lang="en"
       suppressHydrationWarning
       data-palette={palette}

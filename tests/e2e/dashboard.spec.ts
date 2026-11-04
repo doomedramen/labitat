@@ -25,10 +25,9 @@ test.describe("Dashboard", () => {
   test("shows Edit button when authenticated", async ({ page }) => {
     await seedAndAuth(page);
     await page.goto("/");
-    await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Your dashboard is ready" })).toBeVisible();
-    await page.getByRole("link", { name: "Add your first group" }).click();
-    await expect(page).toHaveURL("/edit");
+    await expect(page.getByRole("button", { name: "Manage dashboard" })).toBeVisible();
+    await page.getByRole("button", { name: "Add group", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "New Group" })).toBeVisible();
   });
 
   test("displays seeded groups and items", async ({ page }) => {

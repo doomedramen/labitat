@@ -77,6 +77,18 @@ class PollingSupervisor {
   private running = new Set<string>();
   private shouldStaggerOnNextStart = false;
   private hasStartedOnce = false;
+  private backgroundEnabled = false;
+  private maintenance: (() => void) | undefined;
+  private enabled = false;
+  private tickPromise: Promise<void> | null = null;
+
+  startBackground(maintenance?: () => void): void {
+    if (this.backgroundEnabled) return;
+    this.backgroundEnabled = true;
+    this.maintenance = maintenance;
+    this.state.idleMode = this.state.activeConnections === 0;
+    this.start();
+  }
 
   connect(): void {
     const prev = this.state.activeConnections;
@@ -101,32 +113,40 @@ class PollingSupervisor {
       }`,
     );
 
-    if (this.state.activeConnections === 0) {
+    if (this.state.activeConnections === 0 && this.backgroundEnabled) {
+      this.state.idleMode = true;
+      void this.pollNow();
+    } else if (this.state.activeConnections === 0) {
       this.state.graceTimer = setTimeout(() => {
         this.enterIdleMode();
       }, GRACE_PERIOD_MS);
     }
   }
 
-  async pollNow(): Promise<void> {
-    // Cancel any pending tick to avoid race conditions
+  pollNow(): Promise<void> {
+    if (this.tickPromise) return this.tickPromise;
     this.clearTickTimer();
+    this.tickPromise = this.performTick().finally(() => {
+      this.tickPromise = null;
+      this.scheduleNextTick();
+    });
+    return this.tickPromise;
+  }
 
+  private async performTick(): Promise<void> {
+    this.maintenance?.();
     const items = await this.getItems();
     const now = Date.now();
-
-    // Execute due polls up to MAX_CONCURRENT_POLLS
-    const dueItems = items.filter((item) => this.isDue(item, now));
-    for (const item of dueItems) {
+    for (const item of items.filter((item) => this.isDue(item, now))) {
       if (this.running.size >= MAX_CONCURRENT_POLLS) break;
-      this.executePoll(item, now);
+      void this.executePoll(item, now);
     }
-
-    // Reschedule if still active
-    this.scheduleNextTick();
   }
 
   stop(): void {
+    this.backgroundEnabled = false;
+    this.maintenance = undefined;
+    this.enabled = false;
     this.clearTickTimer();
     this.clearGraceTimer();
     this.cacheExpiresAt = 0;
@@ -140,10 +160,11 @@ class PollingSupervisor {
   }
 
   private start(): void {
-    if (this.state.timer) return;
+    this.enabled = true;
+    if (this.state.timer || this.tickPromise) return;
     this.hasStartedOnce = true;
     console.log("[polling] Supervisor started");
-    this.tick();
+    void this.tick().catch((error) => console.error("[polling] Scheduler failed", error));
   }
 
   private enterIdleMode(): void {
@@ -158,7 +179,7 @@ class PollingSupervisor {
     console.log("[polling] Entering idle mode");
 
     this.clearTickTimer();
-    this.tick();
+    void this.tick().catch((error) => console.error("[polling] Scheduler failed", error));
   }
 
   private exitIdleMode(): void {
@@ -170,41 +191,32 @@ class PollingSupervisor {
     this.pollNow().catch(console.error);
   }
 
-  private async tick(): Promise<void> {
-    const items = await this.getItems();
-    const now = Date.now();
-
-    if (this.shouldStaggerOnNextStart) {
-      this.staggerOverdueItems(items, now);
-      this.shouldStaggerOnNextStart = false;
-    }
-
-    // Execute due polls (fire-and-forget to not block scheduling)
-    const dueItems = items.filter((item) => this.isDue(item, now));
-    for (const item of dueItems) {
-      if (this.running.size >= MAX_CONCURRENT_POLLS) break;
-      this.executePoll(item, now);
-    }
-
-    this.scheduleNextTick();
+  private tick(): Promise<void> {
+    return this.pollNow();
   }
 
   private scheduleNextTick(): void {
+    this.clearTickTimer();
     if (!this.shouldContinue()) {
       this.state.timer = null;
       return;
     }
 
-    const nextDue = this.getNextDueTime();
-    const delay = Math.max(nextDue - Date.now(), MIN_TICK_MS);
+    const nextDue = this.itemCache.length ? this.getNextDueTime() : Date.now() + 10000;
+    const delay = Math.max(
+      Math.min(nextDue - Date.now(), this.backgroundEnabled ? 60_000 : Infinity),
+      MIN_TICK_MS,
+    );
 
     this.state.timer = setTimeout(() => {
       this.state.timer = null;
-      this.tick();
+      void this.tick().catch((error) => console.error("[polling] Scheduler failed", error));
     }, delay);
   }
 
   private shouldContinue(): boolean {
+    if (!this.enabled) return false;
+    if (this.backgroundEnabled) return true;
     if (this.itemCache.length === 0) return false;
     if (this.state.activeConnections > 0) return true;
     return this.state.idleMode && getEnvValue("IDLE_POLLING_ENABLED");
@@ -239,7 +251,7 @@ class PollingSupervisor {
   private getEffectiveInterval(item: PollingItem): number {
     if (!this.state.idleMode) return item.pollingMs;
 
-    const idleInterval = IDLE_POLLING_MS();
+    const idleInterval = this.backgroundEnabled ? 60_000 : IDLE_POLLING_MS();
     return Math.max(item.pollingMs, idleInterval);
   }
 
@@ -458,4 +470,8 @@ class PollingSupervisor {
   }
 }
 
-export const pollingSup = new PollingSupervisor();
+const globalPolling = globalThis as typeof globalThis & { __labitatPolling?: PollingSupervisor };
+export const pollingSup =
+  process.env.NODE_ENV === "test"
+    ? new PollingSupervisor()
+    : (globalPolling.__labitatPolling ??= new PollingSupervisor());

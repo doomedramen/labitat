@@ -80,6 +80,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
 
     type SABQueue = {
       speed?: string;
+      kbpersec?: number;
       timeleft?: string;
       noofslots?: number;
       status?: string;
@@ -110,7 +111,11 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
 
     return {
       _status: "ok",
-      speed: queue.speed ?? "0 B/s",
+      _numeric:
+        typeof queue.kbpersec === "number"
+          ? { speed: { value: queue.kbpersec * 1024, unit: "bytes/s" as const } }
+          : {},
+      speed: queue.speed ?? "—",
       remaining: queue.timeleft ?? "—",
       queueSize: queue.noofslots ?? 0,
       downloading: queue.status === "Downloading",

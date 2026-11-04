@@ -13,26 +13,21 @@ Labitat is a self-hosted homelab dashboard for monitoring services, arranging li
 
 ## Features
 
-- Live service widgets with server-side polling and cached data
-- Drag-and-drop dashboard layouts
+- Compact service tiles with health filters, search, and separate launch/detail actions
+- 24-hour numeric history with honest gaps and visible stale data
+- Live Arrange mode with atomic Save and Cancel
 - PWA support for desktop and mobile installs
 - Encrypted stored credentials with HTTP-only sessions
 - Docker, native Debian/Proxmox, and manual install options
 - Adapter scaffold for adding new services
 
+See the [operator dashboard guide](docs/operator-dashboard.md) for inspection, arrangement, history, and upgrade behavior.
+
 ## Screenshots
 
-### Dashboard overview
+![Compact operator overview with 24 services across three groups](docs/public/images/operator-overview.png)
 
-![Labitat dashboard showing infrastructure and media service metrics](docs/public/images/dashboard-overview.jpg)
-
-### Live activity
-
-![Labitat showing active Plex sessions and download progress](docs/public/images/live-activity.jpg)
-
-### Edit mode
-
-![Labitat dashboard editor with draggable groups and service cards](docs/public/images/edit-mode.jpg)
+The overview above uses a 24-service test fixture. Inspection, activity, history, and configuration open in a separate details panel.
 
 ## Install
 

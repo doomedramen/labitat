@@ -57,6 +57,13 @@
       "when": 1793777816822,
       "tag": "0007_cache_provenance",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1793780572141,
+      "tag": "0008_operator_dashboard",
+      "breakpoints": true
     }
   ]
 }

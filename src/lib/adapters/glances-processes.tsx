@@ -112,5 +112,16 @@ export const glancesProcessesDefinition: ServiceDefinition<GlancesProcessesData>
       sortBy: sortBy as "cpu" | "memory" | "both",
     };
   },
+  toMetrics: (data) => ({
+    metrics: [
+      {
+        id: "processes",
+        label: "Top processes",
+        displayValue: String(data.processes.length),
+        numericValue: data.processes.length,
+        unit: "count",
+      },
+    ],
+  }),
   renderWidget: () => null, // Placeholder - real widget is client-side
 };

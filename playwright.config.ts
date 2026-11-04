@@ -40,7 +40,7 @@ export default defineConfig({
     command:
       e2eMode === "development"
         ? `node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm exec next dev --turbopack --hostname 127.0.0.1 -p ${e2ePort}`
-        : `node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm build && npx next start -p ${e2ePort}`,
+        : `node scripts/clean-test-db.mjs && mkdir -p data && pnpm db:push && pnpm db:seed && pnpm build && npx next start --hostname 127.0.0.1 -p ${e2ePort}`,
     url: e2eBaseUrl,
     reuseExistingServer: false,
     timeout: 300 * 1000,

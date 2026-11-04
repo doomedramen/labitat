@@ -1,35 +1,20 @@
 import { hasEditAccess } from "@/lib/auth/guard";
 import { serverCache } from "@/lib/server-cache";
-import { getOrSeedGroups, getOrSeedSetting } from "@/lib/structural-cache";
-import { runStartupWarmup } from "@/lib/startup";
-import { cn } from "@/lib/utils";
+import { getOrSeedSetting } from "@/lib/structural-cache";
+import { readDashboardLayout } from "@/lib/dashboard-layout";
+import { OperatorDashboard } from "@/components/operator/operator-dashboard";
 import type { ItemLive } from "@/lib/live-types";
 import { LiveProvider } from "@/components/dashboard/live-provider";
-import { DashboardViewChrome } from "@/components/dashboard/dashboard-view-chrome";
-import { GroupCard } from "@/components/dashboard/group";
-import { EmptyDashboard } from "@/components/dashboard/empty-dashboard";
-import { unstable_noStore as noStore } from "next/cache";
-
 // This page is always dynamic due to session auth, database queries, and cookie usage
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Module-level flag to track startup warmup
-let warmupTriggered = false;
-
 async function DashboardContent() {
-  // Ensure Next never serves a cached RSC response for this route.
-  noStore();
-  // Trigger startup warmup on first load (fire and forget)
-  if (!warmupTriggered) {
-    warmupTriggered = true;
-    runStartupWarmup();
-  }
-  let canEdit, groupsWithItems, titleSetting;
+  let canEdit, layout, titleSetting;
   try {
-    [canEdit, groupsWithItems, titleSetting] = await Promise.all([
+    [canEdit, layout, titleSetting] = await Promise.all([
       hasEditAccess(),
-      getOrSeedGroups(),
+      Promise.resolve(readDashboardLayout()),
       getOrSeedSetting("dashboardTitle"),
     ]);
   } catch (err) {
@@ -37,6 +22,7 @@ async function DashboardContent() {
     throw err;
   }
 
+  const groupsWithItems = layout.groups;
   const itemIds = groupsWithItems.flatMap((g) => g.items.map((i) => i.id));
   const uniqueItemIds = [...new Set(itemIds)];
   const snapshotKey = groupsWithItems
@@ -75,25 +61,16 @@ async function DashboardContent() {
   const dashboardTitle = titleSetting?.value ?? "Labitat";
 
   return (
-    <main className={cn("min-h-svh px-4 pt-5 pb-10 sm:px-6 sm:pt-7 lg:px-8")}>
-      <LiveProvider
+    <LiveProvider initialSnapshotById={initialSnapshotById} snapshotKey={snapshotKey} enableSse>
+      <OperatorDashboard
+        groups={groupsWithItems}
+        revision={layout.revision}
+        title={dashboardTitle}
+        canEdit={canEdit}
         initialSnapshotById={initialSnapshotById}
-        snapshotKey={snapshotKey}
-        enableSse={true}
-      >
-        <DashboardViewChrome canEdit={canEdit} title={dashboardTitle}>
-          {groupsWithItems.length > 0 ? (
-            <div className="flex flex-col gap-7 sm:gap-8">
-              {groupsWithItems.map((group) => (
-                <GroupCard key={group.id} group={group} />
-              ))}
-            </div>
-          ) : (
-            <EmptyDashboard canEdit={canEdit} />
-          )}
-        </DashboardViewChrome>
-      </LiveProvider>
-    </main>
+        serverNow={Date.now()}
+      />
+    </LiveProvider>
   );
 }
 

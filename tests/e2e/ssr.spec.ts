@@ -66,7 +66,7 @@ test.describe("SSR Rendering", () => {
     expect(html).toMatch(/<button[^>]*>.*Sign in.*<\/button>/i);
 
     // ── Edit button should NOT be visible when not authenticated ──
-    expect(html).not.toMatch(/<button[^>]*>.*Edit.*<\/button>/i);
+    expect(html).not.toMatch(/<button[^>]*>.*Manage.*<\/button>/i);
   });
 
   test("SSR renders Edit button when authenticated (response.text)", async ({ page }) => {
@@ -78,7 +78,7 @@ test.describe("SSR Rendering", () => {
     const html = await response!.text();
 
     // ── Edit button visible when authenticated ──
-    expect(html).toMatch(/<button[^>]*>.*Edit.*<\/button>/i);
+    expect(html).toMatch(/<button[^>]*>.*Manage.*<\/button>/i);
 
     // ── Sign-in button should NOT be visible when authenticated ──
     expect(html).not.toContain("Sign in");
@@ -131,14 +131,13 @@ test.describe("SSR Rendering", () => {
     expect(html).toContain("VMs");
     expect(html).toContain("LXCs");
     expect(html).toContain("CPU");
-    expect(html).toContain("Memory");
+    expect(html).not.toContain(">Memory<");
 
     // ── Stat card values MUST be visible during SSR ──
     expect(html).toContain("3");
     expect(html).toContain("8/10");
     expect(html).toContain("4/5");
     expect(html).toContain("45.2");
-    expect(html).toContain("68.5");
   });
 
   test("SSR renders status dots for items (response.text)", async ({ page }) => {

@@ -6,7 +6,7 @@ type GlancesPerCpuData = {
   cores: number;
   maxCore: number;
   avgCpu: number;
-  coreUsages: number[];
+  coreUsages: (number | null)[];
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
 
@@ -15,8 +15,9 @@ function glancesPerCpuToPayload({ coreUsages }: GlancesPerCpuData) {
     stats: (coreUsages ?? []).map((usage, index) => ({
       id: `core-${index}`,
       label: `CPU ${index + 1}`,
-      value: `${usage}%`,
-      valueClassName: usage >= 90 ? "text-destructive" : usage >= 70 ? "text-warning" : undefined,
+      value: typeof usage === "number" ? `${usage}%` : "—",
+      valueClassName:
+        (usage ?? 0) >= 90 ? "text-destructive" : (usage ?? 0) >= 70 ? "text-warning" : undefined,
     })),
   };
 }
@@ -62,11 +63,14 @@ export const glancesPerCpuDefinition: ServiceDefinition<GlancesPerCpuData> = {
     const percpu = await res.json();
     const coreList = Array.isArray(percpu) ? percpu : [];
 
-    const cpuValues = coreList.map((c: { total?: number }) => Math.round(c.total ?? 0));
-    const maxCore = Math.max(...cpuValues, 0);
+    const cpuValues = coreList.map((c: { total?: number }) =>
+      typeof c.total === "number" ? c.total : null,
+    );
+    const measured = cpuValues.filter((value): value is number => value !== null);
+    const maxCore = Math.max(...measured, 0);
     const avgCpu =
-      cpuValues.length > 0
-        ? Math.round(cpuValues.reduce((a: number, b: number) => a + b, 0) / cpuValues.length)
+      measured.length > 0
+        ? Math.round(measured.reduce((a: number, b: number) => a + b, 0) / measured.length)
         : 0;
 
     return {

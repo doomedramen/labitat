@@ -384,3 +384,69 @@ describe("server cache freshness", () => {
     expect(dbSelectCalls).toBe(1);
   });
 });
+
+describe("always-on operator collection", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.resetModules();
+    vi.useRealTimers();
+  });
+  it("reuses one scheduler, honors slower intervals, and collects with no clients", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    const fetchFast = vi.fn().mockResolvedValue({ _status: "ok" });
+    const fetchSlow = vi.fn().mockResolvedValue({ _status: "ok" });
+    vi.doMock("@/lib/db", () => ({
+      db: {
+        select: (fields?: unknown) => ({
+          from: () =>
+            fields
+              ? { where: () => ({ get: () => ({ revision: 0 }) }) }
+              : [
+                  {
+                    id: "fast",
+                    serviceType: "fast",
+                    serviceUrl: "https://fast.test",
+                    configEnc: null,
+                    configurationRevision: 0,
+                    pollingMs: 10000,
+                  },
+                  {
+                    id: "slow",
+                    serviceType: "slow",
+                    serviceUrl: "https://slow.test",
+                    configEnc: null,
+                    configurationRevision: 0,
+                    pollingMs: 120000,
+                  },
+                ],
+        }),
+      },
+    }));
+    vi.doMock("@/lib/adapters", () => ({
+      getService: (id: string) => ({ fetchData: id === "fast" ? fetchFast : fetchSlow }),
+    }));
+    vi.doMock("@/lib/crypto", () => ({ decrypt: vi.fn() }));
+    vi.doMock("@/lib/server-cache", () => ({ serverCache: { get: () => null, set: vi.fn() } }));
+    const { pollingSup } = await import("./polling-supervisor");
+    pollingSup.startBackground();
+    pollingSup.startBackground();
+    await pollingSup.pollNow();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(fetchFast).toHaveBeenCalledTimes(1);
+    expect(fetchSlow).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(fetchFast).toHaveBeenCalledTimes(2);
+    expect(fetchSlow).toHaveBeenCalledTimes(1);
+    pollingSup.connect();
+    await pollingSup.pollNow();
+    await pollingSup.pollNow();
+    expect(fetchFast).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(fetchFast).toHaveBeenCalledTimes(3);
+    pollingSup.disconnect();
+    await vi.advanceTimersByTimeAsync(51000);
+    expect(fetchSlow).toHaveBeenCalledTimes(2);
+    pollingSup.stop();
+  });
+});

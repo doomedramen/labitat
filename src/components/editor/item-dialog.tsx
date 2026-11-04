@@ -43,6 +43,7 @@ import {
 import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid";
 import { parseStatCardOrder, type StatCardOrder } from "@/hooks/use-stat-card-order";
 import { useItemLive } from "@/components/dashboard/use-item-live";
+import { getServicePresentation } from "@/lib/service-presentation";
 import { fetchServiceData } from "@/actions/services";
 
 /**
@@ -521,7 +522,7 @@ export function ItemDialog({
                     <div className="space-y-2">
                       <Label htmlFor={field.name}>URL</Label>
                       <p className="text-xs text-muted-foreground">
-                        The address opened when you select the card.
+                        The address opened by the service name.
                       </p>
                       <Input
                         id={field.name}
@@ -542,7 +543,7 @@ export function ItemDialog({
               </form.Field>
 
               <details className="rounded-lg border border-border p-3">
-                <summary className="cursor-pointer text-sm font-medium">Appearance</summary>
+                <summary className="cursor-pointer text-sm font-medium">Identity</summary>
                 <div className="pt-3">
                   <form.Field name="iconUrl">
                     {(field) => {
@@ -707,15 +708,15 @@ export function ItemDialog({
 
               {/* Stat card layout preview - only for widgets using toPayload, not custom renderWidget */}
               {selectedService &&
-                !selectedService.renderWidget &&
                 open &&
                 item &&
                 serviceType === item.serviceType &&
-                selectedService.toPayload && (
+                (selectedService.toPayload || selectedService.toMetrics) && (
                   <div className="space-y-2">
-                    <Label>Stat Card Layout</Label>
+                    <Label>Metrics</Label>
                     <p className="text-xs text-muted-foreground">
-                      Up to 4 shown by default. Add from Unused, hide, or reorder.
+                      The first four appear on the tile. Additional shown metrics appear in details.
+                      Add from Unused, hide, or reorder.
                     </p>
                     <ItemDialogPreview
                       open={open}
@@ -729,12 +730,11 @@ export function ItemDialog({
                 )}
 
               {selectedService &&
-                !selectedService.renderWidget &&
                 open &&
                 !item &&
-                selectedService.toPayload && (
+                (selectedService.toPayload || selectedService.toMetrics) && (
                   <div className="space-y-2">
-                    <Label>Stat Card Layout</Label>
+                    <Label>Metrics</Label>
                     <p className="text-xs text-muted-foreground">Save item first to preview</p>
                   </div>
                 )}
@@ -806,7 +806,15 @@ function ItemDialogPreview({
     function payloadFor(data: ServiceData | null) {
       if (!data || data._status === "error") return null;
       try {
-        return adapter.toPayload ? withPlaceholderValues(adapter.toPayload(data)) : null;
+        const presentation = getServicePresentation(adapter, data);
+        return withPlaceholderValues({
+          stats: presentation.metrics.map((metric) => ({
+            id: metric.id,
+            label: metric.label,
+            value: metric.displayValue,
+          })),
+          defaultActiveIds: presentation.defaultActiveIds,
+        });
       } catch {
         return null;
       }

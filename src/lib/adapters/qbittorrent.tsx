@@ -199,8 +199,16 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
 
     return {
       _status: "ok",
-      downSpeed: formatSpeed(info.dl_info_speed ?? 0),
-      upSpeed: formatSpeed(info.up_info_speed ?? 0),
+      _numeric: {
+        ...(typeof info.dl_info_speed === "number"
+          ? { down: { value: info.dl_info_speed, unit: "bytes/s" as const } }
+          : {}),
+        ...(typeof info.up_info_speed === "number"
+          ? { up: { value: info.up_info_speed, unit: "bytes/s" as const } }
+          : {}),
+      },
+      downSpeed: info.dl_info_speed == null ? "—" : formatSpeed(info.dl_info_speed),
+      upSpeed: info.up_info_speed == null ? "—" : formatSpeed(info.up_info_speed),
       activeDownloads: torrents.length,
       queued,
       showDownloads,

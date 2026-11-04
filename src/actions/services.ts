@@ -99,3 +99,20 @@ export async function fetchAllServiceData(itemIds: string[]): Promise<Record<str
 
   return results;
 }
+
+/** Only benign client-widget settings may cross the public read boundary. */
+export async function getClientWidgetConfig(
+  itemId: string,
+): Promise<{ timeZone?: string; format24h?: boolean }> {
+  const item = db.select().from(items).where(eq(items.id, itemId)).get();
+  if (!item || item.serviceType !== "datetime" || !item.configEnc) return {};
+  try {
+    const config = JSON.parse(await decrypt(item.configEnc));
+    return {
+      timeZone: typeof config.timeZone === "string" ? config.timeZone : undefined,
+      format24h: config.format24h === "true",
+    };
+  } catch {
+    return {};
+  }
+}

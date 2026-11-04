@@ -53,6 +53,8 @@ export async function dragAndDropManual(page: Page, source: Locator, target: Loc
   await page.waitForTimeout(50);
   // Release
   await page.mouse.up();
+  // PointerSensor suppresses document clicks for 50ms after a drop.
+  await page.waitForTimeout(60);
 }
 
 /**

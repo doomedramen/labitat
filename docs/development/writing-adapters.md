@@ -3,6 +3,18 @@
 Service adapters connect your dashboard to external services (Glances, Radarr, Plex, etc.).
 Each adapter defines: **config fields** (shown in the UI), **data fetching** (server-side), and a **widget** (rendered on the dashboard).
 
+## Compact overview contract
+
+The operator dashboard consumes serializable metrics through `getServicePresentation`. New adapters can implement `toMetrics(data)` returning `{ metrics, defaultActiveIds? }`. Each metric has a stable `id`, `label`, `displayValue`, and optionally a finite native `numericValue` plus canonical `unit`. Preserve IDs across versions. The shared selector limits defaults to four, leaves newly introduced metrics in Unused, and preserves explicit selections beyond four in details.
+
+Existing `toPayload` implementations remain compatible: the normalizer drops icons, JSX, and adapter CSS classes from overview metrics. Supply `_numeric: { metricId: { value, unit } }` from the fetcher when display formatting would otherwise lose a native rate, size, or duration. Never parse a formatted display string to reconstruct a measurement. Text and ambiguous ratios stay current-only. For example:
+
+```ts
+_numeric: { down: { value: response.downloadBytesPerSecond, unit: "bytes/s" } }
+```
+
+Use `renderWidget` for a registered detail capability such as a chart, process table, or utility interface. Overview layout and theme colors belong to the shared tile. Client widgets keep their renderer in a separate client module; no decorative animation mounts until details are opened. See the [operator dashboard guide](../operator-dashboard.md) for sampling and permission behavior.
+
 ## Architecture
 
 ```

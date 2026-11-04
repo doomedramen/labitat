@@ -1,0 +1,122 @@
+"use client";
+import { memo, useMemo } from "react";
+import { ArrowUpRight, ChevronRight } from "lucide-react";
+import { getService } from "@/lib/adapters";
+import { getServicePresentation, compactMetric } from "@/lib/service-presentation";
+import { resolveStatCardLayout, parseStatCardOrder } from "@/lib/stat-card-layout";
+import { serviceHealth } from "@/lib/service-health";
+import type { ItemRow } from "@/lib/types";
+import { useItemLive } from "@/components/dashboard/use-item-live";
+import { useVisibleClock } from "@/hooks/use-visible-clock";
+import { ItemIcon } from "@/components/dashboard/item/item-icon";
+import styles from "./operator.module.css";
+export type HealthSummary = { attention: boolean; stale: boolean };
+export const ServiceTile = memo(function ServiceTile({
+  item,
+  onDetails,
+  arranging = false,
+  initialNow = 0,
+}: {
+  item: ItemRow;
+  onDetails: (id: string) => void;
+  arranging?: boolean;
+  initialNow?: number;
+}) {
+  const live = useItemLive(item.id);
+  const now = useVisibleClock();
+  const service = item.serviceType ? getService(item.serviceType) : null;
+  const health = serviceHealth(item, live, now ?? initialNow, service?.clientSide);
+  const presentation = useMemo(
+    () => getServicePresentation(service, live?.widgetData ?? null),
+    [service, live?.widgetData],
+  );
+  const metrics = useMemo(
+    () =>
+      resolveStatCardLayout(
+        presentation.metrics,
+        parseStatCardOrder(item.statCardOrder),
+        presentation.defaultActiveIds,
+      ).activeItems.slice(0, 4),
+    [presentation, item.statCardOrder],
+  );
+  const label = item.label || service?.name || "Service";
+  return (
+    <article
+      className={styles.tile}
+      data-testid="item-card"
+      data-item-id={item.id}
+      data-attention={health.attention || undefined}
+      data-severity={health.attention ? health.tone : undefined}
+      data-stale={health.stale || undefined}
+    >
+      <div className={styles.tileHeader}>
+        <span className={styles.icon} aria-hidden="true">
+          <ItemIcon iconUrl={item.iconUrl} label={label} serviceIcon={service?.icon ?? null} />
+        </span>
+        {item.href && !arranging ? (
+          <a
+            className={styles.serviceName}
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${label} (opens in a new tab)`}
+          >
+            {label}
+            <ArrowUpRight size={12} aria-hidden="true" />
+          </a>
+        ) : (
+          <h3 className={styles.serviceName}>{label}</h3>
+        )}
+        <span
+          className={styles.healthDot}
+          data-state={
+            health.attention
+              ? health.tone
+              : health.stale
+                ? "stale"
+                : health.label === "Healthy"
+                  ? "healthy"
+                  : "unknown"
+          }
+          aria-label={health.label}
+          title={health.label}
+          role="img"
+        />
+      </div>
+      <button
+        type="button"
+        data-details-for={item.id}
+        className={styles.inspect}
+        onClick={() => onDetails(item.id)}
+        aria-label={`Inspect ${label}`}
+      >
+        {metrics.length ? (
+          <span className={styles.metrics} data-count={metrics.length}>
+            {metrics.map((metric) => (
+              <span className={styles.metric} key={metric.id}>
+                <span className={styles.metricValue}>{compactMetric(metric)}</span>
+                <span className={styles.metricLabel}>{metric.label}</span>
+              </span>
+            ))}
+          </span>
+        ) : (
+          <span className={styles.emptyMetric}>
+            {presentation.detailKind === "clock"
+              ? "Local date & time"
+              : presentation.detailKind === "search"
+                ? "Search the web"
+                : presentation.detailKind === "visual"
+                  ? "Open visual"
+                  : presentation.unavailable && item.serviceType
+                    ? "Data unavailable"
+                    : "Service details"}
+          </span>
+        )}
+        <ChevronRight className={styles.inspectChevron} size={12} aria-hidden="true" />
+      </button>
+      <p className={styles.tileReason} title={health.reason}>
+        {health.reason || "\u00a0"}
+      </p>
+    </article>
+  );
+});

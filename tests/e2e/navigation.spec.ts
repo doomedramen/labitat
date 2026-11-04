@@ -25,26 +25,24 @@ test.describe("Navigation & Middleware", () => {
     await expect(page).toHaveURL(/\/setup/);
   });
 
-  test("back and forward preserve saved structure without reload", async ({ page }) => {
+  test("Back and Forward restore the selected service without layout changes", async ({ page }) => {
     await seedAndAuth(page, {
       groups: [{ name: "Navigation Group", items: [{ label: "Navigation Item" }] }],
     });
-
     await page.goto("/");
-    await page.getByRole("button", { name: "Edit" }).click();
-    await expect(page).toHaveURL("/edit");
-    await page.getByLabel("Edit group").click();
-    await page.locator("#name").fill("Saved Navigation Group");
-    await page.getByRole("button", { name: "Update" }).click();
-    await page.getByRole("button", { name: "Done" }).click();
-
-    await expect(page).toHaveURL("/");
-    await expect(page.getByText("Saved Navigation Group")).toBeVisible();
+    const before = await page.getByTestId("item-card").boundingBox();
+    await page.getByRole("button", { name: "Inspect Navigation Item", exact: true }).click();
+    await expect(page).toHaveURL(/service=/);
+    await expect(page.getByRole("dialog", { name: "Navigation Item" })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("dialog", { name: "Navigation Item" })).toBeVisible();
     await page.goBack();
-    await expect(page).toHaveURL("/edit");
-    await expect(page.getByText("Saved Navigation Group")).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Inspect Navigation Item", exact: true }),
+    ).toBeFocused();
+    expect(await page.getByTestId("item-card").boundingBox()).toEqual(before);
     await page.goForward();
-    await expect(page).toHaveURL("/");
-    await expect(page.getByText("Saved Navigation Group")).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Navigation Item" })).toBeVisible();
   });
 });

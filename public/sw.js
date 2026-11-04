@@ -7,12 +7,12 @@
  * - Network only: live and health APIs
  * - NetworkFirst: icon APIs and data files
  * - CacheFirst: static images, fonts
- * - StaleWhileRevalidate: everything else
+ * - Network only: HTML, RSC, and all other application data
  */
 
-const CACHE_NAME = "labitat-v3";
+const CACHE_NAME = "labitat-v4";
 const SW_VERSION = CACHE_NAME;
-const PRECACHE_URLS = ["/", "/~offline", "/manifest.webmanifest"];
+const PRECACHE_URLS = ["/~offline", "/manifest.webmanifest"];
 
 // ── Install: precache static assets ──────────────────────────────────────────
 
@@ -102,8 +102,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else → StaleWhileRevalidate
-  event.respondWith(staleWhileRevalidate(request));
+  // HTML, RSC payloads, manifests, and application data always use the network.
+  // Cache API ignores Cache-Control and Vary; a cached RSC response can undo
+  // a successful configuration save or replay a different authentication state.
 });
 
 // ── Strategies ───────────────────────────────────────────────────────────────
@@ -137,8 +138,6 @@ async function networkFirst(request, fallbackUrl) {
     return response;
   } catch {
     const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request);
-    if (cached) return cached;
     if (fallbackUrl) {
       const fallback = await cache.match(fallbackUrl);
       if (fallback) return fallback;
@@ -157,8 +156,6 @@ async function networkOnlyWithOfflineFallback(request, fallbackUrl) {
   } catch {
     // Network failed - try cached version or offline fallback
     const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request);
-    if (cached) return cached;
     if (fallbackUrl) {
       const fallback = await cache.match(fallbackUrl);
       if (fallback) return fallback;
@@ -168,18 +165,4 @@ async function networkOnlyWithOfflineFallback(request, fallbackUrl) {
       headers: { "Content-Type": "text/plain" },
     });
   }
-}
-
-async function staleWhileRevalidate(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
-
-  const fetchPromise = fetch(request).then((response) => {
-    if (response.ok || response.type === "opaque") {
-      cache.put(request, response.clone());
-    }
-    return response;
-  });
-
-  return cached || fetchPromise;
 }

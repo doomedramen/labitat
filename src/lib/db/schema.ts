@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index, primaryKey } from "drizzle-orm/sqlite-core";
 import { sql, relations } from "drizzle-orm";
 
 // ── Users ─────────────────────────────────────────────────────────────────────
@@ -79,3 +79,48 @@ export const groupsRelations = relations(groups, ({ many }) => ({
 export const itemsRelations = relations(items, ({ one }) => ({
   group: one(groups, { fields: [items.groupId], references: [groups.id] }),
 }));
+
+// History contains only selected numeric measurements, never complete adapter payloads.
+export const metricHistory = sqliteTable(
+  "metric_history",
+  {
+    itemId: text("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    configurationRevision: integer("configuration_revision").notNull(),
+    bucketAt: integer("bucket_at").notNull(),
+    observedAt: integer("observed_at").notNull(),
+    values: text("values", { mode: "json" })
+      .$type<import("../history-types").HistoryValues>()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.itemId, table.configurationRevision, table.bucketAt] }),
+    index("metric_history_age_idx").on(table.bucketAt),
+  ],
+);
+export const healthHistory = sqliteTable(
+  "health_history",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    itemId: text("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    configurationRevision: integer("configuration_revision").notNull(),
+    observedAt: integer("observed_at").notNull(),
+    state: text("state").notNull(),
+    reason: text("reason"),
+  },
+  (table) => [
+    index("health_history_item_idx").on(
+      table.itemId,
+      table.configurationRevision,
+      table.observedAt,
+    ),
+    index("health_history_age_idx").on(table.observedAt),
+  ],
+);
+export const dashboardState = sqliteTable("dashboard_state", {
+  id: integer("id").primaryKey(),
+  revision: integer("revision").notNull().default(0),
+});

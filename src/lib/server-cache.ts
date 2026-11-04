@@ -1,3 +1,4 @@
+import { recordHistory } from "./history-store";
 import { db } from "@/lib/db";
 import { widgetCache } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -138,6 +139,21 @@ class ServerCache {
         console.error("[server-cache] DB write failed:", err);
       });
 
+    if (outcome.configurationRevision !== undefined) {
+      try {
+        recordHistory(
+          itemId,
+          outcome.configurationRevision,
+          updated.lastAttemptAt!,
+          updated.widgetData,
+          updated.pingStatus,
+          successful,
+        );
+      } catch {
+        console.warn("[history] Unable to persist observation; check database migrations");
+      }
+    }
+
     // Notify listeners (SSE)
     // console.log(
     //   `[server-cache] Notifying ${this.listeners.size} listeners for ${itemId}:`,
@@ -252,4 +268,8 @@ class ServerCache {
   }
 }
 
-export const serverCache = new ServerCache();
+const globalCache = globalThis as typeof globalThis & { __labitatServerCache?: ServerCache };
+export const serverCache =
+  process.env.NODE_ENV === "test"
+    ? new ServerCache()
+    : (globalCache.__labitatServerCache ??= new ServerCache());

@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, type ReactNode } from "react";
 import { liveStore } from "@/lib/live-store";
 import { sseEventSchema, type ItemLive } from "@/lib/live-types";
 
@@ -40,13 +32,11 @@ export function LiveProvider({
   const snapshotRef = useRef(initialSnapshotById);
   const getServerSnapshot = useCallback((id: string) => snapshotRef.current[id] ?? null, []);
 
-  // initOnce in useMemo with client guard — safe, runs once, before any
-  // child useSyncExternalStore reads getSnapshot during hydration
-  useMemo(() => {
-    if (typeof window === "undefined") return;
-    liveStore.initOnce(initialSnapshotById, snapshotKey);
+  // Hydration reads the server snapshot; reconciliation notifies mounted tiles
+  // after commit, never while another component is rendering.
+  useEffect(() => {
     snapshotRef.current = initialSnapshotById;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reconcile when server snapshot changes
+    liveStore.initOnce(initialSnapshotById, snapshotKey);
   }, [initialSnapshotById, snapshotKey]);
 
   useEffect(() => {

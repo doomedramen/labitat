@@ -36,7 +36,7 @@ test.describe("First-time Setup", () => {
     await responsePromise;
     // Navigate to verify admin was created
     await page.goto("/");
-    await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Manage dashboard" })).toBeVisible();
   });
 
   test("shows error for mismatched passwords", async ({ page }) => {

@@ -54,9 +54,9 @@ describe("glances definition", () => {
       });
 
       expect(result._status).toBe("ok");
-      expect(result.cpuPercent).toBe(46);
-      expect(result.memPercent).toBe(62);
-      expect(result.swapPercent).toBe(10);
+      expect(result.cpuPercent).toBe(45.5);
+      expect(result.memPercent).toBe(62.3);
+      expect(result.swapPercent).toBe(10.2);
       expect(result.load1).toBe(0.375);
       expect(result.uptime).toBe("1d 0h");
     });
@@ -83,10 +83,10 @@ describe("glances definition", () => {
         url: "https://glances.example.com",
       });
 
-      expect(result.cpuPercent).toBe(0);
-      expect(result.memPercent).toBe(0);
-      expect(result.swapPercent).toBe(0);
-      expect(result.load1).toBe(0);
+      expect(result.cpuPercent).toBeNull();
+      expect(result.memPercent).toBeNull();
+      expect(result.swapPercent).toBeNull();
+      expect(result.load1).toBeNull();
       expect(result.uptime).toBe("0m");
     });
 

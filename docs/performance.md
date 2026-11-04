@@ -1,46 +1,27 @@
 # Performance
 
-Labitat is designed to be lightweight and run on modest hardware.
+The [compact operator dashboard](./operator-dashboard.md) keeps the overview small and moves investigation into details.
 
-## Page Load
+## Rendering
 
-Labitat uses Next.js App Router with server-side rendering. The initial page load renders on the server, so the HTML arrives fully formed — no client-side JavaScript is required for the first paint.
+Next.js renders group order, launch links, labels, and cached metric values on the server. Known stale data is marked using the server snapshot time; legacy data with no successful-update time stays unknown. Hydration preserves newer live observations.
 
-- **First paint**: The dashboard shell renders immediately from server HTML
-- **Hydration**: React hydrates the page client-side after the initial HTML arrives
-- **Flash of content**: Widget cards appear with their last-cached data (or loading skeletons) — no blank screen flash
+Tiles subscribe to their own observations through an external store. Opening a service panel does not render the other tiles again. A 100-service regression fixture checks this behavior. One shared visible clock updates freshness and pauses when the document is hidden. Specialized charts, process lists, utility animations, and historical queries mount only inside an open details panel.
 
-## Widget Loading
+The 24-service, three-group browser fixture fits a 1440 × 900 viewport. Tiles are 96px tall on desktop and 136px below 640px. Columns reflow from four to three, two, and one; metrics use a 2×2 layout on small screens.
 
-Widgets load data **client-side** via SWR (stale-while-revalidate):
+## Polling and history
 
-1. On first load, widgets show a loading state while fetching from their configured service
-2. Once data arrives, it's displayed and cached
-3. On subsequent visits, cached data shows immediately while a fresh fetch happens in the background
-4. Each widget polls independently at its configured interval (default: 10 seconds)
+One Node polling supervisor starts through instrumentation. Connected dashboard clients share its observations over SSE; additional tabs do not create polling loops. The supervisor limits concurrency to 15 service requests. With no connected dashboards, each service uses the greater of its configured interval and 60 seconds. Slower intervals stay slower.
 
-This means:
+SQLite stores at most one successful numeric sample per service per minute, with 24-hour retention and separate health transitions. The same scheduler performs retention maintenance; failed requests and downtime produce gaps. History queries return no more than 1,440 minute positions and run only while details are open. Visible panels refresh once a minute and pause when hidden.
 
-- **No server-side background polling** — the server only handles requests when clients ask
-- **No flash of missing content** — cached data displays while fresh data loads
-- **Multiple tabs** each poll independently (no shared state between tabs)
+## Caching
 
-## PWA Offline Behavior
+The server persists observations with successful-update time, attempt time, freshness, and configuration revision. A failed attempt preserves the previous observation's age. Obsolete asynchronous results cannot overwrite observations from a newer configuration.
 
-- Static assets (JS, CSS, icons) are cached on first visit
-- HTML pages use network-first strategy with cache fallback
-- API calls use network-first with cache fallback
-- When offline, cached pages render but widget data may be stale
-- Service worker checks for updates every hour
+The service worker caches static assets, fonts, and icons. HTML, Next page-data responses, and live/history APIs always use the network. Offline navigation shows the offline page; it does not replay a cached dashboard as current data.
 
-## Database
+## Deployment
 
-Labitat uses SQLite (better-sqlite3) with WAL mode enabled by default. The database is small — a fresh install with migrations applied is approximately **48 KB**. It grows linearly with users, widget groups, and settings entries.
-
-## Optimization Tips
-
-1. **Use a reverse proxy** (Traefik, Nginx) for HTTPS and compression
-2. **Set appropriate polling intervals** — don't poll more frequently than needed
-3. **Limit widget count** — each widget adds a small amount of client-side overhead
-4. **Use SQLite WAL mode** (enabled by default) for better concurrent read performance
-5. **Keep SECRET_KEY backed up** — losing it requires re-entering all service credentials
+Use one always-on Node instance with the existing SQLite volume, WAL mode, and encryption key. Configure polling intervals to match how quickly each service changes. History collection stops while Node is stopped and does not invent observations on restart. See the [operator guide](./operator-dashboard.md#deployment) for migration requirements.

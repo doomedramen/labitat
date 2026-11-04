@@ -94,8 +94,8 @@ export const glancesTimeseriesDefinition: ServiceDefinition<GlancesTimeseriesDat
 
       history.push({
         timestamp,
-        cpu: Math.round(cpuEntry?.[1] ?? 0),
-        mem: Math.round(memEntry?.[1] ?? 0),
+        cpu: typeof cpuEntry?.[1] === "number" ? cpuEntry[1] : undefined,
+        mem: typeof memEntry?.[1] === "number" ? memEntry[1] : undefined,
       });
     }
 
@@ -104,5 +104,16 @@ export const glancesTimeseriesDefinition: ServiceDefinition<GlancesTimeseriesDat
       history,
     };
   },
+  toMetrics: (data) => ({
+    metrics: (["cpu", "mem"] as const).map((id) => {
+      const value = data.history.at(-1)?.[id];
+      return {
+        id,
+        label: id === "cpu" ? "CPU" : "Memory",
+        displayValue: typeof value === "number" ? `${value}%` : "—",
+        ...(typeof value === "number" ? { numericValue: value, unit: "percent" as const } : {}),
+      };
+    }),
+  }),
   renderWidget: () => null, // Placeholder - real widget is client-side
 };

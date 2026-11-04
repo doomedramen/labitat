@@ -1,3 +1,4 @@
+import type { ServiceMetric, NumericObservation } from "@/lib/service-presentation";
 import type { FC } from "react";
 import type { WidgetPayload } from "./widget-types";
 
@@ -80,6 +81,8 @@ export function dataToStatus(data: ServiceData): ServiceStatus {
 export type ServiceData = {
   _status?: "ok" | "warn" | "error" | "none";
   _statusText?: string;
+  /** Native observations, never values recovered from formatted text. */
+  _numeric?: Record<string, NumericObservation>;
   [key: string]: unknown;
 };
 
@@ -117,6 +120,8 @@ export type ServiceDefinition<TData extends ServiceData = ServiceData> = {
   category: ServiceCategory;
   configFields: FieldDef[];
   defaultPollingMs?: number;
+  /** Serializable overview metrics; specialized UI belongs in renderWidget. */
+  toMetrics?: (data: TData) => { metrics: ServiceMetric[]; defaultActiveIds?: string[] };
 
   /**
    * Server-side data fetcher.

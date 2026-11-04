@@ -1,3 +1,4 @@
+import { configure } from "../helpers/operator";
 import { test, expect, seedAndAuth } from "../fixtures";
 import { dragAndDropInDialog } from "../helpers/dnd";
 
@@ -35,18 +36,16 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
 
     // Enter edit mode
-    await page.getByRole("button", { name: "Edit" }).click();
-    await expect(page).toHaveURL("/edit");
 
     // Small delay to ensure edit mode is fully initialized
     await page.waitForTimeout(500);
 
     // Open the item dialog by clicking the edit button on the item
-    await page.getByLabel("Edit item").first().click();
+    await configure(page, "Radarr");
 
     // Wait for dialog to open and stat cards to render
     await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Stat Card Layout")).toBeVisible();
+    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
 
     // Scope to the dialog to avoid picking up dashboard stat cards
     const dialog = page.getByRole("dialog", { name: "Edit Item" });
@@ -84,15 +83,13 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
 
     // Enter edit mode
-    await page.getByRole("button", { name: "Edit" }).click();
-    await expect(page).toHaveURL("/edit");
 
     // Open the item dialog
-    await page.getByLabel("Edit item").first().click();
+    await configure(page, "Radarr");
 
     // Wait for dialog to open
     await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Stat Card Layout")).toBeVisible();
+    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
 
     // Scope to the dialog
     const dialog = page.getByRole("dialog", { name: "Edit Item" });
@@ -126,15 +123,13 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
 
     // Enter edit mode
-    await page.getByRole("button", { name: "Edit" }).click();
-    await expect(page).toHaveURL("/edit");
 
     // Open the item dialog
-    await page.getByLabel("Edit item").first().click();
+    await configure(page, "Radarr");
 
     // Wait for dialog to open
     await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Stat Card Layout")).toBeVisible();
+    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
 
     // Scope to the dialog
     const dialog = page.getByRole("dialog", { name: "Edit Item" });
@@ -177,15 +172,13 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
 
     // Enter edit mode
-    await page.getByRole("button", { name: "Edit" }).click();
-    await expect(page).toHaveURL("/edit");
 
     // Open the item dialog
-    await page.getByLabel("Edit item").first().click();
+    await configure(page, "Radarr");
 
     // Wait for dialog to open
     await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Stat Card Layout")).toBeVisible();
+    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
 
     // Scope to the dialog
     const dialog = page.getByRole("dialog", { name: "Edit Item" });
@@ -207,10 +200,10 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await dialog.getByRole("button", { name: "Update" }).click();
 
     // Wait for dialog to close
-    await expect(page.getByText("Stat Card Layout")).not.toBeVisible();
+    await expect(page.getByText("Metrics", { exact: true })).not.toBeVisible();
 
     // Exit edit mode
-    await page.getByRole("button", { name: "Done" }).click();
+
     await expect(page).toHaveURL("/");
 
     // Reload page to verify persistence
@@ -220,15 +213,13 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
 
     // Re-enter edit mode
-    await page.getByRole("button", { name: "Edit" }).click();
-    await expect(page).toHaveURL("/edit");
 
     // Open the item dialog again
-    await page.getByLabel("Edit item").first().click();
+    await configure(page, "Radarr");
 
     // Wait for dialog to open
     await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Stat Card Layout")).toBeVisible();
+    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
 
     // Wait for stat cards to be visible before checking order
     const reorderedStatCards = dialog.locator('[data-testid="stat-card"]');
@@ -245,15 +236,13 @@ test.describe("Stat Card Reordering and Visibility", () => {
     await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
 
     // Enter edit mode
-    await page.getByRole("button", { name: "Edit" }).click();
-    await expect(page).toHaveURL("/edit");
 
     // Open the item dialog
-    await page.getByLabel("Edit item").first().click();
+    await configure(page, "Radarr");
 
     // Wait for dialog to open
     await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Stat Card Layout")).toBeVisible();
+    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
 
     // Scope to the dialog
     const dialog = page.getByRole("dialog", { name: "Edit Item" });

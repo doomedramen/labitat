@@ -87,6 +87,7 @@ function buildSidebar() {
           { text: "Quick Start", link: "/getting-started" },
           ...buildInstallationSidebar(),
           { text: "Configuration", link: "/configuration" },
+          { text: "Operator dashboard", link: "/operator-dashboard" },
           { text: "Development", link: "/development" },
         ],
       },

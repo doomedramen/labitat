@@ -1,0 +1,31 @@
+# Compact operator dashboard
+
+The overview keeps every service in its saved group and position. Tiles show up to four selected metrics, a launch link on the service name, and a separate **Inspect** button over the metrics. Failed, warning, and stale observations have a visible reason. Missing observations show **Data unavailable** rather than invented zeroes.
+
+## Find and inspect
+
+Search matches service names, adapter names, and groups. Press `/` or `⌘/Ctrl+K` to focus it. **All**, **Needs attention**, and **Stale** count services; a service can need attention and be stale at the same time. Filtering and live updates never save a different order.
+
+Inspect opens a 440px side panel on desktop or a full-screen sheet below 640px. The URL's `service` parameter restores the panel after refresh and supports browser Back/Forward. Closing returns keyboard focus to the tile. Full metric values, activity, history, and update diagnostics live here. Date/time runs locally; specialized Glances charts/process tables and decorative widgets run only when inspected. The search utility sends the entered query to the selected supported search engine.
+
+## Configure and arrange
+
+Sign in and choose **Manage → Arrange dashboard**. Drag the real tiles or use their move controls, including the destination-group selector. Live observations continue. **Save arrangement** commits group order, service order, and group membership in one transaction. **Cancel** discards the local draft without writing. Concurrent structural changes are rejected; a failed save preserves the draft for retry. Existing `/edit` links redirect into authenticated Arrange mode.
+
+Service configuration is separate: **Inspect → Configure**. Identity, connection settings, and metrics remain independent of arrangement. Metric controls support Show, Hide, earlier/later movement, and optional dragging. The first four shown metrics appear on the tile; additional explicitly shown metrics appear in details and are eligible for history. New metrics stay in Unused. Existing selections and IDs are retained. Light and Dark are the only themes.
+
+## History and freshness
+
+One always-on Node process collects observations through the existing polling supervisor, with the existing 15-request concurrency limit. Next's Node instrumentation starts it once, including before any dashboard is opened. Build and edge runtimes do not collect. With no dashboard connections, the interval is the greater of the configured interval and 60 seconds. Slower configured intervals stay slower.
+
+SQLite retains the most recent 24 hours. Each service records at most one successful sample per minute, containing only its selected numeric metrics, including selected metrics beyond the first four. Native numbers and canonical units are stored directly. Formatted strings, ambiguous ratios, cached values, and failures do not create measurements. Adapters can supply explicit `_numeric` observations or the serializable `toMetrics` contract. Existing adapters use a compatibility normalizer that strips their CSS and JSX from overview metrics.
+
+History starts empty. Restart, failure, and downtime gaps remain gaps. Configuration revisions and changes in unit separate incompatible observations. Health transitions are stored separately; identical repeated failures are not new incidents. Retention is enforced on reads and cleaned at startup and hourly by the same scheduler.
+
+The details panel requests `GET /api/items/:id/history?metric=cpu&range=1h` only while open, refreshes once a minute while visible, and pauses when hidden. Ranges are `1h`, `6h`, and `24h`; responses include at most 1,440 minute positions (null for gaps), plus health transitions. Responses use `Cache-Control: no-store` and the same public read permissions as the dashboard. No credentials or raw service responses are included.
+
+The service worker caches static assets and icons. API responses, HTML navigation, and Next page-data responses always reach the network; offline navigation shows the offline page instead of an old dashboard snapshot.
+
+## Deployment
+
+Apply the additive migration `drizzle/0008_operator_dashboard.sql` using the existing migration workflow before starting the upgraded Node server. It adds history tables and dashboard revisions; it preserves credentials, URLs, groups, metric selections, and configuration. `db:push` deployments also initialize the revision triggers at Node startup. Keep the existing SQLite volume and `SECRET_KEY`. Collection assumes one always-on Node instance; it does not backfill time when the process was stopped.

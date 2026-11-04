@@ -122,6 +122,7 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
           loadPercent,
           batteryCharge,
           timeLeft,
+          _numeric: { timeleft: { value: timeLeft * 60, unit: "seconds" as const } },
           status,
         };
       } catch (error) {
@@ -160,6 +161,7 @@ export const apcupsDefinition: ServiceDefinition<APCUPSData> = {
         loadPercent,
         batteryCharge,
         timeLeft,
+        _numeric: { timeleft: { value: timeLeft * 60, unit: "seconds" as const } },
         status,
       };
     }

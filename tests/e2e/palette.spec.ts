@@ -24,9 +24,9 @@ test.describe("Palette Switching", () => {
     const dialog = page.getByRole("dialog", { name: "Choose a theme" });
     await expect(dialog).toBeVisible();
 
-    const bounds = await dialog.boundingBox();
-    expect(bounds).not.toBeNull();
-    expect(bounds!.width).toBeGreaterThanOrEqual(288);
+    await expect
+      .poll(async () => (await dialog.boundingBox())?.width ?? 0)
+      .toBeGreaterThanOrEqual(288);
     await expect(page.getByRole("button", { name: "Close" })).toBeVisible();
 
     const nordLight = page.getByRole("button", { name: "Light", exact: true });

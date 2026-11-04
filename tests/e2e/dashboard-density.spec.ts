@@ -1,3 +1,4 @@
+import { configure } from "../helpers/operator";
 import { test, expect, seedAndAuth } from "../fixtures";
 
 const groups = [
@@ -14,6 +15,7 @@ const groups = [
       {
         label: "Glances",
         serviceType: "glances",
+        serviceUrl: "https://glances.test",
         cachedWidgetData: {
           cpuPercent: 31,
           memPercent: 52,
@@ -99,8 +101,8 @@ test("supports hiding every metric, restoring from unused, and saving more than 
   page,
 }) => {
   await seedAndAuth(page, { groups: [{ name: "System", items: [groups[0].items[2]] }] });
-  await page.goto("/edit");
-  await page.getByLabel("Edit item").click();
+  await page.goto("/");
+  await configure(page, "Glances");
   const dialog = page.getByRole("dialog", { name: "Edit Item" });
   for (const label of ["CPU", "RAM", "Swap", "Load"])
     await dialog.getByRole("button", { name: `Hide ${label}`, exact: true }).click();
@@ -108,16 +110,17 @@ test("supports hiding every metric, restoring from unused, and saving more than 
   await expect(dialog.getByLabel("Shown stat cards")).toBeVisible();
   await dialog.getByRole("button", { name: "Update", exact: true }).click();
   await expect(dialog).toBeHidden();
-  await page.getByLabel("Edit item").click();
+  await configure(page, "Glances");
   await expect(dialog.getByText("Shown (0)")).toBeVisible();
   for (const label of ["CPU", "RAM", "Swap", "Load", "Uptime"])
     await dialog.getByRole("button", { name: `Show ${label}`, exact: true }).click();
   await dialog.getByRole("button", { name: "Update", exact: true }).click();
   await expect(dialog).toBeHidden();
-  await page.getByRole("button", { name: "Done", exact: true }).click();
-  await expect(page.getByTestId("item-card").getByText("Uptime", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("item-card").getByText("Uptime", { exact: true })).toBeHidden();
+  await page.getByRole("button", { name: "Inspect Glances", exact: true }).click();
+  await expect(page.getByRole("dialog").getByText("Uptime", { exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByTestId("item-card").getByText("Uptime", { exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog").getByText("Uptime", { exact: true })).toBeVisible();
 });
 
 test("shows the age of successful data after a newer failed update and opens details by keyboard", async ({
@@ -135,14 +138,16 @@ test("shows the age of successful data after a newer failed update and opens det
   );
   await page.reload();
   const card = page.getByTestId("item-card");
-  await expect(card.getByText("Update failed", { exact: true })).toBeVisible();
-  await expect(card.getByText("1h old", { exact: true })).toBeVisible();
+  await expect(card.getByText("Upstream unavailable", { exact: true })).toBeVisible();
+  await expect(card).toHaveAttribute("data-stale", "true");
   await expect(card.getByText("Movies", { exact: true })).toBeVisible();
-  const summary = card.locator("summary").last();
-  await summary.focus();
+  const inspect = card.getByRole("button", { name: "Inspect Radarr" });
+  await inspect.focus();
   await page.keyboard.press("Enter");
-  await expect(card.getByText("Last successful update 1 hour ago.", { exact: true })).toBeVisible();
-  await expect(card.getByText("Last attempt just now.", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("dialog").getByText("Last successful update", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("dialog").getByText("1 hour ago", { exact: false })).toBeVisible();
 });
 
 test("reports a failed first live connection", async ({ page }) => {

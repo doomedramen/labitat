@@ -409,6 +409,10 @@ export const pveUpsDefinition: ServiceDefinition<PveUpsData> = {
       loadPercent: roll.loadPercent,
       batteryCharge: roll.batteryCharge,
       runtimeMinutes: roll.runtimeMinutes,
+      _numeric:
+        roll.runtimeMinutes >= 0
+          ? { runtime: { value: roll.runtimeMinutes * 60, unit: "seconds" as const } }
+          : {},
       dryRun: body.appliance?.dry_run ?? health.dry_run ?? true,
       hostsOk,
       hostsTotal,

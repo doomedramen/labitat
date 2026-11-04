@@ -1,3 +1,4 @@
+import { WebSearch } from "@/components/operator/web-search";
 import type { ServiceDefinition } from "./types";
 
 type SearchData = {
@@ -5,26 +6,6 @@ type SearchData = {
   _statusText?: string;
   engines: string;
 };
-
-function SearchWidget({ engines }: SearchData) {
-  const engineList = engines.split(",").map((e) => e.trim());
-
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-2 py-2">
-      {engineList.map((engine) => (
-        <a
-          key={engine}
-          href={`https://www.google.com/search?q=${engine}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground hover:bg-secondary/80"
-        >
-          {engine}
-        </a>
-      ))}
-    </div>
-  );
-}
 
 export const searchDefinition: ServiceDefinition<SearchData> = {
   id: "search",
@@ -47,5 +28,5 @@ export const searchDefinition: ServiceDefinition<SearchData> = {
       engines: config.engines || "Google,DuckDuckGo,Bing",
     });
   },
-  renderWidget: SearchWidget,
+  renderWidget: WebSearch,
 };

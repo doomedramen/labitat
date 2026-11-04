@@ -5,11 +5,11 @@ import { ArrowDownUp, Activity, Clock, Cpu, MemoryStick } from "lucide-react";
 type GlancesData = {
   _status?: "ok" | "warn" | "error";
   _statusText?: string;
-  cpuPercent: number;
-  memPercent: number;
+  cpuPercent: number | null;
+  memPercent: number | null;
   memUsed: string;
-  swapPercent: number;
-  load1: number;
+  swapPercent: number | null;
+  load1: number | null;
   uptime: string;
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
@@ -84,10 +84,11 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
       memData.used ?? (data.memory_total ? ((data.mem ?? 0) * data.memory_total) / 100 : 0);
 
     // Load: quicklook may return an object {min1, cpucore} or a bare number
-    const loadRaw = data.load ?? 0;
-    const loadMin1 = typeof loadRaw === "object" ? (loadRaw.min1 ?? 0) : loadRaw;
-    const loadCores = typeof loadRaw === "object" ? (loadRaw.cpucore ?? 1) : 1;
-    const load1 = loadCores > 1 ? loadMin1 / loadCores : loadMin1;
+    const loadRaw = data.load;
+    const loadMin1 = loadRaw && typeof loadRaw === "object" ? loadRaw.min1 : loadRaw;
+    const loadCores = loadRaw && typeof loadRaw === "object" ? (loadRaw.cpucore ?? 1) : 1;
+    const load1 =
+      typeof loadMin1 === "number" ? (loadCores > 1 ? loadMin1 / loadCores : loadMin1) : null;
 
     // Uptime: may be seconds (number) or a pre-formatted string
     const uptimeRaw = data.uptime ?? 0;
@@ -98,12 +99,16 @@ export const glancesDefinition: ServiceDefinition<GlancesData> = {
 
     return {
       _status: "ok",
-      cpuPercent: Math.round(data.cpu ?? 0),
-      memPercent: Math.round(data.mem ?? 0),
+      cpuPercent: typeof data.cpu === "number" ? data.cpu : null,
+      memPercent: typeof data.mem === "number" ? data.mem : null,
       memUsed: memUsedBytes > 0 ? formatBytes(memUsedBytes) : "—",
-      swapPercent: Math.round(data.swap ?? 0),
+      swapPercent: typeof data.swap === "number" ? data.swap : null,
       load1,
       uptime,
+      _numeric:
+        typeof data.uptime === "number"
+          ? { uptime: { value: data.uptime, unit: "seconds" as const } }
+          : {},
     };
   },
   toPayload: glancesToPayload,

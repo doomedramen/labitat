@@ -76,10 +76,10 @@ describe("glances-diskusage definition", () => {
         url: "https://glances.example.com",
       });
 
-      expect(result.usedPercent).toBe(0);
-      expect(result.used).toBe("0 B");
-      expect(result.total).toBe("0 B");
-      expect(result.free).toBe("0 B");
+      expect(result.usedPercent).toBeNull();
+      expect(result.used).toBe("—");
+      expect(result.total).toBe("—");
+      expect(result.free).toBe("—");
     });
 
     it("uses custom mount point", async () => {

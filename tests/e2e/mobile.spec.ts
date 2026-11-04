@@ -12,23 +12,25 @@ test.describe("Mobile Layout", () => {
     await page.setViewportSize({ width: 375, height: 812 });
 
     // Items grid should collapse to single column
-    const grid = page.locator(".grid").first();
-    const classes = await grid.getAttribute("class");
-    // The grid uses responsive classes: grid-cols-1 sm:grid-cols-2 ...
-    expect(classes).toContain("grid-cols-1");
+    const cards = page.getByTestId("item-card");
+    const boxes = await cards.evaluateAll((elements) =>
+      elements.map((element) => element.getBoundingClientRect().toJSON()),
+    );
+    expect(new Set(boxes.map((box) => box.x)).size).toBe(1);
+    expect(boxes.every((box) => box.height === 136)).toBe(true);
   });
 
   test("header is responsive on small viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     // Title and buttons should still be visible
     await expect(page.getByText("Labitat")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Manage dashboard" })).toBeVisible();
   });
 
   test("edit mode works on small viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.getByRole("button", { name: "Edit" }).click();
-    await expect(page).toHaveURL("/edit");
-    await expect(page.getByRole("button", { name: "Done" })).toBeVisible();
+    await page.getByRole("button", { name: "Manage dashboard" }).click();
+    await page.getByRole("menuitem", { name: "Arrange dashboard" }).click();
+    await expect(page.getByRole("button", { name: "Save arrangement" })).toBeVisible();
   });
 });

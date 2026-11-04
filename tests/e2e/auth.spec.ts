@@ -1,3 +1,4 @@
+import { manage } from "../helpers/operator";
 import { test, expect, seedAndAuth } from "../fixtures";
 
 const ADMIN_EMAIL = "admin@test.com";
@@ -56,21 +57,18 @@ test.describe("Authentication", () => {
     test("clicking Sign out button shows Sign in button", async ({ page }) => {
       await seedAndAuth(page);
       await page.goto("/");
-      await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Manage dashboard" })).toBeVisible();
 
-      await page.goto("/edit");
-      await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
-
-      await page.getByRole("button", { name: "Sign out" }).click();
+      await manage(page, "Sign out");
 
       await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Edit" })).not.toBeVisible();
+      await expect(page.getByRole("button", { name: "Manage dashboard" })).not.toBeVisible();
     });
 
     test("clearing session shows Sign in button", async ({ page }) => {
       await seedAndAuth(page);
       await page.goto("/");
-      await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Manage dashboard" })).toBeVisible();
 
       await page.context().clearCookies();
       await page.reload();

@@ -1,5 +1,7 @@
 # Dashboard remediation — 4 November 2026
 
+This is the historical remediation review. The [compact operator dashboard](../operator-dashboard.md) supersedes the layout and remaining-widget findings below.
+
 The supplied screenshot and repository were reviewed together. Application changes address the reported layout, density, themes, editing, metric defaults, and misleading cache freshness. The deployed homelab services were not accessed.
 
 | Before                                                                                                  | After                                                                                                          | Why                                                                 |
@@ -26,13 +28,13 @@ Explicit saved selections above four remain supported. Reset to defaults is pers
 
 These are source-confirmed routing/behaviour gaps, outside the repaired metric and editing paths. They need their own widget acceptance tests before being called fixed.
 
-- **High: incomplete custom-widget routing.** [WidgetRenderer](../../src/components/dashboard/item/widget-renderer.tsx) excludes client-side `renderWidget` implementations, while [Date & Time](../../src/lib/adapters/datetime.tsx) uses that path. The [Glances timeseries](../../src/lib/adapters/glances-timeseries.tsx) and [processes](../../src/lib/adapters/glances-processes.tsx) adapter renderers return `null`; the current renderer does not select their dedicated widget components. These widgets can produce empty cards.
-- **Medium: Search is not a usable search input.** [SearchWidget](../../src/lib/adapters/search.tsx) sends every engine name to a Google query. It has no query field and does not use the selected engine's destination.
+- **High: incomplete custom-widget routing.** WidgetRenderer (`src/components/dashboard/item/widget-renderer.tsx`) excludes client-side `renderWidget` implementations, while Date & Time (`src/lib/adapters/datetime.tsx`) uses that path. The Glances timeseries (`src/lib/adapters/glances-timeseries.tsx`) and processes (`src/lib/adapters/glances-processes.tsx`) adapter renderers return `null`; the current renderer does not select their dedicated widget components. These widgets can produce empty cards.
+- **Medium: Search is not a usable search input.** SearchWidget (`src/lib/adapters/search.tsx`) sends every engine name to a Google query. It has no query field and does not use the selected engine's destination.
 - **Tooling: runtime versions are not reproducible on this machine.** The default Node 26 had no working SQLite native module, and the installed pnpm rejected the repository's legacy manifest settings. Browser validation used the installed Node 22 and rebuilt SQLite locally. The adapter CLI also needs a CSS import shim because the registry imports CSS modules. Dependency manifests and the lockfile were not upgraded.
 
 ## Deployment and evidence
 
-The additive [cache metadata migration](../../drizzle/0007_cache_provenance.sql) must be applied with the project's normal migration process when deploying this version. Only the isolated test database was reset or seeded during this work. An in-memory SQLite check verified that the migration preserves old cached values and leaves successful-update time unknown.
+The additive cache metadata migration (`drizzle/0007_cache_provenance.sql`) must be applied with the project's normal migration process when deploying this version. Only the isolated test database was reset or seeded during this work. An in-memory SQLite check verified that the migration preserves old cached values and leaves successful-update time unknown.
 
 Final validation used Next.js 16.2.3 and Node 22.23.4:
 

@@ -2,6 +2,8 @@
 
 Labitat is designed to be zero-config, but we offer powerful environment variables to tune it for your specific homelab environment.
 
+See [Compact operator dashboard](./operator-dashboard.md) for arranging services, selecting metrics, and history collection.
+
 ## Key Environment Variables
 
 | Variable       | Default                  | Description                                                         |

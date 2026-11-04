@@ -55,10 +55,11 @@ describe("useItemLive", () => {
       { wrapper },
     );
 
+    const settled = { ...counts };
     act(() => liveStore.updateFromSse("a", { ...mockUpdate, fetchedAt: 1000 }));
 
-    expect(counts.a).toBe(2);
-    expect(counts.b).toBe(1);
+    expect(counts.a).toBe(settled.a + 1);
+    expect(counts.b).toBe(settled.b);
   });
 
   it("survives StrictMode remount without wiping live state", () => {
