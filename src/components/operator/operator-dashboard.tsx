@@ -17,7 +17,6 @@ import {
   SortableContext,
   useSortable,
   rectSortingStrategy,
-  verticalListSortingStrategy,
   sortableKeyboardCoordinates,
   arrayMove,
 } from "@dnd-kit/sortable";
@@ -29,12 +28,22 @@ import {
   ArrowLeft,
   ArrowRight,
   MoreHorizontal,
+  Clapperboard,
+  Server,
+  Network,
+  House,
+  Layers3,
+  Download,
+  ArrowUpDown,
+  Folder,
 } from "lucide-react";
 import type { GroupWithItems, GroupWithCache, ItemRow, ItemWithCache } from "@/lib/types";
 import type { ItemLive } from "@/lib/live-types";
 import { getService } from "@/lib/adapters";
 import { serviceHealth } from "@/lib/service-health";
-import { useItemLive } from "@/components/dashboard/use-item-live";
+import { placeDashboardGroups, type BoardStyle } from "@/lib/dashboard-board";
+import { Popover as PopoverPrimitive } from "radix-ui";
+import { useItemLive, useLiveConnection } from "@/components/dashboard/use-item-live";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,6 +126,7 @@ export function OperatorDashboard({
 }) {
   const router = useRouter();
   const params = useSearchParams();
+  const connection = useLiveConnection();
   const [canonical, setCanonical] = useState(groups);
   const [canonicalRevision, setCanonicalRevision] = useState(revision);
   const [draft, setDraft] = useState<GroupWithItems[] | null>(() =>
@@ -323,6 +333,7 @@ export function OperatorDashboard({
           filter === "all" &&
           !visible.find((original) => original.id === group.id)?.items.length),
     );
+  const placement = useMemo(() => placeDashboardGroups(filtered), [filtered]);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -378,7 +389,74 @@ export function OperatorDashboard({
         <HealthObserver key={item.id} item={item} report={reportHealth} initialNow={serverNow} />
       ))}
       <header className={styles.header}>
-        <h1 className={styles.heading}>{title}</h1>
+        <div className={styles.brand}>
+          <span className={styles.brandMark}>
+            <img src="/favicon-32x32.png" width={20} height={20} alt="" />
+          </span>
+          <span>
+            labitat<span className={styles.brandSlash}> / </span>
+            <span className={styles.brandSection}>overview</span>
+          </span>
+        </div>
+        <div className={styles.headerActions}>
+          <span
+            className={styles.connection}
+            data-connected={connection === "connected" || undefined}
+          >
+            <i />
+            {connection === "connected"
+              ? "Live"
+              : connection === "connecting"
+                ? "Connecting"
+                : "Reconnecting"}
+          </span>
+          <ThemePicker />
+          {canEdit ? (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" aria-label="Manage dashboard" disabled={arranging}>
+                  <Settings size={16} />
+                  <span className="hidden sm:inline">Manage</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={startArranging}>Arrange dashboard</DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={!canonical.length}
+                  onSelect={() => setItemEditor({ item: null, groupId: canonical[0]?.id ?? "" })}
+                >
+                  Add service
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setGroupEditor({ group: null })}>
+                  Add group
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setTitleDraft(title);
+                    setRenameOpen(true);
+                  }}
+                >
+                  Rename dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => void logout()}>Sign out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="outline" onClick={() => setLoginOpen(true)}>
+              Sign in
+            </Button>
+          )}
+        </div>
+      </header>
+      <div className={styles.hero}>
+        <div>
+          <p className={styles.eyebrow}>YOUR WORKSPACE</p>
+          <h1 className={styles.heading}>{title}</h1>
+          <p className={styles.subtitle}>
+            <span>{items.length}</span> services <span className={styles.subtitleDivider}>/</span>{" "}
+            <span>{canonical.length}</span> groups
+          </p>
+        </div>
         <div className={styles.search}>
           <Search size={16} />
           <Input
@@ -388,45 +466,15 @@ export function OperatorDashboard({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             disabled={arranging}
+            type="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
           />
+          <kbd className={styles.searchKey}>/</kbd>
         </div>
-        <ThemePicker />
-        {canEdit ? (
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" aria-label="Manage dashboard" disabled={arranging}>
-                <Settings size={16} />
-                <span className="hidden sm:inline">Manage</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={startArranging}>Arrange dashboard</DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={!canonical.length}
-                onSelect={() => setItemEditor({ item: null, groupId: canonical[0]?.id ?? "" })}
-              >
-                Add service
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setGroupEditor({ group: null })}>
-                Add group
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => {
-                  setTitleDraft(title);
-                  setRenameOpen(true);
-                }}
-              >
-                Rename dashboard
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => void logout()}>Sign out</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Button variant="outline" onClick={() => setLoginOpen(true)}>
-            Sign in
-          </Button>
-        )}
-      </header>
+      </div>
       {!arranging && (
         <div className={styles.toolbar} aria-label="Service filters">
           {(
@@ -490,36 +538,39 @@ export function OperatorDashboard({
       >
         <SortableContext
           items={visible.map((group) => `group:${group.id}`)}
-          strategy={verticalListSortingStrategy}
+          strategy={rectSortingStrategy}
         >
-          {filtered.map((group) => (
-            <OperatorGroup
-              initialNow={serverNow}
-              key={group.id}
-              group={group}
-              arranging={arranging}
-              disabled={saving}
-              allGroups={visible}
-              onDetails={openDetails}
-              onMoveItem={moveItem}
-              onGroupMove={(direction) =>
-                setDraft((previous) => {
-                  if (!previous) return previous;
-                  const index = previous.findIndex((g) => g.id === group.id);
-                  const to = index + direction;
-                  return to < 0 || to >= previous.length
-                    ? previous
-                    : arrayMove(previous, index, to);
-                })
-              }
-              onAdd={() => setItemEditor({ item: null, groupId: group.id })}
-              onEdit={() =>
-                setGroupEditor({ group: { ...group, items: group.items.map(withCache) } })
-              }
-              onDelete={() => setDeleteTarget({ kind: "group", id: group.id, label: group.name })}
-              canEdit={canEdit}
-            />
-          ))}
+          <div className={styles.board}>
+            {filtered.map((group) => (
+              <OperatorGroup
+                initialNow={serverNow}
+                boardStyle={placement[group.id]}
+                key={group.id}
+                group={group}
+                arranging={arranging}
+                disabled={saving}
+                allGroups={visible}
+                onDetails={openDetails}
+                onMoveItem={moveItem}
+                onGroupMove={(direction) =>
+                  setDraft((previous) => {
+                    if (!previous) return previous;
+                    const index = previous.findIndex((g) => g.id === group.id);
+                    const to = index + direction;
+                    return to < 0 || to >= previous.length
+                      ? previous
+                      : arrayMove(previous, index, to);
+                  })
+                }
+                onAdd={() => setItemEditor({ item: null, groupId: group.id })}
+                onEdit={() =>
+                  setGroupEditor({ group: { ...group, items: group.items.map(withCache) } })
+                }
+                onDelete={() => setDeleteTarget({ kind: "group", id: group.id, label: group.name })}
+                canEdit={canEdit}
+              />
+            ))}
+          </div>
         </SortableContext>
         <DragOverlay dropAnimation={null}>
           {dragLabel && (
@@ -666,6 +717,7 @@ export function OperatorDashboard({
 }
 
 function OperatorGroup({
+  boardStyle,
   initialNow,
   group,
   arranging,
@@ -679,6 +731,7 @@ function OperatorGroup({
   onDelete,
   canEdit,
 }: {
+  boardStyle: BoardStyle;
   initialNow: number;
   group: GroupWithItems;
   arranging: boolean;
@@ -692,6 +745,17 @@ function OperatorGroup({
   onDelete: () => void;
   canEdit: boolean;
 }) {
+  const GroupIcon =
+    (
+      {
+        media: Clapperboard,
+        arr: Layers3,
+        downloads: Download,
+        home: House,
+        infrastructure: Server,
+        network: Network,
+      } as Record<string, typeof Folder>
+    )[group.name.trim().toLowerCase()] ?? Folder;
   const sortable = useSortable({
     id: `group:${group.id}`,
     disabled: !arranging || disabled,
@@ -708,6 +772,7 @@ function OperatorGroup({
       className={styles.group}
       data-group-id={group.id}
       style={{
+        ...boardStyle,
         transform: CSS.Translate.toString(sortable.transform),
         transition: sortable.transition,
         opacity: sortable.isDragging ? 0.4 : 1,
@@ -719,13 +784,17 @@ function OperatorGroup({
             type="button"
             {...sortable.attributes}
             {...sortable.listeners}
-            className="touch-none"
+            className={styles.groupDrag}
             aria-label={`Move group ${group.name}`}
           >
             <GripVertical size={16} />
           </button>
         )}
+        <GroupIcon size={16} className={styles.groupIcon} aria-hidden="true" />
         <h2>{group.name}</h2>
+        <span className={styles.groupCount} aria-label={`${group.items.length} services`}>
+          {String(group.items.length).padStart(2, "0")}
+        </span>
         {arranging ? (
           <>
             <Button
@@ -798,7 +867,7 @@ function OperatorGroup({
           )}
         </SortableContext>
         {!group.items.length && (
-          <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+          <div className={styles.emptyGroup}>
             {arranging ? (
               "Drop services here"
             ) : canEdit ? (
@@ -862,37 +931,59 @@ function ArrangingTile({
         <GripVertical size={14} />
       </button>
       <ServiceTile item={item} onDetails={onDetails} arranging initialNow={initialNow} />
-      <div className={styles.moveActions}>
-        <button
-          type="button"
-          disabled={disabled || first}
-          onClick={() => onMove(-1)}
-          aria-label={`Move ${item.label} earlier`}
-        >
-          <ArrowLeft size={12} />
-        </button>
-        <button
-          type="button"
-          disabled={disabled || last}
-          onClick={() => onMove(1)}
-          aria-label={`Move ${item.label} later`}
-        >
-          <ArrowRight size={12} />
-        </button>
-        <select
-          className="max-w-24 bg-card text-xs"
-          aria-label={`Move ${item.label} to group`}
-          value={item.groupId}
-          disabled={disabled}
-          onChange={(event) => onGroup(event.target.value)}
-        >
-          {allGroups.map((group) => (
-            <option key={group.id} value={group.id}>
-              {group.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <PopoverPrimitive.Root>
+        <PopoverPrimitive.Trigger asChild>
+          <button
+            type="button"
+            className={styles.moveTrigger}
+            disabled={disabled}
+            aria-label={`Arrange ${item.label}`}
+          >
+            <ArrowUpDown size={16} />
+          </button>
+        </PopoverPrimitive.Trigger>
+        <PopoverPrimitive.Portal>
+          <PopoverPrimitive.Content
+            align="end"
+            sideOffset={8}
+            collisionPadding={12}
+            className={styles.movePopover}
+          >
+            <p>Move {item.label}</p>
+            <div className={styles.moveActions}>
+              <button
+                type="button"
+                disabled={disabled || first}
+                onClick={() => onMove(-1)}
+                aria-label={`Move ${item.label} earlier`}
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <button
+                type="button"
+                disabled={disabled || last}
+                onClick={() => onMove(1)}
+                aria-label={`Move ${item.label} later`}
+              >
+                <ArrowRight size={16} />
+              </button>
+              <select
+                className={styles.moveSelect}
+                aria-label={`Move ${item.label} to group`}
+                value={item.groupId}
+                disabled={disabled}
+                onChange={(event) => onGroup(event.target.value)}
+              >
+                {allGroups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
     </div>
   );
 }

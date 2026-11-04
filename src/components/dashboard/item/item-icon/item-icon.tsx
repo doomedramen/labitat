@@ -40,6 +40,7 @@ export const ItemIcon = memo(function ItemIcon({
   size = "md",
 }: ItemIconProps) {
   const [hasError, setHasError] = useState(false);
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
 
   // Use custom iconUrl if provided, otherwise fall back to service icon
   const rawIcon = iconUrl || serviceIcon || null;
@@ -74,19 +75,30 @@ export const ItemIcon = memo(function ItemIcon({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center",
+        "relative flex shrink-0 items-center justify-center",
         "rounded-lg bg-gradient-to-br from-card to-muted/50",
         "p-1.5",
         sizeConfig.container,
       )}
     >
+      {loadedSrc !== iconSrc && (
+        <span aria-hidden="true" className="absolute text-sm font-bold text-muted-foreground">
+          {label.charAt(0).toUpperCase()}
+        </span>
+      )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
+        ref={(image) => {
+          // Cached SSR images can finish before hydration attaches onLoad.
+          if (image?.complete && image.naturalWidth > 0) setLoadedSrc(iconSrc);
+        }}
         src={iconSrc}
         alt={label}
         width={sizeConfig.image}
         height={sizeConfig.image}
         className="h-full w-full object-contain drop-shadow-sm"
+        style={{ opacity: loadedSrc === iconSrc ? 1 : 0 }}
+        onLoad={() => setLoadedSrc(iconSrc)}
         loading="lazy"
         decoding="async"
         onError={() => setHasError(true)}

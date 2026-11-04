@@ -28,8 +28,8 @@ test("24 services fit at 1440 × 900 in both themes; mobile and 200% zoom reflow
   const rects = await cards.evaluateAll((elements) =>
     elements.map((element) => element.getBoundingClientRect().toJSON()),
   );
-  expect(rects.every((rect) => rect.height === 96 && rect.bottom <= 900)).toBe(true);
-  expect(new Set(rects.slice(0, 8).map((rect) => rect.x)).size).toBe(4);
+  expect(rects.every((rect) => rect.height === 80 && rect.bottom <= 900)).toBe(true);
+  expect(new Set(rects.slice(0, 8).map((rect) => rect.x)).size).toBe(1);
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(
     true,
   );
@@ -38,9 +38,9 @@ test("24 services fit at 1440 × 900 in both themes; mobile and 200% zoom reflow
   await page.getByRole("menuitemradio", { name: "Light", exact: true }).click();
   await page.screenshot({ path: "test-results/operator-24-light.png", fullPage: true });
   for (const [width, columns, height] of [
-    [1024, 3, 96],
-    [640, 2, 96],
-    [320, 1, 136],
+    [1024, 1, 80],
+    [640, 1, 96],
+    [320, 1, 96],
   ]) {
     await page.setViewportSize({ width, height: 900 });
     await expect
@@ -77,15 +77,15 @@ test("search and filters preserve ordering and count services", async ({ page })
   await expect(page.getByTestId("item-card")).toHaveCount(3);
   await page.getByRole("button", { name: "All 24", exact: true }).click();
   await page.keyboard.press("/");
-  await expect(page.getByRole("textbox", { name: "Find a service" })).toBeFocused();
+  await expect(page.getByRole("searchbox", { name: "Find a service" })).toBeFocused();
   await page.keyboard.type("Media");
   await expect(page.getByTestId("item-card")).toHaveCount(8);
   await page.keyboard.press("Escape");
   await page.keyboard.press("Control+k");
-  await expect(page.getByRole("textbox", { name: "Find a service" })).toBeFocused();
-  await page.getByRole("textbox", { name: "Find a service" }).fill("Glances");
+  await expect(page.getByRole("searchbox", { name: "Find a service" })).toBeFocused();
+  await page.getByRole("searchbox", { name: "Find a service" }).fill("Glances");
   await expect(page.getByTestId("item-card")).toHaveCount(24);
-  await page.getByRole("textbox", { name: "Find a service" }).fill("");
+  await page.getByRole("searchbox", { name: "Find a service" }).fill("");
   await expect(page.getByTestId("item-card").first()).toContainText("Host 1");
 });
 test("launch and inspect are independent, history loads only in the open 440px panel", async ({

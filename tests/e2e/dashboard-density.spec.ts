@@ -70,10 +70,13 @@ test("keeps the default dashboard compact, aligned, and usable in both themes", 
   ).toHaveCount(0);
   await expect(cards.filter({ hasText: "CPU" }).getByText("CPU 5", { exact: true })).toHaveCount(0);
   await expect(page.getByText("A long download title that belongs in details")).toBeHidden();
-  const heights = await cards.evaluateAll((elements) =>
-    elements.map((element) => element.getBoundingClientRect().height),
+  const rows = await cards.evaluateAll((elements) =>
+    elements.map((element) => ({
+      height: element.getBoundingClientRect().height,
+      layout: element.getAttribute("data-layout"),
+    })),
   );
-  expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(2);
+  expect(rows.every((row) => row.height === (row.layout === "metrics" ? 80 : 56))).toBe(true);
   await page.screenshot({
     path: "test-results/dashboard-dark.png",
     fullPage: true,

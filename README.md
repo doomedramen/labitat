@@ -13,7 +13,7 @@ Labitat is a self-hosted homelab dashboard for monitoring services, arranging li
 
 ## Features
 
-- Compact service tiles with health filters, search, and separate launch/detail actions
+- Compact group panels with health filters, search, and separate launch/detail actions
 - 24-hour numeric history with honest gaps and visible stale data
 - Live Arrange mode with atomic Save and Cancel
 - PWA support for desktop and mobile installs
@@ -25,9 +25,9 @@ See the [operator dashboard guide](docs/operator-dashboard.md) for inspection, a
 
 ## Screenshots
 
-![Compact operator overview with 24 services across three groups](docs/public/images/operator-overview.png)
+![Operator dashboard with 34 services across six groups](docs/public/images/operator-overview.png)
 
-The overview above uses a 24-service test fixture. Inspection, activity, history, and configuration open in a separate details panel.
+The overview above uses a synthetic 34-service fixture. Inspection, activity, history, and configuration open in a separate details panel.
 
 ## Install
 
@@ -99,6 +99,7 @@ Common environment variables:
 pnpm install
 pnpm dev
 pnpm check
+pnpm exec playwright install chromium webkit
 pnpm test
 ```
 

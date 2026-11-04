@@ -36,6 +36,8 @@ export function usePalette() {
   React.useEffect(() => {
     setPaletteCookie(palette);
     document.documentElement.setAttribute("data-palette", palette);
+    const chrome = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (chrome) chrome.content = palette === "light" ? "#f5f7f8" : "#0c1016";
   }, [palette]);
 
   const updatePalette = React.useCallback((value: string) => {

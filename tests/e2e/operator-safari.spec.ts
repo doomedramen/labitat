@@ -1,0 +1,73 @@
+import { test, expect, seedAndAuth } from "../fixtures";
+import { operatorDesignGroups } from "../helpers/operator-design-fixture";
+test.describe("Touch-first Safari", () => {
+  test.use({
+    isMobile: true,
+    hasTouch: true,
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 1,
+  });
+  test("phone rows, keyboard-sized inputs, details, and arrangement controls", async ({ page }) => {
+    await seedAndAuth(page, {
+      settings: { dashboardTitle: "Page Family Homelab" },
+      groups: operatorDesignGroups,
+    });
+    await page.goto("/");
+    const search = page.getByRole("searchbox", { name: "Find a service" });
+    await expect(search).toHaveCSS("font-size", "16px");
+    await search.tap();
+    await search.fill("Media");
+    await expect(page.getByTestId("item-card")).toHaveCount(6);
+    await search.fill("");
+    await search.blur();
+    await expect(page.getByTestId("item-card").first()).toHaveCSS("height", "96px");
+    expect(
+      (await page.getByRole("button", { name: "Inspect Tautulli", exact: true }).boundingBox())!
+        .height,
+    ).toBeGreaterThanOrEqual(44);
+    await page.getByRole("button", { name: "Inspect Seerr", exact: true }).tap();
+    const panel = page.getByRole("dialog", { name: "Seerr", exact: true });
+    await expect(panel).toBeVisible();
+    const bounds = (await panel.boundingBox())!;
+    expect(bounds.x).toBe(0);
+    expect(bounds.width).toBe(390);
+    expect(bounds.height).toBeCloseTo(844, 0);
+    await page.getByRole("button", { name: "Close", exact: true }).tap();
+    await expect(panel).toHaveCount(0);
+    await page.getByRole("button", { name: "Manage dashboard" }).tap();
+    await page.getByRole("menuitem", { name: "Arrange dashboard" }).tap();
+    await page.getByRole("button", { name: "Arrange Plex", exact: true }).tap();
+    const selector = page.getByRole("combobox", { name: "Move Plex to group" });
+    await expect(selector).toHaveCSS("font-size", "16px");
+    await selector.selectOption({ label: "Downloads" });
+    await page.getByRole("button", { name: "Cancel", exact: true }).tap();
+    await expect(
+      page.locator("section[data-group-id]").first().getByRole("link", { name: /Plex/ }),
+    ).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.screenshot({ path: "test-results/operator-design-safari.png", fullPage: false });
+  });
+});
+
+test("landscape touch board preserves geometry and full tap targets", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await seedAndAuth(page, { groups: operatorDesignGroups });
+  await page.goto("/");
+  const groups = await page
+    .locator("section[data-group-id]")
+    .evaluateAll((elements) => elements.map((element) => element.getBoundingClientRect().toJSON()));
+  for (let a = 0; a < groups.length; a++)
+    for (let b = a + 1; b < groups.length; b++) {
+      const x =
+        Math.min(groups[a].right, groups[b].right) - Math.max(groups[a].left, groups[b].left);
+      const y =
+        Math.min(groups[a].bottom, groups[b].bottom) - Math.max(groups[a].top, groups[b].top);
+      expect(x > 1 && y > 1).toBe(false);
+    }
+  const row = page.getByTestId("item-card").first();
+  expect((await row.getByRole("link").boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  expect((await row.getByRole("button").boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

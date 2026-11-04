@@ -28,6 +28,7 @@ test("stages dragged order without a write, Cancel restores it", async ({ page }
 });
 test("saves group order and cross-group membership atomically", async ({ page }) => {
   await page.getByRole("button", { name: "Move group Group B earlier", exact: true }).click();
+  await page.getByRole("button", { name: "Arrange Item 2", exact: true }).click();
   await page
     .getByRole("combobox", { name: "Move Item 2 to group", exact: true })
     .selectOption({ label: "Group B" });
@@ -43,6 +44,7 @@ test("saves group order and cross-group membership atomically", async ({ page })
 test("preserves a failed save draft, prevents duplicate submits, and allows retry", async ({
   page,
 }) => {
+  await page.getByRole("button", { name: "Arrange Item 3", exact: true }).click();
   await page.getByRole("button", { name: "Move Item 3 earlier", exact: true }).click();
   let writes = 0;
   await page.route("**/*", async (route) => {
@@ -67,9 +69,11 @@ test("preserves a failed save draft, prevents duplicate submits, and allows retr
 test("rejects concurrent structural edits without overwriting them", async ({ page, context }) => {
   const other = await context.newPage();
   await other.goto("/edit");
+  await page.getByRole("button", { name: "Arrange Item 2", exact: true }).click();
   await page.getByRole("button", { name: "Move Item 2 earlier", exact: true }).click();
   await page.getByRole("button", { name: "Save arrangement", exact: true }).click();
   await expect(page).toHaveURL("/");
+  await other.getByRole("button", { name: "Arrange Item 3", exact: true }).click();
   await other.getByRole("button", { name: "Move Item 3 earlier", exact: true }).click();
   await other.getByRole("button", { name: "Save arrangement", exact: true }).click();
   await expect(other.getByRole("alert").filter({ hasText: "changed elsewhere" })).toContainText(

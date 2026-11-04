@@ -32,7 +32,18 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testIgnore: "**/operator-safari.spec.ts",
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "webkit-mobile",
+      testMatch: "**/operator-safari.spec.ts",
+      use: {
+        ...devices["iPhone 13"],
+        browserName: "webkit",
+        viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 1,
+      },
     },
   ],
 

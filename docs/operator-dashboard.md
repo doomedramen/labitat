@@ -1,16 +1,16 @@
-# Compact operator dashboard
+# Operator dashboard
 
-The overview keeps every service in its saved group and position. Tiles show up to four selected metrics, a launch link on the service name, and a separate **Inspect** button over the metrics. Failed, warning, and stale observations have a visible reason. Missing observations show **Data unavailable** rather than invented zeroes.
+The overview presents services as compact rows inside group panels. Phones use one vertical list; larger screens balance whole panels across two, three, or four columns. Saved reading order stays stable, and live data never moves panels. Rows show up to four selected metrics, a launch link on the service name, and a separate **Inspect** button over the metrics. Failed, warning, and stale observations have a visible reason. Missing observations show **Data unavailable** rather than invented zeroes.
 
 ## Find and inspect
 
 Search matches service names, adapter names, and groups. Press `/` or `⌘/Ctrl+K` to focus it. **All**, **Needs attention**, and **Stale** count services; a service can need attention and be stale at the same time. Filtering and live updates never save a different order.
 
-Inspect opens a 440px side panel on desktop or a full-screen sheet below 640px. The URL's `service` parameter restores the panel after refresh and supports browser Back/Forward. Closing returns keyboard focus to the tile. Full metric values, activity, history, and update diagnostics live here. Date/time runs locally; specialized Glances charts/process tables and decorative widgets run only when inspected. The search utility sends the entered query to the selected supported search engine.
+Inspect opens a 440px side panel on desktop or a full-screen sheet below 768px. The URL's `service` parameter restores the panel after refresh and supports browser Back/Forward. Closing returns keyboard focus to the tile. Full metric values, activity, history, and update diagnostics live here. Date/time runs locally; specialized Glances charts/process tables and decorative widgets run only when inspected. The search utility sends the entered query to the selected supported search engine.
 
 ## Configure and arrange
 
-Sign in and choose **Manage → Arrange dashboard**. Drag the real tiles or use their move controls, including the destination-group selector. Live observations continue. **Save arrangement** commits group order, service order, and group membership in one transaction. **Cancel** discards the local draft without writing. Concurrent structural changes are rejected; a failed save preserves the draft for retry. Existing `/edit` links redirect into authenticated Arrange mode.
+Sign in and choose **Manage → Arrange dashboard**. Drag the real rows or open a row’s Arrange menu for earlier/later controls and the destination-group selector. Live observations continue. **Save arrangement** commits group order, service order, and group membership in one transaction. **Cancel** discards the local draft without writing. Concurrent structural changes are rejected; a failed save preserves the draft for retry. Existing `/edit` links redirect into authenticated Arrange mode.
 
 Service configuration is separate: **Inspect → Configure**. Identity, connection settings, and metrics remain independent of arrangement. Metric controls support Show, Hide, earlier/later movement, and optional dragging. The first four shown metrics appear on the tile; additional explicitly shown metrics appear in details and are eligible for history. New metrics stay in Unused. Existing selections and IDs are retained. Light and Dark are the only themes.
 

@@ -17,13 +17,15 @@ test.describe("Mobile Layout", () => {
       elements.map((element) => element.getBoundingClientRect().toJSON()),
     );
     expect(new Set(boxes.map((box) => box.x)).size).toBe(1);
-    expect(boxes.every((box) => box.height === 136)).toBe(true);
+    expect(boxes.every((box) => box.height === 60)).toBe(true);
   });
 
   test("header is responsive on small viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     // Title and buttons should still be visible
-    await expect(page.getByText("Labitat")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Labitat", exact: true }),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: "Manage dashboard" })).toBeVisible();
   });
 

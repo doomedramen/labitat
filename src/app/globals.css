@@ -95,6 +95,8 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
   }
 }
 
@@ -233,5 +235,18 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
   }
 }

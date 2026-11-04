@@ -63,12 +63,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-  themeColor: "#141820",
-};
+export async function generateViewport(): Promise<Viewport> {
+  const palette = await getPalette();
+  return {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+    themeColor: palette === "light" ? "#f5f7f8" : "#0c1016",
+    interactiveWidget: "resizes-content",
+  };
+}
 
 export default async function RootLayout({
   children,

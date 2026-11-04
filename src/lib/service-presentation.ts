@@ -238,12 +238,15 @@ export function getServicePresentation(
 }
 
 export function compactMetric(metric: ServiceMetric): string {
+  if (metric.numericValue !== undefined && (metric.unit === "bytes" || metric.unit === "bytes/s"))
+    return `${new Intl.NumberFormat("en", { notation: "compact", maximumSignificantDigits: 2 }).format(metric.numericValue)}${metric.unit === "bytes/s" ? "B/s" : "B"}`;
   if (metric.numericValue !== undefined && metric.unit === "percent")
     return `${new Intl.NumberFormat("en", { maximumFractionDigits: 1 }).format(metric.numericValue)}%`;
-  if (metric.numericValue === undefined || metric.unit !== "count") return metric.displayValue;
+  if (metric.numericValue === undefined || metric.unit !== "count")
+    return metric.displayValue.replace(/\s+(?=(?:[KMGTPE]i?)?B(?:\/s)?$)/, "");
   return new Intl.NumberFormat("en", {
     notation: Math.abs(metric.numericValue) >= 10000 ? "compact" : "standard",
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 1,
   }).format(metric.numericValue);
 }
 

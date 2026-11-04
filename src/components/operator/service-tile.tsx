@@ -4,6 +4,7 @@ import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { getService } from "@/lib/adapters";
 import { getServicePresentation, compactMetric } from "@/lib/service-presentation";
 import { resolveStatCardLayout, parseStatCardOrder } from "@/lib/stat-card-layout";
+import { hasMetricSlots } from "@/lib/dashboard-board";
 import { serviceHealth } from "@/lib/service-health";
 import type { ItemRow } from "@/lib/types";
 import { useItemLive } from "@/components/dashboard/use-item-live";
@@ -44,6 +45,9 @@ export const ServiceTile = memo(function ServiceTile({
     <article
       className={styles.tile}
       data-testid="item-card"
+      data-layout={hasMetricSlots(item) ? "metrics" : "launcher"}
+      data-launch={item.href && !arranging ? true : undefined}
+      data-has-reason={!!health.reason || undefined}
       data-item-id={item.id}
       data-attention={health.attention || undefined}
       data-severity={health.attention ? health.tone : undefined}
@@ -53,20 +57,27 @@ export const ServiceTile = memo(function ServiceTile({
         <span className={styles.icon} aria-hidden="true">
           <ItemIcon iconUrl={item.iconUrl} label={label} serviceIcon={service?.icon ?? null} />
         </span>
-        {item.href && !arranging ? (
-          <a
-            className={styles.serviceName}
-            href={item.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${label} (opens in a new tab)`}
-          >
-            {label}
-            <ArrowUpRight size={12} aria-hidden="true" />
-          </a>
-        ) : (
-          <h3 className={styles.serviceName}>{label}</h3>
-        )}
+        <div className={styles.identity}>
+          {item.href && !arranging ? (
+            <a
+              className={styles.serviceName}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${label} (opens in a new tab)`}
+            >
+              <span className={styles.nameText}>{label}</span>
+              <ArrowUpRight size={12} aria-hidden="true" />
+            </a>
+          ) : (
+            <h3 className={styles.serviceName}>{label}</h3>
+          )}
+          {health.reason && (
+            <p className={styles.tileReason} title={health.reason}>
+              {health.reason}
+            </p>
+          )}
+        </div>
         <span
           className={styles.healthDot}
           data-state={
@@ -91,11 +102,19 @@ export const ServiceTile = memo(function ServiceTile({
         aria-label={`Inspect ${label}`}
       >
         {metrics.length ? (
-          <span className={styles.metrics} data-count={metrics.length}>
+          <span
+            className={styles.metrics}
+            data-count={metrics.length}
+            style={{ gridTemplateColumns: `repeat(${metrics.length}, minmax(0, 1fr))` }}
+          >
             {metrics.map((metric) => (
               <span className={styles.metric} key={metric.id}>
-                <span className={styles.metricValue}>{compactMetric(metric)}</span>
-                <span className={styles.metricLabel}>{metric.label}</span>
+                <span className={styles.metricValue} title={metric.displayValue}>
+                  {compactMetric(metric)}
+                </span>
+                <span className={styles.metricLabel} title={metric.label}>
+                  {metric.label}
+                </span>
               </span>
             ))}
           </span>
@@ -114,9 +133,6 @@ export const ServiceTile = memo(function ServiceTile({
         )}
         <ChevronRight className={styles.inspectChevron} size={12} aria-hidden="true" />
       </button>
-      <p className={styles.tileReason} title={health.reason}>
-        {health.reason || "\u00a0"}
-      </p>
     </article>
   );
 });
