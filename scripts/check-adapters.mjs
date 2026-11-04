@@ -1,6 +1,12 @@
-import { registry } from "../src/lib/adapters/index";
+import { register } from "node:module";
 import fs from "fs";
 import path from "path";
+
+// Registry metadata also imports UI renderers. This CLI never renders them;
+// let Node load their styles without requiring Next's CSS pipeline. Register
+// before importing the registry so the plain CI command needs no NODE_OPTIONS.
+register("./check-adapters-css-loader.mjs", import.meta.url);
+const { registry } = await import("../src/lib/adapters/index.ts");
 
 /**
  * check-adapters — Performs deep validation of the service adapter registry.
