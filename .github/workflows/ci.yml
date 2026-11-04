@@ -88,6 +88,12 @@ jobs:
 
       - run: pnpm exec playwright install --with-deps chromium webkit
       - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
 
   app-build:
     name: App Build

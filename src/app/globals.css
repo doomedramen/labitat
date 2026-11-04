@@ -250,3 +250,11 @@
     touch-action: manipulation;
   }
 }
+
+@media (pointer: coarse) {
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="menuitemcheckbox"] {
+    min-height: 44px;
+  }
+}

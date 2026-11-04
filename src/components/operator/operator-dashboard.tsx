@@ -606,13 +606,19 @@ export function OperatorDashboard({
           setDeleteTarget({ kind: "item", id: item.id, label: item.label });
         }}
         onRestoreFocus={() => {
-          if (document.querySelector('[role="dialog"][data-state="open"]')) return;
+          // Radix defers close autofocus. A newer menu/panel interaction owns focus.
+          if (
+            document.querySelector(
+              '[role="dialog"][data-state="open"], [role="menu"][data-state="open"]',
+            )
+          )
+            return;
           const target = triggerRef.current?.isConnected
             ? triggerRef.current
             : document.querySelector<HTMLElement>(
                 `[data-details-for="${window.CSS.escape(lastSelectedId.current ?? "")}"]`,
               );
-          (target ?? searchRef.current)?.focus();
+          (target ?? searchRef.current)?.focus({ preventScroll: true });
         }}
       />
 
