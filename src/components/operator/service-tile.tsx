@@ -1,5 +1,5 @@
 "use client";
-import { memo, useMemo } from "react";
+import { memo, useMemo, type CSSProperties } from "react";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { getService } from "@/lib/adapters";
 import { getServicePresentation, compactMetric } from "@/lib/service-presentation";
@@ -105,7 +105,7 @@ export const ServiceTile = memo(function ServiceTile({
           <span
             className={styles.metrics}
             data-count={metrics.length}
-            style={{ gridTemplateColumns: `repeat(${metrics.length}, minmax(0, 1fr))` }}
+            style={{ "--metric-count": metrics.length } as CSSProperties}
           >
             {metrics.map((metric) => (
               <span className={styles.metric} key={metric.id}>

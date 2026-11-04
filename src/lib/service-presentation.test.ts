@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fullMetric, getServicePresentation } from "./service-presentation";
+import { fullMetric, getServicePresentation, compactMetric } from "./service-presentation";
 import { getService } from "./adapters";
 describe("serializable service metrics", () => {
   it("preserves IDs and values without copying JSX, icons or CSS", () => {
@@ -73,4 +73,23 @@ it("keeps native duration units without parsing display strings", () => {
     numericValue: 0.0125,
     unit: "seconds",
   });
+});
+
+it.each([
+  [0, "0B/s"],
+  [839680, "840KB/s"],
+  [13000000, "13MB/s"],
+  [1000000000, "1GB/s"],
+  [1000000000000, "1TB/s"],
+  [999000000, "1GB/s"],
+])("compacts native rate %s with byte units as %s", (value, expected) => {
+  const metric = {
+    id: "rate",
+    label: "Rate",
+    displayValue: "Full rate",
+    numericValue: value,
+    unit: "bytes/s" as const,
+  };
+  expect(compactMetric(metric)).toBe(expected);
+  expect(fullMetric(metric)).toBe(`${new Intl.NumberFormat("en").format(value)} B/s`);
 });

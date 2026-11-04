@@ -238,8 +238,17 @@ export function getServicePresentation(
 }
 
 export function compactMetric(metric: ServiceMetric): string {
-  if (metric.numericValue !== undefined && (metric.unit === "bytes" || metric.unit === "bytes/s"))
-    return `${new Intl.NumberFormat("en", { notation: "compact", maximumSignificantDigits: 2 }).format(metric.numericValue)}${metric.unit === "bytes/s" ? "B/s" : "B"}`;
+  if (metric.numericValue !== undefined && (metric.unit === "bytes" || metric.unit === "bytes/s")) {
+    const prefixes = ["", "K", "M", "G", "T", "P", "E"];
+    let value = metric.numericValue;
+    let prefix = 0;
+    // Two significant digits round 995 to 1,000; carry into the next SI unit.
+    while (Math.abs(value) >= 995 && prefix < prefixes.length - 1) {
+      value /= 1000;
+      prefix++;
+    }
+    return `${new Intl.NumberFormat("en", { maximumSignificantDigits: 2 }).format(value)}${prefixes[prefix]}${metric.unit === "bytes/s" ? "B/s" : "B"}`;
+  }
   if (metric.numericValue !== undefined && metric.unit === "percent")
     return `${new Intl.NumberFormat("en", { maximumFractionDigits: 1 }).format(metric.numericValue)}%`;
   if (metric.numericValue === undefined || metric.unit !== "count")

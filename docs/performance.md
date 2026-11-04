@@ -8,7 +8,7 @@ Next.js renders group order, launch links, labels, and cached metric values on t
 
 Tiles subscribe to their own observations through an external store. Opening a service panel does not render the other tiles again. A 100-service regression fixture checks this behavior. One shared visible clock updates freshness and pauses when the document is hidden. Specialized charts, process lists, utility animations, and historical queries mount only inside an open details panel.
 
-The 24-service, three-group browser fixture fits a 1440 × 900 viewport. Metric rows are 80px tall with a fine pointer and 96px on phones or touch screens; launcher rows use 56px and 60px respectively. Up to four metrics share one horizontal band. Whole group panels occupy two columns at 768px, three at 1200px, and four at 1720px. A single group uses the available width with multiple service columns. Structural configuration determines placement; observations cannot change row height or move panels.
+The 24-service, three-group browser fixture fits a 1440 × 900 viewport. Metric rows are 80px tall with a fine pointer and 96px on phones or touch screens; launcher rows use 56px and 60px respectively. Up to four metrics share one horizontal band; below 360px, three or four metrics use two compact rows of value/label pairs within the same 96px footprint. Whole group panels occupy two columns at 768px, three at 1200px, and four at 1720px. A single group uses the available width with multiple service columns. Structural configuration determines placement; observations cannot change row height or move panels.
 
 ## Polling and history
 

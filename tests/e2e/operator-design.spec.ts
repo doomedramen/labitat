@@ -43,7 +43,7 @@ test("mobile-first mixed service board", async ({ page }) => {
           ),
       )
       .toBe(true);
-    if (width === 390) {
+    if (width === 390 || width === 320) {
       const rates = page.getByTestId("item-card").filter({ hasText: "qBittorrent" });
       for (const value of ["13MB/s", "840KB/s"]) {
         const text = rates.getByText(value, { exact: true });
