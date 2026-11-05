@@ -27,8 +27,15 @@ export const ServiceTile = memo(function ServiceTile({
   useEffect(() => {
     if (!statusOpen) return;
     const dismiss = (event: PointerEvent) => {
-      if (event.target instanceof Node && !statusRef.current?.contains(event.target))
+      if (event.target instanceof Node && !statusRef.current?.contains(event.target)) {
+        if (
+          document.activeElement instanceof HTMLElement &&
+          statusRef.current?.contains(document.activeElement)
+        ) {
+          document.activeElement.blur();
+        }
         setStatusOpen(false);
+      }
     };
     document.addEventListener("pointerdown", dismiss);
     return () => document.removeEventListener("pointerdown", dismiss);

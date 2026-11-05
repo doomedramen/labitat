@@ -131,6 +131,9 @@ test("status reasons open on tap and dismiss without opening service details", a
     /Connection refused|Unable to reach service/,
   );
   await expect(page.getByRole("dialog")).toHaveCount(0);
+  // Some Safari/WebKit environments retain focus on tapped buttons when
+  // tapping non-focusable content; dismissal must work in that case too.
+  await status.focus();
   await page.getByRole("heading", { level: 1 }).tap();
   await expect(card.getByRole("tooltip")).toHaveCount(0);
 });

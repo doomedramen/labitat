@@ -86,8 +86,15 @@ function App() {
   useEffect(() => {
     if (!statusOpen) return;
     const dismiss = (event: PointerEvent) => {
-      if (event.target instanceof Element && !event.target.closest(".status-control"))
+      if (event.target instanceof Element && !event.target.closest(".status-control")) {
+        if (
+          document.activeElement instanceof HTMLElement &&
+          document.activeElement.closest(".status-control")
+        ) {
+          document.activeElement.blur();
+        }
         setStatusOpen(null);
+      }
     };
     document.addEventListener("pointerdown", dismiss);
     return () => document.removeEventListener("pointerdown", dismiss);
