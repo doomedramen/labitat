@@ -1,5 +1,5 @@
 import { test, expect, seedAndAuth, SEED_GROUPS } from "../fixtures";
-import { manage, configure } from "../helpers/operator";
+import { manage, configure, inspect } from "../helpers/operator";
 
 test.beforeEach(async ({ page }) => {
   await seedAndAuth(page, { groups: SEED_GROUPS });
@@ -44,10 +44,12 @@ test("adds, configures, and deletes a service through details", async ({ page })
   await expect(
     page.getByRole("link", { name: "Home (opens in a new tab)", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Inspect Home", exact: true }).click();
+  await inspect(page, "Home");
   await page.getByRole("button", { name: "Delete", exact: true }).click();
   await page.getByRole("button", { name: "Confirm", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Inspect Home", exact: true })).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "Home (opens in a new tab)", exact: true }),
+  ).toHaveCount(0);
 });
 test("selects an icon by catalog name", async ({ page }) => {
   await page

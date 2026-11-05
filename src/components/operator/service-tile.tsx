@@ -1,6 +1,6 @@
 "use client";
-import { memo, useMemo, type CSSProperties } from "react";
-import { ArrowUpRight, ChevronRight } from "lucide-react";
+import { memo, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
+import { ArrowUpRight } from "lucide-react";
 import { getService } from "@/lib/adapters";
 import { getServicePresentation, compactMetric } from "@/lib/service-presentation";
 import { resolveStatCardLayout, parseStatCardOrder } from "@/lib/stat-card-layout";
@@ -22,6 +22,18 @@ export const ServiceTile = memo(function ServiceTile({
   arranging?: boolean;
   initialNow?: number;
 }) {
+  const [statusOpen, setStatusOpen] = useState(false);
+  const statusRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!statusOpen) return;
+    const dismiss = (event: PointerEvent) => {
+      if (event.target instanceof Node && !statusRef.current?.contains(event.target))
+        setStatusOpen(false);
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, [statusOpen]);
+  const statusId = useId();
   const live = useItemLive(item.id);
   const now = useVisibleClock();
   const service = item.serviceType ? getService(item.serviceType) : null;
@@ -57,73 +69,106 @@ export const ServiceTile = memo(function ServiceTile({
       data-severity={health.attention ? health.tone : undefined}
       data-stale={health.stale || undefined}
     >
+      {item.href && !arranging && (
+        <a
+          className={styles.tileLaunch}
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${label} (opens in a new tab)`}
+        />
+      )}
       <div className={styles.tileHeader}>
         <span className={styles.icon} aria-hidden="true">
           <ItemIcon iconUrl={item.iconUrl} label={label} serviceIcon={service?.icon ?? null} />
         </span>
         <div className={styles.identity}>
-          {item.href && !arranging ? (
-            <a
-              className={styles.serviceName}
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${label} (opens in a new tab)`}
-            >
-              <span className={styles.nameText}>{label}</span>
-              <ArrowUpRight size={12} aria-hidden="true" />
-            </a>
-          ) : (
-            <h3 className={styles.serviceName}>{label}</h3>
-          )}
+          <h3 className={styles.serviceName}>
+            <span className={styles.nameText}>{label}</span>
+            {item.href && !arranging && <ArrowUpRight size={12} aria-hidden="true" />}
+          </h3>
         </div>
-        <span
-          className={styles.healthDot}
-          data-state={
-            health.attention
-              ? health.tone
-              : health.stale
-                ? "stale"
-                : health.label === "Healthy"
-                  ? "healthy"
-                  : "unknown"
-          }
-          aria-label={health.label}
-          title={health.label}
-          role="img"
-        />
-      </div>
-      <button
-        type="button"
-        data-details-for={item.id}
-        className={styles.inspect}
-        onClick={() => onDetails(item.id)}
-        aria-label={`Inspect ${label}`}
-      >
-        {metrics.length ? (
-          <span
-            className={styles.metrics}
-            data-count={metrics.length}
-            style={{ "--metric-count": metrics.length } as CSSProperties}
+        <div ref={statusRef} className={styles.statusControl} data-open={statusOpen || undefined}>
+          <button
+            type="button"
+            className={styles.statusTrigger}
+            aria-label={`Status for ${label}: ${health.label}`}
+            aria-describedby={statusId}
+            data-details-for={!metrics.length && item.href && !arranging ? item.id : undefined}
+            onClick={() => setStatusOpen((open) => !open)}
+            onBlur={(event) => {
+              if (!event.currentTarget.parentElement?.contains(event.relatedTarget))
+                setStatusOpen(false);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setStatusOpen(false);
+                event.currentTarget.blur();
+              }
+            }}
           >
-            {metrics.map((metric) => (
-              <span className={styles.metric} key={metric.id}>
-                <span className={styles.metricValue} title={metric.displayValue}>
-                  {compactMetric(metric)}
-                </span>
-                <span className={styles.metricLabel} title={metric.label}>
-                  {metric.label}
-                </span>
-              </span>
-            ))}
+            <span
+              className={styles.healthDot}
+              data-state={
+                health.attention
+                  ? health.tone
+                  : health.stale
+                    ? "stale"
+                    : health.label === "Healthy"
+                      ? "healthy"
+                      : "unknown"
+              }
+            />
+          </button>
+          <span className={styles.statusTooltip}>
+            <span id={statusId} role="tooltip">
+              {health.label}
+              {reason ? ` · ${reason}` : ""}
+              {health.attention && health.stale ? " · stale" : ""}
+            </span>
+            {!metrics.length && item.href && !arranging && (
+              <button
+                type="button"
+                className={styles.statusDetails}
+                onClick={() => {
+                  statusRef.current?.querySelector("button")?.focus();
+                  setStatusOpen(false);
+                  onDetails(item.id);
+                }}
+              >
+                Service details
+              </button>
+            )}
           </span>
-        ) : null}
-        <ChevronRight className={styles.inspectChevron} size={12} aria-hidden="true" />
-      </button>
-      {reason && (
-        <p className={styles.tileReason} title={reason}>
-          {reason}
-        </p>
+        </div>
+      </div>
+      {(metrics.length > 0 || !item.href || arranging) && (
+        <button
+          type="button"
+          data-details-for={item.id}
+          className={styles.inspect}
+          onClick={() => onDetails(item.id)}
+          aria-label={`Inspect ${label}`}
+        >
+          {metrics.length ? (
+            <span
+              className={styles.metrics}
+              data-count={metrics.length}
+              style={{ "--metric-count": metrics.length } as CSSProperties}
+            >
+              {metrics.map((metric) => (
+                <span className={styles.metric} key={metric.id}>
+                  <span className={styles.metricValue} title={metric.displayValue}>
+                    {compactMetric(metric)}
+                  </span>
+                  <span className={styles.metricLabel} title={metric.label}>
+                    {metric.label}
+                  </span>
+                </span>
+              ))}
+            </span>
+          ) : null}
+        </button>
       )}
     </article>
   );

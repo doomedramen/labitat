@@ -41,7 +41,7 @@ The in-preview board is an annotated set of original typographic studies, clearl
 ## Interactive coverage and boundaries
 
 - Search by service name, type, or group; `/` and Cmd/Ctrl+K focus search. Health/stale filters overlap honestly and preserve order.
-- Independent launch links and details buttons; native modal focus containment; Escape, browser Back, URL restoration, and focus return. Launch links open reserved synthetic `.example.test` destinations in a new tab.
+- Card-wide launch links and separate metric details buttons; status popups expose details for launcher-only services. Native modal focus containment; Escape, browser Back, URL restoration, and focus return. Launch links open reserved synthetic `.example.test` destinations in a new tab.
 - Full selected metrics in details, with first four in the overview. Settings support metric hide/show/reorder in memory. History intentionally shows an honest empty state and range controls; no fake measurements are plotted.
 - Arrange offers native pointer drag, keyboard/button order controls, cross-group selects, group ordering, empty-group drop targets, Save, Cancel, pending state, retryable failures, and conflict recovery. The fixture is reset by refresh. Native drag is supplemented by explicit move controls on touch devices.
 - All data is synthetic. No application API, database, polling, credential, history, or saved-configuration changes. Existing `ServiceMetric` and `DownloadItemData` contracts are reused through type-only imports.

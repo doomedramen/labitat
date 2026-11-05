@@ -24,9 +24,13 @@ test.describe("Touch-first Safari", () => {
       (await page.getByTestId("item-card").first().boundingBox())!.height,
     ).toBeGreaterThanOrEqual(150);
     expect(
-      (await page.getByRole("button", { name: "Inspect Tautulli", exact: true }).boundingBox())!
-        .height,
-    ).toBeGreaterThanOrEqual(44);
+      (await page.getByRole("button", { name: /Status for Tautulli/ }).boundingBox())!.height,
+    ).toBe(34);
+    expect(
+      await page
+        .getByRole("button", { name: /Status for Tautulli/ })
+        .evaluate((el) => getComputedStyle(el, "::before").inset),
+    ).toBe("-5px");
     await page.getByRole("button", { name: "Inspect Seerr", exact: true }).tap();
     const panel = page.getByRole("dialog", { name: "Seerr", exact: true });
     await expect(panel).toBeVisible();
@@ -70,7 +74,9 @@ test("landscape touch board preserves geometry and full tap targets", async ({ p
     }
   const row = page.getByTestId("item-card").first();
   expect((await row.getByRole("link").boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  expect((await row.getByRole("button").boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  expect(
+    (await row.getByRole("button", { name: /Inspect/ }).boundingBox())!.height,
+  ).toBeGreaterThanOrEqual(44);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
@@ -100,4 +106,31 @@ test("touch menus survive native trigger focus and retain normal dismissal", asy
   await page.keyboard.press("Escape");
   await expect(page.getByRole("menu")).toHaveCount(0);
   await expect(trigger).toBeFocused();
+});
+
+test("status reasons open on tap and dismiss without opening service details", async ({ page }) => {
+  await seedAndAuth(page, {
+    groups: [
+      {
+        name: "Media",
+        items: [
+          {
+            label: "Failed",
+            serviceType: "radarr",
+            cachedWidgetData: { _status: "error", _statusText: "Connection refused" },
+          },
+        ],
+      },
+    ],
+  });
+  await page.goto("/");
+  const card = page.getByTestId("item-card");
+  const status = card.getByRole("button", { name: /Status for Failed/ });
+  await status.tap();
+  await expect(card.getByRole("tooltip")).toContainText(
+    /Connection refused|Unable to reach service/,
+  );
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.getByRole("heading", { level: 1 }).tap();
+  await expect(card.getByRole("tooltip")).toHaveCount(0);
 });

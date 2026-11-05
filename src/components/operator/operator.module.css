@@ -1447,3 +1447,142 @@ a.serviceName:active {
 .serviceName svg {
   display: block;
 }
+/* A generous touch target around the status dot reveals the full reason. */
+.tile {
+  overflow: visible;
+}
+.statusControl {
+  position: relative;
+  flex: none;
+  z-index: 3;
+}
+.statusTrigger {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+}
+.statusTrigger:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.statusTrigger .healthDot {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+.statusTooltip {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 8px 24px #0003;
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.statusControl[data-open] .statusTooltip,
+.statusTrigger:focus-visible + .statusTooltip {
+  display: block;
+}
+@media (hover: hover) and (pointer: fine) {
+  .statusControl:hover .statusTooltip {
+    display: block;
+  }
+}
+.tile[data-layout="launcher"] {
+  padding-right: 80px;
+}
+.tile[data-layout="launcher"] .inspect {
+  right: 12px;
+}
+.arrangeTile .statusControl {
+  margin-right: 40px;
+}
+.arrangeTile .statusTrigger .healthDot {
+  margin: 0;
+}
+.tileLaunch {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 1;
+}
+.tileLaunch:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.tileHeader {
+  pointer-events: none;
+}
+.statusControl {
+  pointer-events: auto;
+}
+.inspect {
+  position: relative;
+  z-index: 2;
+}
+.tile[data-layout="launcher"] {
+  padding-right: 20px;
+}
+.statusTooltip {
+  pointer-events: auto;
+}
+.statusDetails {
+  display: block;
+  margin-top: 8px;
+  min-height: 36px;
+  color: var(--primary);
+  text-align: left;
+}
+.statusTooltip {
+  top: auto;
+  bottom: 100%;
+}
+.statusControl:focus-within .statusTooltip {
+  display: block;
+}
+.tile .statusTrigger .healthDot {
+  margin: 0;
+}
+.statusTrigger:hover,
+.statusTrigger:active {
+  background: transparent;
+}
+.panel {
+  right: calc(100% - 100vw);
+}
+@media (max-width: 767px) {
+  .panel {
+    width: 100vw;
+    max-width: 100vw;
+  }
+}
+/* Arrange controls must sit above the card-wide actions. */
+.arrangeTile .dragHandle,
+.arrangeTile .moveTrigger {
+  z-index: 4;
+}
+.statusTrigger {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+}
+.statusTrigger::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+}
+.inspect {
+  border-radius: 0 0 16px 16px;
+}

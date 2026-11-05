@@ -100,18 +100,20 @@ test("launch and inspect are independent, history loads only in the open 440px p
   await expect(card.getByRole("link")).toHaveAttribute("href", "https://host-0-0.test");
   expect(await card.locator("a button, button a").count()).toBe(0);
   const before = await card.boundingBox();
-  await card.getByRole("button").focus();
+  await card.getByRole("button", { name: "Inspect Host 1" }).focus();
   await page.keyboard.press("Enter");
   const panel = page.getByRole("dialog", { name: "Host 1", exact: true });
   await expect(panel).toBeVisible();
-  expect((await panel.boundingBox())!.width).toBe(440);
+  const panelBounds = (await panel.boundingBox())!;
+  expect(panelBounds.width).toBe(440);
+  expect(panelBounds.x + panelBounds.width).toBe(await page.evaluate(() => innerWidth));
   expect(await card.boundingBox()).toEqual(before);
   await expect.poll(() => history).toBe(1);
   await page.getByRole("combobox", { name: "History range" }).selectOption("24h");
   await expect.poll(() => history).toBe(2);
   await page.keyboard.press("Escape");
   await expect(panel).toHaveCount(0);
-  await expect(card.getByRole("button")).toBeFocused();
+  await expect(card.getByRole("button", { name: "Inspect Host 1" })).toBeFocused();
 });
 test("long names, large values, missing data, and empty groups stay usable", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
@@ -134,12 +136,11 @@ test("long names, large values, missing data, and empty groups stay usable", asy
   await page.goto("/");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect(page.getByText("12.5M", { exact: true })).toBeVisible();
-  await expect(
-    page
-      .getByTestId("item-card")
-      .last()
-      .getByText(/Data unavailable|Unable to reach service/),
-  ).toBeVisible();
+  const missing = page.getByTestId("item-card").last();
+  await missing.getByRole("button", { name: /Status for Missing/ }).focus();
+  await expect(missing.getByRole("tooltip")).toContainText(
+    /Data unavailable|Unable to reach service/,
+  );
   await expect(page.getByRole("heading", { name: "Empty", exact: true })).toBeVisible();
 });
 test("local date/time and search use working detail capabilities", async ({ page }) => {

@@ -82,6 +82,16 @@ function App() {
   const [references, setReferences] = useState(false);
   const [range, setRange] = useState("1h");
   const [dragged, setDragged] = useState<string | null>(null);
+  const [statusOpen, setStatusOpen] = useState<string | null>(null);
+  useEffect(() => {
+    if (!statusOpen) return;
+    const dismiss = (event: PointerEvent) => {
+      if (event.target instanceof Element && !event.target.closest(".status-control"))
+        setStatusOpen(null);
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, [statusOpen]);
   const dialog = useRef<HTMLDialogElement>(null);
   const search = useRef<HTMLInputElement>(null);
   const trigger = useRef<HTMLElement | null>(null);
@@ -631,45 +641,78 @@ function App() {
                             drop(group, item.id);
                           }}
                         >
-                          <div className="service-identity">
-                            <Icon service={item} />
+                          {!draft && (
                             <a
+                              className="service-launch"
                               href={item.href}
                               target="_blank"
                               rel="noreferrer"
-                              title={`${displayName(item)} — opens in a new tab`}
-                            >
+                              aria-label={`${displayName(item)} (opens in a new tab)`}
+                            />
+                          )}
+                          <div className="service-identity">
+                            <Icon service={item} />
+                            <span className="service-name">
                               <span>{displayName(item)}</span>
                               <ArrowUpRight size={12} />
-                            </a>
-                            <span
-                              className="health"
-                              title={
-                                item.reason ?? (isStale(item) ? "Stale observation" : "Healthy")
-                              }
-                            >
-                              <i
-                                data-state={
-                                  item.health !== "healthy"
-                                    ? item.health
-                                    : isStale(item)
-                                      ? "stale"
-                                      : "healthy"
-                                }
-                              />
-                              <span className="sr-only">
-                                {item.reason ?? (isStale(item) ? "Stale" : "Healthy")}
-                              </span>
                             </span>
-                            {!metrics(item).length && (
+                            <div
+                              className="status-control"
+                              data-open={statusOpen === item.id || undefined}
+                            >
                               <button
-                                className="launcher-details icon-button"
-                                aria-label={`Details for ${item.name}`}
-                                onClick={(e) => open(item.id, e.currentTarget)}
+                                className="status-trigger"
+                                aria-label={`Status for ${item.name}: ${item.health === "healthy" ? (isStale(item) ? "Stale" : "Healthy") : "Needs attention"}`}
+                                aria-describedby={`status-${item.id}`}
+                                onClick={() =>
+                                  setStatusOpen(statusOpen === item.id ? null : item.id)
+                                }
+                                onBlur={(event) => {
+                                  if (
+                                    !event.currentTarget.parentElement?.contains(
+                                      event.relatedTarget,
+                                    )
+                                  )
+                                    setStatusOpen(null);
+                                }}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Escape") {
+                                    setStatusOpen(null);
+                                    event.currentTarget.blur();
+                                  }
+                                }}
                               >
-                                <ChevronRight size={18} />
+                                <i
+                                  data-state={
+                                    item.health !== "healthy"
+                                      ? item.health
+                                      : isStale(item)
+                                        ? "stale"
+                                        : "healthy"
+                                  }
+                                />
                               </button>
-                            )}
+                              <span className="status-tooltip">
+                                <span id={`status-${item.id}`} role="tooltip">
+                                  {item.reason ?? (isStale(item) ? "Stale observation" : "Healthy")}
+                                  {item.reason && isStale(item) ? " · stale" : ""}
+                                </span>
+                                {!metrics(item).length && (
+                                  <button
+                                    className="status-details"
+                                    onClick={(event) => {
+                                      const trigger =
+                                        event.currentTarget.parentElement?.previousElementSibling;
+                                      if (trigger instanceof HTMLElement) trigger.focus();
+                                      setStatusOpen(null);
+                                      open(item.id, document.activeElement as HTMLElement);
+                                    }}
+                                  >
+                                    Service details
+                                  </button>
+                                )}
+                              </span>
+                            </div>
                           </div>
                           {metrics(item).length > 0 && (
                             <button
@@ -701,16 +744,6 @@ function App() {
                               <ChevronRight size={14} className="detail-chevron" />
                             </button>
                           )}
-                          <div className="service-reason">
-                            {item.reason ? (
-                              <>
-                                <span>{item.reason}</span>
-                                {isStale(item) && <span> · stale</span>}
-                              </>
-                            ) : isStale(item) ? (
-                              "Last observed 12m ago"
-                            ) : null}
-                          </div>
                           {draft && (
                             <div className="tile-arrange">
                               <button

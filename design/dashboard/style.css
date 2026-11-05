@@ -1630,3 +1630,141 @@ select {
   color: var(--muted);
   margin-right: -10px;
 }
+.service {
+  overflow: visible;
+}
+.status-control {
+  position: relative;
+  flex: none;
+  z-index: 3;
+}
+.status-trigger {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+.status-trigger i[data-state] {
+  width: 14px;
+  height: 14px;
+}
+.status-tooltip {
+  display: none;
+  position: absolute;
+  top: auto;
+  bottom: 100%;
+  right: 0;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--raised);
+  color: var(--text);
+  box-shadow: 0 8px 24px #0003;
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.status-control[data-open] .status-tooltip,
+.status-trigger:focus-visible + .status-tooltip {
+  display: block;
+}
+@media (hover: hover) and (pointer: fine) {
+  .status-control:hover .status-tooltip {
+    display: block;
+  }
+}
+
+.status-control:focus-within .status-tooltip {
+  display: block;
+}
+@media (hover: hover) and (pointer: fine) {
+  button.status-trigger:hover {
+    background: transparent;
+  }
+}
+.status-trigger:active {
+  background: transparent;
+}
+html {
+  scrollbar-gutter: stable;
+}
+.service-launch {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 1;
+}
+.service-launch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.service-identity {
+  pointer-events: none;
+}
+.service-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 0;
+  flex: 1;
+  min-height: 44px;
+}
+.service-name > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.service-name svg {
+  color: var(--muted);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.status-control {
+  pointer-events: auto;
+}
+.service-details {
+  z-index: 2;
+}
+.status-details {
+  display: block;
+  margin-top: 8px;
+  color: var(--accent);
+}
+@media (max-width: 639px) {
+  .service-name {
+    font-size: 14px;
+  }
+}
+/* The panel reaches the physical edge while the page keeps its scrollbar gutter. */
+.detail-panel {
+  right: calc(100% - 100vw);
+}
+@media (max-width: 639px) {
+  .detail-panel {
+    width: 100vw;
+    max-width: 100vw;
+  }
+}
+.metric-unit {
+  display: inline;
+  margin: 0 0 0 3px;
+  white-space: nowrap;
+}
+/* Match the icon's visible control bounds while retaining a 44px hit area. */
+.status-trigger {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+}
+.status-trigger::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+}
+.service-details {
+  border-radius: 0 0 var(--radius) var(--radius);
+}

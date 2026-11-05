@@ -35,7 +35,9 @@ for (const direction of ["precision", "slate"]) {
       }
       await page.setViewportSize({ width: 390, height: 844 });
       const undersized = await page
-        .locator("button:visible, select:visible, summary:visible, .service a:visible")
+        .locator(
+          "button:not(.status-trigger):visible, select:visible, summary:visible, .service a:visible",
+        )
         .evaluateAll((elements) =>
           elements
             .filter((el) => {
@@ -70,9 +72,9 @@ for (const direction of ["precision", "slate"]) {
     await page.getByRole("textbox", { name: "Find a service" }).fill("proxmox");
     await expect(page.locator(".service")).toHaveCount(4);
     await page.getByRole("button", { name: "Clear search" }).click();
-    await page.getByRole("button", { name: "Needs attention" }).click();
+    await page.getByRole("button", { name: "Needs attention 4", exact: true }).click();
     await expect(page.locator(".service")).toHaveCount(4);
-    await page.getByRole("button", { name: "Stale", exact: false }).click();
+    await page.getByRole("button", { name: "Stale 3", exact: true }).click();
     await expect(page.locator(".service")).toHaveCount(3);
     await page.getByRole("button", { name: "All 34", exact: true }).click();
     await page.getByRole("combobox", { name: "Filter by group" }).selectOption("Media");
@@ -170,7 +172,7 @@ test("metric controls, keyboard tabs, drag, empty group, and independent launch"
     route.fulfill({ body: "Synthetic launch destination" }),
   );
   const popupPromise = page.waitForEvent("popup");
-  await page.locator('[data-id="plex"] .service-identity a').click();
+  await page.locator('[data-id="plex"] .service-launch').click({ position: { x: 10, y: 10 } });
   const popup = await popupPromise;
   await expect(popup).toHaveURL("https://plex.example.test/");
   await popup.close();

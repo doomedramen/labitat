@@ -140,7 +140,8 @@ test("shows the age of successful data after a newer failed update and opens det
   );
   await page.reload();
   const card = page.getByTestId("item-card");
-  await expect(card.getByText("Upstream unavailable", { exact: true })).toBeVisible();
+  await card.getByRole("button", { name: /Status for Radarr/ }).focus();
+  await expect(card.getByRole("tooltip")).toContainText("Upstream unavailable");
   await expect(card).toHaveAttribute("data-stale", "true");
   await expect(card.getByText("Movies", { exact: true })).toBeVisible();
   const inspect = card.getByRole("button", { name: "Inspect Radarr" });

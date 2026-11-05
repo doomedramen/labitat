@@ -72,7 +72,9 @@ test.describe("Widget Rendering", () => {
 
     // An error status dot should appear with an accessible error label
     const radarrCard = page.getByTestId("item-card").filter({ hasText: "Radarr" });
-    const statusDot = radarrCard.getByRole("img", { name: "Needs attention" });
+    const statusDot = radarrCard.getByRole("button", {
+      name: /Status for Radarr: Needs attention/,
+    });
     await expect(statusDot).toBeVisible({ timeout: 15_000 });
     await expect(statusDot).toHaveAttribute("aria-label", /Needs attention/i);
   });
@@ -183,7 +185,7 @@ test.describe("Widget Rendering", () => {
     await expect(page.getByText("Queued")).not.toBeVisible();
 
     // Should be a clickable link
-    const link = page.locator("a", { hasText: "My Link" });
+    const link = page.getByRole("link", { name: /My Link/ });
     await expect(link).toBeVisible();
   });
 
@@ -204,7 +206,7 @@ test.describe("Widget Rendering", () => {
     });
     await page.goto("/edit");
     await expect(page.getByText("Movies", { exact: true })).toBeVisible();
-    await expect(page.getByRole("img", { name: "Healthy" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Status for Radarr: Healthy" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Save arrangement" })).toBeVisible();
   });
 });

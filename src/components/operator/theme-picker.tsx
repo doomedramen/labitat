@@ -28,7 +28,7 @@ export function ThemePicker() {
   return mobile ? (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="w-[calc(100%-2rem)] max-w-none">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-none">
         <DialogHeader>
           <DialogTitle>Choose a theme</DialogTitle>
           <DialogDescription>Applied instantly and saved on this device.</DialogDescription>
