@@ -60,6 +60,11 @@ test("24 services use aligned rows in both themes; mobile and 200% zoom reflow",
   expect(box.x).toBe(0);
   expect(box.y).toBe(0);
   expect(box.width).toBe(320);
+  expect(
+    await page.evaluate(
+      () => !!document.elementFromPoint(innerWidth - 1, 100)?.closest('[role="dialog"]'),
+    ),
+  ).toBe(true);
   await expect(sheet.getByRole("combobox", { name: "History range" })).toBeVisible();
   await expect(sheet.getByText("Loading history…", { exact: true })).toBeHidden();
   await page.screenshot({ path: "test-results/operator-mobile-details.png", fullPage: false });
@@ -104,6 +109,8 @@ test("launch and inspect are independent, history loads only in the open 440px p
   await page.keyboard.press("Enter");
   const panel = page.getByRole("dialog", { name: "Host 1", exact: true });
   await expect(panel).toBeVisible();
+  await expect(panel.getByRole("heading", { name: "Selected metrics" })).toBeVisible();
+  await expect(panel.getByRole("heading", { name: "Connection diagnostics" })).toBeVisible();
   const panelBounds = (await panel.boundingBox())!;
   expect(panelBounds.width).toBe(440);
   expect(panelBounds.x + panelBounds.width).toBe(await page.evaluate(() => innerWidth));

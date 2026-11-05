@@ -1740,7 +1740,7 @@ html {
 }
 /* The panel reaches the physical edge while the page keeps its scrollbar gutter. */
 .detail-panel {
-  right: calc(100% - 100vw);
+  right: 0;
 }
 @media (max-width: 639px) {
   .detail-panel {
@@ -1767,4 +1767,13 @@ html {
 }
 .service-details {
   border-radius: 0 0 var(--radius) var(--radius);
+}
+
+@supports selector(html:has(.detail-panel[open])) {
+  html:has(.detail-panel[open]) {
+    scrollbar-gutter: auto;
+  }
+  html:has(.detail-panel[open]) body {
+    width: calc(100% - var(--preview-scrollbar-gutter, 0px));
+  }
 }

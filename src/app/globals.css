@@ -268,3 +268,13 @@
     margin-right: 0 !important;
   }
 }
+/* Free the viewport edge for the open service sheet; keep the underlying page
+   at its measured width so opening the sheet does not move the dashboard. */
+@supports selector(html:has([data-operator-panel])) {
+  html:has([data-operator-panel][data-state="open"]) {
+    scrollbar-gutter: auto;
+  }
+  html:has([data-operator-panel][data-state="open"]) body {
+    width: calc(100% - var(--operator-scrollbar-gutter, 0px));
+  }
+}

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { getService } from "@/lib/adapters";
 import { fullMetric, getServicePresentation } from "@/lib/service-presentation";
@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { DownloadList } from "@/components/widgets/download/download-list";
 import { ActiveStreamList } from "@/components/widgets/active-stream/active-stream-list";
 import { LocalClock } from "./local-clock";
+import { ItemIcon } from "@/components/dashboard/item/item-icon";
 import { serviceHealth } from "@/lib/service-health";
 import styles from "./operator.module.css";
 const HistoryPanel = dynamic(() => import("./history-panel"), {
@@ -40,6 +41,22 @@ export function ServiceDetails({
   canConfigure: boolean;
   onRestoreFocus: () => void;
 }) {
+  useEffect(() => {
+    const root = document.documentElement;
+    const measure = () => {
+      if (document.querySelector('[data-operator-panel][data-state="open"]')) return;
+      root.style.setProperty(
+        "--operator-scrollbar-gutter",
+        `${Math.max(0, window.innerWidth - root.getBoundingClientRect().width)}px`,
+      );
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+      root.style.removeProperty("--operator-scrollbar-gutter");
+    };
+  }, []);
   return (
     <Dialog
       open={!!item}
@@ -49,6 +66,7 @@ export function ServiceDetails({
     >
       <DialogContent
         presentation="panel"
+        data-operator-panel=""
         className={styles.panel}
         onCloseAutoFocus={(event) => {
           event.preventDefault();
@@ -110,14 +128,35 @@ function DetailsContent({
   const age = (timestamp: number | null | undefined) =>
     timestamp != null && now != null ? formatAgeVerbose(Math.max(0, now - timestamp)) : "Unknown";
   return (
-    <div className="space-y-6">
-      <DialogHeader className="pr-9">
-        <DialogTitle>{item.label}</DialogTitle>
-        <DialogDescription>
-          {service?.name ?? "Service link"} · {health.label}
-        </DialogDescription>
+    <div className={styles.detailContent}>
+      <DialogHeader className={styles.detailIdentity}>
+        <ItemIcon
+          iconUrl={item.iconUrl}
+          label={item.label}
+          serviceIcon={service?.icon ?? null}
+          size="lg"
+        />
+        <div>
+          <DialogTitle className={styles.detailTitle}>{item.label}</DialogTitle>
+          <DialogDescription className={styles.detailDescription}>
+            <span
+              className={styles.detailHealthDot}
+              data-state={
+                health.attention
+                  ? health.tone
+                  : health.stale
+                    ? "stale"
+                    : health.label === "Healthy"
+                      ? "healthy"
+                      : "unknown"
+              }
+              aria-hidden="true"
+            />
+            {health.label} · {service?.name ?? "Service link"}
+          </DialogDescription>
+        </div>
       </DialogHeader>
-      <div className="flex flex-wrap gap-2">
+      <div className={styles.detailActions}>
         {item.href && (
           <Button asChild variant="outline">
             <a href={item.href} target="_blank" rel="noopener noreferrer">
@@ -142,14 +181,19 @@ function DetailsContent({
         </p>
       )}
       {!!metrics.length && (
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-5">
-          {metrics.map((metric) => (
-            <div className="min-w-0" key={metric.id}>
-              <dt className="mb-1 text-xs text-muted-foreground">{metric.label}</dt>
-              <dd className="break-words text-xl font-medium tabular-nums">{fullMetric(metric)}</dd>
-            </div>
-          ))}
-        </dl>
+        <section aria-labelledby="selected-metrics-heading">
+          <h3 id="selected-metrics-heading" className={styles.detailSectionTitle}>
+            Selected metrics
+          </h3>
+          <dl className={styles.detailMetrics}>
+            {metrics.map((metric) => (
+              <div key={metric.id}>
+                <dt>{metric.label}</dt>
+                <dd>{fullMetric(metric)}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       )}
       {presentation.detailKind === "clock" ? (
         <LocalClock itemId={item.id} />
@@ -182,7 +226,7 @@ function DetailsContent({
         <HistoryPanel itemId={item.id} metrics={metrics} />
       )}
       <section className="space-y-3 border-t border-border pt-4">
-        <h3 className="text-sm font-medium">Connection</h3>
+        <h3 className="text-sm font-medium">Connection diagnostics</h3>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-xs">
           <dt className="text-muted-foreground">Last successful update</dt>
           <dd>{age(live?.lastSuccessAt)}</dd>

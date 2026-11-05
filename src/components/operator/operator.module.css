@@ -1559,7 +1559,7 @@ a.serviceName:active {
   background: transparent;
 }
 .panel {
-  right: calc(100% - 100vw);
+  right: 0;
 }
 @media (max-width: 767px) {
   .panel {
@@ -1585,4 +1585,88 @@ a.serviceName:active {
 }
 .inspect {
   border-radius: 0 0 16px 16px;
+}
+/* Details use the same layered surfaces and readable measurements as the overview. */
+.detailContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.detailIdentity {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding-right: 44px;
+  min-width: 0;
+  text-align: left;
+}
+.detailIdentity > div:last-child {
+  min-width: 0;
+}
+.detailTitle {
+  overflow-wrap: anywhere;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+}
+.detailDescription {
+  margin-top: 6px;
+  font-size: 13px;
+}
+.detailActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.detailActions > * {
+  min-height: 44px;
+}
+.detailSectionTitle {
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.detailMetrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.detailMetrics > div {
+  min-width: 0;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--muted);
+}
+.detailMetrics dt {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 18px;
+}
+.detailMetrics dd {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.detailHealthDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--muted-foreground);
+  vertical-align: middle;
+}
+.detailHealthDot[data-state="healthy"] {
+  background: var(--success);
+}
+.detailHealthDot[data-state="warning"],
+.detailHealthDot[data-state="stale"] {
+  background: var(--warning);
+}
+.detailHealthDot[data-state="error"] {
+  background: var(--destructive);
 }

@@ -102,6 +102,22 @@ function App() {
   const dialog = useRef<HTMLDialogElement>(null);
   const search = useRef<HTMLInputElement>(null);
   const trigger = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const root = document.documentElement;
+    const measure = () => {
+      if (dialog.current?.open) return;
+      root.style.setProperty(
+        "--preview-scrollbar-gutter",
+        `${Math.max(0, window.innerWidth - root.getBoundingClientRect().width)}px`,
+      );
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+      root.style.removeProperty("--preview-scrollbar-gutter");
+    };
+  }, []);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = draft ?? items;
   const activeGroups = draftGroups ?? groups;
