@@ -72,8 +72,10 @@ it("shows available activity with its source, expands bounded results and opens 
   render(<LiveActivity items={items} initialNow={state.now} onDetails={open} />);
   expect(await screen.findByText("Download 0")).toBeVisible();
   expect(screen.queryByText("Download 3")).toBeNull();
-  expect(screen.getByText(/Plex · Alex · paused · 1:00 \/ 2:00/)).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "Show 2 more" }));
+  expect(screen.getByText(/Plex · 1:00 \/ 2:00/)).toBeVisible();
+  expect(screen.getByText("Alex")).toBeVisible();
+  expect(screen.getByText("paused")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Show 3 more" }));
   expect(screen.getByText("Download 4")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "Inspect Plex: A film" }));
   expect(open).toHaveBeenCalledWith("Plex");

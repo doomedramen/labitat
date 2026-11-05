@@ -44,7 +44,10 @@
     "knip": "knip",
     "deps:update": "taze -i",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "design:dev": "vite --config design/dashboard/vite.config.ts",
+    "design:test": "playwright test --config design/dashboard/playwright.config.ts",
+    "design:build": "vite build --config design/dashboard/vite.config.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -48,3 +48,8 @@ homepage/
 *storybook.log
 storybook-static
 /logo_tests
+
+# Isolated dashboard design preview artifacts
+.design-preview/
+design/dashboard/test-results/
+design/dashboard/playwright-report/

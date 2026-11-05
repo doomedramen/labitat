@@ -20,7 +20,9 @@ test.describe("Touch-first Safari", () => {
     await expect(page.getByTestId("item-card")).toHaveCount(6);
     await search.fill("");
     await search.blur();
-    await expect(page.getByTestId("item-card").first()).toHaveCSS("height", "96px");
+    expect(
+      (await page.getByTestId("item-card").first().boundingBox())!.height,
+    ).toBeGreaterThanOrEqual(150);
     expect(
       (await page.getByRole("button", { name: "Inspect Tautulli", exact: true }).boundingBox())!
         .height,

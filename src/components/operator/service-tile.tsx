@@ -4,7 +4,6 @@ import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { getService } from "@/lib/adapters";
 import { getServicePresentation, compactMetric } from "@/lib/service-presentation";
 import { resolveStatCardLayout, parseStatCardOrder } from "@/lib/stat-card-layout";
-import { hasMetricSlots } from "@/lib/dashboard-board";
 import { serviceHealth } from "@/lib/service-health";
 import type { ItemRow } from "@/lib/types";
 import { useItemLive } from "@/components/dashboard/use-item-live";
@@ -41,13 +40,18 @@ export const ServiceTile = memo(function ServiceTile({
     [presentation, item.statCardOrder],
   );
   const label = item.label || service?.name || "Service";
+  const reason =
+    health.reason ||
+    (presentation.unavailable && item.serviceType && presentation.detailKind === "standard"
+      ? "Data unavailable"
+      : null);
   return (
     <article
       className={styles.tile}
       data-testid="item-card"
-      data-layout={hasMetricSlots(item) ? "metrics" : "launcher"}
+      data-layout={metrics.length ? "metrics" : "launcher"}
       data-launch={item.href && !arranging ? true : undefined}
-      data-has-reason={!!health.reason || undefined}
+      data-has-reason={!!reason || undefined}
       data-item-id={item.id}
       data-attention={health.attention || undefined}
       data-severity={health.attention ? health.tone : undefined}
@@ -71,11 +75,6 @@ export const ServiceTile = memo(function ServiceTile({
             </a>
           ) : (
             <h3 className={styles.serviceName}>{label}</h3>
-          )}
-          {health.reason && (
-            <p className={styles.tileReason} title={health.reason}>
-              {health.reason}
-            </p>
           )}
         </div>
         <span
@@ -118,21 +117,14 @@ export const ServiceTile = memo(function ServiceTile({
               </span>
             ))}
           </span>
-        ) : (
-          <span className={styles.emptyMetric}>
-            {presentation.detailKind === "clock"
-              ? "Local date & time"
-              : presentation.detailKind === "search"
-                ? "Search the web"
-                : presentation.detailKind === "visual"
-                  ? "Open visual"
-                  : presentation.unavailable && item.serviceType
-                    ? "Data unavailable"
-                    : "Service details"}
-          </span>
-        )}
+        ) : null}
         <ChevronRight className={styles.inspectChevron} size={12} aria-hidden="true" />
       </button>
+      {reason && (
+        <p className={styles.tileReason} title={reason}>
+          {reason}
+        </p>
+      )}
     </article>
   );
 });

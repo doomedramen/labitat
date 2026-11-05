@@ -99,7 +99,6 @@ export const LiveActivity = memo(function LiveActivity({
       ))}
       <div className={styles.sectionHeading}>
         <div>
-          <p className={styles.sectionEyebrow}>YOUR LAB, RIGHT NOW</p>
           <h2 id="live-activity-heading">Live activity</h2>
         </div>
       </div>
@@ -135,24 +134,27 @@ export const LiveActivity = memo(function LiveActivity({
                           : "No activity to show"}
                   </p>
                 </div>
-                {entries.length > 3 && (
+                {entries.length > 2 && (
                   <button
                     type="button"
                     className={styles.activityToggle}
                     onClick={() => setExpanded((v) => ({ ...v, [kind]: !v[kind] }))}
                   >
-                    {expanded[kind] ? "Show less" : `Show ${entries.length - 3} more`}
+                    {expanded[kind] ? "Show less" : `Show ${entries.length - 2} more`}
                   </button>
                 )}
               </header>
               <div className={styles.activityList}>
-                {(expanded[kind] ? entries : entries.slice(0, 3)).map(({ item, entry, index }) => {
+                {(expanded[kind] ? entries : entries.slice(0, 2)).map(({ item, entry, index }) => {
                   const progress = entry.progress;
                   const isStream = !isDownloads;
                   const stream = isStream ? (entry as ActiveStream) : null;
                   const download = isDownloads ? (entry as DownloadItemData) : null;
                   const percent =
-                    stream && Number.isFinite(stream.duration) && stream.duration > 0
+                    stream &&
+                    Number.isFinite(stream.progress) &&
+                    Number.isFinite(stream.duration) &&
+                    stream.duration > 0
                       ? Math.max(0, Math.min(100, (stream.progress / stream.duration) * 100))
                       : download && typeof progress === "number" && Number.isFinite(progress)
                         ? Math.max(0, Math.min(100, progress))
@@ -167,22 +169,26 @@ export const LiveActivity = memo(function LiveActivity({
                     >
                       <span className={styles.activityEntryHead}>
                         <strong>{entry.title}</strong>
+                        {(download?.speed || stream?.state) && (
+                          <span className={styles.activityRate}>
+                            {download?.speed || stream?.state}
+                          </span>
+                        )}
                         <ChevronRight size={15} />
                       </span>
-                      <span className={styles.activityMeta}>
-                        {item.label}
-                        {stream?.user ? ` · ${stream.user}` : ""}
-                        {download?.activity
-                          ? ` · ${download.activity}`
-                          : stream?.state
-                            ? ` · ${stream.state}`
-                            : ""}
-                        {download?.speed ? ` · ${download.speed}` : ""}
-                        {download?.timeLeft ? ` · ${download.timeLeft} left` : ""}
-                        {stream && stream.duration > 0
-                          ? ` · ${time(stream.progress)} / ${time(stream.duration)}`
-                          : ""}
-                      </span>
+                      {(entry.subtitle ||
+                        stream?.episode ||
+                        stream?.user ||
+                        download?.timeLeft) && (
+                        <span className={styles.activityMeta}>
+                          <span>
+                            {[entry.subtitle, stream?.episode].filter(Boolean).join(" · ")}
+                          </span>
+                          <span>
+                            {download?.timeLeft ? `${download.timeLeft} left` : stream?.user}
+                          </span>
+                        </span>
+                      )}
                       {percent !== null && (
                         <span
                           className={styles.activityProgress}
@@ -195,6 +201,20 @@ export const LiveActivity = memo(function LiveActivity({
                           <span style={{ width: `${percent}%` }} />
                         </span>
                       )}
+                      <span className={styles.activityFoot}>
+                        <span>
+                          {item.label}
+                          {download?.size ? ` · ${download.size}` : ""}
+                          {stream &&
+                          Number.isFinite(stream.progress) &&
+                          Number.isFinite(stream.duration) &&
+                          stream.duration > 0
+                            ? ` · ${time(stream.progress)} / ${time(stream.duration)}`
+                            : ""}
+                          {download?.activity ? ` · ${download.activity}` : ""}
+                        </span>
+                        {percent !== null && <span>{Math.round(percent)}%</span>}
+                      </span>
                     </button>
                   );
                 })}

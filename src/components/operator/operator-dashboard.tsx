@@ -157,15 +157,38 @@ export function OperatorDashboard({
       ),
     ),
   );
-  const reportHealth = useCallback(
-    (id: string, next: HealthSummary) =>
-      setHealth((previous) =>
-        previous[id]?.attention === next.attention && previous[id]?.stale === next.stale
-          ? previous
-          : { ...previous, [id]: next },
-      ),
+  const pendingHealth = useRef(new Map<string, HealthSummary>());
+  const healthFlush = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (healthFlush.current) clearTimeout(healthFlush.current);
+      healthFlush.current = null;
+      pendingHealth.current.clear();
+    },
     [],
   );
+  const reportHealth = useCallback((id: string, next: HealthSummary) => {
+    pendingHealth.current.set(id, next);
+    if (healthFlush.current) return;
+    healthFlush.current = setTimeout(() => {
+      healthFlush.current = null;
+      const pending = new Map(pendingHealth.current);
+      pendingHealth.current.clear();
+      setHealth((previous) => {
+        let result = previous;
+        for (const [itemId, value] of pending) {
+          if (
+            previous[itemId]?.attention === value.attention &&
+            previous[itemId]?.stale === value.stale
+          )
+            continue;
+          if (result === previous) result = { ...previous };
+          result[itemId] = value;
+        }
+        return result;
+      });
+    }, 0);
+  }, []);
   const searchRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const [itemEditor, setItemEditor] = useState<{
@@ -455,7 +478,6 @@ export function OperatorDashboard({
       </header>
       <div className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>YOUR WORKSPACE</p>
           <h1 className={styles.heading}>{title}</h1>
           <p className={styles.subtitle}>
             <span>{items.length}</span> services <span className={styles.subtitleDivider}>/</span>{" "}

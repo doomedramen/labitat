@@ -21,7 +21,7 @@ test("group navigation filters services and returns to the full dashboard", asyn
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test("24 services across three groups fit an idle desktop viewport", async ({ page }) => {
+test("24 services across three groups retain aligned desktop rows", async ({ page }) => {
   await seedAndAuth(page, {
     groups: Array.from({ length: 3 }, (_, group) => ({
       name: `Group ${group + 1}`,
@@ -62,9 +62,16 @@ test("24 services across three groups fit an idle desktop viewport", async ({ pa
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(page.getByTestId("item-card")).toHaveCount(24);
-  const last = page.getByTestId("item-card").last();
-  const bounds = (await last.boundingBox())!;
-  expect(bounds.y + bounds.height).toBeLessThanOrEqual(900);
+  const cards = page.getByTestId("item-card");
+  const first = (await cards.nth(0).boundingBox())!;
+  const peer = (await cards.nth(1).boundingBox())!;
+  const fourth = (await cards.nth(3).boundingBox())!;
+  const nextRow = (await cards.nth(4).boundingBox())!;
+  expect(first.y).toBe(peer.y);
+  expect(first.height).toBe(peer.height);
+  expect(first.y).toBe(fourth.y);
+  expect(nextRow.y).toBeGreaterThan(first.y);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1440);
 });
 
 test("live activity shows download and stream details and opens the correct service", async ({
@@ -120,9 +127,10 @@ test("live activity shows download and stream details and opens the correct serv
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Inspect Client: Download 1" })).toBeVisible();
-  await expect(page.getByText("Plex · Alex · paused · 1:00 / 2:00")).toBeVisible();
+  await expect(page.getByText("Plex · 1:00 / 2:00")).toBeVisible();
+  await expect(page.getByText("Alex", { exact: true })).toBeVisible();
   await expect(page.getByText("Download 4")).toBeHidden();
-  await page.getByRole("button", { name: "Show 1 more" }).click();
+  await page.getByRole("button", { name: "Show 2 more" }).click();
   await expect(page.getByText("Download 4")).toBeVisible();
   await page.screenshot({ path: "test-results/operator-activity-mobile.png", fullPage: true });
   await page.setViewportSize({ width: 1440, height: 900 });

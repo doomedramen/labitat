@@ -1,8 +1,8 @@
 # Operator dashboard
 
-The overview presents services in compact group panels. Phones use one vertical list; wider screens use two, three, or four service columns inside each panel. Saved reading order stays stable, and live data never moves panels. Services show up to four selected metrics, a launch link on the service name, and a separate **Inspect** button over the metrics. Failed, warning, and stale observations have a visible reason. Missing observations show **Data unavailable** rather than invented zeroes.
+The overview presents services in service cards grouped by category. Phones use one vertical list; wider screens use two, three, or four service columns in each group. Saved reading order stays stable, and live data never moves panels. Services show up to four selected metrics, a launch link on the service name, and a separate **Inspect** button over the metrics. Failed, warning, and stale observations have a visible reason. Missing observations show **Data unavailable** rather than invented zeroes.
 
-**Live activity** shows available downloads and streams above the groups, with their source service and any supplied progress, playback state, speed, or remaining time. The preview shows up to three entries per list; expand it to see the rest of the available observations. Some services limit the number of entries they supply. Activity respects each service's display settings, and stale or failed sources are identified rather than presented as current activity. Select an activity entry to inspect its source.
+**Live activity** shows available downloads and streams above the groups, with their source service and any supplied progress, playback state, speed, or remaining time. The preview shows up to two entries per list; expand it to see the rest of the available observations. Some services limit the number of entries they supply. Activity respects each service's display settings, and stale or failed sources are identified rather than presented as current activity. Select an activity entry to inspect its source.
 
 ## Find and inspect
 

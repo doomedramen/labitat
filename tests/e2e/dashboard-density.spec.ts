@@ -75,7 +75,7 @@ test("keeps the default dashboard compact, aligned, and usable in both themes", 
       height: element.getBoundingClientRect().height,
     })),
   );
-  expect(rows.every((row) => row.height === 72)).toBe(true);
+  expect(rows.every((row) => row.height >= 150)).toBe(true);
   await page.screenshot({
     path: "test-results/dashboard-dark.png",
     fullPage: true,

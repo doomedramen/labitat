@@ -1262,3 +1262,188 @@ a.serviceName:active {
     margin-bottom: 16px;
   }
 }
+
+/* Slate study: individual service surfaces with room around their content. */
+.board,
+.board:has(> .group:only-child) {
+  gap: 26px;
+}
+.group {
+  background: transparent;
+  border: 0;
+  overflow: visible;
+}
+.groupHeader {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin-bottom: 12px;
+}
+.grid,
+.board:has(> .group:only-child) .grid {
+  padding: 0;
+  gap: 12px;
+  align-items: stretch;
+}
+.grid > * {
+  border: 0 !important;
+}
+.tile,
+.tile[data-layout="launcher"] {
+  height: 150px;
+  padding: 0 20px;
+  background: var(--card);
+  border: 0;
+  border-radius: 16px;
+}
+.tileHeader,
+.tile[data-layout="launcher"] .tileHeader {
+  height: 72px;
+  gap: 12px;
+}
+.tileHeader .serviceName,
+.tile[data-layout="launcher"] .serviceName {
+  height: 44px;
+}
+.tile[data-has-reason] .serviceName {
+  padding-bottom: 0;
+}
+.tileReason {
+  position: static;
+  padding: 8px 0;
+  white-space: normal;
+}
+.inspect {
+  min-height: 64px;
+  padding: 10px 0 16px;
+}
+.metric + .metric {
+  border: 0;
+  padding-left: 0;
+}
+.tile[data-layout="launcher"] .inspect {
+  right: 12px;
+  top: 14px;
+}
+.tile[data-layout="launcher"] {
+  padding-right: 60px;
+}
+.icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--muted);
+}
+.activityIcon {
+  color: var(--primary);
+  background: var(--muted);
+}
+.activityIcon[data-kind="streams"],
+.activityPanel[aria-label="Active streams"] .activityProgress > span {
+  color: var(--primary);
+  background: var(--primary);
+}
+.activityIcon[data-kind="streams"] {
+  background: var(--muted);
+}
+.activityProgress > span {
+  background: var(--primary);
+}
+@media (max-width: 639px) {
+  .tile,
+  .tile[data-layout="launcher"] {
+    height: 160px;
+    padding-inline: 18px;
+  }
+  .tile[data-layout="launcher"] {
+    padding-right: 60px;
+  }
+}
+.tile {
+  height: auto;
+  min-height: 150px;
+}
+.tile[data-layout="launcher"] {
+  height: auto;
+  min-height: 150px;
+}
+.tile .tileReason {
+  padding: 16px 0;
+  position: static;
+  line-height: 18px;
+}
+@media (max-width: 639px) {
+  .tile,
+  .tile[data-layout="launcher"] {
+    height: auto;
+    min-height: 150px;
+  }
+}
+.activityHeader {
+  padding: 16px 20px 12px;
+}
+.activityList {
+  padding: 0;
+}
+.activityEntry {
+  padding: 14px 20px;
+}
+.activityMeta,
+.activityFoot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.activityMeta > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.activityMeta > span:last-child {
+  flex-shrink: 0;
+}
+.activityRate {
+  color: var(--primary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.activityFoot {
+  margin-top: 8px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.activityIssue,
+.activityEmpty {
+  padding: 14px 20px;
+}
+/* Keep the section hierarchy visible even when queues are empty. */
+.activity .sectionHeading {
+  display: flex !important;
+}
+.activity .sectionHeading h2 {
+  font-size: 15px;
+  letter-spacing: -0.02em;
+}
+.groupCount {
+  margin-right: 0;
+}
+.groupHeader::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--border);
+  opacity: 0.45;
+  order: 1;
+}
+.groupHeader button {
+  order: 2;
+}
+@media (max-width: 639px) {
+  .metrics:is([data-count="3"], [data-count="4"]) .metric {
+    flex-direction: row-reverse;
+    justify-content: space-between;
+  }
+}
+.serviceName svg {
+  display: block;
+}

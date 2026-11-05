@@ -61,6 +61,8 @@ test("mobile-first mixed service board", async ({ page }) => {
 });
 
 test("three-digit health filters fit a 320px screen", async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.setViewportSize({ width: 320, height: 740 });
   await seedAndAuth(page, {
     groups: [
@@ -118,4 +120,5 @@ test("three-digit health filters fit a 320px screen", async ({ page }) => {
     expect(await filter.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(pageErrors).not.toContainEqual(expect.stringContaining("Maximum update depth"));
 });
