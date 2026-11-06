@@ -70,6 +70,20 @@ test("card background launches, metrics inspect, and status keeps its position",
   await page.goto("/");
   const media = page.getByTestId("item-card").first();
   const launcher = page.getByTestId("item-card").last();
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const card of [media, launcher]) {
+      const bounds = (await card.boundingBox())!;
+      const dot = (await card
+        .getByRole("button", { name: /Status for/ })
+        .locator("span")
+        .boundingBox())!;
+      const padding = await card.evaluate((element) =>
+        parseFloat(getComputedStyle(element).paddingRight),
+      );
+      expect(Math.abs(bounds.x + bounds.width - (dot.x + dot.width) - padding)).toBeLessThan(1);
+    }
+  }
   const firstDot = await media.getByRole("button", { name: /Status for Media/ }).boundingBox();
   const nextDot = await launcher.getByRole("button", { name: /Status for Launcher/ }).boundingBox();
   const firstCard = await media.boundingBox();

@@ -1809,3 +1809,79 @@ a.serviceName:active {
     margin: 0;
   }
 }
+/* Align the painted dot with the card inset, retaining its larger hit area. */
+.statusControl {
+  margin-right: -10px;
+}
+.arrangeTile .statusControl {
+  margin-right: 30px;
+}
+@media (max-width: 639px) {
+  .tile[data-layout="launcher"] {
+    padding-right: 18px;
+  }
+}
+
+/* Keep the phone filters light and aligned with the group selector. */
+@media (max-width: 639px) {
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .controls .toolbar {
+    flex: 1 1 auto;
+    width: max-content;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    gap: 2px;
+    border: 0;
+    background: transparent;
+  }
+  .controls .filter {
+    min-height: 44px;
+    gap: 4px;
+    padding-inline: 7px;
+    border-color: transparent;
+    border-radius: 9px;
+    font-size: 13px;
+    box-shadow: none;
+  }
+  .controls .filter > span:last-child {
+    min-width: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 12px;
+  }
+  .controls .filter[data-filter="attention"][data-count]:not([data-count="0"]) > span:last-child {
+    color: var(--warning);
+    background: transparent;
+  }
+  .controls .filter[aria-pressed="true"] {
+    background: var(--card);
+  }
+  .filter[data-filter="attention"] > .filterLabel {
+    display: none;
+  }
+  .filter[data-filter="attention"] > .filterShort {
+    display: inline;
+  }
+  .controls .groupPicker {
+    flex: 1 0 110px;
+    max-width: 150px;
+    min-width: 0;
+    margin: 0;
+  }
+  .controls .groupPicker select {
+    height: 44px;
+    padding-inline: 10px 4px;
+    border-color: transparent;
+    border-radius: 9px;
+    background: var(--card);
+    font-size: 16px;
+  }
+}
