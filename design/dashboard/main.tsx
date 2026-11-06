@@ -358,12 +358,6 @@ function App() {
               <h1>
                 Page Family Homelab<span className="title-dot">.</span>
               </h1>
-              <p className="overview-meta">
-                34 services <span>/</span> 6 groups <span>/</span>{" "}
-                <span className="attention-copy">
-                  {items.filter((i) => i.health !== "healthy").length} need attention
-                </span>
-              </p>
             </div>
             <div className="search">
               <Search size={18} />
@@ -624,9 +618,6 @@ function App() {
                     <header className="group-header">
                       <GroupIcon size={17} />
                       <h2>{group}</h2>
-                      <span className="group-count">
-                        {String(groupItems.length).padStart(2, "0")}
-                      </span>
                       <span className="group-rule" />
                       {draft && (
                         <div className="group-moves">

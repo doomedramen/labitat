@@ -479,10 +479,6 @@ export function OperatorDashboard({
       <div className={styles.hero}>
         <div>
           <h1 className={styles.heading}>{title}</h1>
-          <p className={styles.subtitle}>
-            <span>{items.length}</span> services <span className={styles.subtitleDivider}>/</span>{" "}
-            <span>{canonical.length}</span> groups
-          </p>
         </div>
         <div className={styles.search}>
           <Search size={16} />
@@ -854,9 +850,6 @@ function OperatorGroup({
         )}
         <GroupIcon size={16} className={styles.groupIcon} aria-hidden="true" />
         <h2>{group.name}</h2>
-        <span className={styles.groupCount} aria-label={`${group.items.length} services`}>
-          {String(group.items.length).padStart(2, "0")}
-        </span>
         {arranging ? (
           <>
             <Button

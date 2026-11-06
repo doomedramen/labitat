@@ -17,6 +17,16 @@ test("mobile-first mixed service board", async ({ page }) => {
     await page.setViewportSize({ width, height });
     await page.goto("/");
     await expect(page.getByTestId("item-card")).toHaveCount(34);
+    await expect(page.getByText("34 services", { exact: true })).toHaveCount(0);
+    const filter = page.getByRole("button", { name: "All 34", exact: true });
+    await expect(filter).toBeVisible();
+    const titleBounds = (await page.getByRole("heading", { level: 1 }).boundingBox())!;
+    const filterBounds = (await filter.boundingBox())!;
+    expect(filterBounds.y).toBeGreaterThanOrEqual(titleBounds.y + titleBounds.height);
+
+    await expect(
+      page.locator("section[data-group-id]").first().getByText("06", { exact: true }),
+    ).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );

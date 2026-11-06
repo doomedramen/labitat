@@ -88,19 +88,6 @@
   letter-spacing: -0.055em;
   overflow-wrap: anywhere;
 }
-.subtitle {
-  margin-top: 8px;
-  color: var(--muted-foreground);
-  font-size: 12px;
-}
-.subtitle span:not(.subtitleDivider) {
-  color: var(--foreground);
-  font-variant-numeric: tabular-nums;
-}
-.subtitleDivider {
-  margin-inline: 9px;
-  color: var(--border);
-}
 .search {
   position: relative;
   min-width: 0;
@@ -215,13 +202,6 @@
 .groupIcon {
   color: var(--muted-foreground);
   flex-shrink: 0;
-}
-.groupCount {
-  margin-right: auto;
-  font-size: 11px;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  color: var(--muted-foreground);
 }
 .groupHeader button {
   min-width: 44px;
@@ -1424,9 +1404,6 @@ a.serviceName:active {
   font-size: 15px;
   letter-spacing: -0.02em;
 }
-.groupCount {
-  margin-right: 0;
-}
 .groupHeader::after {
   content: "";
   height: 1px;
@@ -1683,11 +1660,8 @@ a.serviceName:active {
     top: max(12px, env(safe-area-inset-top));
   }
   .hero {
-    gap: 12px;
+    gap: 16px;
     margin-bottom: 10px;
-  }
-  .subtitle {
-    margin-top: 5px;
   }
   .toolbar {
     margin-bottom: 8px;
@@ -1818,4 +1792,20 @@ a.serviceName:active {
 .statusControl[data-below] .statusTooltip {
   top: 100%;
   bottom: auto;
+}
+/* Keep controls below the title regardless of title length. */
+@media (min-width: 1200px) {
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .controls .toolbar {
+    margin: 0;
+  }
+  .controls .groupPicker {
+    width: 230px;
+    margin: 0;
+  }
 }
