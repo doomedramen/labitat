@@ -1418,7 +1418,7 @@ a.serviceName:active {
 @media (max-width: 639px) {
   .metrics:is([data-count="3"], [data-count="4"]) .metric {
     flex-direction: row-reverse;
-    justify-content: space-between;
+    justify-content: flex-end;
   }
 }
 .serviceName svg {
