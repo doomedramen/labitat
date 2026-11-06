@@ -883,7 +883,7 @@ a.serviceName:active {
   }
   .metrics:is([data-count="3"], [data-count="4"]) .metricValue {
     flex-shrink: 0;
-    max-width: 65%;
+    max-width: 100%;
   }
 }
 
@@ -1193,7 +1193,7 @@ a.serviceName:active {
   }
   .metrics:is([data-count="3"], [data-count="4"]) .metricValue {
     flex-shrink: 0;
-    max-width: 65%;
+    max-width: 100%;
   }
 }
 @media (min-width: 1200px) and (pointer: fine) {
@@ -1417,8 +1417,9 @@ a.serviceName:active {
 }
 @media (max-width: 639px) {
   .metrics:is([data-count="3"], [data-count="4"]) .metric {
-    flex-direction: row-reverse;
-    justify-content: flex-end;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 2px;
   }
 }
 .serviceName svg {
