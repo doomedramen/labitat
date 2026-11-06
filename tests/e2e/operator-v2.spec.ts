@@ -73,6 +73,8 @@ test("24 services use aligned rows in both themes; mobile and 200% zoom reflow",
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 test("search and filters preserve ordering and count services", async ({ page }) => {
+  // Keep synthetic hosts from changing health while checking the seeded filter counts.
+  await page.route("**/api/events", (route) => route.abort());
   await seedAndAuth(page, { groups: fixture });
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Needs attention 3", exact: true })).toBeVisible();
