@@ -326,6 +326,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 2px;
 }
 .metric + .metric {
@@ -333,6 +335,7 @@
   padding-left: 10px;
 }
 .metricValue {
+  max-width: 100%;
   font-size: 16px;
   line-height: 19px;
   font-weight: 500;
@@ -343,6 +346,7 @@
   text-overflow: ellipsis;
 }
 .metricLabel {
+  max-width: 100%;
   font-size: 12px;
   line-height: 15px;
   color: var(--muted-foreground);
@@ -1418,7 +1422,7 @@ a.serviceName:active {
 @media (max-width: 639px) {
   .metrics .metric,
   .metrics:is([data-count="3"], [data-count="4"]) .metric {
-    flex-direction: column-reverse;
+    flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 2px;
