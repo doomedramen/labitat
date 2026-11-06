@@ -1416,9 +1416,11 @@ a.serviceName:active {
   order: 2;
 }
 @media (max-width: 639px) {
+  .metrics .metric,
   .metrics:is([data-count="3"], [data-count="4"]) .metric {
     flex-direction: column-reverse;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
     gap: 2px;
   }
 }
