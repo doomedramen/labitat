@@ -503,50 +503,63 @@ export function OperatorDashboard({
         </div>
       </div>
       {!arranging && (
-        <div className={styles.toolbar} aria-label="Service filters">
-          {(
-            [
-              ["all", "All"],
-              ["attention", "Needs attention"],
-              ["stale", "Stale"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              type="button"
-              key={value}
-              className={styles.filter}
-              aria-pressed={filter === value}
-              onClick={() => setFilter(value)}
-            >
-              {label}{" "}
-              <span className="tabular-nums">
-                {value === "all"
-                  ? items.length
-                  : items.filter((item) =>
-                      value === "attention" ? health[item.id]?.attention : health[item.id]?.stale,
-                    ).length}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-      {!arranging && (
         <>
-          <label className={styles.groupPicker}>
-            <span>Group</span>
-            <select
-              aria-label="Filter by group"
-              value={selectedGroup}
-              onChange={(event) => setSelectedGroup(event.target.value)}
-            >
-              <option value="">All groups</option>
-              {canonical.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className={styles.controls}>
+            <div className={styles.toolbar} aria-label="Service filters">
+              {(
+                [
+                  ["all", "All"],
+                  ["attention", "Needs attention"],
+                  ["stale", "Stale"],
+                ] as const
+              ).map(([value, label]) => {
+                const count =
+                  value === "all"
+                    ? items.length
+                    : items.filter((item) =>
+                        value === "attention" ? health[item.id]?.attention : health[item.id]?.stale,
+                      ).length;
+                return (
+                  <button
+                    type="button"
+                    key={value}
+                    className={styles.filter}
+                    data-filter={value}
+                    data-count={value === "attention" ? count : undefined}
+                    aria-label={`${label} ${count}`}
+                    aria-pressed={filter === value}
+                    onClick={() => setFilter(value)}
+                  >
+                    <span className={styles.filterLabel} aria-hidden="true">
+                      {label}
+                    </span>
+                    {value === "attention" && (
+                      <span className={styles.filterShort} aria-hidden="true">
+                        Attention
+                      </span>
+                    )}
+                    <span className="tabular-nums" aria-hidden="true">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <label className={styles.groupPicker}>
+              <select
+                aria-label="Filter by group"
+                value={selectedGroup}
+                onChange={(event) => setSelectedGroup(event.target.value)}
+              >
+                <option value="">All groups</option>
+                {canonical.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <LiveActivity items={activityItems} initialNow={serverNow} onDetails={openDetails} />
         </>
       )}

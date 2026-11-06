@@ -17,7 +17,7 @@ test.describe("Mobile Layout", () => {
       elements.map((element) => element.getBoundingClientRect().toJSON()),
     );
     expect(new Set(boxes.map((box) => box.x)).size).toBe(1);
-    expect(boxes.every((box) => box.height >= 150)).toBe(true);
+    expect(boxes.every((box) => box.height >= 120)).toBe(true);
   });
 
   test("header is responsive on small viewport", async ({ page }) => {

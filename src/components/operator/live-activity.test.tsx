@@ -113,3 +113,45 @@ it("does not invent progress for a download without a measurement", async () => 
   const entry = await screen.findByRole("button", { name: "Inspect Client: Waiting" });
   expect(within(entry).queryByRole("progressbar")).toBeNull();
 });
+
+it("summarizes idle activity only after every source has reported", async () => {
+  state.live.Client = live({ _status: "ok", showDownloads: true, downloads: [] });
+  state.live.Plex = live({
+    _status: "ok",
+    showActiveStreams: true,
+    streams: 0,
+    albums: 0,
+    movies: 0,
+    tvShows: 0,
+    sessions: [],
+  });
+  const { container, rerender } = render(
+    <LiveActivity items={items} initialNow={state.now} onDetails={vi.fn()} />,
+  );
+  expect(await screen.findByText("No downloads or streams")).toBeInTheDocument();
+  expect(container.querySelector("[data-idle]")).not.toBeNull();
+  state.live.Client = live({
+    _status: "ok",
+    showDownloads: true,
+    downloads: [{ title: "Downloading", progress: 10 }],
+  });
+  rerender(
+    <LiveActivity
+      items={items.map((entry) => ({ ...entry }))}
+      initialNow={state.now}
+      onDetails={vi.fn()}
+    />,
+  );
+  expect(await screen.findByText("Downloading")).toBeVisible();
+  expect(container.querySelector("[data-idle]")).toBeNull();
+  state.live.Client = live({ _status: "ok", showDownloads: true, downloads: [] }, "stale");
+  rerender(
+    <LiveActivity
+      items={items.map((entry) => ({ ...entry }))}
+      initialNow={state.now}
+      onDetails={vi.fn()}
+    />,
+  );
+  expect(await screen.findByText(/Client · Saved data/)).toBeVisible();
+  expect(container.querySelector("[data-idle]")).toBeNull();
+});

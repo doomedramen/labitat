@@ -23,6 +23,7 @@ export const ServiceTile = memo(function ServiceTile({
   initialNow?: number;
 }) {
   const [statusOpen, setStatusOpen] = useState(false);
+  const [statusBelow, setStatusBelow] = useState(false);
   const statusRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!statusOpen) return;
@@ -40,6 +41,14 @@ export const ServiceTile = memo(function ServiceTile({
     document.addEventListener("pointerdown", dismiss);
     return () => document.removeEventListener("pointerdown", dismiss);
   }, [statusOpen]);
+  const placeStatus = () => {
+    requestAnimationFrame(() => {
+      const control = statusRef.current;
+      const popup = control?.querySelector<HTMLElement>("[data-status-popup]");
+      if (control && popup)
+        setStatusBelow(control.getBoundingClientRect().top < popup.offsetHeight + 8);
+    });
+  };
   const statusId = useId();
   const live = useItemLive(item.id);
   const now = useVisibleClock();
@@ -95,14 +104,26 @@ export const ServiceTile = memo(function ServiceTile({
             {item.href && !arranging && <ArrowUpRight size={12} aria-hidden="true" />}
           </h3>
         </div>
-        <div ref={statusRef} className={styles.statusControl} data-open={statusOpen || undefined}>
+        <div
+          ref={statusRef}
+          className={styles.statusControl}
+          data-open={statusOpen || undefined}
+          data-below={statusBelow || undefined}
+          onPointerEnter={(event) => {
+            if (event.pointerType === "mouse") placeStatus();
+          }}
+        >
           <button
             type="button"
             className={styles.statusTrigger}
             aria-label={`Status for ${label}: ${health.label}`}
             aria-describedby={statusId}
             data-details-for={!metrics.length && item.href && !arranging ? item.id : undefined}
-            onClick={() => setStatusOpen((open) => !open)}
+            onClick={() => {
+              setStatusOpen((open) => !open);
+              placeStatus();
+            }}
+            onFocus={placeStatus}
             onBlur={(event) => {
               if (!event.currentTarget.parentElement?.contains(event.relatedTarget))
                 setStatusOpen(false);
@@ -127,7 +148,7 @@ export const ServiceTile = memo(function ServiceTile({
               }
             />
           </button>
-          <span className={styles.statusTooltip}>
+          <span className={styles.statusTooltip} data-status-popup="">
             <span id={statusId} role="tooltip">
               {health.label}
               {reason ? ` · ${reason}` : ""}

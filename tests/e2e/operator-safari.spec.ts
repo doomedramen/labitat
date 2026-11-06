@@ -22,7 +22,7 @@ test.describe("Touch-first Safari", () => {
     await search.blur();
     expect(
       (await page.getByTestId("item-card").first().boundingBox())!.height,
-    ).toBeGreaterThanOrEqual(150);
+    ).toBeGreaterThanOrEqual(120);
     expect(
       (await page.getByRole("button", { name: /Status for Tautulli/ }).boundingBox())!.height,
     ).toBe(34);
@@ -136,4 +136,43 @@ test("status reasons open on tap and dismiss without opening service details", a
   await status.focus();
   await page.getByRole("heading", { level: 1 }).tap();
   await expect(card.getByRole("tooltip")).toHaveCount(0);
+});
+
+test("status tooltip stays within the viewport near the top edge", async ({ page }) => {
+  await seedAndAuth(page, {
+    groups: [
+      {
+        name: "Apps",
+        items: [
+          ...Array.from({ length: 8 }, (_, index) => ({
+            label: `Before ${index}`,
+            href: `https://before-${index}.test`,
+          })),
+          {
+            label: "Failed",
+            serviceType: "radarr",
+            cachedWidgetData: { _status: "error", _statusText: "Connection refused" },
+          },
+          ...Array.from({ length: 8 }, (_, index) => ({
+            label: `After ${index}`,
+            href: `https://after-${index}.test`,
+          })),
+        ],
+      },
+    ],
+  });
+  await page.goto("/");
+  const card = page
+    .getByTestId("item-card")
+    .filter({ has: page.getByRole("heading", { name: "Failed", exact: true }) });
+  const status = card.getByRole("button", { name: /Status for Failed/ });
+  await status.scrollIntoViewIfNeeded();
+  await status.evaluate((element) => window.scrollBy(0, element.getBoundingClientRect().top - 12));
+  await status.tap();
+  const tooltip = card.getByRole("tooltip");
+  await expect(tooltip).toBeVisible();
+  await expect.poll(async () => (await tooltip.boundingBox())!.y).toBeGreaterThanOrEqual(0);
+  const bounds = (await tooltip.boundingBox())!;
+  expect(bounds.x).toBeGreaterThanOrEqual(0);
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
 });

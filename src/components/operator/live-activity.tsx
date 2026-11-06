@@ -92,8 +92,27 @@ export const LiveActivity = memo(function LiveActivity({
   const streamIssues = sources.filter(
     (item) => streamTypes.has(item.serviceType ?? "") && observations[item.id]?.reason,
   );
+  const allObserved = sources.every((item) => observations[item.id]);
+  const idle =
+    allObserved &&
+    !downloads.length &&
+    !streams.length &&
+    !downloadIssues.length &&
+    !streamIssues.length;
+  const hasDownloads = sources.some((item) => downloadTypes.has(item.serviceType ?? ""));
+  const hasStreams = sources.some((item) => streamTypes.has(item.serviceType ?? ""));
+  const idleLabel =
+    hasDownloads && hasStreams
+      ? "No downloads or streams"
+      : hasDownloads
+        ? "No active downloads"
+        : "No active streams";
   return (
-    <section className={styles.activity} aria-labelledby="live-activity-heading">
+    <section
+      className={styles.activity}
+      data-idle={idle || undefined}
+      aria-labelledby="live-activity-heading"
+    >
       {sources.map((item) => (
         <ActivityObserver key={item.id} item={item} initialNow={initialNow} report={report} />
       ))}
@@ -102,6 +121,12 @@ export const LiveActivity = memo(function LiveActivity({
           <h2 id="live-activity-heading">Live activity</h2>
         </div>
       </div>
+      {idle && (
+        <div className={styles.activityIdle}>
+          <span>Live activity</span>
+          <span>{idleLabel}</span>
+        </div>
+      )}
       <div className={styles.activityGrid}>
         {(["downloads", "streams"] as const).map((kind) => {
           const isDownloads = kind === "downloads";
@@ -115,7 +140,11 @@ export const LiveActivity = memo(function LiveActivity({
             <section
               key={kind}
               className={styles.activityPanel}
-              data-empty={!entries.length && !issues.length ? true : undefined}
+              data-empty={
+                !entries.length && !issues.length && relevant.every((item) => observations[item.id])
+                  ? true
+                  : undefined
+              }
               aria-label={isDownloads ? "Downloads" : "Active streams"}
             >
               <header className={styles.activityHeader}>

@@ -2,7 +2,7 @@
 
 The overview presents services in cards grouped by category. Phones use one vertical list; wider screens use two, three, or four service columns in each group. Saved reading order stays stable, and live data never moves panels. Services show up to four selected metrics, a card-wide launch link, and a separate **Inspect** button over the metrics. Hover, focus, or tap a service status indicator to see its health and any failure, warning, or stale reason. Services without metrics offer **Service details** in the status popup. Missing observations show **Data unavailable** there rather than invented zeroes.
 
-**Live activity** shows available downloads and streams above the groups, with their source service and any supplied progress, playback state, speed, or remaining time. The preview shows up to two entries per list; expand it to see the rest of the available observations. Some services limit the number of entries they supply. Activity respects each service's display settings, and stale or failed sources are identified rather than presented as current activity. Select an activity entry to inspect its source.
+**Live activity** shows available downloads and streams above the groups, with their source service and any supplied progress, playback state, speed, or remaining time. On phones, an idle state is condensed into one row; active lists and source problems remain visible. The overview shows up to two entries per list; expand it to see the rest of the available observations. Some services limit the number of entries they supply. Activity respects each service's display settings, and stale or failed sources are identified rather than presented as current activity. Select an activity entry to inspect its source.
 
 ## Find and inspect
 

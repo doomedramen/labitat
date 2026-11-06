@@ -120,5 +120,18 @@ test("three-digit health filters fit a 320px screen", async ({ page }) => {
     expect(await filter.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  for (const width of [320, 375, 390, 430]) {
+    await page.setViewportSize({ width, height: 844 });
+    const picker = (await page.getByRole("combobox", { name: "Filter by group" }).boundingBox())!;
+    for (const name of ["All 100", "Needs attention 100", "Stale 100"]) {
+      const filter = page.getByRole("button", { name, exact: true });
+      const box = (await filter.boundingBox())!;
+      expect(await filter.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+      expect(box.x + box.width <= picker.x || box.y + box.height <= picker.y).toBe(true);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
   expect(pageErrors).not.toContainEqual(expect.stringContaining("Maximum update depth"));
 });

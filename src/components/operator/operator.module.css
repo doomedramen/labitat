@@ -1670,3 +1670,152 @@ a.serviceName:active {
 .detailHealthDot[data-state="error"] {
   background: var(--destructive);
 }
+
+/* Phone layout: compact around content, not inside touch targets. */
+.activityIdle {
+  display: none;
+}
+@media (max-width: 639px) {
+  .dashboard {
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+  .header {
+    top: max(12px, env(safe-area-inset-top));
+  }
+  .hero {
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .subtitle {
+    margin-top: 5px;
+  }
+  .toolbar {
+    margin-bottom: 8px;
+  }
+  .filter[data-filter="attention"][data-count]:not([data-count="0"]) > span:last-child {
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 15%, transparent);
+  }
+  .groupPicker {
+    margin-bottom: 16px;
+  }
+  .groupPicker select {
+    min-height: 44px;
+    height: 44px;
+  }
+  .activity {
+    margin-bottom: 18px;
+  }
+  .activity[data-idle] .sectionHeading,
+  .activity[data-idle] .activityGrid {
+    display: none !important;
+  }
+  .activityIdle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--muted-foreground);
+    font-size: 12px;
+  }
+  .activityIdle > span:first-child {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+  .activity:not([data-idle]) .activityPanel[data-empty] {
+    display: none;
+  }
+  .board,
+  .board:has(> .group:only-child) {
+    gap: 18px;
+  }
+  .groupHeader {
+    margin-bottom: 6px;
+  }
+  .groupHeader::after {
+    flex: 0 1 32px;
+    margin-right: 0;
+  }
+  .tile,
+  .tile[data-layout="launcher"] {
+    min-height: 120px;
+  }
+  .tileHeader,
+  .tile[data-layout="launcher"] .tileHeader {
+    height: 58px;
+  }
+  .inspect {
+    min-height: 58px;
+    padding: 6px 0 12px;
+  }
+}
+/* The standalone body already accounts for the status-bar inset. */
+@media (max-width: 639px) and (display-mode: standalone) {
+  .dashboard {
+    padding-top: 12px;
+  }
+  .header {
+    top: 12px;
+  }
+}
+.controls {
+  display: contents;
+}
+@media (min-width: 380px) and (max-width: 639px) {
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .controls .toolbar {
+    flex: 1 1 auto;
+    margin: 0;
+    min-width: 0;
+  }
+  .controls .filter {
+    gap: 3px;
+    padding-inline: 5px;
+  }
+  .controls .groupPicker {
+    flex: 0 1 116px;
+    min-width: 92px;
+    margin: 0;
+  }
+  .controls .groupPicker select {
+    padding-inline: 8px 4px;
+  }
+}
+.filter > .filterLabel,
+.filter > .filterShort {
+  min-width: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: inherit;
+}
+.filter > .filterShort {
+  display: none;
+}
+@media (min-width: 380px) and (max-width: 639px) {
+  .filter[data-filter="attention"] > .filterLabel {
+    display: none;
+  }
+  .filter[data-filter="attention"] > .filterShort {
+    display: inline;
+  }
+}
+.filter[aria-pressed] > .filterLabel,
+.filter[aria-pressed] > .filterShort {
+  color: inherit;
+  background: transparent;
+}
+/* Prefer above; flip below when the viewport would clip the status message. */
+.statusControl[data-below] .statusTooltip {
+  top: 100%;
+  bottom: auto;
+}

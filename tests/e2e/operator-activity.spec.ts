@@ -63,10 +63,9 @@ test("24 services across three groups retain aligned desktop rows", async ({ pag
   await page.goto("/");
   await expect(page.getByTestId("item-card")).toHaveCount(24);
   const cards = page.getByTestId("item-card");
-  const first = (await cards.nth(0).boundingBox())!;
-  const peer = (await cards.nth(1).boundingBox())!;
-  const fourth = (await cards.nth(3).boundingBox())!;
-  const nextRow = (await cards.nth(4).boundingBox())!;
+  const [first, peer, , fourth, nextRow] = await cards.evaluateAll((elements) =>
+    elements.slice(0, 5).map((element) => element.getBoundingClientRect().toJSON()),
+  );
   expect(first.y).toBe(peer.y);
   expect(first.height).toBe(peer.height);
   expect(first.y).toBe(fourth.y);
@@ -139,4 +138,82 @@ test("live activity shows download and stream details and opens the correct serv
   await expect(page.getByRole("dialog", { name: "Plex" })).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await expect(page.getByRole("button", { name: "Inspect Plex: A film" })).toBeFocused();
+});
+
+test("idle mobile activity is compact and active downloads remain visible", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await seedAndAuth(page, {
+    groups: [
+      {
+        name: "Media",
+        items: [
+          {
+            label: "Client",
+            serviceType: "qbittorrent",
+            cachedWidgetData: { _status: "ok", showDownloads: true, downloads: [] },
+          },
+          {
+            label: "Plex",
+            serviceType: "plex",
+            cachedWidgetData: {
+              _status: "ok",
+              showActiveStreams: true,
+              sessions: [],
+              streams: 0,
+              albums: 0,
+              movies: 0,
+              tvShows: 0,
+            },
+          },
+        ],
+      },
+    ],
+  });
+  await page.goto("/");
+  const ids = await page
+    .getByTestId("item-card")
+    .evaluateAll((elements) => elements.map((element) => element.getAttribute("data-item-id")));
+  let busy = false;
+  await page.route("**/api/events", (route) => {
+    const at = Date.now() + 120_000;
+    const data = [
+      {
+        _status: "ok",
+        showDownloads: true,
+        downloads: busy
+          ? [{ title: "Example download", progress: 30, activity: "downloading" }]
+          : [],
+      },
+      {
+        _status: "ok",
+        showActiveStreams: true,
+        sessions: [],
+        streams: 0,
+        albums: 0,
+        movies: 0,
+        tvShows: 0,
+      },
+    ];
+    return route.fulfill({
+      contentType: "text/event-stream",
+      body: ids
+        .map(
+          (itemId, index) =>
+            `data: ${JSON.stringify({ type: "update", itemId, widgetData: data[index], pingStatus: null, fetchedAt: at, observationUpdatedAt: at, lastSuccessAt: at, lastAttemptAt: at, freshness: "fresh", configurationRevision: 0 })}\n\n`,
+        )
+        .join(""),
+    });
+  });
+  await page.reload();
+  await expect(page.getByText("No downloads or streams", { exact: true })).toBeVisible();
+  const secondCard = (await page.getByTestId("item-card").nth(1).boundingBox())!;
+  expect(secondCard.y + secondCard.height).toBeLessThanOrEqual(844);
+  await page.screenshot({ path: "test-results/operator-idle-phone.png" });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  busy = true;
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Inspect Client: Example download" }),
+  ).toBeVisible();
+  await expect(page.getByText("No downloads or streams", { exact: true })).toHaveCount(0);
 });

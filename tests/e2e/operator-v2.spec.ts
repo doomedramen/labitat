@@ -38,7 +38,7 @@ test("24 services use aligned rows in both themes; mobile and 200% zoom reflow",
   for (const [width, columns, height] of [
     [1024, 3, 150],
     [640, 2, 150],
-    [320, 1, 150],
+    [320, 1, 120],
   ]) {
     await page.setViewportSize({ width, height: 900 });
     await expect
