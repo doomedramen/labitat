@@ -1056,8 +1056,43 @@ a.serviceName:active {
   color: var(--muted-foreground);
   font-size: 13px;
 }
+.activityIssues {
+  border-top: 1px solid var(--border);
+}
+.activityIssueToggle,
 .activityIssue {
-  color: var(--warning);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.activityIssueToggle svg {
+  transition: transform 150ms ease;
+}
+.activityIssueToggle[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+.activityIssueToggle:focus-visible,
+.activityIssue:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.activityIssue {
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+}
+.activityIssue span:last-child {
+  text-align: right;
+}
+@media (prefers-reduced-motion: reduce) {
+  .activityIssueToggle svg {
+    transition: none;
+  }
 }
 .board,
 .board:has(> .group:only-child) {
@@ -1173,13 +1208,6 @@ a.serviceName:active {
 .group {
   align-self: stretch;
 }
-.activityPanel[data-empty] .activityHeader {
-  padding-block: 10px;
-}
-.activityPanel[data-empty] .activityIcon {
-  width: 34px;
-  height: 34px;
-}
 .activityPanel[data-empty] .activityList {
   padding: 0;
 }
@@ -1214,9 +1242,6 @@ a.serviceName:active {
   }
   .activity:has(.activityPanel[data-empty]:only-child) {
     margin-bottom: 16px;
-  }
-  .activityPanel[data-empty] .activityHeader {
-    padding-block: 6px;
   }
   .groupHeader {
     height: 40px;

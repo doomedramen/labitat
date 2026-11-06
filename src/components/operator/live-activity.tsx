@@ -8,6 +8,7 @@ import type { ActiveStream } from "@/components/widgets/active-stream/types";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
 import { getService } from "@/lib/adapters";
 import { serviceHealth } from "@/lib/service-health";
+import type { ItemLive } from "@/lib/live-types";
 import type { ItemRow } from "@/lib/types";
 import styles from "./operator.module.css";
 
@@ -18,6 +19,26 @@ type Observation = {
   streams: ActiveStream[];
   reason: string | null;
 };
+
+function observe(item: ItemRow, live: ItemLive | null, now: number): Observation {
+  const service = getService(item.serviceType ?? "");
+  const health = serviceHealth(item, live, now, service?.clientSide);
+  if (
+    health.attention ||
+    health.stale ||
+    !live?.widgetData ||
+    live.widgetData._status === "error"
+  ) {
+    return { downloads: [], streams: [], reason: health.reason || "Awaiting an update" };
+  }
+  try {
+    const payload = service?.toPayload?.(live.widgetData);
+    if (payload?.error) return { downloads: [], streams: [], reason: payload.error };
+    return { downloads: payload?.downloads ?? [], streams: payload?.streams ?? [], reason: null };
+  } catch {
+    return { downloads: [], streams: [], reason: "Activity unavailable" };
+  }
+}
 
 const ActivityObserver = memo(function ActivityObserver({
   item,
@@ -30,25 +51,10 @@ const ActivityObserver = memo(function ActivityObserver({
 }) {
   const live = useItemLive(item.id);
   const clock = useVisibleClock();
-  const observation = useMemo((): Observation => {
-    const service = getService(item.serviceType ?? "");
-    const health = serviceHealth(item, live, clock ?? initialNow, service?.clientSide);
-    if (
-      health.attention ||
-      health.stale ||
-      !live?.widgetData ||
-      live.widgetData._status === "error"
-    ) {
-      return { downloads: [], streams: [], reason: health.reason || "Awaiting an update" };
-    }
-    try {
-      const payload = service?.toPayload?.(live.widgetData);
-      if (payload?.error) return { downloads: [], streams: [], reason: payload.error };
-      return { downloads: payload?.downloads ?? [], streams: payload?.streams ?? [], reason: null };
-    } catch {
-      return { downloads: [], streams: [], reason: "Activity unavailable" };
-    }
-  }, [item, live, clock, initialNow]);
+  const observation = useMemo(
+    () => observe(item, live, clock ?? initialNow),
+    [item, live, clock, initialNow],
+  );
   useEffect(() => report(item.id, observation), [item.id, observation, report]);
   return null;
 });
@@ -61,14 +67,23 @@ function time(value: number) {
 export const LiveActivity = memo(function LiveActivity({
   items,
   initialNow,
+  initialSnapshotById,
   onDetails,
 }: {
   items: ItemRow[];
   initialNow: number;
+  initialSnapshotById?: Record<string, ItemLive>;
   onDetails: (id: string) => void;
 }) {
-  const [observations, setObservations] = useState<Record<string, Observation>>({});
+  const [observations, setObservations] = useState<Record<string, Observation>>(() =>
+    Object.fromEntries(
+      items
+        .filter((item) => initialSnapshotById?.[item.id])
+        .map((item) => [item.id, observe(item, initialSnapshotById![item.id], initialNow)]),
+    ),
+  );
   const [expanded, setExpanded] = useState({ downloads: false, streams: false });
+  const [issuesExpanded, setIssuesExpanded] = useState({ downloads: false, streams: false });
   const report = useCallback((id: string, observation: Observation) => {
     setObservations((previous) =>
       JSON.stringify(previous[id]) === JSON.stringify(observation)
@@ -247,11 +262,33 @@ export const LiveActivity = memo(function LiveActivity({
                     </button>
                   );
                 })}
-                {issues.map((item) => (
-                  <p key={item.id} className={styles.activityIssue}>
-                    {item.label} · {observations[item.id]?.reason}
-                  </p>
-                ))}
+                {issues.length > 0 && (
+                  <div className={styles.activityIssues}>
+                    <button
+                      type="button"
+                      className={styles.activityIssueToggle}
+                      aria-expanded={issuesExpanded[kind]}
+                      onClick={() => setIssuesExpanded((v) => ({ ...v, [kind]: !v[kind] }))}
+                    >
+                      {issues.length}{" "}
+                      {issues.length === 1 ? "source unavailable" : "sources unavailable"}
+                      <ChevronRight size={15} aria-hidden="true" />
+                    </button>
+                    {issuesExpanded[kind] &&
+                      issues.map((item) => (
+                        <button
+                          type="button"
+                          key={item.id}
+                          className={styles.activityIssue}
+                          aria-label={`${item.label}: ${observations[item.id]?.reason}`}
+                          onClick={() => onDetails(item.id)}
+                        >
+                          <span>{item.label}</span>
+                          <span>{observations[item.id]?.reason}</span>
+                        </button>
+                      ))}
+                  </div>
+                )}
               </div>
             </section>
           );

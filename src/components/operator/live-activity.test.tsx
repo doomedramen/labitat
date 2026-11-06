@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
+import { renderToString } from "react-dom/server";
 import type { ItemLive } from "@/lib/live-types";
 import type { ItemRow } from "@/lib/types";
 
@@ -95,7 +96,8 @@ it("does not present stale or disabled activity as current", async () => {
     sessions: [{ title: "Private stream", user: "Alex", progress: 5, duration: 10 }],
   });
   render(<LiveActivity items={items} initialNow={state.now} onDetails={vi.fn()} />);
-  expect(await screen.findByText(/Client · Saved data/)).toBeVisible();
+  fireEvent.click(await screen.findByRole("button", { name: "1 source unavailable" }));
+  expect(screen.getByRole("button", { name: /Client: Saved data/ })).toBeVisible();
   expect(screen.queryByText("Old download")).toBeNull();
   expect(screen.queryByText("Private stream")).toBeNull();
   expect(
@@ -152,6 +154,51 @@ it("summarizes idle activity only after every source has reported", async () => 
       onDetails={vi.fn()}
     />,
   );
-  expect(await screen.findByText(/Client · Saved data/)).toBeVisible();
+  expect(await screen.findByRole("button", { name: "1 source unavailable" })).toBeVisible();
   expect(container.querySelector("[data-idle]")).toBeNull();
+});
+
+it("starts with server observations and consolidates stale sources until requested", async () => {
+  const sources = Array.from({ length: 8 }, (_, index) => item(`Client ${index}`, "qbittorrent"));
+  const snapshots = Object.fromEntries(
+    sources.map((source) => [
+      source.id,
+      live({ _status: "ok", showDownloads: true, downloads: [] }, "stale"),
+    ]),
+  );
+  state.live = snapshots;
+  const open = vi.fn();
+  const { container } = render(
+    <LiveActivity
+      items={sources}
+      initialNow={state.now}
+      initialSnapshotById={snapshots}
+      onDetails={open}
+    />,
+  );
+  expect(screen.queryByText("Checking activity…")).toBeNull();
+  const summary = screen.getByRole("button", { name: "8 sources unavailable" });
+  expect(summary).toHaveAttribute("aria-expanded", "false");
+  expect(container.querySelectorAll("[class*=activityIssue]")).toHaveLength(2);
+  fireEvent.click(summary);
+  fireEvent.click(screen.getByRole("button", { name: /Client 0: Saved data/ }));
+  expect(open).toHaveBeenCalledWith("Client 0");
+});
+
+it("renders available activity in the initial server output", () => {
+  const snapshot = live({
+    _status: "ok",
+    showDownloads: true,
+    downloads: [{ title: "First render download", progress: 40 }],
+  });
+  const html = renderToString(
+    <LiveActivity
+      items={[items[0]]}
+      initialNow={state.now}
+      initialSnapshotById={{ Client: snapshot }}
+      onDetails={vi.fn()}
+    />,
+  );
+  expect(html).toContain("First render download");
+  expect(html).not.toContain("Checking activity");
 });

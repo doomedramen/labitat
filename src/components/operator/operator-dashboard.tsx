@@ -556,7 +556,12 @@ export function OperatorDashboard({
               </select>
             </label>
           </div>
-          <LiveActivity items={activityItems} initialNow={serverNow} onDetails={openDetails} />
+          <LiveActivity
+            items={activityItems}
+            initialNow={serverNow}
+            initialSnapshotById={initialSnapshotById}
+            onDetails={openDetails}
+          />
         </>
       )}
       {arranging && (
