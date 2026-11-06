@@ -23,6 +23,12 @@ test("mobile-first mixed service board", async ({ page }) => {
     const titleBounds = (await page.getByRole("heading", { level: 1 }).boundingBox())!;
     const filterBounds = (await filter.boundingBox())!;
     expect(filterBounds.y).toBeGreaterThanOrEqual(titleBounds.y + titleBounds.height);
+    if (width >= 1200) {
+      const toolbar = (await page.locator('[aria-label="Service filters"]').boundingBox())!;
+      const picker = (await page.getByRole("combobox", { name: "Filter by group" }).boundingBox())!;
+      expect(Math.abs(toolbar.height - picker.height)).toBeLessThanOrEqual(1);
+      expect(Math.abs(toolbar.y - picker.y)).toBeLessThanOrEqual(1);
+    }
 
     await expect(
       page.locator("section[data-group-id]").first().getByText("06", { exact: true }),
