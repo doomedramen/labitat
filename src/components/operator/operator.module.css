@@ -1445,6 +1445,10 @@ a.serviceName:active {
   order: 2;
 }
 @media (max-width: 639px) {
+  .groupHeader::after {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
   .metrics .metric,
   .metrics:is([data-count="3"], [data-count="4"]) .metric {
     flex-direction: column;
