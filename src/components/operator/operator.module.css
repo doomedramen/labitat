@@ -1747,7 +1747,8 @@ a.serviceName:active {
     margin-bottom: 6px;
   }
   .groupHeader::after {
-    flex: 0 1 32px;
+    flex: 1 1 auto;
+    min-width: 0;
     margin-right: 0;
   }
   .tile,

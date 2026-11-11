@@ -86,7 +86,6 @@ export const LiveActivity = memo(function LiveActivity({
   const [issuesExpanded, setIssuesExpanded] = useState({ downloads: false, streams: false });
   useEffect(() => {
     function resetActivityDisclosure() {
-      if (document.visibilityState !== "visible") return;
       setExpanded({ downloads: false, streams: false });
       setIssuesExpanded({ downloads: false, streams: false });
     }
