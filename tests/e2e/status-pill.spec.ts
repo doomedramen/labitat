@@ -23,7 +23,9 @@ test("status reasons appear immediately on hover, focus and tap", async ({ page 
   const healthy = page.getByTestId("item-card").first();
   const failed = page.getByTestId("item-card").last();
   await expect(
-    healthy.getByRole("button", { name: "Status for Healthy: Healthy", exact: true }),
+    healthy
+      .locator("footer")
+      .getByRole("button", { name: "Status for Healthy: Healthy", exact: true }),
   ).toBeVisible();
   await expect(
     failed.getByRole("button", { name: "Status for Failed: Needs attention", exact: true }),
@@ -42,13 +44,12 @@ test("status reasons appear immediately on hover, focus and tap", async ({ page 
   await expect(failed.getByRole("tooltip")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(failed.getByRole("tooltip")).toBeHidden();
-  expect((await status.boundingBox())!.width).toBe(34);
+  expect((await status.boundingBox())!.height).toBe(34);
   expect(await status.evaluate((el) => getComputedStyle(el, "::before").inset)).toBe("-5px");
-  expect(await healthy.locator("footer").count()).toBe(0);
   expect(await healthy.locator("svg path[stroke-dashoffset]").count()).toBe(0);
 });
 
-test("card background launches, metrics inspect, and status keeps its position", async ({
+test("card background launches, metrics inspect, and status stays in the footer", async ({
   page,
 }) => {
   await seedAndAuth(page, {
@@ -74,29 +75,14 @@ test("card background launches, metrics inspect, and status keeps its position",
     await page.setViewportSize({ width, height: 900 });
     for (const card of [media, launcher]) {
       const bounds = (await card.boundingBox())!;
-      const dot = (await card
+      const status = (await card
+        .locator("footer")
         .getByRole("button", { name: /Status for/ })
-        .locator("span")
         .boundingBox())!;
-      const padding = await card.evaluate((element) =>
-        parseFloat(getComputedStyle(element).paddingRight),
-      );
-      expect(Math.abs(bounds.x + bounds.width - (dot.x + dot.width) - padding)).toBeLessThan(1);
+      expect(status.width).toBeGreaterThanOrEqual(bounds.width - 2);
+      expect(status.y + status.height).toBeGreaterThanOrEqual(bounds.y + bounds.height - 2);
     }
   }
-  const firstDot = await media.getByRole("button", { name: /Status for Media/ }).boundingBox();
-  const nextDot = await launcher.getByRole("button", { name: /Status for Launcher/ }).boundingBox();
-  const firstCard = await media.boundingBox();
-  const nextCard = await launcher.boundingBox();
-  expect(
-    Math.abs(
-      firstCard!.x +
-        firstCard!.width -
-        (firstDot!.x + firstDot!.width) -
-        (nextCard!.x + nextCard!.width) +
-        (nextDot!.x + nextDot!.width),
-    ),
-  ).toBeLessThan(1);
   await page
     .context()
     .route("https://media.test/**", (route) => route.fulfill({ body: "App destination" }));

@@ -75,7 +75,9 @@ export const ServiceTile = memo(function ServiceTile({
         presentation.metrics,
         parseStatCardOrder(item.statCardOrder),
         presentation.defaultActiveIds,
-      ).activeItems.slice(0, 4),
+      )
+        .activeItems.slice(0, 4)
+        .map((metric) => ({ ...metric, compactValue: compactMetric(metric) })),
     [presentation, item.statCardOrder],
   );
   const label = item.label || service?.name || "Service";
@@ -232,12 +234,15 @@ export const ServiceTile = memo(function ServiceTile({
             <span
               className={styles.metrics}
               data-count={metrics.length}
+              data-wide-values={
+                metrics.some((metric) => metric.compactValue.length > 6) || undefined
+              }
               style={{ "--metric-count": metrics.length } as CSSProperties}
             >
               {metrics.map((metric) => (
                 <span className={styles.metric} key={metric.id}>
                   <span className={styles.metricValue} title={metric.displayValue}>
-                    {compactMetric(metric)}
+                    {metric.compactValue}
                   </span>
                   <span className={styles.metricLabel} title={metric.label}>
                     {metric.label}

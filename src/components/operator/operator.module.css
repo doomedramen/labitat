@@ -2161,6 +2161,11 @@ a.serviceName:active {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+@container (max-width: 375px) {
+  .tile[data-overview] .metrics[data-wide-values]:is([data-count="3"], [data-count="4"]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 639px) {
   .tile[data-overview] {
     min-height: 120px;
