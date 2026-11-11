@@ -53,6 +53,7 @@ export const transmissionDefinition: ServiceDefinition<TransmissionData> = {
   name: "Transmission",
   icon: "transmission",
   category: "downloads",
+  activityKind: "downloads",
   defaultPollingMs: 5_000,
 
   configFields: [

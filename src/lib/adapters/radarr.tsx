@@ -57,6 +57,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
   name: "Radarr",
   icon: "radarr",
   category: "downloads",
+  activityKind: "downloads",
   defaultPollingMs: 10_000,
   configFields: [
     {

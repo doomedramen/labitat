@@ -57,6 +57,7 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
   name: "Sonarr",
   icon: "sonarr",
   category: "downloads",
+  activityKind: "downloads",
   defaultPollingMs: 10_000,
   configFields: [
     {

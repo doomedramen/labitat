@@ -73,6 +73,7 @@ export const tautulliDefinition: ServiceDefinition<TautulliData> = {
   name: "Tautulli",
   icon: "tautulli",
   category: "media",
+  activityKind: "streams",
   defaultPollingMs: 10_000,
   configFields: [
     {

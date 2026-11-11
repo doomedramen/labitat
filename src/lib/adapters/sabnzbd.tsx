@@ -46,6 +46,7 @@ export const sabnzbdDefinition: ServiceDefinition<SABnzbdData> = {
   name: "SABnzbd",
   icon: "sabnzbd",
   category: "downloads",
+  activityKind: "downloads",
   defaultPollingMs: 10_000,
   configFields: [
     {

@@ -1294,7 +1294,7 @@ a.serviceName:active {
   gap: 12px;
   align-items: stretch;
 }
-.grid > * {
+.grid > :not([data-overview]) {
   border: 0 !important;
 }
 .tile,
@@ -1924,5 +1924,256 @@ a.serviceName:active {
     border-radius: 9px;
     background: var(--card);
     font-size: 16px;
+  }
+}
+
+/* Overview cards share a status footer. The featured card spans its two neighbors. */
+.tile[data-overview] {
+  --tile-inset: 16px;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 150px;
+  padding: 0;
+  container-type: inline-size;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px #00000008;
+}
+.tile[data-overview][data-severity="error"] {
+  border-color: color-mix(in srgb, var(--destructive) 34%, var(--border));
+}
+.tile[data-overview][data-featured] {
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+}
+.tile[data-overview] .tileHeader {
+  height: auto;
+  padding: 14px var(--tile-inset) 0;
+  gap: 9px;
+}
+.tile[data-overview] .serviceName {
+  justify-content: space-between;
+  height: auto;
+  min-height: 32px;
+}
+.tile[data-overview][data-featured] .serviceName {
+  font-size: 18px;
+  line-height: 1.25;
+}
+.tile[data-overview] .icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+.tile[data-overview][data-featured] .icon {
+  width: 36px;
+  height: 36px;
+}
+.tile[data-overview] .tileHeader svg {
+  width: 15px;
+  height: 15px;
+}
+.tile[data-overview] .inspect {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  min-height: 44px;
+  height: auto;
+  justify-content: flex-start;
+  padding: 12px var(--tile-inset) 14px;
+  border-radius: 0;
+}
+.tile[data-overview] .metrics {
+  grid-template-columns: repeat(var(--metric-count), minmax(0, 1fr));
+  gap: 6px;
+}
+.tile[data-overview] .metric {
+  align-items: flex-start;
+  flex-direction: column;
+  padding: 7px 6px;
+  background: color-mix(in srgb, var(--muted) 55%, var(--card));
+  border: 0;
+  border-radius: 7px;
+  text-align: start;
+}
+.tile[data-overview] .metricValue {
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+.tile[data-overview] .metricLabel {
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.tileProblemBody {
+  padding: 12px var(--tile-inset) 14px;
+}
+.tileProblem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 46px;
+  padding: 8px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--warning) 7%, var(--card));
+  color: var(--warning);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.tileProblem svg {
+  flex: none;
+}
+.tile[data-severity="error"] .tileProblem {
+  background: color-mix(in srgb, var(--destructive) 7%, var(--card));
+  color: var(--destructive);
+}
+.tileDetailsLabel {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.tileFooter {
+  margin-top: auto;
+  border-top: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+}
+.tileFooter .statusControl {
+  margin: 0;
+}
+.tileFooter .statusTrigger {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  padding: 0 var(--tile-inset);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  text-align: start;
+}
+.tileFooter .statusTrigger .healthDot {
+  width: 6px;
+  height: 6px;
+}
+.tileStatusLabel {
+  flex: 1;
+}
+.tile[data-stale] .tileStatusLabel,
+.tile[data-severity="warning"] .tileStatusLabel {
+  color: var(--warning);
+}
+.tile[data-severity="error"] .tileStatusLabel {
+  color: var(--destructive);
+}
+.tileAge {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.tileStatusCaret {
+  flex: none;
+}
+.statusControl[data-open] .tileStatusCaret {
+  transform: rotate(180deg);
+}
+.tileFooter .statusTooltip {
+  right: var(--tile-inset);
+  max-width: min(280px, calc(100% - 2 * var(--tile-inset)));
+}
+.tile[data-overview]:has(.statusControl[data-open], .statusControl:focus-within) {
+  z-index: 4;
+}
+.tileActivity {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  margin: 0 var(--tile-inset) var(--tile-inset);
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.tileActivityHeader,
+.tileActivityHeader h4,
+.tileActivityLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+.tileActivityHeader h4 {
+  justify-content: flex-start;
+  font-weight: 600;
+}
+.tileActivityHeader svg,
+.tileActivityLine > span:nth-child(2),
+.tileActivityMore {
+  color: var(--primary);
+}
+.tileActivityMore {
+  min-height: 44px;
+  margin-block: -10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.tileActivityList {
+  display: grid;
+  flex: 1;
+  align-content: space-evenly;
+  gap: 12px;
+}
+.tileActivityEntry {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.tileActivityLine > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tileActivityLine > span:nth-child(2) {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.tileActivityEntry .activityProgress {
+  height: 4px;
+  margin: 0;
+}
+.tileActivityEntry p,
+.tileActivityEmpty {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+@container (max-width: 300px) {
+  .tile[data-overview] .metric {
+    padding-inline: 4px;
+  }
+  .tile[data-overview] .metricValue {
+    font-size: clamp(13px, 5cqi, 16px);
+  }
+}
+@container (max-width: 250px) {
+  .tile[data-overview] .metrics:is([data-count="3"], [data-count="4"]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 639px) {
+  .tile[data-overview] {
+    min-height: 120px;
+  }
+}
+@media (min-width: 640px) {
+  .board .group .grid[data-bento] {
+    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
+  }
+  .grid[data-bento="stack"] > .tile[data-featured] {
+    grid-row: span 2;
+  }
+  .grid[data-bento="wide"] > .tile[data-featured] {
+    grid-column: 1 / -1;
   }
 }

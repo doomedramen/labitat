@@ -63,6 +63,7 @@ export const jellyfinDefinition: ServiceDefinition<JellyfinData> = {
   name: "Jellyfin",
   icon: "jellyfin",
   category: "media",
+  activityKind: "streams",
   defaultPollingMs: 10_000,
 
   configFields: [

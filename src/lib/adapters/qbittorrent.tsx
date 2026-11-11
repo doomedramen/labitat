@@ -57,6 +57,7 @@ export const qbittorrentDefinition: ServiceDefinition<QBittorrentData> = {
   name: "qBittorrent",
   icon: "qbittorrent",
   category: "downloads",
+  activityKind: "downloads",
   defaultPollingMs: 10_000,
   configFields: [
     {

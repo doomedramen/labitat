@@ -118,6 +118,8 @@ export type ServiceDefinition<TData extends ServiceData = ServiceData> = {
   name: string;
   icon: string; // selfh.st slug or full URL
   category: ServiceCategory;
+  /** Activity provided by toPayload, including when the queue or session list is empty. */
+  activityKind?: "downloads" | "streams";
   configFields: FieldDef[];
   defaultPollingMs?: number;
   /** Serializable overview metrics; specialized UI belongs in renderWidget. */

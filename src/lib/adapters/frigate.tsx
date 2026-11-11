@@ -67,6 +67,7 @@ export const frigateDefinition: ServiceDefinition<FrigateData> = {
   name: "Frigate",
   icon: "frigate",
   category: "monitoring",
+  activityKind: "streams",
   defaultPollingMs: 30_000,
 
   configFields: [
