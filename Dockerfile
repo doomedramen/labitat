@@ -10,7 +10,7 @@ RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml* .npmrc* ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 
 # Install dependencies — skip lifecycle scripts (no git repo in build context)
 # then rebuild native modules (better-sqlite3, sharp, etc.) explicitly
