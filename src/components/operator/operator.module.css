@@ -1927,7 +1927,11 @@ a.serviceName:active {
   }
 }
 
-/* Overview cards share a status footer. The featured card spans its two neighbors. */
+.grid {
+  --compact-tile-height: 74px;
+}
+
+/* Overview cards share a status footer. */
 .tile[data-overview] {
   --tile-inset: 16px;
   display: flex;
@@ -1943,9 +1947,6 @@ a.serviceName:active {
 .tile[data-overview][data-severity="error"] {
   border-color: color-mix(in srgb, var(--destructive) 34%, var(--border));
 }
-.tile[data-overview][data-featured] {
-  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
-}
 .tile[data-overview] .tileHeader {
   height: auto;
   padding: 14px var(--tile-inset) 0;
@@ -1956,18 +1957,10 @@ a.serviceName:active {
   height: auto;
   min-height: 32px;
 }
-.tile[data-overview][data-featured] .serviceName {
-  font-size: 18px;
-  line-height: 1.25;
-}
 .tile[data-overview] .icon {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-}
-.tile[data-overview][data-featured] .icon {
-  width: 36px;
-  height: 36px;
 }
 .tile[data-overview] .tileHeader svg {
   width: 15px;
@@ -1977,7 +1970,7 @@ a.serviceName:active {
   position: relative;
   inset: auto;
   width: 100%;
-  min-height: 44px;
+  min-height: 76px;
   height: auto;
   justify-content: flex-start;
   padding: 12px var(--tile-inset) 14px;
@@ -1988,13 +1981,10 @@ a.serviceName:active {
   gap: 6px;
 }
 .tile[data-overview] .metric {
-  align-items: flex-start;
-  flex-direction: column;
   padding: 7px 6px;
   background: color-mix(in srgb, var(--muted) 55%, var(--card));
   border: 0;
   border-radius: 7px;
-  text-align: start;
 }
 .tile[data-overview] .metricValue {
   font-size: 17px;
@@ -2006,9 +1996,6 @@ a.serviceName:active {
   line-height: 1.35;
   white-space: normal;
   overflow-wrap: anywhere;
-}
-.tileProblemBody {
-  padding: 12px var(--tile-inset) 14px;
 }
 .tileProblem {
   display: flex;
@@ -2081,73 +2068,6 @@ a.serviceName:active {
 .tile[data-overview]:has(.statusControl[data-open], .statusControl:focus-within) {
   z-index: 4;
 }
-.tileActivity {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-  margin: 0 var(--tile-inset) var(--tile-inset);
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-.tileActivityHeader,
-.tileActivityHeader h4,
-.tileActivityLine {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
-}
-.tileActivityHeader h4 {
-  justify-content: flex-start;
-  font-weight: 600;
-}
-.tileActivityHeader svg,
-.tileActivityLine > span:nth-child(2),
-.tileActivityMore {
-  color: var(--primary);
-}
-.tileActivityMore {
-  min-height: 44px;
-  margin-block: -10px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.tileActivityList {
-  display: grid;
-  flex: 1;
-  align-content: space-evenly;
-  gap: 12px;
-}
-.tileActivityEntry {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-.tileActivityLine > span:first-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.tileActivityLine > span:nth-child(2) {
-  flex: none;
-  font-variant-numeric: tabular-nums;
-}
-.tileActivityEntry .activityProgress {
-  height: 4px;
-  margin: 0;
-}
-.tileActivityEntry p,
-.tileActivityEmpty {
-  color: var(--muted-foreground);
-  font-size: 11px;
-  overflow-wrap: anywhere;
-}
 @container (max-width: 300px) {
   .tile[data-overview] .metric {
     padding-inline: 4px;
@@ -2157,12 +2077,21 @@ a.serviceName:active {
   }
 }
 @container (max-width: 250px) {
-  .tile[data-overview] .metrics:is([data-count="3"], [data-count="4"]) {
+  .tile[data-overview] .metrics[data-count="4"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @container (max-width: 375px) {
-  .tile[data-overview] .metrics[data-wide-values]:is([data-count="3"], [data-count="4"]) {
+  .tile[data-overview] .metrics[data-count="3"] {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .tile[data-overview] .metrics[data-count="3"] .metric {
+    flex: 1 1 0;
+    min-width: auto;
+    max-width: 100%;
+  }
+  .tile[data-overview] .metrics[data-count="4"][data-wide-values] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -2171,14 +2100,47 @@ a.serviceName:active {
     min-height: 120px;
   }
 }
+.tile[data-overview][data-layout="launcher"] {
+  --compact-title-inset: calc(var(--tile-inset) + 41px);
+  align-self: start;
+  min-height: var(--compact-tile-height);
+}
+.tile[data-overview][data-layout="launcher"] .tileHeader {
+  padding-block-start: 10px;
+  padding-inline-start: var(--compact-title-inset);
+}
+.tile[data-overview][data-layout="launcher"] .serviceName {
+  min-height: 22px;
+}
+.tile[data-overview][data-layout="launcher"] .icon {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: var(--tile-inset);
+  translate: 0 -50%;
+}
+.tile[data-overview][data-layout="launcher"] .tileFooter {
+  border-top: 0;
+}
+.tile[data-overview][data-layout="launcher"] .statusTrigger {
+  padding-inline-start: var(--compact-title-inset);
+  padding-block-end: 8px;
+}
+.tile[data-overview][data-layout="launcher"] .statusTrigger::before {
+  inset: 0 0 -10px;
+}
 @media (min-width: 640px) {
-  .board .group .grid[data-bento] {
-    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
-  }
-  .grid[data-bento="stack"] > .tile[data-featured] {
-    grid-row: span 2;
-  }
-  .grid[data-bento="wide"] > .tile[data-featured] {
-    grid-column: 1 / -1;
+  /* Sparse placement keeps the saved order as cards span rows. */
+  .board
+    .group
+    .grid:has(> [data-overview][data-layout="launcher"]):has(
+      > [data-overview][data-layout="metrics"]
+    ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(var(--compact-tile-height), auto);
+    grid-auto-flow: row;
+
+    > [data-layout="metrics"] {
+      grid-row: span 2;
+    }
   }
 }

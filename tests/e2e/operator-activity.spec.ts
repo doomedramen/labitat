@@ -63,13 +63,18 @@ test("24 services across three groups retain aligned desktop rows", async ({ pag
   await page.goto("/");
   await expect(page.getByTestId("item-card")).toHaveCount(24);
   const cards = page.getByTestId("item-card");
-  const [first, peer, , fourth, nextRow] = await cards.evaluateAll((elements) =>
-    elements.slice(0, 5).map((element) => element.getBoundingClientRect().toJSON()),
+  const boxes = await cards.evaluateAll((elements) =>
+    elements.map((element) => element.getBoundingClientRect().toJSON()),
   );
-  expect(first.y).toBe(peer.y);
+  const [first, peer, third, fourth, nextRow] = boxes;
+  expect(first.top).toBe(peer.top);
   expect(first.height).toBe(peer.height);
-  expect(first.y).toBe(fourth.y);
-  expect(nextRow.y).toBeGreaterThan(first.y);
+  expect(third.top).toBeGreaterThan(first.bottom);
+  expect(third.top).toBe(fourth.top);
+  expect(nextRow.top).toBeGreaterThan(third.bottom);
+  const linkRow = boxes.slice(8, 12);
+  expect(new Set(linkRow.map((box) => box.top)).size).toBe(1);
+  expect(new Set(linkRow.map((box) => box.left)).size).toBe(4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1440);
 });
 

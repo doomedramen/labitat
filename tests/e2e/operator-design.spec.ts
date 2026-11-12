@@ -11,6 +11,7 @@ test("mobile-first mixed service board", async ({ page }) => {
     [320, 740, "small-phone"],
     [390, 844, "phone"],
     [600, 1000, "narrow"],
+    [768, 1239, "tablet"],
     [1440, 1000, "desktop"],
     [1800, 1000, "wide"],
   ] as const) {
@@ -65,6 +66,19 @@ test("mobile-first mixed service board", async ({ page }) => {
         const text = rates.getByText(value, { exact: true });
         expect(await text.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
       }
+    }
+    if (width === 768 || width === 320) {
+      const metrics = page.getByRole("button", { name: "Inspect SABnzbd", exact: true });
+      const values = await Promise.all(
+        ["33.2 M", "0:01:15", "1"].map((value) =>
+          metrics.getByText(value, { exact: true }).evaluate((el) => ({
+            top: el.getBoundingClientRect().top,
+            fits: el.scrollWidth <= el.clientWidth,
+          })),
+        ),
+      );
+      expect(new Set(values.map(({ top }) => top)).size).toBe(1);
+      expect(values.every(({ fits }) => fits)).toBe(true);
     }
     await page.screenshot({ path: `test-results/operator-design-${name}.png`, fullPage: true });
   }

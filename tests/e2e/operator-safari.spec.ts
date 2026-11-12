@@ -23,14 +23,16 @@ test.describe("Touch-first Safari", () => {
     expect(
       (await page.getByTestId("item-card").first().boundingBox())!.height,
     ).toBeGreaterThanOrEqual(120);
+    const status = page.getByRole("button", { name: /Status for Tautulli/ });
+    expect((await status.boundingBox())!.height).toBe(34);
     expect(
-      (await page.getByRole("button", { name: /Status for Tautulli/ }).boundingBox())!.height,
-    ).toBe(34);
-    expect(
-      await page
-        .getByRole("button", { name: /Status for Tautulli/ })
-        .evaluate((el) => getComputedStyle(el, "::before").inset),
-    ).toBe("-5px");
+      await status.evaluate((el) => {
+        const target = getComputedStyle(el, "::before");
+        return (
+          el.getBoundingClientRect().height - parseFloat(target.top) - parseFloat(target.bottom)
+        );
+      }),
+    ).toBeGreaterThanOrEqual(44);
     await page.getByRole("button", { name: "Inspect Seerr", exact: true }).tap();
     const panel = page.getByRole("dialog", { name: "Seerr", exact: true });
     await expect(panel).toBeVisible();

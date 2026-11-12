@@ -5,8 +5,6 @@ import type { ItemLive } from "./live-types";
 import { serviceHealth } from "./service-health";
 import type { ItemRow } from "./types";
 
-export const FEATURED_SERVICE_SETTING = "featuredServiceId";
-
 export function serviceActivityKind(type: string | null): "downloads" | "streams" | null {
   return (type && getService(type)?.activityKind) || null;
 }

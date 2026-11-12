@@ -11,13 +11,15 @@ test.describe("Mobile Layout", () => {
   test("dashboard renders in single column on small viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
 
-    // Items grid should collapse to single column
     const cards = page.getByTestId("item-card");
+    await expect(cards).toHaveCount(3);
     const boxes = await cards.evaluateAll((elements) =>
       elements.map((element) => element.getBoundingClientRect().toJSON()),
     );
     expect(new Set(boxes.map((box) => box.x)).size).toBe(1);
-    expect(boxes.every((box) => box.height >= 120)).toBe(true);
+    expect(boxes.every((box) => box.height >= 44 && box.height < 120)).toBe(true);
+    for (const [index, box] of boxes.slice(1).entries())
+      expect(box.top).toBeGreaterThan(boxes[index].bottom);
   });
 
   test("header is responsive on small viewport", async ({ page }) => {

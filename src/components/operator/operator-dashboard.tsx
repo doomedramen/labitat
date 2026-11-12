@@ -41,7 +41,6 @@ import type { GroupWithItems, GroupWithCache, ItemRow, ItemWithCache } from "@/l
 import type { ItemLive } from "@/lib/live-types";
 import { getService } from "@/lib/adapters";
 import { serviceHealth } from "@/lib/service-health";
-import { serviceActivityKind } from "@/lib/service-activity";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { useItemLive, useLiveConnection } from "@/components/dashboard/use-item-live";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
@@ -74,7 +73,6 @@ import { logout } from "@/actions/auth";
 import { ServiceTile, type HealthSummary } from "./service-tile";
 import { ServiceDetails } from "./service-details";
 import { LiveActivity } from "./live-activity";
-import { FeaturedServiceDialog } from "./featured-service-dialog";
 import styles from "./operator.module.css";
 
 type Filter = "all" | "attention" | "stale";
@@ -115,7 +113,6 @@ export function OperatorDashboard({
   groups,
   revision,
   title,
-  featuredServiceId = null,
   canEdit,
   initialSnapshotById,
   serverNow,
@@ -123,7 +120,6 @@ export function OperatorDashboard({
   groups: GroupWithItems[];
   revision: number;
   title: string;
-  featuredServiceId?: string | null;
   canEdit: boolean;
   initialSnapshotById: Record<string, ItemLive>;
   serverNow: number;
@@ -207,7 +203,6 @@ export function OperatorDashboard({
   } | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
-  const [featuredServiceOpen, setFeaturedServiceOpen] = useState(false);
   const [titleDraft, setTitleDraft] = useState(title);
   const [titleSaving, setTitleSaving] = useState(false);
   const [titleError, setTitleError] = useState<string | null>(null);
@@ -343,9 +338,6 @@ export function OperatorDashboard({
   }
   const visible = draft ?? canonical;
   const items = useMemo(() => canonical.flatMap((group) => group.items), [canonical]);
-  const featuredItem = items.find(
-    (item) => item.id === featuredServiceId && serviceActivityKind(item.serviceType),
-  );
   const queryText = query.trim().toLowerCase();
   const filtered = useMemo(() => {
     const matches = (item: ItemRow, group: GroupWithItems) =>
@@ -369,10 +361,7 @@ export function OperatorDashboard({
             !visible.find((original) => original.id === group.id)?.items.length),
       );
   }, [visible, arranging, selectedGroup, queryText, filter, health]);
-  const activityItems = useMemo(
-    () => filtered.flatMap((group) => group.items.filter((item) => item.id !== featuredItem?.id)),
-    [filtered, featuredItem?.id],
-  );
+  const activityItems = useMemo(() => filtered.flatMap((group) => group.items), [filtered]);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -460,12 +449,6 @@ export function OperatorDashboard({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onSelect={startArranging}>Arrange dashboard</DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={!items.some((item) => serviceActivityKind(item.serviceType))}
-                  onSelect={() => setFeaturedServiceOpen(true)}
-                >
-                  Featured service
-                </DropdownMenuItem>
                 <DropdownMenuItem
                   disabled={!canonical.length}
                   onSelect={() => setItemEditor({ item: null, groupId: canonical[0]?.id ?? "" })}
@@ -624,7 +607,6 @@ export function OperatorDashboard({
                 initialNow={serverNow}
                 key={group.id}
                 group={group}
-                featuredServiceId={arranging ? undefined : featuredItem?.id}
                 arranging={arranging}
                 disabled={saving}
                 allGroups={visible}
@@ -721,13 +703,6 @@ export function OperatorDashboard({
           onGroupsChanged={refreshGroups}
         />
       )}
-      {featuredServiceOpen && (
-        <FeaturedServiceDialog
-          groups={canonical}
-          featuredServiceId={featuredItem?.id ?? null}
-          onClose={() => setFeaturedServiceOpen(false)}
-        />
-      )}
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => {
@@ -810,7 +785,6 @@ export function OperatorDashboard({
 function OperatorGroup({
   initialNow,
   group,
-  featuredServiceId,
   arranging,
   disabled,
   allGroups,
@@ -824,7 +798,6 @@ function OperatorGroup({
 }: {
   initialNow: number;
   group: GroupWithItems;
-  featuredServiceId?: string;
   arranging: boolean;
   disabled: boolean;
   allGroups: GroupWithItems[];
@@ -836,10 +809,6 @@ function OperatorGroup({
   onDelete: () => void;
   canEdit: boolean;
 }) {
-  const featured = group.items.find((item) => item.id === featuredServiceId);
-  const displayedItems = featured
-    ? [featured, ...group.items.filter((item) => item.id !== featured.id)]
-    : group.items;
   const GroupIcon =
     (
       {
@@ -927,14 +896,13 @@ function OperatorGroup({
       <div
         ref={drop.setNodeRef}
         className={styles.grid}
-        data-bento={featured ? (displayedItems.length >= 3 ? "stack" : "wide") : undefined}
         style={drop.isOver ? { outline: "1px dashed var(--primary)", outlineOffset: 3 } : undefined}
       >
         <SortableContext
           items={group.items.map((item) => `item:${item.id}`)}
           strategy={rectSortingStrategy}
         >
-          {displayedItems.map((item, index) =>
+          {group.items.map((item, index) =>
             arranging ? (
               <ArrangingTile
                 initialNow={initialNow}
@@ -954,7 +922,6 @@ function OperatorGroup({
                 item={item}
                 onDetails={onDetails}
                 initialNow={initialNow}
-                featured={item.id === featured?.id}
               />
             ),
           )}

@@ -54,10 +54,10 @@ export const operatorDesignGroups = [
     name: "Downloads",
     items: [
       app("SABnzbd", "sabnzbd", {
-        speed: "0 B/s",
-        remaining: "—",
-        queueSize: 0,
-        downloading: false,
+        speed: "33.2 M",
+        remaining: "0:01:15",
+        queueSize: 1,
+        downloading: true,
       }),
       app("qBittorrent", "qbittorrent", {
         downSpeed: "12.4 MB/s",
@@ -79,7 +79,7 @@ export const operatorDesignGroups = [
         _statusText: "Printer connection unavailable",
       }),
       link("Calibre-Web", "calibre-web"),
-      app("Calibre Downloader", "calibre-downloader", { active: 0, queued: 0 }),
+      app("Calibre Downloader", "generic-rest", { label: "Queued", value: 0 }),
       link("Home Assistant", "home-assistant"),
       link("TagTeam"),
       link("Norish", "norish"),

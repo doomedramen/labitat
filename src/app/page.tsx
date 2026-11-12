@@ -5,19 +5,17 @@ import { readDashboardLayout } from "@/lib/dashboard-layout";
 import { OperatorDashboard } from "@/components/operator/operator-dashboard";
 import type { ItemLive } from "@/lib/live-types";
 import { LiveProvider } from "@/components/dashboard/live-provider";
-import { FEATURED_SERVICE_SETTING } from "@/lib/service-activity";
 // This page is always dynamic due to session auth, database queries, and cookie usage
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function DashboardContent() {
-  let canEdit, layout, titleSetting, featuredSetting;
+  let canEdit, layout, titleSetting;
   try {
-    [canEdit, layout, titleSetting, featuredSetting] = await Promise.all([
+    [canEdit, layout, titleSetting] = await Promise.all([
       hasEditAccess(),
       Promise.resolve(readDashboardLayout()),
       getOrSeedSetting("dashboardTitle"),
-      getOrSeedSetting(FEATURED_SERVICE_SETTING),
     ]);
   } catch (err) {
     console.error("[labitat] Failed to load dashboard data:", err);
@@ -68,7 +66,6 @@ async function DashboardContent() {
         groups={groupsWithItems}
         revision={layout.revision}
         title={dashboardTitle}
-        featuredServiceId={featuredSetting?.value ?? null}
         canEdit={canEdit}
         initialSnapshotById={initialSnapshotById}
         serverNow={Date.now()}
