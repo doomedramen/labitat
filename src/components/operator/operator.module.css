@@ -715,9 +715,6 @@
   }
 }
 
-.inspect:active {
-  background: color-mix(in srgb, var(--primary) 8%, var(--card));
-}
 a.serviceName:active {
   color: var(--primary);
 }
