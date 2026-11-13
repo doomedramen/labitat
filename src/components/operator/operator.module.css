@@ -687,9 +687,6 @@
   }
 }
 @media (hover: hover) and (pointer: fine) {
-  .inspect:hover {
-    background: color-mix(in srgb, var(--foreground) 4%, transparent);
-  }
   a.serviceName:hover {
     color: var(--primary);
   }

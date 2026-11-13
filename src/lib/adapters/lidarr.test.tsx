@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { lidarrDefinition } from "@/lib/adapters/lidarr";
+import { clearLibraryCountCache } from "@/lib/adapters/library-count-cache";
 
 describe("lidarr definition", () => {
   it("has correct metadata", () => {
@@ -24,6 +25,7 @@ describe("lidarr definition", () => {
   describe("fetchData", () => {
     beforeEach(() => {
       vi.resetAllMocks();
+      clearLibraryCountCache();
     });
 
     afterEach(() => {

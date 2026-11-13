@@ -38,6 +38,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DATABASE_URL=file:/app/data/labitat.db
+# Next's standalone server binds to $HOSTNAME, which Docker sets to the container ID.
+# That resolves to the container IP only, so the localhost health check was refused.
+ENV HOSTNAME=0.0.0.0
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \

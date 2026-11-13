@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { radarrDefinition } from "@/lib/adapters/radarr";
+import { clearLibraryCountCache } from "@/lib/adapters/library-count-cache";
 
 describe("radarr definition", () => {
   it("has correct metadata", () => {
@@ -28,6 +29,7 @@ describe("radarr definition", () => {
   describe("fetchData", () => {
     beforeEach(() => {
       vi.resetAllMocks();
+      clearLibraryCountCache();
     });
 
     afterEach(() => {

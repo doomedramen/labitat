@@ -16,6 +16,7 @@ type RadarrData = {
   downloads?: DownloadItemData[];
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
+import { cachedLibraryCount } from "./library-count-cache";
 
 function radarrToPayload(data: RadarrData) {
   return {
@@ -98,11 +99,16 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     const showActiveDownloads = parseBool(config.showActiveDownloads);
     const enableQueue = parseBool(config.enableQueue, true);
 
-    const [queueRes, movieRes, missingRes, cutoffRes] = await Promise.all([
+    const [queueRes, movieCount, missingRes, cutoffRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/api/v3/queue?pageSize=50&includeMovie=true`, {
         headers,
       }),
-      fetchWithTimeout(`${baseUrl}/api/v3/movie`, { headers }),
+      cachedLibraryCount(`radarr:${baseUrl}:${config.apiKey}`, async () => {
+        const res = await fetchWithTimeout(`${baseUrl}/api/v3/movie`, { headers });
+        if (!res.ok) throw new Error(`Radarr error: ${res.status}`);
+        const movies = validateArrayResponse(await res.json(), { adapter: "radarr" });
+        return Array.isArray(movies) ? movies.length : 0;
+      }),
       fetchWithTimeout(`${baseUrl}/api/v3/wanted/missing?pageSize=1`, {
         headers,
       }),
@@ -112,7 +118,6 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
     ]);
 
     if (!queueRes.ok) throw new Error(`Radarr error: ${queueRes.status}`);
-    if (!movieRes.ok) throw new Error(`Radarr error: ${movieRes.status}`);
     if (!missingRes.ok) throw new Error(`Radarr error: ${missingRes.status}`);
 
     type QueueRecord = {
@@ -128,9 +133,6 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
       totalRecords?: number;
       records?: QueueRecord[];
     }>(await queueRes.json(), ["totalRecords"], [{ path: "records", type: "array" }], {
-      adapter: "radarr",
-    });
-    const movies = validateArrayResponse(await movieRes.json(), {
       adapter: "radarr",
     });
     const missing = validateResponse<{ totalRecords?: number }>(
@@ -202,7 +204,7 @@ export const radarrDefinition: ServiceDefinition<RadarrData> = {
       queued: queue.totalRecords ?? 0,
       missing: missing.totalRecords ?? 0,
       wanted: cutoff.totalRecords ?? 0,
-      movies: Array.isArray(movies) ? movies.length : 0,
+      movies: movieCount,
       showActiveDownloads,
       enableQueue,
       downloads,

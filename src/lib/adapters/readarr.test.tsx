@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { readarrDefinition } from "@/lib/adapters/readarr";
+import { clearLibraryCountCache } from "@/lib/adapters/library-count-cache";
 
 describe("readarr definition", () => {
   it("has correct metadata", () => {
@@ -24,6 +25,7 @@ describe("readarr definition", () => {
   describe("fetchData", () => {
     beforeEach(() => {
       vi.resetAllMocks();
+      clearLibraryCountCache();
     });
 
     afterEach(() => {

@@ -10,6 +10,7 @@ import { sonarrDefinition } from "@/lib/adapters/sonarr";
 import { adguardDefinition } from "@/lib/adapters/adguard";
 import { sabnzbdDefinition } from "@/lib/adapters/sabnzbd";
 import { plexDefinition } from "@/lib/adapters/plex";
+import { clearLibraryCountCache } from "@/lib/adapters/library-count-cache";
 import {
   createMockAdapter,
   withMockAdapter,
@@ -20,6 +21,8 @@ import {
 } from "../../../tests/helpers/mocks";
 
 describe("adapter mock utilities - examples", () => {
+  beforeEach(() => clearLibraryCountCache());
+
   describe("withMockAdapter - automatic setup/teardown", () => {
     it("fetches radarr data with default mocks", async () => {
       await withMockAdapter(mocks.radarr.success(), async () => {

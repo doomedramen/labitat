@@ -1,9 +1,11 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { whisparrDefinition } from "./whisparr";
+import { clearLibraryCountCache } from "./library-count-cache";
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Whisparr", () => {
+  beforeEach(() => clearLibraryCountCache());
   it.each([undefined, "3", "2"])("uses the correct library for version %s", async (version) => {
     const urls: string[] = [];
     vi.stubGlobal(

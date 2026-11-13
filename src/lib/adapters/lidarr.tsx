@@ -9,6 +9,7 @@ type LidarrData = {
   artists: number;
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
+import { cachedLibraryCount } from "./library-count-cache";
 
 function lidarrToPayload(data: LidarrData) {
   return {
@@ -65,19 +66,19 @@ export const lidarrDefinition: ServiceDefinition<LidarrData> = {
     const baseUrl = config.url.replace(/\/$/, "");
     const headers = { "X-Api-Key": config.apiKey };
 
-    const [artistsRes, wantedRes, queueRes] = await Promise.all([
-      fetchWithTimeout(`${baseUrl}/api/v1/artist`, { headers }),
+    const [artistCount, wantedRes, queueRes] = await Promise.all([
+      cachedLibraryCount(`lidarr:${baseUrl}:${config.apiKey}`, async () => {
+        const res = await fetchWithTimeout(`${baseUrl}/api/v1/artist`, { headers });
+        if (res.status === 401) throw new Error("Invalid API key");
+        if (res.status === 404) throw new Error("Lidarr not found at this URL");
+        if (!res.ok) throw new Error(`Lidarr error: ${res.status}`);
+        const data = await res.json();
+        return Array.isArray(data) ? data.length : 0;
+      }),
       fetchWithTimeout(`${baseUrl}/api/v1/wanted/missing`, { headers }),
       fetchWithTimeout(`${baseUrl}/api/v1/queue/status`, { headers }),
     ]);
 
-    if (!artistsRes.ok) {
-      if (artistsRes.status === 401) throw new Error("Invalid API key");
-      if (artistsRes.status === 404) throw new Error("Lidarr not found at this URL");
-      throw new Error(`Lidarr error: ${artistsRes.status}`);
-    }
-
-    const artistsData = await artistsRes.json();
     const wantedData = wantedRes.ok ? await wantedRes.json() : { totalRecords: 0 };
     const queueData = queueRes.ok ? await queueRes.json() : { totalCount: 0 };
 
@@ -85,7 +86,7 @@ export const lidarrDefinition: ServiceDefinition<LidarrData> = {
       _status: "ok" as const,
       queued: queueData.totalCount ?? 0,
       wanted: wantedData.totalRecords ?? 0,
-      artists: artistsData.length,
+      artists: artistCount,
     };
   },
 

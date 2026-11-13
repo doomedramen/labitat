@@ -15,6 +15,7 @@ type SonarrData = {
   downloads?: DownloadItemData[];
 };
 import { fetchWithTimeout } from "./fetch-with-timeout";
+import { cachedLibraryCount } from "./library-count-cache";
 import { parseBool } from "./validate";
 
 function sonarrToPayload(data: SonarrData) {
@@ -97,11 +98,16 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
     const showActiveDownloads = parseBool(config.showActiveDownloads);
     const enableQueue = parseBool(config.enableQueue, true);
 
-    const [queueRes, seriesRes, missingRes, cutoffRes] = await Promise.all([
+    const [queueRes, seriesCount, missingRes, cutoffRes] = await Promise.all([
       fetchWithTimeout(`${baseUrl}/api/v3/queue?pageSize=50&includeSeries=true`, {
         headers,
       }),
-      fetchWithTimeout(`${baseUrl}/api/v3/series`, { headers }),
+      cachedLibraryCount(`sonarr:${baseUrl}:${config.apiKey}`, async () => {
+        const res = await fetchWithTimeout(`${baseUrl}/api/v3/series`, { headers });
+        if (!res.ok) throw new Error(`Sonarr error: ${res.status}`);
+        const series = await res.json();
+        return Array.isArray(series) ? series.length : 0;
+      }),
       fetchWithTimeout(`${baseUrl}/api/v3/wanted/missing?pageSize=1`, {
         headers,
       }),
@@ -111,11 +117,9 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
     ]);
 
     if (!queueRes.ok) throw new Error(`Sonarr error: ${queueRes.status}`);
-    if (!seriesRes.ok) throw new Error(`Sonarr error: ${seriesRes.status}`);
     if (!missingRes.ok) throw new Error(`Sonarr error: ${missingRes.status}`);
 
     const queue = await queueRes.json();
-    const series = await seriesRes.json();
     const missing = await missingRes.json();
     const cutoff = cutoffRes.ok ? await cutoffRes.json() : { totalRecords: 0 };
 
@@ -189,7 +193,7 @@ export const sonarrDefinition: ServiceDefinition<SonarrData> = {
       queued: queue.totalRecords ?? 0,
       missing: missing.totalRecords ?? 0,
       wanted: cutoff.totalRecords ?? 0,
-      series: Array.isArray(series) ? series.length : 0,
+      series: seriesCount,
       showActiveDownloads,
       enableQueue,
       downloads,

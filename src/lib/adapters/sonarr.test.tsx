@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { sonarrDefinition } from "@/lib/adapters/sonarr";
+import { clearLibraryCountCache } from "@/lib/adapters/library-count-cache";
 
 describe("sonarr definition", () => {
   it("has correct metadata", () => {
@@ -28,6 +29,7 @@ describe("sonarr definition", () => {
   describe("fetchData", () => {
     beforeEach(() => {
       vi.resetAllMocks();
+      clearLibraryCountCache();
     });
 
     afterEach(() => {

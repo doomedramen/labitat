@@ -168,17 +168,17 @@ export const plexDefinition: ServiceDefinition<PlexData> = {
 
     await Promise.all(
       libraries.map(async ({ key, type }) => {
-        const endpoint =
-          type === "artist"
-            ? `${baseUrl}/library/sections/${key}/albums`
-            : `${baseUrl}/library/sections/${key}/all`;
+        // A zero-length page returns only totalSize instead of every item in the library.
+        const endpoint = `${baseUrl}/library/sections/${key}/${type === "artist" ? "albums" : "all"}?X-Plex-Container-Start=0&X-Plex-Container-Size=0`;
 
         try {
           const res = await fetchWithTimeout(endpoint, { headers });
           if (!res.ok) return;
 
           const text = await res.text();
-          const sizeMatch = text.match(/<MediaContainer[^>]*(?:totalSize|size)="(\d+)"/);
+          const sizeMatch =
+            text.match(/<MediaContainer[^>]*\btotalSize="(\d+)"/) ??
+            text.match(/<MediaContainer[^>]*\bsize="(\d+)"/);
           const count = sizeMatch ? parseInt(sizeMatch[1], 10) : 0;
 
           if (type === "movie") movies += count;
