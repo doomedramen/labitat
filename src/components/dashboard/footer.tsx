@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { Wifi, WifiOff, RefreshCw, Pause } from "lucide-react";
 import { useLiveMeta } from "@/components/dashboard/use-item-live";
 
 interface FooterProps {
@@ -32,11 +32,14 @@ export function Footer({ editMode }: FooterProps) {
   }
 
   const isConnected = meta.sseState === "connected";
+  const isPaused = meta.sseState === "paused";
 
   // Generate sync text based on connection state and last update time
   let syncText: string;
   if (!mounted) {
     syncText = "Loading…";
+  } else if (isPaused) {
+    syncText = "Paused while inactive";
   } else if (!isConnected) {
     syncText = "Reconnecting…";
   } else if (meta.lastUpdateAt === null) {
@@ -53,10 +56,12 @@ export function Footer({ editMode }: FooterProps) {
       <div className="flex items-center gap-1.5">
         {isConnected ? (
           <Wifi className="h-3 w-3 text-success" />
+        ) : isPaused ? (
+          <Pause className="h-3 w-3" />
         ) : (
           <WifiOff className="h-3 w-3 text-warning" />
         )}
-        <span>{isConnected ? "Live" : "Reconnecting…"}</span>
+        <span>{isConnected ? "Live" : isPaused ? "Paused" : "Reconnecting…"}</span>
       </div>
       <span className="h-3 w-px bg-border" aria-hidden />
       <div className="flex items-center gap-1.5">

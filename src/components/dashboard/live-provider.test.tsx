@@ -59,6 +59,62 @@ describe("LiveProvider app resume", () => {
     expect(MockEventSource.instances).toHaveLength(2);
   });
 
+  it("closes live updates for a hidden tab and reconnects when it is shown", () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("EventSource", MockEventSource);
+    const setVisibility = (value: "hidden" | "visible") => {
+      Object.defineProperty(document, "visibilityState", { configurable: true, value });
+      act(() => document.dispatchEvent(new Event("visibilitychange")));
+    };
+
+    const { unmount } = render(
+      <LiveProvider initialSnapshotById={{}} snapshotKey="hidden-test" enableSse>
+        <div />
+      </LiveProvider>,
+    );
+    const first = MockEventSource.instances[0]!;
+
+    setVisibility("hidden");
+    act(() => vi.advanceTimersByTime(29_000));
+    expect(first.close).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1_000));
+    expect(first.close).toHaveBeenCalledOnce();
+    expect(liveStore.getMeta().sseState).toBe("paused");
+    act(() => vi.advanceTimersByTime(120_000));
+    expect(MockEventSource.instances).toHaveLength(1);
+
+    setVisibility("visible");
+    expect(MockEventSource.instances).toHaveLength(2);
+    unmount();
+    vi.useRealTimers();
+  });
+
+  it("closes live updates after 15 idle minutes and reconnects on input", () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("EventSource", MockEventSource);
+    Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
+
+    const { unmount } = render(
+      <LiveProvider initialSnapshotById={{}} snapshotKey="idle-test" enableSse>
+        <div />
+      </LiveProvider>,
+    );
+    const first = MockEventSource.instances[0]!;
+
+    act(() => vi.advanceTimersByTime(10 * 60_000));
+    act(() => window.dispatchEvent(new Event("pointermove")));
+    act(() => vi.advanceTimersByTime(10 * 60_000));
+    expect(first.close).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(6 * 60_000));
+    expect(first.close).toHaveBeenCalledOnce();
+    expect(liveStore.getMeta().sseState).toBe("paused");
+
+    act(() => window.dispatchEvent(new Event("keydown")));
+    expect(MockEventSource.instances).toHaveLength(2);
+    unmount();
+    vi.useRealTimers();
+  });
+
   it("reconciles a changed membership snapshot without resetting connection metadata", () => {
     const empty: ItemLive = {
       widgetData: null,

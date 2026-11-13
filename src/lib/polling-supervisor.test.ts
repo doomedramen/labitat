@@ -122,7 +122,7 @@ describe("polling supervisor scheduling", () => {
     pollingSup.stop();
   });
 
-  it("does not immediately repoll every item after the grace-period stop/restart cycle", async () => {
+  it("does not burst-poll when entering idle after the grace period", async () => {
     let pollCount = 0;
 
     vi.doMock("@/lib/db", () => ({
@@ -201,12 +201,16 @@ describe("polling supervisor scheduling", () => {
 
     pollingSup.disconnect();
     await vi.advanceTimersByTimeAsync(5 * 60 * 1000 + 100);
-    const pollCountBeforeReconnect = pollCount;
+    // Entering idle mode does not burst-poll overdue items; they wait for their idle slots.
+    expect(pollCount).toBe(4);
 
     pollingSup.connect();
     await vi.advanceTimersByTimeAsync(100);
 
-    expect(pollCount).toBe(pollCountBeforeReconnect + 1);
+    // A returning viewer refreshes the overdue items once, not repeatedly.
+    expect(pollCount).toBe(7);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(pollCount).toBe(7);
 
     pollingSup.stop();
   });
@@ -391,9 +395,12 @@ describe("always-on operator collection", () => {
     vi.resetModules();
     vi.useRealTimers();
   });
-  it("reuses one scheduler, honors slower intervals, and collects with no clients", async () => {
+  it("reuses one scheduler and staggers idle collection across the idle window", async () => {
     vi.resetModules();
     vi.useFakeTimers();
+    // Aligned to the 10-minute idle window so slot times are easy to read.
+    const start = 1_800_000_000_000;
+    vi.setSystemTime(start);
     const fetchFast = vi.fn().mockResolvedValue({ _status: "ok" });
     const fetchSlow = vi.fn().mockResolvedValue({ _status: "ok" });
     vi.doMock("@/lib/db", () => ({
@@ -431,22 +438,31 @@ describe("always-on operator collection", () => {
     const { pollingSup } = await import("./polling-supervisor");
     pollingSup.startBackground();
     pollingSup.startBackground();
+    // Two services share the 10-minute idle window: slots at 0 and 5 minutes.
     await pollingSup.pollNow();
-    await vi.advanceTimersByTimeAsync(2000);
+    expect(fetchFast).toHaveBeenCalledTimes(1);
+    expect(fetchSlow).toHaveBeenCalledTimes(0);
+    await vi.advanceTimersByTimeAsync(300_000);
     expect(fetchFast).toHaveBeenCalledTimes(1);
     expect(fetchSlow).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(60000);
+    await vi.advanceTimersByTimeAsync(300_000);
     expect(fetchFast).toHaveBeenCalledTimes(2);
     expect(fetchSlow).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(300_000);
+    expect(fetchSlow).toHaveBeenCalledTimes(2);
+    // An active client restores configured intervals.
     pollingSup.connect();
     await pollingSup.pollNow();
     await pollingSup.pollNow();
-    expect(fetchFast).toHaveBeenCalledTimes(2);
-    await vi.advanceTimersByTimeAsync(10000);
     expect(fetchFast).toHaveBeenCalledTimes(3);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(fetchFast).toHaveBeenCalledTimes(4);
+    // Going idle again does not repoll immediately; each service waits for its own slot.
     pollingSup.disconnect();
-    await vi.advanceTimersByTimeAsync(51000);
-    expect(fetchSlow).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(start + 1_799_000 - Date.now());
+    expect(fetchFast).toHaveBeenCalledTimes(4);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(fetchFast).toHaveBeenCalledTimes(5);
     pollingSup.stop();
   });
 });

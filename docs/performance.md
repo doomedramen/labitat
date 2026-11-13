@@ -12,9 +12,9 @@ The 24-service, three-group browser fixture fits a 1440 × 900 viewport. Metric 
 
 ## Polling and history
 
-One Node polling supervisor starts through instrumentation. Connected dashboard clients share its observations over SSE; additional tabs do not create polling loops. The supervisor limits concurrency to 15 service requests. With no connected dashboards, each service uses the greater of its configured interval and 60 seconds. Slower intervals stay slower.
+One Node polling supervisor starts through instrumentation. Connected dashboard clients share its observations over SSE; additional tabs do not create polling loops. The supervisor limits concurrency to 15 service requests. With no connected dashboards, each service polls once per idle window (10 minutes by default, set with `IDLE_POLLING_INTERVAL_MINUTES`). Services get evenly spaced slots across the window, so idle polling never requests every service at once. Slower configured intervals stay slower. A dashboard tab counts as connected only while someone is using it: it disconnects 30 seconds after being hidden, or after 15 minutes without input, and reconnects with an immediate refresh as soon as it is shown or used again.
 
-SQLite stores at most one successful numeric sample per service per minute, with 24-hour retention and separate health transitions. The same scheduler performs retention maintenance; failed requests and downtime produce gaps. History queries return no more than 1,440 minute positions and run only while details are open. Visible panels refresh once a minute and pause when hidden.
+SQLite stores at most one successful numeric sample per service per minute (one per idle window while no dashboard is in use), with 24-hour retention and separate health transitions. The same scheduler performs retention maintenance; failed requests and downtime produce gaps. History queries return no more than 1,440 minute positions and run only while details are open. Visible panels refresh once a minute and pause when hidden.
 
 ## Caching
 

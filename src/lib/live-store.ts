@@ -2,7 +2,8 @@ import type { ServiceData, ServiceStatus } from "@/lib/adapters/types";
 import type { ItemLive, PollSchedule } from "@/lib/live-types";
 
 export type MetaState = {
-  sseState: "connecting" | "connected" | "disconnected";
+  /** "paused": closed on purpose because the tab is hidden or nobody is using it. */
+  sseState: "connecting" | "connected" | "disconnected" | "paused";
   lastUpdateAt: number | null;
 };
 

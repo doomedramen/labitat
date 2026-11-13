@@ -6,7 +6,8 @@ import { OverlayPortal } from "@/components/ui/overlay-portal";
 
 export function SseBanner() {
   const meta = useLiveMeta();
-  const connected = meta.sseState === "connected";
+  // A deliberate pause is not a connection problem.
+  const connected = meta.sseState === "connected" || meta.sseState === "paused";
   const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {

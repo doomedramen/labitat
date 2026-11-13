@@ -19,7 +19,7 @@ export const env = createEnv({
     CACHE_DIR: z.string().optional(),
     AUTH_ENABLED: z.boolean().default(true),
     IDLE_POLLING_ENABLED: z.boolean().default(true),
-    IDLE_POLLING_INTERVAL_MINUTES: z.number().min(1).max(60).default(5),
+    IDLE_POLLING_INTERVAL_MINUTES: z.number().min(1).max(60).default(10),
     STARTUP_WARMUP_ENABLED: z.boolean().default(true),
     COOKIE_SECURE: z.boolean().default(defaultCookieSecure),
     SERVICE_POLLING_TIMEOUT: z.number().min(1000).max(60000).default(10000),
@@ -39,7 +39,7 @@ export const env = createEnv({
     IDLE_POLLING_ENABLED: process.env.IDLE_POLLING_ENABLED === "true",
     IDLE_POLLING_INTERVAL_MINUTES: process.env.IDLE_POLLING_INTERVAL_MINUTES
       ? parseInt(process.env.IDLE_POLLING_INTERVAL_MINUTES, 10)
-      : 5,
+      : 10,
     STARTUP_WARMUP_ENABLED: process.env.STARTUP_WARMUP_ENABLED === "true",
     COOKIE_SECURE: process.env.COOKIE_SECURE === "true",
     SERVICE_POLLING_TIMEOUT: process.env.SERVICE_POLLING_TIMEOUT

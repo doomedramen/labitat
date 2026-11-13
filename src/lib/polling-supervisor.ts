@@ -11,7 +11,7 @@ import { env } from "@/lib/env";
 // Environment defaults - extracted for clarity and testability
 const ENV_DEFAULTS = {
   IDLE_POLLING_ENABLED: true,
-  IDLE_POLLING_INTERVAL_MINUTES: 5,
+  IDLE_POLLING_INTERVAL_MINUTES: 10,
 } as const;
 
 // Get env values safely with defaults
@@ -81,12 +81,16 @@ class PollingSupervisor {
   private maintenance: (() => void) | undefined;
   private enabled = false;
   private tickPromise: Promise<void> | null = null;
+  /** When idle mode last began; idle slots are never scheduled before it. */
+  private idleSince = 0;
+  /** Each item's fixed offset within the idle window, so idle polls are spread out. */
+  private idlePhaseById = new Map<string, number>();
 
   startBackground(maintenance?: () => void): void {
     if (this.backgroundEnabled) return;
     this.backgroundEnabled = true;
     this.maintenance = maintenance;
-    this.state.idleMode = this.state.activeConnections === 0;
+    this.setIdleMode(this.state.activeConnections === 0);
     this.start();
   }
 
@@ -114,7 +118,7 @@ class PollingSupervisor {
     );
 
     if (this.state.activeConnections === 0 && this.backgroundEnabled) {
-      this.state.idleMode = true;
+      this.setIdleMode(true);
       void this.pollNow();
     } else if (this.state.activeConnections === 0) {
       this.state.graceTimer = setTimeout(() => {
@@ -175,7 +179,7 @@ class PollingSupervisor {
       return;
     }
 
-    this.state.idleMode = true;
+    this.setIdleMode(true);
     console.log("[polling] Entering idle mode");
 
     this.clearTickTimer();
@@ -185,7 +189,7 @@ class PollingSupervisor {
   private exitIdleMode(): void {
     if (!this.state.idleMode) return;
 
-    this.state.idleMode = false;
+    this.setIdleMode(false);
     console.log("[polling] Exiting idle mode");
 
     this.pollNow().catch(console.error);
@@ -222,9 +226,30 @@ class PollingSupervisor {
     return this.state.idleMode && getEnvValue("IDLE_POLLING_ENABLED");
   }
 
+  private setIdleMode(idle: boolean): void {
+    if (idle && !this.state.idleMode) this.idleSince = Date.now();
+    this.state.idleMode = idle;
+  }
+
   private isDue(item: PollingItem, now: number): boolean {
     if (this.running.has(item.id)) return false;
-    return now >= item.lastPolledAt + this.getEffectiveInterval(item);
+    return now >= this.getDueAt(item);
+  }
+
+  /**
+   * Active: the configured interval after the last poll.
+   * Idle: the item's own slot in the idle window, at least half a window (or the slower
+   * configured interval) after its last poll. Slots are spread evenly across the window,
+   * so idle polling never fires every service at once.
+   */
+  private getDueAt(item: PollingItem): number {
+    if (!this.state.idleMode) return item.lastPolledAt + item.pollingMs;
+    const windowMs = IDLE_POLLING_MS();
+    const phase = this.idlePhaseById.get(item.id) ?? 0;
+    const earliest = item.lastPolledAt
+      ? Math.max(item.lastPolledAt + Math.max(item.pollingMs, windowMs / 2), this.idleSince)
+      : this.idleSince;
+    return earliest + ((((phase - earliest) % windowMs) + windowMs) % windowMs);
   }
 
   private getNextDueTime(): number {
@@ -233,7 +258,7 @@ class PollingSupervisor {
 
     for (const item of this.itemCache) {
       const interval = this.getEffectiveInterval(item);
-      const dueAt = item.lastPolledAt + interval;
+      const dueAt = this.getDueAt(item);
 
       if (this.running.has(item.id)) {
         // A long-running poll should not force the scheduler into a tight loop.
@@ -251,8 +276,7 @@ class PollingSupervisor {
   private getEffectiveInterval(item: PollingItem): number {
     if (!this.state.idleMode) return item.pollingMs;
 
-    const idleInterval = this.backgroundEnabled ? 60_000 : IDLE_POLLING_MS();
-    return Math.max(item.pollingMs, idleInterval);
+    return Math.max(item.pollingMs, IDLE_POLLING_MS());
   }
 
   private async executePoll(item: PollingItem, now: number): Promise<void> {
@@ -355,6 +379,10 @@ class PollingSupervisor {
       });
 
       this.itemCache = nextItems;
+      const windowMs = IDLE_POLLING_MS();
+      this.idlePhaseById = new Map(
+        nextItems.map((item, index) => [item.id, (index * windowMs) / nextItems.length]),
+      );
 
       // Stagger if this is the first load or we have many items
       if (this.cacheExpiresAt === 0 || this.shouldStaggerOnNextStart) {
