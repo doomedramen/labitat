@@ -25,6 +25,7 @@ const NON_ADAPTER_FILES = new Set([
   "widget-types",
   "validate",
   "fetch-with-timeout",
+  "library-count-cache",
   "mock-utilities",
 ]);
 const NON_ADAPTER_SUFFIXES = [".test", "-widget", "-common", ".stories"];
