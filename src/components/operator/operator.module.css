@@ -1532,23 +1532,22 @@ a.serviceName:active {
   opacity: 0.55;
 }
 
-/* Bento board (see useBento): groups span the columns their cards need and pack densely. */
-/* Keep this selector at class+attribute weight: lightningcss turns selector lists into
-   :is(), which can outrank it. */
-.board[data-bento] {
+/* Packed board: groups span the columns their cards need (see boardSpans) and sit in rows,
+   so groups side by side share a top edge. Keep this selector at class+attribute weight:
+   lightningcss turns selector lists into :is(), which can outrank it. */
+.board[data-packed] {
   display: grid;
   grid-template-columns: repeat(var(--board-columns), minmax(0, 1fr));
   /* While a resize is measured, a group may still ask for more columns than now fit;
      extra columns take no space instead of making the page scroll sideways. */
   grid-auto-columns: 0;
-  grid-auto-rows: 4px;
-  grid-auto-flow: row dense;
-  gap: 0 20px;
+  grid-auto-rows: auto;
+  grid-auto-flow: row;
+  gap: 28px 20px;
   align-items: start;
 }
-.board[data-bento] > .group {
-  /* Natural height, never stretched to the span: useBento measures it. */
-  align-self: start;
+.board[data-packed] > .group {
+  /* Overrides the older placement rules, which pinned groups to 1px rows. */
+  grid-row: auto;
   min-width: 0;
-  margin-bottom: 28px;
 }

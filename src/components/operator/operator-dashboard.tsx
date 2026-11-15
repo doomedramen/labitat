@@ -74,6 +74,7 @@ import { updateDashboardTitle } from "@/actions/settings";
 import { logout } from "@/actions/auth";
 import { ServiceTile, type HealthSummary } from "./service-tile";
 import { hasMetricSlots } from "@/lib/dashboard-board";
+import { boardSpans } from "@/lib/board-spans";
 import tileStyles from "./tile.module.css";
 import { ServiceDetails } from "./service-details";
 import { LiveActivity } from "./live-activity";
@@ -382,18 +383,24 @@ export function OperatorDashboard({
     () => filtered.flatMap((group) => group.items).filter((item) => item.enabled),
     [filtered],
   );
-  // Bento board: each group takes the columns its cards need and packs into free space.
+  // Board rows: each group takes the columns its cards need, and rows are filled across
+  // (see boardSpans). Groups in a row share a top edge; cards pack by height inside them.
   const [trackRef, columns] = useTrackCount<HTMLDivElement>(
     (width) => (width < 640 ? 150 : 210),
     BOARD_GAP,
   );
-  const packRef = useBento<HTMLDivElement>(!arranging && columns !== null);
-  const boardRef = useCallback(
-    (element: HTMLDivElement | null) => {
-      trackRef.current = element;
-      packRef.current = element;
-    },
-    [trackRef, packRef],
+  const spans = useMemo(
+    () =>
+      columns
+        ? boardSpans(
+            filtered.map((group) => {
+              const cards = group.items.filter((item) => hasMetricSlots(item)).length;
+              return { id: group.id, cards, chips: group.items.length - cards };
+            }),
+            columns,
+          )
+        : {},
+    [filtered, columns],
   );
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -642,7 +649,8 @@ export function OperatorDashboard({
           strategy={rectSortingStrategy}
         >
           <div
-            ref={boardRef}
+            ref={trackRef}
+            data-packed={(!arranging && columns !== null) || undefined}
             className={styles.board}
             style={
               !arranging && columns ? ({ "--board-columns": columns } as CSSProperties) : undefined
@@ -650,7 +658,7 @@ export function OperatorDashboard({
           >
             {filtered.map((group) => (
               <OperatorGroup
-                columns={arranging ? null : columns}
+                span={!arranging && columns ? (spans[group.id] ?? 1) : null}
                 initialNow={serverNow}
                 key={group.id}
                 group={group}
@@ -832,15 +840,8 @@ export function OperatorDashboard({
   );
 }
 
-/** Columns a group asks for on the board: one per card, or about two chips per column. */
-function groupSpan(group: GroupWithItems, columns: number) {
-  const cards = group.items.filter((item) => hasMetricSlots(item)).length;
-  const chips = group.items.length - cards;
-  return Math.max(1, Math.min(columns, cards || Math.ceil(chips / 2)));
-}
-
 function OperatorGroup({
-  columns,
+  span,
   initialNow,
   group,
   arranging,
@@ -854,7 +855,8 @@ function OperatorGroup({
   onDelete,
   canEdit,
 }: {
-  columns: number | null;
+  /** Board columns this group spans; null when the board is not packed. */
+  span: number | null;
   initialNow: number;
   group: GroupWithItems;
   arranging: boolean;
@@ -889,7 +891,6 @@ function OperatorGroup({
     disabled: !arranging || disabled,
     data: { kind: "drop", groupId: group.id },
   });
-  const span = columns ? groupSpan(group, columns) : null;
   return (
     <section
       ref={sortable.setNodeRef}
@@ -899,7 +900,16 @@ function OperatorGroup({
         transform: CSS.Translate.toString(sortable.transform),
         transition: sortable.transition,
         opacity: sortable.isDragging ? 0.4 : 1,
-        ...(span ? { gridColumn: `span ${span}`, "--group-columns": span } : {}),
+        // Cards fill the group's width: never more card columns than there are cards.
+        ...(span
+          ? {
+              gridColumn: `span ${span}`,
+              "--group-columns": Math.max(
+                1,
+                Math.min(span, group.items.filter((item) => hasMetricSlots(item)).length),
+              ),
+            }
+          : {}),
       }}
     >
       <header className={styles.groupHeader}>
