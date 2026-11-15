@@ -127,9 +127,10 @@ test("tapping the status line opens service details with the reason", async ({ p
   await status.tap();
   const panel = page.getByRole("dialog", { name: "Failed", exact: true });
   await expect(panel).toBeVisible();
-  await expect(panel.getByRole("status")).toContainText(
-    /Connection refused|Unable to reach service/,
-  );
+  // The reason is one of several live status regions in the panel; match it by text.
+  await expect(
+    panel.getByRole("status").filter({ hasText: /Connection refused|Unable to reach service/ }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).tap();
   await expect(panel).toHaveCount(0);
   await expect(card.getByRole("tooltip")).toBeHidden();
