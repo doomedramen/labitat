@@ -18,6 +18,16 @@ Use the repository's Node 22 toolchain. Open:
 
 The direction switch preserves search, filters, draft arrangement, and metric selections. Review tools contain the annotated reference board, five data scenarios, and simulated save outcomes. This control strip is part of the review environment, not the proposed product navigation.
 
+## Redesign mock-ups
+
+Three static directions for a fuller redesign live beside the studies, in `mockups.html`, `mockups.tsx` and `mockups.css`. They share the fixture above, are not interactive beyond the direction and theme switch, and are not covered by `pnpm design:test`.
+
+- A · Ledger: <http://127.0.0.1:5173/mockups.html?direction=ledger>. One line per service; healthy services carry no status at all.
+- B · Numerals: <http://127.0.0.1:5173/mockups.html?direction=numerals>. Equal tiles with one lead number; link-only services become chips.
+- C · Now-first: <http://127.0.0.1:5173/mockups.html?direction=now>. Activity, problems and host vitals in a rail; services as a launcher grid.
+
+Add `&theme=light` or `&theme=dark` to override each direction's default theme.
+
 ## Design intent
 
 Both designs preserve header → controls → visible activity → ordered service groups. The same 34 synthetic services, six groups, four download entries, and three streams populate each direction. The first two activity entries are visible initially; expansion reveals all available fixture entries.
