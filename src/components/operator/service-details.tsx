@@ -7,6 +7,7 @@ import { parseStatCardOrder, resolveStatCardLayout } from "@/lib/stat-card-layou
 import type { ItemRow } from "@/lib/types";
 import { useItemLive, useLiveConnection } from "@/components/dashboard/use-item-live";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
+import { useStalenessFloor } from "@/hooks/use-staleness-floor";
 import { formatAgeVerbose } from "@/lib/utils/age";
 import {
   Dialog,
@@ -112,7 +113,8 @@ function DetailsContent({
       ).activeItems,
     [presentation, item.statCardOrder],
   );
-  const health = serviceHealth(item, live, now ?? 0, service?.clientSide);
+  const ageFloor = useStalenessFloor();
+  const health = serviceHealth(item, live, now ?? 0, service?.clientSide, ageFloor);
   const payload = useMemo(() => {
     try {
       return data && data._status !== "error" ? service?.toPayload?.(data) : null;

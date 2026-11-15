@@ -1383,7 +1383,7 @@ a.serviceName:active {
   }
 }
 .activityHeader {
-  padding: 16px 20px 12px;
+  padding: 16px 20px;
 }
 .activityList {
   padding: 0;
@@ -1418,6 +1418,9 @@ a.serviceName:active {
 .activityIssue,
 .activityEmpty {
   padding: 14px 20px;
+}
+.activityIssueToggle {
+  padding: 0 20px;
 }
 /* Keep the section hierarchy visible even when queues are empty. */
 .activity .sectionHeading {
@@ -1544,19 +1547,9 @@ a.serviceName:active {
 .statusTooltip {
   pointer-events: auto;
 }
-.statusDetails {
-  display: block;
-  margin-top: 8px;
-  min-height: 36px;
-  color: var(--primary);
-  text-align: left;
-}
 .statusTooltip {
   top: auto;
   bottom: 100%;
-}
-.statusControl:focus-within .statusTooltip {
-  display: block;
 }
 .tile .statusTrigger .healthDot {
   margin: 0;
@@ -2051,9 +2044,6 @@ a.serviceName:active {
 }
 .tileStatusCaret {
   flex: none;
-}
-.statusControl[data-open] .tileStatusCaret {
-  transform: rotate(180deg);
 }
 .tileFooter .statusTooltip {
   right: var(--tile-inset);

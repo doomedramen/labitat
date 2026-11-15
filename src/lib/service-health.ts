@@ -6,6 +6,8 @@ export function serviceHealth(
   live: ItemLive | null,
   now: number,
   clientSide = false,
+  /** See stalenessFloor: age is counted from the later of this and the last success. */
+  ageFloor = 0,
 ) {
   const widget = live?.widgetData ? dataToStatus(live.widgetData) : null;
   const status =
@@ -20,7 +22,8 @@ export function serviceHealth(
     (hasValues || live?.lastSuccessAt != null) &&
     (live?.freshness !== "fresh" ||
       live?.lastSuccessAt == null ||
-      now - live.lastSuccessAt > Math.max((item.pollingMs ?? 30000) * 2, 30000));
+      now - Math.max(live.lastSuccessAt, ageFloor) >
+        Math.max((item.pollingMs ?? 30000) * 2, 30000));
   const reason = attention
     ? "reason" in status && status.reason
       ? status.reason

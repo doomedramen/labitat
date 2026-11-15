@@ -12,7 +12,6 @@ export async function inspect(page: Page, label: string) {
     await metrics.click();
   } else {
     await card.getByRole("button", { name: `Status for ${label}`, exact: false }).click();
-    await card.getByRole("button", { name: "Service details", exact: true }).click();
   }
 }
 export async function configure(page: Page, label?: string) {

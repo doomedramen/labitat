@@ -44,6 +44,7 @@ import { serviceHealth } from "@/lib/service-health";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { useItemLive, useLiveConnection } from "@/components/dashboard/use-item-live";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
+import { useStalenessFloor } from "@/hooks/use-staleness-floor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -96,11 +97,13 @@ const HealthObserver = memo(function HealthObserver({
 }) {
   const live = useItemLive(item.id);
   const now = useVisibleClock();
+  const ageFloor = useStalenessFloor();
   const health = serviceHealth(
     item,
     live,
     now ?? initialNow,
     item.serviceType ? getService(item.serviceType)?.clientSide : false,
+    ageFloor,
   );
   useEffect(
     () => report(item.id, { attention: health.attention, stale: health.stale }),
@@ -152,6 +155,7 @@ export function OperatorDashboard({
             initialSnapshotById[item.id] ?? null,
             serverNow,
             getService(item.serviceType ?? "")?.clientSide,
+            Infinity,
           ),
         ]),
       ),
@@ -436,7 +440,9 @@ export function OperatorDashboard({
               ? "Live"
               : connection === "connecting"
                 ? "Connecting"
-                : "Reconnecting"}
+                : connection === "paused"
+                  ? "Paused"
+                  : "Reconnecting"}
           </span>
           <ThemePicker />
           {canEdit ? (

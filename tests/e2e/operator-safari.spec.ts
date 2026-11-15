@@ -110,7 +110,7 @@ test("touch menus survive native trigger focus and retain normal dismissal", asy
   await expect(trigger).toBeFocused();
 });
 
-test("status reasons open on tap and dismiss without opening service details", async ({ page }) => {
+test("tapping the status line opens service details with the reason", async ({ page }) => {
   await seedAndAuth(page, {
     groups: [
       {
@@ -129,15 +129,14 @@ test("status reasons open on tap and dismiss without opening service details", a
   const card = page.getByTestId("item-card");
   const status = card.getByRole("button", { name: /Status for Failed/ });
   await status.tap();
-  await expect(card.getByRole("tooltip")).toContainText(
+  const panel = page.getByRole("dialog", { name: "Failed", exact: true });
+  await expect(panel).toBeVisible();
+  await expect(panel.getByRole("status")).toContainText(
     /Connection refused|Unable to reach service/,
   );
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  // Some Safari/WebKit environments retain focus on tapped buttons when
-  // tapping non-focusable content; dismissal must work in that case too.
-  await status.focus();
-  await page.getByRole("heading", { level: 1 }).tap();
-  await expect(card.getByRole("tooltip")).toHaveCount(0);
+  await page.getByRole("button", { name: "Close", exact: true }).tap();
+  await expect(panel).toHaveCount(0);
+  await expect(card.getByRole("tooltip")).toBeHidden();
 });
 
 test("status tooltip stays within the viewport near the top edge", async ({ page }) => {
@@ -170,7 +169,7 @@ test("status tooltip stays within the viewport near the top edge", async ({ page
   const status = card.getByRole("button", { name: /Status for Failed/ });
   await status.scrollIntoViewIfNeeded();
   await status.evaluate((element) => window.scrollBy(0, element.getBoundingClientRect().top - 12));
-  await status.tap();
+  await status.focus();
   const tooltip = card.getByRole("tooltip");
   await expect(tooltip).toBeVisible();
   await expect.poll(async () => (await tooltip.boundingBox())!.y).toBeGreaterThanOrEqual(0);

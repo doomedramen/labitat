@@ -8,6 +8,7 @@ import { useServerSnapshot } from "@/components/dashboard/live-provider";
 const serverMetaSnapshot: MetaState = {
   sseState: "connecting",
   lastUpdateAt: null,
+  liveSince: null,
 };
 
 export function useItemLive(itemId: string): ItemLive | null {

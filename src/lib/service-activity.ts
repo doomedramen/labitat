@@ -19,9 +19,10 @@ export function observeServiceActivity(
   item: ItemRow,
   live: ItemLive | null,
   now: number,
+  ageFloor = 0,
 ): ActivityObservation {
   const service = getService(item.serviceType ?? "");
-  const health = serviceHealth(item, live, now, service?.clientSide);
+  const health = serviceHealth(item, live, now, service?.clientSide, ageFloor);
   if (
     health.attention ||
     health.stale ||

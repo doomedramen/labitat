@@ -5,7 +5,18 @@ export type MetaState = {
   /** "paused": closed on purpose because the tab is hidden or nobody is using it. */
   sseState: "connecting" | "connected" | "disconnected" | "paused";
   lastUpdateAt: number | null;
+  /** When the live connection last opened; data age is judged from here, not from before it. */
+  liveSince: number | null;
 };
+
+/**
+ * Earliest moment an observation's age may be counted from. While the connection is
+ * paused or still opening nothing is arriving by design, so age is not judged at all.
+ */
+export function stalenessFloor(meta: MetaState): number {
+  if (meta.sseState === "paused" || meta.sseState === "connecting") return Infinity;
+  return meta.liveSince ?? 0;
+}
 
 type SseUpdate = {
   widgetData: ServiceData | null;
@@ -36,7 +47,7 @@ let snapshotKey: string | null = null;
 const itemListeners = new Map<string, Set<() => void>>();
 let scheduleById: Record<string, PollSchedule> = {};
 
-let metaState: MetaState = { sseState: "connecting", lastUpdateAt: null };
+let metaState: MetaState = { sseState: "connecting", lastUpdateAt: null, liveSince: null };
 const metaListeners = new Set<() => void>();
 
 function observationTime(item: ItemLive): number | null {
@@ -192,7 +203,11 @@ export const liveStore = {
 
   setSseState(next: MetaState["sseState"]) {
     if (metaState.sseState === next) return;
-    metaState = { ...metaState, sseState: next };
+    metaState = {
+      ...metaState,
+      sseState: next,
+      liveSince: next === "connected" ? Date.now() : metaState.liveSince,
+    };
     metaListeners.forEach((cb) => cb());
   },
 

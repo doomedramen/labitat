@@ -95,6 +95,9 @@ test("card background launches, metrics inspect, and status stays in the footer"
   await expect(page.getByRole("dialog", { name: "Media" })).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await launcher.getByRole("button", { name: /Status for Launcher/ }).click();
-  await launcher.getByRole("button", { name: "Service details" }).click();
   await expect(page.getByRole("dialog", { name: "Launcher" })).toBeVisible();
+  await page.getByRole("button", { name: "Close", exact: true }).click();
+  // The status line opens details on every tile, with or without metrics.
+  await media.getByRole("button", { name: /Status for Media/ }).click();
+  await expect(page.getByRole("dialog", { name: "Media" })).toBeVisible();
 });

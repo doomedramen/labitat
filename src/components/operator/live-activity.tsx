@@ -6,6 +6,7 @@ import { useItemLive } from "@/components/dashboard/use-item-live";
 import type { DownloadItemData } from "@/components/widgets/download/types";
 import type { ActiveStream } from "@/components/widgets/active-stream/types";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
+import { useStalenessFloor } from "@/hooks/use-staleness-floor";
 import {
   activityProgress,
   observeServiceActivity,
@@ -27,9 +28,10 @@ const ActivityObserver = memo(function ActivityObserver({
 }) {
   const live = useItemLive(item.id);
   const clock = useVisibleClock();
+  const ageFloor = useStalenessFloor();
   const observation = useMemo(
-    () => observeServiceActivity(item, live, clock ?? initialNow),
-    [item, live, clock, initialNow],
+    () => observeServiceActivity(item, live, clock ?? initialNow, ageFloor),
+    [item, live, clock, initialNow, ageFloor],
   );
   useEffect(() => report(item.id, observation), [item.id, observation, report]);
   return null;
@@ -57,7 +59,7 @@ export const LiveActivity = memo(function LiveActivity({
         .filter((item) => initialSnapshotById?.[item.id])
         .map((item) => [
           item.id,
-          observeServiceActivity(item, initialSnapshotById![item.id], initialNow),
+          observeServiceActivity(item, initialSnapshotById![item.id], initialNow, Infinity),
         ]),
     ),
   );

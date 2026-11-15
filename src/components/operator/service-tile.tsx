@@ -1,6 +1,6 @@
 "use client";
 import { memo, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
-import { ArrowUpRight, ChevronDown, CircleAlert } from "lucide-react";
+import { ArrowUpRight, ChevronRight, CircleAlert } from "lucide-react";
 import { getService } from "@/lib/adapters";
 import { hasMetricSlots } from "@/lib/dashboard-board";
 import { getServicePresentation, compactMetric } from "@/lib/service-presentation";
@@ -10,6 +10,7 @@ import { formatAge } from "@/lib/utils/age";
 import type { ItemRow } from "@/lib/types";
 import { useItemLive } from "@/components/dashboard/use-item-live";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
+import { useStalenessFloor } from "@/hooks/use-staleness-floor";
 import { ItemIcon } from "@/components/dashboard/item/item-icon";
 import styles from "./operator.module.css";
 export type HealthSummary = { attention: boolean; stale: boolean };
@@ -56,7 +57,8 @@ export const ServiceTile = memo(function ServiceTile({
   const now = useVisibleClock();
   const service = item.serviceType ? getService(item.serviceType) : null;
   const clock = now ?? initialNow;
-  const health = serviceHealth(item, live, clock, service?.clientSide);
+  const ageFloor = useStalenessFloor();
+  const health = serviceHealth(item, live, clock, service?.clientSide, ageFloor);
   const presentation = useMemo(
     () => getServicePresentation(service, live?.widgetData ?? null),
     [service, live?.widgetData],
@@ -74,7 +76,6 @@ export const ServiceTile = memo(function ServiceTile({
   );
   const label = item.label || service?.name || "Service";
   const hasMetrics = arranging ? metrics.length > 0 : hasMetricSlots(item);
-  const detailsInStatus = !arranging && !hasMetrics && !!item.href;
   const reason =
     health.reason ||
     (presentation.unavailable && item.serviceType && presentation.detailKind === "standard"
@@ -112,9 +113,15 @@ export const ServiceTile = memo(function ServiceTile({
         className={styles.statusTrigger}
         aria-label={`Status for ${label}: ${health.label}`}
         aria-describedby={ageLabel && !arranging ? `${statusId} ${statusId}-age` : statusId}
-        aria-expanded={statusOpen}
-        data-details-for={detailsInStatus ? item.id : undefined}
+        aria-expanded={arranging ? statusOpen : undefined}
+        aria-haspopup={arranging ? undefined : "dialog"}
+        data-details-for={arranging ? undefined : item.id}
         onClick={() => {
+          // Every overview tile opens its details from the same place: the status line.
+          if (!arranging) {
+            onDetails(item.id);
+            return;
+          }
           setStatusOpen((open) => !open);
           placeStatus();
         }}
@@ -153,7 +160,7 @@ export const ServiceTile = memo(function ServiceTile({
                 {ageLabel}
               </span>
             )}
-            <ChevronDown className={styles.tileStatusCaret} size={13} aria-hidden="true" />
+            <ChevronRight className={styles.tileStatusCaret} size={13} aria-hidden="true" />
           </>
         )}
       </button>
@@ -163,19 +170,6 @@ export const ServiceTile = memo(function ServiceTile({
           {reason ? ` · ${reason}` : ""}
           {health.attention && health.stale ? " · stale" : ""}
         </span>
-        {detailsInStatus && (
-          <button
-            type="button"
-            className={styles.statusDetails}
-            onClick={() => {
-              statusRef.current?.querySelector("button")?.focus();
-              setStatusOpen(false);
-              onDetails(item.id);
-            }}
-          >
-            Service details
-          </button>
-        )}
       </span>
     </div>
   );
