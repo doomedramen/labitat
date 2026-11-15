@@ -1,5 +1,5 @@
 "use client";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   DndContext,
@@ -44,6 +44,7 @@ import { serviceHealth } from "@/lib/service-health";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { useItemLive, useLiveConnection } from "@/components/dashboard/use-item-live";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
+import { useBento, useTrackCount } from "@/hooks/use-bento";
 import { useStalenessFloor } from "@/hooks/use-staleness-floor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,22 +68,26 @@ import { ItemDialog } from "@/components/editor/item-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { SseBanner } from "@/components/dashboard/sse-banner";
 import { saveDashboardLayout } from "@/actions/layout";
-import { deleteItem } from "@/actions/items";
+import { deleteItem, setItemEnabled } from "@/actions/items";
 import { deleteGroup } from "@/actions/groups";
 import { updateDashboardTitle } from "@/actions/settings";
 import { logout } from "@/actions/auth";
 import { ServiceTile, type HealthSummary } from "./service-tile";
+import { hasMetricSlots } from "@/lib/dashboard-board";
+import tileStyles from "./tile.module.css";
 import { ServiceDetails } from "./service-details";
 import { LiveActivity } from "./live-activity";
 import styles from "./operator.module.css";
 
-type Filter = "all" | "attention" | "stale";
+type Filter = "all" | "attention" | "stale" | "disabled";
 const withCache = (item: ItemRow): ItemWithCache => ({
   ...item,
   cachedWidgetData: null,
   cachedPingStatus: null,
   cachedDataAge: null,
 });
+/** Space between groups on the board; tile.module.css uses the same for cards. */
+const BOARD_GAP = 20;
 const clone = (groups: GroupWithItems[]) =>
   groups.map((group) => ({ ...group, items: [...group.items] }));
 
@@ -341,7 +346,12 @@ export function OperatorDashboard({
     }
   }
   const visible = draft ?? canonical;
-  const items = useMemo(() => canonical.flatMap((group) => group.items), [canonical]);
+  const allItems = useMemo(() => canonical.flatMap((group) => group.items), [canonical]);
+  // Disabled services are not checked and stay off the overview unless asked for.
+  const items = useMemo(() => allItems.filter((item) => item.enabled), [allItems]);
+  const disabledCount = allItems.length - items.length;
+  // Re-enabling the last disabled service removes its filter, so fall back to All.
+  const view: Filter = filter === "disabled" && !disabledCount ? "all" : filter;
   const queryText = query.trim().toLowerCase();
   const filtered = useMemo(() => {
     const matches = (item: ItemRow, group: GroupWithItems) =>
@@ -351,8 +361,11 @@ export function OperatorDashboard({
           (text) => text?.toLowerCase().includes(queryText),
         )) &&
       (arranging ||
-        filter === "all" ||
-        (filter === "attention" ? health[item.id]?.attention : health[item.id]?.stale));
+        (view === "disabled"
+          ? !item.enabled
+          : item.enabled &&
+            (view === "all" ||
+              (view === "attention" ? health[item.id]?.attention : health[item.id]?.stale))));
     return visible
       .filter((group) => arranging || !selectedGroup || group.id === selectedGroup)
       .map((group) => ({ ...group, items: group.items.filter((item) => matches(item, group)) }))
@@ -361,11 +374,27 @@ export function OperatorDashboard({
           arranging ||
           group.items.length ||
           (!queryText &&
-            filter === "all" &&
+            view === "all" &&
             !visible.find((original) => original.id === group.id)?.items.length),
       );
-  }, [visible, arranging, selectedGroup, queryText, filter, health]);
-  const activityItems = useMemo(() => filtered.flatMap((group) => group.items), [filtered]);
+  }, [visible, arranging, selectedGroup, queryText, view, health]);
+  const activityItems = useMemo(
+    () => filtered.flatMap((group) => group.items).filter((item) => item.enabled),
+    [filtered],
+  );
+  // Bento board: each group takes the columns its cards need and packs into free space.
+  const [trackRef, columns] = useTrackCount<HTMLDivElement>(
+    (width) => (width < 640 ? 150 : 210),
+    BOARD_GAP,
+  );
+  const packRef = useBento<HTMLDivElement>(!arranging && columns !== null);
+  const boardRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      trackRef.current = element;
+      packRef.current = element;
+    },
+    [trackRef, packRef],
+  );
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -513,14 +542,19 @@ export function OperatorDashboard({
                   ["all", "All"],
                   ["attention", "Needs attention"],
                   ["stale", "Stale"],
+                  ...(canEdit && disabledCount ? ([["disabled", "Disabled"]] as const) : []),
                 ] as const
               ).map(([value, label]) => {
                 const count =
                   value === "all"
                     ? items.length
-                    : items.filter((item) =>
-                        value === "attention" ? health[item.id]?.attention : health[item.id]?.stale,
-                      ).length;
+                    : value === "disabled"
+                      ? disabledCount
+                      : items.filter((item) =>
+                          value === "attention"
+                            ? health[item.id]?.attention
+                            : health[item.id]?.stale,
+                        ).length;
                 return (
                   <button
                     type="button"
@@ -529,7 +563,7 @@ export function OperatorDashboard({
                     data-filter={value}
                     data-count={value === "attention" ? count : undefined}
                     aria-label={`${label} ${count}`}
-                    aria-pressed={filter === value}
+                    aria-pressed={view === value}
                     onClick={() => setFilter(value)}
                   >
                     <span className={styles.filterLabel} aria-hidden="true">
@@ -607,9 +641,16 @@ export function OperatorDashboard({
           items={visible.map((group) => `group:${group.id}`)}
           strategy={rectSortingStrategy}
         >
-          <div className={styles.board}>
+          <div
+            ref={boardRef}
+            className={styles.board}
+            style={
+              !arranging && columns ? ({ "--board-columns": columns } as CSSProperties) : undefined
+            }
+          >
             {filtered.map((group) => (
               <OperatorGroup
+                columns={arranging ? null : columns}
                 initialNow={serverNow}
                 key={group.id}
                 group={group}
@@ -670,6 +711,9 @@ export function OperatorDashboard({
         onDelete={(item) => {
           updateUrl("service", null);
           setDeleteTarget({ kind: "item", id: item.id, label: item.label });
+        }}
+        onToggleEnabled={async (item) => {
+          refreshGroups(await setItemEnabled(item.id, !item.enabled));
         }}
         onRestoreFocus={() => {
           // Radix defers close autofocus. A newer menu/panel interaction owns focus.
@@ -788,7 +832,15 @@ export function OperatorDashboard({
   );
 }
 
+/** Columns a group asks for on the board: one per card, or about two chips per column. */
+function groupSpan(group: GroupWithItems, columns: number) {
+  const cards = group.items.filter((item) => hasMetricSlots(item)).length;
+  const chips = group.items.length - cards;
+  return Math.max(1, Math.min(columns, cards || Math.ceil(chips / 2)));
+}
+
 function OperatorGroup({
+  columns,
   initialNow,
   group,
   arranging,
@@ -802,6 +854,7 @@ function OperatorGroup({
   onDelete,
   canEdit,
 }: {
+  columns: number | null;
   initialNow: number;
   group: GroupWithItems;
   arranging: boolean;
@@ -836,6 +889,7 @@ function OperatorGroup({
     disabled: !arranging || disabled,
     data: { kind: "drop", groupId: group.id },
   });
+  const span = columns ? groupSpan(group, columns) : null;
   return (
     <section
       ref={sortable.setNodeRef}
@@ -845,6 +899,7 @@ function OperatorGroup({
         transform: CSS.Translate.toString(sortable.transform),
         transition: sortable.transition,
         opacity: sortable.isDragging ? 0.4 : 1,
+        ...(span ? { gridColumn: `span ${span}`, "--group-columns": span } : {}),
       }}
     >
       <header className={styles.groupHeader}>
@@ -899,17 +954,19 @@ function OperatorGroup({
           )
         )}
       </header>
-      <div
-        ref={drop.setNodeRef}
-        className={styles.grid}
-        style={drop.isOver ? { outline: "1px dashed var(--primary)", outlineOffset: 3 } : undefined}
-      >
-        <SortableContext
-          items={group.items.map((item) => `item:${item.id}`)}
-          strategy={rectSortingStrategy}
+      {arranging ? (
+        <div
+          ref={drop.setNodeRef}
+          className={styles.grid}
+          style={
+            drop.isOver ? { outline: "1px dashed var(--primary)", outlineOffset: 3 } : undefined
+          }
         >
-          {group.items.map((item, index) =>
-            arranging ? (
+          <SortableContext
+            items={group.items.map((item) => `item:${item.id}`)}
+            strategy={rectSortingStrategy}
+          >
+            {group.items.map((item, index) => (
               <ArrangingTile
                 initialNow={initialNow}
                 key={item.id}
@@ -922,33 +979,62 @@ function OperatorGroup({
                 onMove={(direction) => onMoveItem(item.id, group.id, undefined, direction)}
                 onGroup={(id) => onMoveItem(item.id, id)}
               />
-            ) : (
-              <ServiceTile
-                key={item.id}
-                item={item}
-                onDetails={onDetails}
-                initialNow={initialNow}
-              />
-            ),
+            ))}
+          </SortableContext>
+          {!group.items.length && <div className={styles.emptyGroup}>Drop services here</div>}
+        </div>
+      ) : (
+        <>
+          {/* Cards first, then link-only chips; each keeps its saved order. */}
+          {[true, false].map((cards) => {
+            const members = group.items.filter((item) => hasMetricSlots(item) === cards);
+            return members.length ? (
+              <CardGrid key={String(cards)} cards={cards} packed={span !== null}>
+                {members.map((item) => (
+                  <ServiceTile
+                    key={item.id}
+                    item={item}
+                    onDetails={onDetails}
+                    initialNow={initialNow}
+                  />
+                ))}
+              </CardGrid>
+            ) : null;
+          })}
+          {!group.items.length && (
+            <div className={styles.emptyGroup}>
+              {canEdit ? (
+                <button type="button" onClick={onAdd}>
+                  Add service
+                </button>
+              ) : (
+                "No services"
+              )}
+            </div>
           )}
-        </SortableContext>
-        {!group.items.length && (
-          <div className={styles.emptyGroup}>
-            {arranging ? (
-              "Drop services here"
-            ) : canEdit ? (
-              <button type="button" onClick={onAdd}>
-                Add service
-              </button>
-            ) : (
-              "No services"
-            )}
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </section>
   );
 }
+/** Cards pack by height inside their group; chips simply wrap. */
+function CardGrid({
+  cards,
+  packed,
+  children,
+}: {
+  cards: boolean;
+  packed: boolean;
+  children: React.ReactNode;
+}) {
+  const ref = useBento<HTMLDivElement>(cards && packed);
+  return (
+    <div ref={ref} className={cards ? tileStyles.tiles : tileStyles.chips}>
+      {children}
+    </div>
+  );
+}
+
 function ArrangingTile({
   initialNow,
   item,

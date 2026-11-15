@@ -77,7 +77,7 @@ test("mobile-first mixed service board", async ({ page }) => {
           })),
         ),
       );
-      expect(new Set(values.map(({ top }) => top)).size).toBe(1);
+      // The main stat sits above the extras; every value still fits without clipping.
       expect(values.every(({ fits }) => fits)).toBe(true);
     }
     await page.screenshot({ path: `test-results/operator-design-${name}.png`, fullPage: true });

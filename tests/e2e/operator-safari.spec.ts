@@ -21,18 +21,14 @@ test.describe("Touch-first Safari", () => {
     await search.fill("");
     await search.blur();
     expect(
-      (await page.getByTestId("item-card").first().boundingBox())!.height,
+      (await page
+        .locator('[data-testid="item-card"][data-layout="metrics"]')
+        .first()
+        .boundingBox())!.height,
     ).toBeGreaterThanOrEqual(120);
+    // The status dot is a full touch target on phones.
     const status = page.getByRole("button", { name: /Status for Tautulli/ });
-    expect((await status.boundingBox())!.height).toBe(34);
-    expect(
-      await status.evaluate((el) => {
-        const target = getComputedStyle(el, "::before");
-        return (
-          el.getBoundingClientRect().height - parseFloat(target.top) - parseFloat(target.bottom)
-        );
-      }),
-    ).toBeGreaterThanOrEqual(44);
+    expect((await status.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     await page.getByRole("button", { name: "Inspect Seerr", exact: true }).tap();
     const panel = page.getByRole("dialog", { name: "Seerr", exact: true });
     await expect(panel).toBeVisible();

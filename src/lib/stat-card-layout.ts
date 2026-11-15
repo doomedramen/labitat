@@ -1,3 +1,6 @@
+/** Overview cards lead with one stat and list up to this many more beneath it. */
+export const SECONDARY_STATS = 3;
+
 /** Shared by view mode, previews, and the metric editor. */
 export type StatCardOrder = { active: string[]; unused: string[] };
 

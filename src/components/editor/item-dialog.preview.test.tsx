@@ -89,6 +89,7 @@ describe("ItemDialog preview", () => {
       displayMode: "label",
       statDisplayMode: "label",
       statCardOrder: null,
+      enabled: true,
       createdAt: null,
       cachedWidgetData: null,
       cachedPingStatus: null,

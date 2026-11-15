@@ -8,18 +8,20 @@ test.describe("Mobile Layout", () => {
     await page.goto("/");
   });
 
-  test("dashboard renders in single column on small viewport", async ({ page }) => {
+  test("link-only services are compact, touchable chips on a small viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
 
     const cards = page.getByTestId("item-card");
     await expect(cards).toHaveCount(3);
+    await expect(cards.and(page.locator('[data-layout="launcher"]'))).toHaveCount(3);
     const boxes = await cards.evaluateAll((elements) =>
       elements.map((element) => element.getBoundingClientRect().toJSON()),
     );
-    expect(new Set(boxes.map((box) => box.x)).size).toBe(1);
-    expect(boxes.every((box) => box.height >= 44 && box.height < 120)).toBe(true);
-    for (const [index, box] of boxes.slice(1).entries())
-      expect(box.top).toBeGreaterThan(boxes[index].bottom);
+    expect(boxes.every((box) => box.height >= 44 && box.height < 60)).toBe(true);
+    expect(boxes.every((box) => box.left >= 0 && box.right <= 375)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
   });
 
   test("header is responsive on small viewport", async ({ page }) => {

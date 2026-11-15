@@ -52,6 +52,7 @@ it("opening details in a 100-service fixture does not render every tile again", 
       displayMode: "label",
       statDisplayMode: "label",
       statCardOrder: null,
+      enabled: true,
       createdAt: null,
     })),
   };

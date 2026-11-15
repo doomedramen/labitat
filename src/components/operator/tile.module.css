@@ -1,0 +1,340 @@
+/* Overview cards: one lead stat, a few more beneath it. Link-only services are chips. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr));
+  gap: 12px;
+  align-items: start;
+}
+/* Packed (see useBento): cards keep their natural height and fill gaps. */
+.tiles[data-bento] {
+  /* The board sized this group for its cards; columns shrink rather than overflow
+     for the moment a resize takes to re-measure. */
+  grid-template-columns: repeat(var(--group-columns, 1), minmax(0, 1fr));
+  grid-auto-rows: 4px;
+  grid-auto-flow: row dense;
+  row-gap: 0;
+}
+.tiles[data-bento] > * {
+  align-self: start;
+  margin-bottom: 12px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tiles + .chips {
+  margin-top: 12px;
+}
+.tile,
+.chip {
+  position: relative;
+  min-width: 0;
+  color: var(--card-foreground);
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  min-height: 148px;
+  border-radius: 16px;
+  background: var(--card);
+}
+.tile[data-severity="warning"] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warning) 45%, transparent);
+}
+.tile[data-severity="error"] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--destructive) 50%, transparent);
+}
+/* The card-wide link sits under the stats button and the status dot. */
+.launch {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.launch:focus-visible,
+.inspect:focus-visible,
+.statusTrigger:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 4px 0 16px;
+  pointer-events: none;
+}
+.icon,
+.chipIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+.chipIcon {
+  width: 16px;
+  height: 16px;
+}
+.icon,
+.chipIcon {
+  position: relative;
+  overflow: hidden;
+  border-radius: 5px;
+}
+/* ItemIcon pads and frames itself for larger sizes; at this size the glyph is the frame. */
+.icon > *,
+.chipIcon > * {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+}
+.icon span,
+.chipIcon span {
+  font-size: 11px;
+}
+.name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.arrow {
+  flex: none;
+  color: var(--muted-foreground);
+  opacity: 0.6;
+}
+.inspect {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 8px 16px 16px;
+  border-radius: 0 0 16px 16px;
+  text-align: start;
+}
+.value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  font-size: 34px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.value small {
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+}
+.meter {
+  display: block;
+  height: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--border);
+}
+.meter > span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+}
+.rest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-top: 8px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.rest b {
+  color: var(--foreground);
+  font-weight: 500;
+}
+.problem,
+.empty {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.empty {
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+.tile[data-severity="warning"] .problem,
+.chip[data-severity="warning"] .chipReason {
+  color: var(--warning);
+}
+.tile[data-severity="error"] .problem,
+.chip[data-severity="error"] .chipReason {
+  color: var(--destructive);
+}
+.tile[data-stale]:not([data-attention]) .value,
+.tile[data-attention] .rest {
+  opacity: 0.6;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 0 2px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.chip .name {
+  color: var(--foreground);
+}
+.chip[data-severity="warning"] {
+  border-color: color-mix(in srgb, var(--warning) 45%, var(--border));
+}
+.chip[data-severity="error"] {
+  border-color: color-mix(in srgb, var(--destructive) 50%, var(--border));
+}
+.chipReason {
+  overflow: hidden;
+  max-width: 22ch;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status: a dot in the trailing corner of every card and chip; selecting it opens details. */
+.status {
+  position: relative;
+  z-index: 3;
+  flex: none;
+  margin-left: auto;
+  pointer-events: auto;
+}
+.statusTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+}
+.dot[data-state="healthy"] {
+  background: color-mix(in srgb, var(--success) 70%, transparent);
+}
+.dot[data-state="stale"],
+.dot[data-state="warning"] {
+  background: var(--warning);
+}
+.dot[data-state="error"] {
+  background: var(--destructive);
+}
+.tooltip {
+  position: absolute;
+  right: 4px;
+  bottom: 100%;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  max-width: min(260px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--popover);
+  box-shadow: 0 8px 24px #0003;
+  color: var(--popover-foreground);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+.status[data-below] .tooltip {
+  top: 100%;
+  bottom: auto;
+}
+.tooltip > span:not([role="tooltip"]) {
+  color: var(--muted-foreground);
+}
+.statusTrigger:focus-visible + .tooltip {
+  display: flex;
+}
+:is(.tile, .chip):has(.statusTrigger:focus-visible) {
+  z-index: 4;
+}
+@media (hover: hover) and (pointer: fine) {
+  .status:hover .tooltip {
+    display: flex;
+  }
+  :is(.tile, .chip):has(.status:hover) {
+    z-index: 4;
+  }
+  .tile:hover,
+  .chip:hover {
+    background: color-mix(in srgb, var(--foreground) 4%, var(--card));
+  }
+  .chip:hover {
+    background: var(--card);
+  }
+  .statusTrigger:hover {
+    background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  }
+}
+@media (max-width: 639px) {
+  .tiles {
+    gap: 8px;
+  }
+  .tile {
+    min-height: 128px;
+  }
+  .head {
+    padding-left: 14px;
+  }
+  .inspect {
+    padding: 6px 14px 14px;
+  }
+  .value {
+    font-size: 26px;
+  }
+  .chip {
+    min-height: 44px;
+  }
+  .statusTrigger {
+    height: 44px;
+  }
+}
+
+/* Disabled services only appear under the Disabled filter or while arranging. */
+.tile[data-disabled],
+.chip[data-disabled] {
+  opacity: 0.55;
+}

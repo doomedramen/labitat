@@ -134,7 +134,7 @@ test("live activity shows download and stream details and opens the correct serv
   await expect(page.getByText("Plex · 1:00 / 2:00")).toBeVisible();
   await expect(page.getByText("Alex", { exact: true })).toBeVisible();
   await expect(page.getByText("Download 4")).toBeHidden();
-  await page.getByRole("button", { name: "Show 2 more" }).click();
+  await page.getByRole("button", { name: "Show all 5" }).click();
   await expect(page.getByText("Download 4")).toBeVisible();
   await page.screenshot({ path: "test-results/operator-activity-mobile.png", fullPage: true });
   await page.setViewportSize({ width: 1440, height: 900 });

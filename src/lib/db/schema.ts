@@ -45,6 +45,8 @@ export const items = sqliteTable(
     statDisplayMode: text("stat_display_mode").default("label"),
     /** Custom order of stat cards within widget grids (JSON array of IDs) */
     statCardOrder: text("stat_card_order"),
+    /** Disabled services are hidden from the overview and are not polled. */
+    enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
     createdAt: text("created_at").default(sql`(current_timestamp)`),
   },
   (table) => [index("items_group_id_idx").on(table.groupId)],

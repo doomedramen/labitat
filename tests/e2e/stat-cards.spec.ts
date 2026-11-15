@@ -1,10 +1,12 @@
+import type { Page } from "@playwright/test";
 import { configure } from "../helpers/operator";
 import { test, expect, seedAndAuth } from "../fixtures";
 import { dragAndDropInDialog } from "../helpers/dnd";
 
 const RADARR_URL = "https://radarr.test";
 
-test.describe("Stat Card Reordering and Visibility", () => {
+/** Radarr's defaults: Queued is the main stat; Missing, Wanted and Movies follow. */
+test.describe("Card stat picker", () => {
   test.beforeEach(async ({ page }) => {
     await seedAndAuth(page, {
       groups: [
@@ -16,12 +18,7 @@ test.describe("Stat Card Reordering and Visibility", () => {
               href: RADARR_URL,
               serviceType: "radarr",
               serviceUrl: RADARR_URL,
-              cachedWidgetData: {
-                queued: 5,
-                missing: 3,
-                wanted: 7,
-                movies: 42,
-              },
+              cachedWidgetData: { queued: 5, missing: 3, wanted: 7, movies: 42 },
             },
           ],
         },
@@ -29,233 +26,80 @@ test.describe("Stat Card Reordering and Visibility", () => {
     });
   });
 
-  test("reorders stat cards via drag-and-drop in edit mode", async ({ page }) => {
+  async function openPicker(page: Page) {
     await page.goto("/");
-
-    // Wait for stat cards to load
-    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
-
-    // Enter edit mode
-
-    // Small delay to ensure edit mode is fully initialized
-    await page.waitForTimeout(500);
-
-    // Open the item dialog by clicking the edit button on the item
+    await expect(page.getByText("Movies").first()).toBeVisible({ timeout: 15_000 });
     await configure(page, "Radarr");
-
-    // Wait for dialog to open and stat cards to render
-    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
-
-    // Scope to the dialog to avoid picking up dashboard stat cards
     const dialog = page.getByRole("dialog", { name: "Edit Item" });
+    await expect(dialog.getByLabel("Main stat")).toBeVisible();
+    return dialog;
+  }
+  const extras = (dialog: ReturnType<Page["getByRole"]>) =>
+    dialog.getByRole("list", { name: "Extra stats, in order" }).getByTestId("stat-card");
+  const card = (page: Page) =>
+    page
+      .getByTestId("item-card")
+      .filter({ has: page.getByRole("heading", { name: "Radarr", exact: true }) });
 
-    // Get the initial order of stat cards
-    const statCards = dialog.locator('[data-testid="stat-card"]');
-    const initialCount = await statCards.count();
-    expect(initialCount).toBeGreaterThanOrEqual(2);
+  test("choosing a main stat updates the preview and the saved card", async ({ page }) => {
+    const dialog = await openPicker(page);
+    await expect(dialog.getByLabel("Main stat")).toHaveValue("queued");
+    await expect(extras(dialog)).toHaveText([/Missing/, /Wanted/, /Movies/]);
 
-    // Get the second stat card's label for verification after drag
-    const secondLabel = await statCards.nth(1).textContent();
+    await dialog.getByLabel("Main stat").selectOption("movies");
+    // The previous main stat becomes the first extra instead of disappearing.
+    await expect(extras(dialog)).toHaveText([/Queued/, /Missing/, /Wanted/]);
+    await expect(dialog.getByRole("figure", { name: "Card preview" })).toContainText(/42\s*Movies/);
 
-    // Drag the second stat card to the first position
-    // Use the stat cards themselves as drag handles (they have aria-label and are the actual draggable elements)
-    const firstStatCard = statCards.nth(0);
-    const secondStatCard = statCards.nth(1).getByRole("button", { name: /^Drag / });
-
-    await dragAndDropInDialog(page, secondStatCard, firstStatCard);
-
-    // Wait for the drag animation and state update to complete
-    await page.waitForTimeout(500);
-
-    // Re-query stat cards after drag to get updated DOM
-    const updatedStatCards = dialog.locator('[data-testid="stat-card"]');
-
-    // Verify order changed - the first card should now be what was previously second
-    // Use expect with retry-ability
-    await expect(updatedStatCards.nth(0)).toContainText(secondLabel ?? "");
-  });
-
-  test("disables stat card by dragging to unused zone", async ({ page }) => {
-    await page.goto("/");
-
-    // Wait for stat cards to load
-    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
-
-    // Enter edit mode
-
-    // Open the item dialog
-    await configure(page, "Radarr");
-
-    // Wait for dialog to open
-    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
-
-    // Scope to the dialog
-    const dialog = page.getByRole("dialog", { name: "Edit Item" });
-
-    // Count visible stat cards before drag
-    const initialStatCount = await dialog.locator('[data-testid="stat-card"]').count();
-    expect(initialStatCount).toBeGreaterThanOrEqual(2);
-
-    // Get a stat card to drag (e.g., the first one)
-    const statCard = dialog.locator('[data-testid="stat-card"]').first();
-    const statLabel = await statCard.textContent();
-
-    // Drag to unused zone
-    const firstHandle = dialog.locator('button[aria-label^="Drag "]').nth(0);
-    const unusedZone = dialog.locator('[aria-label="Unused stat cards"]');
-
-    await dragAndDropInDialog(page, firstHandle, unusedZone);
-
-    // Verify the stat card moved to unused area
-    const unusedItems = dialog.locator('[data-testid="unused-stat-card"]');
-    await expect(unusedItems).toHaveCount(1);
-
-    // Verify the unused zone shows the moved card
-    await expect(unusedItems.first()).toContainText(statLabel ?? "");
-  });
-
-  test("enables stat card by dragging from unused zone", async ({ page }) => {
-    await page.goto("/");
-
-    // Wait for stat cards to load
-    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
-
-    // Enter edit mode
-
-    // Open the item dialog
-    await configure(page, "Radarr");
-
-    // Wait for dialog to open
-    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
-
-    // Scope to the dialog
-    const dialog = page.getByRole("dialog", { name: "Edit Item" });
-
-    // First, drag a stat card to unused zone
-    const firstHandle = dialog.locator('button[aria-label^="Drag "]').nth(0);
-    const unusedZone = dialog.locator('[aria-label="Unused stat cards"]');
-    await dragAndDropInDialog(page, firstHandle, unusedZone);
-
-    // Wait for drag animation and state update
-    await page.waitForTimeout(500);
-
-    // Verify it's in unused
-    const unusedItems = dialog.locator('[data-testid="unused-stat-card"]');
-    await expect(unusedItems).toHaveCount(1);
-    const unusedLabel = await unusedItems.first().textContent();
-
-    // Now drag it back to active zone - re-query to ensure we get the freshly rendered element
-    const unusedHandle = unusedItems.first().getByRole("button", { name: /^Drag / });
-    await expect(unusedHandle).toBeVisible();
-
-    const activeStatCard = dialog.locator('[data-testid="stat-card"]').first();
-    await expect(activeStatCard).toBeVisible();
-
-    await dragAndDropInDialog(page, unusedHandle, activeStatCard);
-
-    // Wait for the drag animation and state update to complete
-    await page.waitForTimeout(500);
-
-    // Verify it's back in active zone
-    await expect(unusedItems).toHaveCount(0);
-    const activeStatCards = dialog.locator('[data-testid="stat-card"]');
-    await expect(activeStatCards.first()).toContainText(unusedLabel ?? "");
-  });
-
-  test("persists stat card order after saving", async ({ page }) => {
-    await page.goto("/");
-
-    // Wait for stat cards to load
-    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
-
-    // Enter edit mode
-
-    // Open the item dialog
-    await configure(page, "Radarr");
-
-    // Wait for dialog to open
-    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
-
-    // Scope to the dialog
-    const dialog = page.getByRole("dialog", { name: "Edit Item" });
-
-    // Get initial order
-    const statCards = dialog.locator('[data-testid="stat-card"]');
-    const initialSecondLabel = await statCards.nth(1).textContent();
-
-    // Reorder: drag second to first
-    const handles = dialog.locator('button[aria-label^="Drag "]');
-    await dragAndDropInDialog(page, handles.nth(1), handles.nth(0));
-
-    // Wait for order to update in the UI before saving (avoids racing React state updates)
-    await expect(dialog.locator('[data-testid="stat-card"]').nth(0)).toContainText(
-      initialSecondLabel ?? "",
-    );
-
-    // Save the item - use existing dialog to avoid timing issues
     await dialog.getByRole("button", { name: "Update" }).click();
-
-    // Wait for dialog to close
-    await expect(page.getByText("Metrics", { exact: true })).not.toBeVisible();
-
-    // Exit edit mode
-
-    await expect(page).toHaveURL("/");
-
-    // Reload page to verify persistence
+    await expect(dialog).toBeHidden();
     await page.reload();
-
-    // Wait for stat cards to load
-    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
-
-    // Re-enter edit mode
-
-    // Open the item dialog again
-    await configure(page, "Radarr");
-
-    // Wait for dialog to open
-    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
-
-    // Wait for stat cards to be visible before checking order
-    const reorderedStatCards = dialog.locator('[data-testid="stat-card"]');
-    await expect(reorderedStatCards.first()).toBeVisible({ timeout: 5000 });
-
-    // Verify order persisted
-    await expect(reorderedStatCards.nth(0)).toContainText(initialSecondLabel ?? "");
+    // Stats keep their chosen order on the card whether or not the service is healthy.
+    const text = (await card(page).getByRole("button", { name: "Inspect Radarr" }).textContent())!;
+    expect(text.indexOf("Movies")).toBeLessThan(text.indexOf("Queued"));
   });
 
-  test("shows unused zone with count", async ({ page }) => {
-    await page.goto("/");
+  test("extras reorder with arrows and by dragging", async ({ page }) => {
+    const dialog = await openPicker(page);
+    await dialog.getByRole("button", { name: "Move Missing down" }).click();
+    await expect(extras(dialog)).toHaveText([/Wanted/, /Missing/, /Movies/]);
+    await expect(dialog.getByRole("button", { name: "Move Wanted up" })).toBeDisabled();
 
-    // Wait for stat cards to load
-    await expect(page.getByText("Movies")).toBeVisible({ timeout: 15_000 });
+    await dragAndDropInDialog(
+      page,
+      extras(dialog).nth(2).getByRole("button", { name: "Drag Movies" }),
+      extras(dialog).nth(0),
+    );
+    await expect(extras(dialog)).toHaveText([/Movies/, /Wanted/, /Missing/]);
+  });
 
-    // Enter edit mode
+  test("extras can be removed and added back", async ({ page }) => {
+    const dialog = await openPicker(page);
+    await dialog.getByRole("button", { name: "Remove Wanted" }).click();
+    await expect(extras(dialog)).toHaveText([/Missing/, /Movies/]);
 
-    // Open the item dialog
-    await configure(page, "Radarr");
+    const add = dialog.getByRole("group", { name: "Add a stat" });
+    await add.getByRole("button", { name: "Add Wanted" }).click();
+    await expect(extras(dialog)).toHaveText([/Missing/, /Movies/, /Wanted/]);
+    await expect(add).toHaveCount(0);
+  });
 
-    // Wait for dialog to open
-    await expect(page.getByRole("heading", { name: "Edit Item" })).toBeVisible();
-    await expect(page.getByText("Metrics", { exact: true })).toBeVisible();
+  test("no main stat shows the service as a link, and reset restores defaults", async ({
+    page,
+  }) => {
+    const dialog = await openPicker(page);
+    await dialog.getByLabel("Main stat").selectOption({ label: "None, show as a link" });
+    await expect(dialog.getByRole("figure", { name: "Card preview" })).toContainText(
+      "Shown as a link",
+    );
+    await expect(dialog.getByRole("list", { name: "Extra stats, in order" })).toHaveCount(0);
 
-    // Scope to the dialog
-    const dialog = page.getByRole("dialog", { name: "Edit Item" });
+    await dialog.getByRole("button", { name: "Reset to defaults" }).click();
+    await expect(dialog.getByLabel("Main stat")).toHaveValue("queued");
 
-    // Unused zone should show count of 0 initially
-    await expect(dialog.getByText("Unused (0)")).toBeVisible();
-
-    // Drag a stat card to unused zone
-    const firstHandle = dialog.locator('button[aria-label^="Drag "]').nth(0);
-    const unusedZone = dialog.locator('[aria-label="Unused stat cards"]');
-    await dragAndDropInDialog(page, firstHandle, unusedZone);
-
-    // Unused zone should now show count of 1
-    await expect(dialog.getByText("Unused (1)")).toBeVisible();
+    await dialog.getByLabel("Main stat").selectOption({ label: "None, show as a link" });
+    await dialog.getByRole("button", { name: "Update" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(card(page)).toHaveAttribute("data-layout", "launcher");
   });
 });

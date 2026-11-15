@@ -1,10 +1,10 @@
 "use client";
 import { memo, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
-import { ArrowUpRight, ChevronRight, CircleAlert } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { getService } from "@/lib/adapters";
 import { hasMetricSlots } from "@/lib/dashboard-board";
 import { getServicePresentation, compactMetric } from "@/lib/service-presentation";
-import { resolveStatCardLayout, parseStatCardOrder } from "@/lib/stat-card-layout";
+import { resolveStatCardLayout, parseStatCardOrder, SECONDARY_STATS } from "@/lib/stat-card-layout";
 import { serviceHealth } from "@/lib/service-health";
 import { formatAge } from "@/lib/utils/age";
 import type { ItemRow } from "@/lib/types";
@@ -12,8 +12,10 @@ import { useItemLive } from "@/components/dashboard/use-item-live";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
 import { useStalenessFloor } from "@/hooks/use-staleness-floor";
 import { ItemIcon } from "@/components/dashboard/item/item-icon";
-import styles from "./operator.module.css";
+import legacy from "./operator.module.css";
+import styles from "./tile.module.css";
 export type HealthSummary = { attention: boolean; stale: boolean };
+
 export const ServiceTile = memo(function ServiceTile({
   item,
   onDetails,
@@ -27,6 +29,8 @@ export const ServiceTile = memo(function ServiceTile({
 }) {
   const [statusOpen, setStatusOpen] = useState(false);
   const [statusBelow, setStatusBelow] = useState(false);
+  // Horizontal nudge that keeps the tooltip inside the viewport beside edge cards.
+  const [statusShift, setStatusShift] = useState(0);
   const statusRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!statusOpen) return;
@@ -48,8 +52,21 @@ export const ServiceTile = memo(function ServiceTile({
     requestAnimationFrame(() => {
       const control = statusRef.current;
       const popup = control?.querySelector<HTMLElement>("[data-status-popup]");
-      if (control && popup)
-        setStatusBelow(control.getBoundingClientRect().top < popup.offsetHeight + 8);
+      if (!control || !popup) return;
+      setStatusBelow(control.getBoundingClientRect().top < popup.offsetHeight + 8);
+      const rect = popup.getBoundingClientRect();
+      if (!rect.width) return;
+      const current = parseFloat(popup.style.translate) || 0;
+      const left = rect.left - current;
+      const right = rect.right - current;
+      const margin = 8;
+      setStatusShift(
+        left < margin
+          ? margin - left
+          : right > window.innerWidth - margin
+            ? window.innerWidth - margin - right
+            : 0,
+      );
     });
   };
   const statusId = useId();
@@ -70,23 +87,18 @@ export const ServiceTile = memo(function ServiceTile({
         parseStatCardOrder(item.statCardOrder),
         presentation.defaultActiveIds,
       )
-        .activeItems.slice(0, 4)
+        .activeItems.slice(0, 1 + SECONDARY_STATS)
         .map((metric) => ({ ...metric, compactValue: compactMetric(metric) })),
     [presentation, item.statCardOrder],
   );
   const label = item.label || service?.name || "Service";
+  // Structural, never live data: polling must not turn a card into a chip or back.
   const hasMetrics = arranging ? metrics.length > 0 : hasMetricSlots(item);
   const reason =
     health.reason ||
     (presentation.unavailable && item.serviceType && presentation.detailKind === "standard"
       ? "Data unavailable"
       : null);
-  const problem = !arranging && !metrics.length && reason && (
-    <span className={styles.tileProblem}>
-      <CircleAlert size={14} aria-hidden="true" />
-      {reason}
-    </span>
-  );
   const age = live?.lastSuccessAt != null ? Math.max(0, clock - live.lastSuccessAt) : null;
   const ageLabel =
     age === null
@@ -98,11 +110,121 @@ export const ServiceTile = memo(function ServiceTile({
         : age < 10_000
           ? "Just updated"
           : `${formatAge(age)} ago`;
-  const statusControl = (
+  const state = health.attention
+    ? health.tone
+    : health.stale
+      ? "stale"
+      : health.label === "Healthy"
+        ? "healthy"
+        : "unknown";
+  const tooltip = (
+    <span id={statusId} role="tooltip">
+      {health.label}
+      {reason ? ` · ${reason}` : ""}
+      {health.attention && health.stale ? " · stale" : ""}
+    </span>
+  );
+  const attributes = {
+    "data-testid": "item-card",
+    "data-layout": hasMetrics ? "metrics" : "launcher",
+    "data-has-reason": !!reason || undefined,
+    "data-item-id": item.id,
+    "data-attention": health.attention || undefined,
+    "data-severity": health.attention ? health.tone : undefined,
+    "data-stale": health.stale || undefined,
+    "data-disabled": !item.enabled || undefined,
+  };
+  const icon = (
+    <ItemIcon iconUrl={item.iconUrl} label={label} serviceIcon={service?.icon ?? null} />
+  );
+
+  if (arranging)
+    return (
+      <article className={legacy.tile} {...attributes}>
+        <div className={legacy.tileHeader}>
+          <span className={legacy.icon} aria-hidden="true">
+            {icon}
+          </span>
+          <div className={legacy.identity}>
+            <h3 className={legacy.serviceName}>
+              <span className={legacy.nameText}>{label}</span>
+            </h3>
+          </div>
+          <div
+            ref={statusRef}
+            className={legacy.statusControl}
+            data-open={statusOpen || undefined}
+            data-below={statusBelow || undefined}
+            onPointerEnter={(event) => {
+              if (event.pointerType === "mouse") placeStatus();
+            }}
+          >
+            <button
+              type="button"
+              className={legacy.statusTrigger}
+              aria-label={`Status for ${label}: ${health.label}`}
+              aria-describedby={statusId}
+              aria-expanded={statusOpen}
+              onClick={() => {
+                setStatusOpen((open) => !open);
+                placeStatus();
+              }}
+              onFocus={placeStatus}
+              onBlur={(event) => {
+                if (!event.currentTarget.parentElement?.contains(event.relatedTarget))
+                  setStatusOpen(false);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  setStatusOpen(false);
+                  event.currentTarget.blur();
+                }
+              }}
+            >
+              <span className={legacy.healthDot} data-state={state} aria-hidden="true" />
+            </button>
+            <span className={legacy.statusTooltip} data-status-popup="">
+              {tooltip}
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          data-details-for={item.id}
+          className={legacy.inspect}
+          onClick={() => onDetails(item.id)}
+          aria-label={`Inspect ${label}`}
+        >
+          {metrics.length > 0 && (
+            <span
+              className={legacy.metrics}
+              data-count={metrics.length}
+              data-wide-values={
+                metrics.some((metric) => metric.compactValue.length > 6) || undefined
+              }
+              style={{ "--metric-count": metrics.length } as CSSProperties}
+            >
+              {metrics.map((metric) => (
+                <span className={legacy.metric} key={metric.id}>
+                  <span className={legacy.metricValue} title={metric.displayValue}>
+                    {metric.compactValue}
+                  </span>
+                  <span className={legacy.metricLabel} title={metric.label}>
+                    {metric.label}
+                  </span>
+                </span>
+              ))}
+            </span>
+          )}
+        </button>
+      </article>
+    );
+
+  // The status dot sits in the same corner of every card and chip and opens its details.
+  const status = (
     <div
       ref={statusRef}
-      className={styles.statusControl}
-      data-open={statusOpen || undefined}
+      className={styles.status}
       data-below={statusBelow || undefined}
       onPointerEnter={(event) => {
         if (event.pointerType === "mouse") placeStatus();
@@ -112,146 +234,112 @@ export const ServiceTile = memo(function ServiceTile({
         type="button"
         className={styles.statusTrigger}
         aria-label={`Status for ${label}: ${health.label}`}
-        aria-describedby={ageLabel && !arranging ? `${statusId} ${statusId}-age` : statusId}
-        aria-expanded={arranging ? statusOpen : undefined}
-        aria-haspopup={arranging ? undefined : "dialog"}
-        data-details-for={arranging ? undefined : item.id}
-        onClick={() => {
-          // Every overview tile opens its details from the same place: the status line.
-          if (!arranging) {
-            onDetails(item.id);
-            return;
-          }
-          setStatusOpen((open) => !open);
-          placeStatus();
-        }}
+        aria-describedby={ageLabel ? `${statusId} ${statusId}-age` : statusId}
+        aria-haspopup="dialog"
+        data-details-for={item.id}
+        onClick={() => onDetails(item.id)}
         onFocus={placeStatus}
-        onBlur={(event) => {
-          if (!event.currentTarget.parentElement?.contains(event.relatedTarget))
-            setStatusOpen(false);
-        }}
         onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            setStatusOpen(false);
-            event.currentTarget.blur();
-          }
+          if (event.key === "Escape") event.currentTarget.blur();
         }}
       >
-        <span
-          className={styles.healthDot}
-          data-state={
-            health.attention
-              ? health.tone
-              : health.stale
-                ? "stale"
-                : health.label === "Healthy"
-                  ? "healthy"
-                  : "unknown"
-          }
-          aria-hidden="true"
-        />
-        {!arranging && (
-          <>
-            <span className={styles.tileStatusLabel}>
-              {health.stale && !health.attention ? "Cached data" : health.label}
-            </span>
-            {ageLabel && (
-              <span id={`${statusId}-age`} className={styles.tileAge}>
-                {ageLabel}
-              </span>
-            )}
-            <ChevronRight className={styles.tileStatusCaret} size={13} aria-hidden="true" />
-          </>
-        )}
+        <span className={styles.dot} data-state={state} aria-hidden="true" />
       </button>
-      <span className={styles.statusTooltip} data-status-popup="">
-        <span id={statusId} role="tooltip">
-          {health.label}
-          {reason ? ` · ${reason}` : ""}
-          {health.attention && health.stale ? " · stale" : ""}
-        </span>
+      <span
+        className={styles.tooltip}
+        data-status-popup=""
+        style={statusShift ? { translate: `${statusShift}px 0` } : undefined}
+      >
+        {tooltip}
+        {ageLabel && <span id={`${statusId}-age`}>{ageLabel}</span>}
+        <span className={styles.tooltipHint}>Select for details</span>
       </span>
     </div>
   );
+  const launch = item.href && (
+    <a
+      className={styles.launch}
+      href={item.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${label} (opens in a new tab)`}
+    />
+  );
 
-  return (
-    <article
-      className={styles.tile}
-      data-testid="item-card"
-      data-overview={!arranging || undefined}
-      data-layout={hasMetrics ? "metrics" : "launcher"}
-      data-launch={item.href && !arranging ? true : undefined}
-      data-has-reason={!!reason || undefined}
-      data-item-id={item.id}
-      data-attention={health.attention || undefined}
-      data-severity={health.attention ? health.tone : undefined}
-      data-stale={health.stale || undefined}
-    >
-      {item.href && !arranging && (
-        <a
-          className={styles.tileLaunch}
-          href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`${label} (opens in a new tab)`}
-        />
-      )}
-      {!item.href && !hasMetrics && !arranging && (
-        <button
-          type="button"
-          className={styles.tileLaunch}
-          data-details-for={item.id}
-          onClick={() => onDetails(item.id)}
-          aria-label={`Inspect ${label}`}
-        />
-      )}
-      <div className={styles.tileHeader}>
-        <span className={styles.icon} aria-hidden="true">
-          <ItemIcon iconUrl={item.iconUrl} label={label} serviceIcon={service?.icon ?? null} />
+  if (!hasMetrics)
+    return (
+      <article className={styles.chip} data-overview="" {...attributes}>
+        {launch || (
+          <button
+            type="button"
+            className={styles.launch}
+            data-details-for={item.id}
+            onClick={() => onDetails(item.id)}
+            aria-label={`Inspect ${label}`}
+          />
+        )}
+        <span className={styles.chipIcon} aria-hidden="true">
+          {icon}
         </span>
-        <div className={styles.identity}>
-          <h3 className={styles.serviceName}>
-            <span className={styles.nameText}>{label}</span>
-            {item.href && !arranging && <ArrowUpRight size={12} aria-hidden="true" />}
-          </h3>
-        </div>
-        {arranging && statusControl}
-      </div>
-      {(hasMetrics || arranging) && (
-        <button
-          type="button"
-          data-details-for={item.id}
-          className={styles.inspect}
-          onClick={() => onDetails(item.id)}
-          aria-label={`Inspect ${label}`}
-        >
-          {metrics.length ? (
-            <span
-              className={styles.metrics}
-              data-count={metrics.length}
-              data-wide-values={
-                metrics.some((metric) => metric.compactValue.length > 6) || undefined
-              }
-              style={{ "--metric-count": metrics.length } as CSSProperties}
-            >
-              {metrics.map((metric) => (
-                <span className={styles.metric} key={metric.id}>
-                  <span className={styles.metricValue} title={metric.displayValue}>
-                    {metric.compactValue}
-                  </span>
-                  <span className={styles.metricLabel} title={metric.label}>
-                    {metric.label}
-                  </span>
-                </span>
-              ))}
+        <h3 className={styles.name}>{label}</h3>
+        {health.attention && reason && <span className={styles.chipReason}>{reason}</span>}
+        {item.href && <ArrowUpRight className={styles.arrow} size={13} aria-hidden="true" />}
+        {status}
+      </article>
+    );
+
+  const [lead, ...rest] = metrics;
+  const problem = health.attention && reason;
+  const secondary = problem ? metrics : rest;
+  const leadPercent =
+    lead?.unit === "percent" && lead.numericValue !== undefined
+      ? Math.max(0, Math.min(100, lead.numericValue))
+      : null;
+  return (
+    <article className={styles.tile} data-overview="" {...attributes}>
+      {launch}
+      <header className={styles.head}>
+        <span className={styles.icon} aria-hidden="true">
+          {icon}
+        </span>
+        <h3 className={styles.name}>{label}</h3>
+        {item.href && <ArrowUpRight className={styles.arrow} size={13} aria-hidden="true" />}
+        {status}
+      </header>
+      <button
+        type="button"
+        data-details-for={item.id}
+        className={styles.inspect}
+        onClick={() => onDetails(item.id)}
+        aria-label={`Inspect ${label}`}
+      >
+        {problem ? (
+          <span className={styles.problem}>{reason}</span>
+        ) : lead ? (
+          <>
+            <span className={styles.value}>
+              <span title={lead.displayValue}>{lead.compactValue}</span>
+              <small>{lead.label}</small>
             </span>
-          ) : (
-            !arranging &&
-            (problem || <span className={styles.tileDetailsLabel}>Service details</span>)
-          )}
-        </button>
-      )}
-      {!arranging && <footer className={styles.tileFooter}>{statusControl}</footer>}
+            {leadPercent !== null && (
+              <span className={styles.meter} aria-hidden="true">
+                <span style={{ width: `${leadPercent}%` }} />
+              </span>
+            )}
+          </>
+        ) : (
+          <span className={styles.empty}>{reason ?? "Service details"}</span>
+        )}
+        {secondary.length > 0 && (
+          <span className={styles.rest}>
+            {secondary.map((metric) => (
+              <span key={metric.id} title={metric.displayValue}>
+                <b>{metric.compactValue}</b> {metric.label}
+              </span>
+            ))}
+          </span>
+        )}
+      </button>
     </article>
   );
 });

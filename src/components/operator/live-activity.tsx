@@ -1,10 +1,9 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { Download, Radio, ChevronRight } from "lucide-react";
+import { memo, useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { ArrowDownToLine, ChevronRight, Pause, Play } from "lucide-react";
 import { useItemLive } from "@/components/dashboard/use-item-live";
 import type { DownloadItemData } from "@/components/widgets/download/types";
-import type { ActiveStream } from "@/components/widgets/active-stream/types";
 import { useVisibleClock } from "@/hooks/use-visible-clock";
 import { useStalenessFloor } from "@/hooks/use-staleness-floor";
 import {
@@ -15,7 +14,10 @@ import {
 } from "@/lib/service-activity";
 import type { ItemLive } from "@/lib/live-types";
 import type { ItemRow } from "@/lib/types";
-import styles from "./operator.module.css";
+import styles from "./activity.module.css";
+
+/** Rows shown before "Show all": four on phones, eight elsewhere (see activity.module.css). */
+const COLLAPSED_ROWS = { phone: 4, wide: 8 };
 
 const ActivityObserver = memo(function ActivityObserver({
   item,
@@ -63,12 +65,12 @@ export const LiveActivity = memo(function LiveActivity({
         ]),
     ),
   );
-  const [expanded, setExpanded] = useState({ downloads: false, streams: false });
-  const [issuesExpanded, setIssuesExpanded] = useState({ downloads: false, streams: false });
+  const [expanded, setExpanded] = useState(false);
+  const [issuesExpanded, setIssuesExpanded] = useState(false);
   useEffect(() => {
     function resetActivityDisclosure() {
-      setExpanded({ downloads: false, streams: false });
-      setIssuesExpanded({ downloads: false, streams: false });
+      setExpanded(false);
+      setIssuesExpanded(false);
     }
     document.addEventListener("visibilitychange", resetActivityDisclosure);
     window.addEventListener("pageshow", resetActivityDisclosure);
@@ -87,25 +89,28 @@ export const LiveActivity = memo(function LiveActivity({
   const sources = items.filter((item) => serviceActivityKind(item.serviceType));
   if (!sources.length) return null;
   const downloads = sources.flatMap((item) =>
-    (observations[item.id]?.downloads ?? []).map((entry, index) => ({ item, entry, index })),
+    (observations[item.id]?.downloads ?? []).map((entry, index) => ({
+      item,
+      entry,
+      index,
+      stream: null,
+    })),
   );
   const streams = sources.flatMap((item) =>
-    (observations[item.id]?.streams ?? []).map((entry, index) => ({ item, entry, index })),
+    (observations[item.id]?.streams ?? []).map((entry, index) => ({
+      item,
+      entry,
+      index,
+      stream: entry,
+    })),
   );
-  const downloadIssues = sources.filter(
-    (item) =>
-      serviceActivityKind(item.serviceType) === "downloads" && observations[item.id]?.reason,
+  // Alternate kinds so the collapsed list shows both downloads and streams.
+  const entries = Array.from({ length: Math.max(downloads.length, streams.length) }).flatMap(
+    (_, index) => [downloads[index], streams[index]].filter((entry) => !!entry),
   );
-  const streamIssues = sources.filter(
-    (item) => serviceActivityKind(item.serviceType) === "streams" && observations[item.id]?.reason,
-  );
+  const issues = sources.filter((item) => observations[item.id]?.reason);
   const allObserved = sources.every((item) => observations[item.id]);
-  const idle =
-    allObserved &&
-    !downloads.length &&
-    !streams.length &&
-    !downloadIssues.length &&
-    !streamIssues.length;
+  const idle = allObserved && !entries.length && !issues.length;
   const hasDownloads = sources.some(
     (item) => serviceActivityKind(item.serviceType) === "downloads",
   );
@@ -116,167 +121,144 @@ export const LiveActivity = memo(function LiveActivity({
       : hasDownloads
         ? "No active downloads"
         : "No active streams";
+  const count = (total: number, noun: string) => `${total} ${noun}${total === 1 ? "" : "s"}`;
+  const summary = [
+    hasDownloads && count(downloads.length, "download"),
+    hasStreams && count(streams.length, "stream"),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const collapsible = entries.length > COLLAPSED_ROWS.phone;
   return (
     <section
       className={styles.activity}
       data-idle={idle || undefined}
+      data-expanded={expanded || undefined}
+      data-overflow={entries.length > COLLAPSED_ROWS.wide || undefined}
       aria-labelledby="live-activity-heading"
     >
       {sources.map((item) => (
         <ActivityObserver key={item.id} item={item} initialNow={initialNow} report={report} />
       ))}
-      <div className={styles.sectionHeading}>
-        <div>
-          <h2 id="live-activity-heading">Live activity</h2>
-        </div>
-      </div>
-      {idle && (
-        <div className={styles.activityIdle}>
-          <span>Live activity</span>
-          <span>{idleLabel}</span>
+      <header className={styles.lead}>
+        <h2 id="live-activity-heading">Live activity</h2>
+        {entries.length > 0 && <b>{entries.length}</b>}
+        <p>
+          {entries.length
+            ? summary
+            : idle
+              ? idleLabel
+              : allObserved
+                ? "No activity to show"
+                : "Checking activity…"}
+        </p>
+      </header>
+      {entries.length > 0 && (
+        <div className={styles.rows}>
+          {entries.map(({ item, entry, index, stream }) => {
+            const download = stream ? null : (entry as DownloadItemData);
+            const percent = activityProgress(entry.progress, stream ? stream.duration : 100);
+            const detail = [entry.subtitle, stream?.episode, download?.size, download?.activity]
+              .filter(Boolean)
+              .join(" · ");
+            return (
+              <button
+                key={`${item.id}:${stream ? "s" : "d"}:${index}`}
+                type="button"
+                className={styles.row}
+                style={{ "--progress": `${percent ?? 0}%` } as CSSProperties}
+                onClick={() => onDetails(item.id)}
+                aria-label={`Inspect ${item.label}: ${entry.title}`}
+              >
+                <span
+                  className={styles.rowKind}
+                  data-kind={stream ? "stream" : "download"}
+                  title={stream ? "Stream" : "Download"}
+                  aria-hidden="true"
+                >
+                  {!stream ? (
+                    <ArrowDownToLine size={14} />
+                  ) : stream.state === "paused" ? (
+                    <Pause size={14} />
+                  ) : (
+                    <Play size={14} />
+                  )}
+                </span>
+                <span className={styles.rowTitle}>
+                  <strong>{entry.title}</strong>
+                  <span>
+                    {item.label}
+                    {detail ? ` · ${detail}` : ""}
+                    {stream && Number.isFinite(stream.progress) && stream.duration > 0
+                      ? ` · ${time(stream.progress)} / ${time(stream.duration)}`
+                      : ""}
+                  </span>
+                </span>
+                <span className={styles.rowMeta}>
+                  {stream ? (
+                    <>
+                      <span>{stream.user}</span>
+                      {stream.state === "paused" && <span>paused</span>}
+                    </>
+                  ) : (
+                    <span>
+                      {download?.speed || (download?.timeLeft ? `${download.timeLeft} left` : "")}
+                    </span>
+                  )}
+                </span>
+                {percent !== null && (
+                  <span
+                    className={styles.rowPercent}
+                    role="progressbar"
+                    aria-label={`${entry.title} progress`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(percent)}
+                  >
+                    {Math.round(percent)}%
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
-      <div className={styles.activityGrid}>
-        {(["downloads", "streams"] as const).map((kind) => {
-          const isDownloads = kind === "downloads";
-          const entries = isDownloads ? downloads : streams;
-          const issues = isDownloads ? downloadIssues : streamIssues;
-          const relevant = sources.filter((item) => serviceActivityKind(item.serviceType) === kind);
-          if (!relevant.length) return null;
-          return (
-            <section
-              key={kind}
-              className={styles.activityPanel}
-              data-empty={
-                !entries.length && !issues.length && relevant.every((item) => observations[item.id])
-                  ? true
-                  : undefined
-              }
-              aria-label={isDownloads ? "Downloads" : "Active streams"}
-            >
-              <header className={styles.activityHeader}>
-                <span className={styles.activityIcon} data-kind={kind}>
-                  {isDownloads ? <Download size={19} /> : <Radio size={19} />}
-                </span>
-                <div>
-                  <h3>{isDownloads ? "Downloads" : "Active streams"}</h3>
-                  <p>
-                    {entries.length
-                      ? `${entries.length} available`
-                      : issues.length
-                        ? "Some sources need attention"
-                        : relevant.some((item) => !observations[item.id])
-                          ? "Checking activity…"
-                          : "No activity to show"}
-                  </p>
-                </div>
-                {entries.length > 2 && (
-                  <button
-                    type="button"
-                    className={styles.activityToggle}
-                    onClick={() => setExpanded((v) => ({ ...v, [kind]: !v[kind] }))}
-                  >
-                    {expanded[kind] ? "Show less" : `Show ${entries.length - 2} more`}
-                  </button>
-                )}
-              </header>
-              <div className={styles.activityList}>
-                {(expanded[kind] ? entries : entries.slice(0, 2)).map(({ item, entry, index }) => {
-                  const isStream = !isDownloads;
-                  const stream = isStream ? (entry as ActiveStream) : null;
-                  const download = isDownloads ? (entry as DownloadItemData) : null;
-                  const percent = activityProgress(entry.progress, stream ? stream.duration : 100);
-                  return (
-                    <button
-                      key={`${item.id}:${index}`}
-                      type="button"
-                      className={styles.activityEntry}
-                      onClick={() => onDetails(item.id)}
-                      aria-label={`Inspect ${item.label}: ${entry.title}`}
-                    >
-                      <span className={styles.activityEntryHead}>
-                        <strong>{entry.title}</strong>
-                        {(download?.speed || stream?.state) && (
-                          <span className={styles.activityRate}>
-                            {download?.speed || stream?.state}
-                          </span>
-                        )}
-                        <ChevronRight size={15} />
-                      </span>
-                      {(entry.subtitle ||
-                        stream?.episode ||
-                        stream?.user ||
-                        download?.timeLeft) && (
-                        <span className={styles.activityMeta}>
-                          <span>
-                            {[entry.subtitle, stream?.episode].filter(Boolean).join(" · ")}
-                          </span>
-                          <span>
-                            {download?.timeLeft ? `${download.timeLeft} left` : stream?.user}
-                          </span>
-                        </span>
-                      )}
-                      {percent !== null && (
-                        <span
-                          className={styles.activityProgress}
-                          role="progressbar"
-                          aria-label={`${entry.title} progress`}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-valuenow={Math.round(percent)}
-                        >
-                          <span style={{ width: `${percent}%` }} />
-                        </span>
-                      )}
-                      <span className={styles.activityFoot}>
-                        <span>
-                          {item.label}
-                          {download?.size ? ` · ${download.size}` : ""}
-                          {stream &&
-                          Number.isFinite(stream.progress) &&
-                          Number.isFinite(stream.duration) &&
-                          stream.duration > 0
-                            ? ` · ${time(stream.progress)} / ${time(stream.duration)}`
-                            : ""}
-                          {download?.activity ? ` · ${download.activity}` : ""}
-                        </span>
-                        {percent !== null && <span>{Math.round(percent)}%</span>}
-                      </span>
-                    </button>
-                  );
-                })}
-                {issues.length > 0 && (
-                  <div className={styles.activityIssues}>
-                    <button
-                      type="button"
-                      className={styles.activityIssueToggle}
-                      aria-expanded={issuesExpanded[kind]}
-                      onClick={() => setIssuesExpanded((v) => ({ ...v, [kind]: !v[kind] }))}
-                    >
-                      {issues.length}{" "}
-                      {issues.length === 1 ? "source unavailable" : "sources unavailable"}
-                      <ChevronRight size={15} aria-hidden="true" />
-                    </button>
-                    {issuesExpanded[kind] &&
-                      issues.map((item) => (
-                        <button
-                          type="button"
-                          key={item.id}
-                          className={styles.activityIssue}
-                          aria-label={`${item.label}: ${observations[item.id]?.reason}`}
-                          onClick={() => onDetails(item.id)}
-                        >
-                          <span>{item.label}</span>
-                          <span>{observations[item.id]?.reason}</span>
-                        </button>
-                      ))}
-                  </div>
-                )}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+      {collapsible && (
+        <button
+          type="button"
+          className={styles.more}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {expanded ? "Show less" : `Show all ${entries.length}`}
+        </button>
+      )}
+      {issues.length > 0 && (
+        <div className={styles.activityIssues}>
+          <button
+            type="button"
+            className={styles.activityIssueToggle}
+            aria-expanded={issuesExpanded}
+            onClick={() => setIssuesExpanded((value) => !value)}
+          >
+            {issues.length} {issues.length === 1 ? "source unavailable" : "sources unavailable"}
+            <ChevronRight size={15} aria-hidden="true" />
+          </button>
+          {issuesExpanded &&
+            issues.map((item) => (
+              <button
+                type="button"
+                key={item.id}
+                className={styles.issue}
+                aria-label={`${item.label}: ${observations[item.id]?.reason}`}
+                onClick={() => onDetails(item.id)}
+              >
+                <span>{item.label}</span>
+                <span>{observations[item.id]?.reason}</span>
+              </button>
+            ))}
+        </div>
+      )}
     </section>
   );
 });
