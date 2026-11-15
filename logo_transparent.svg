@@ -37,14 +37,14 @@
        y2="1">
       <stop
          offset="0"
-         stop-color="#0a84ff"
+         stop-color="#0d1410"
          id="stop3"
-         style="stop-color:#00d656;stop-opacity:1;" />
+         style="stop-color:#0d1410;stop-opacity:1;" />
       <stop
          offset="1"
-         stop-color="#5e5ce6"
+         stop-color="#0d1410"
          id="stop2"
-         style="stop-color:#05d758;stop-opacity:1;" />
+         style="stop-color:#0d1410;stop-opacity:1;" />
     </linearGradient>
     <filter
        style="color-interpolation-filters:sRGB;"
@@ -63,19 +63,19 @@
   <g
      transform="matrix(34.710466,0,0,34.710466,112.82964,112.82804)"
      fill="none"
-     stroke="#ffffff"
+     stroke="#8fe36b"
      stroke-width="2.2"
      stroke-linecap="round"
      stroke-linejoin="round"
      id="g3"
-     style="stroke:#1a1a2e;stroke-opacity:1">
+     style="stroke:#8fe36b;stroke-opacity:1">
     <path
        d="M 11,20 A 7,7 0 0 1 9.8,6.1 C 15.5,5 17,4.48 19,2 c 1,2 2,4.18 2,8 0,5.5 -4.78,10 -10,10 z"
        id="path2"
-       style="stroke:#1a1a2e;stroke-opacity:1" />
+       style="stroke:#8fe36b;stroke-opacity:1" />
     <path
        d="M 2,21 C 2,18 3.85,15.64 7.08,15 9.5,14.52 12,13 13,12"
        id="path3"
-       style="stroke:#1a1a2e;stroke-opacity:1" />
+       style="stroke:#8fe36b;stroke-opacity:1" />
   </g>
 </svg>

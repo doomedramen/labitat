@@ -51,7 +51,11 @@ const ICONS = [
 ];
 
 // iOS splash screens: actual pixel dimensions (CSS points × device pixel ratio)
-// Logo is rendered at ~25% of the shorter dimension, centered.
+// iPhone splashes get the logo at 30% of the shorter dimension, centered.
+// iPad splashes are plain background: since iPadOS 13, Safari ignores the
+// landscape startup image and stretches the portrait one to fill the screen
+// (https://github.com/elegantapp/pwa-asset-generator/issues/93), which
+// distorts any logo. A solid colour looks the same stretched or not.
 const SPLASH_SCREENS = [
   // iPhones
   {
@@ -206,6 +210,14 @@ ${stopTags}
 async function generateSplash(w, h, name, stops, orientation) {
   const outputPath = join(ROOT_DIR, "public/splash_screens", `${name}.png`);
   const relativePath = outputPath.replace(ROOT_DIR + "/", "");
+
+  if (name.includes("iPad")) {
+    await sharp(gradientSvg(w, h, stops, orientation))
+      .png()
+      .toFile(outputPath);
+    console.log(`✓ ${relativePath} (${w}x${h}, no logo)`);
+    return;
+  }
 
   // Logo size: 30% of the shorter dimension
   const logoSize = Math.round(Math.min(w, h) * 0.3);
