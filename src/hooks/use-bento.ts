@@ -52,23 +52,25 @@ export function useBento<T extends HTMLElement>(enabled = true) {
   return ref;
 }
 
-/** How many tracks of at least `min` px (with `gap` between) fit in an element. */
+/** How many tracks of at least `min` px (with `gap` between) fit in an element, and its width. */
 export function useTrackCount<T extends HTMLElement>(min: (width: number) => number, gap: number) {
   const ref = useRef<T>(null);
   const [count, setCount] = useState<number | null>(null);
+  const [width, setWidth] = useState<number | null>(null);
   const minRef = useRef(min);
   minRef.current = min;
   useLayoutEffect(() => {
     const element = ref.current;
     if (!element || typeof ResizeObserver === "undefined") return;
     const measure = () => {
-      const width = element.clientWidth;
-      setCount(Math.max(1, Math.floor((width + gap) / (minRef.current(width) + gap))));
+      const current = element.clientWidth;
+      setWidth(current);
+      setCount(Math.max(1, Math.floor((current + gap) / (minRef.current(current) + gap))));
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
   }, [gap]);
-  return [ref, count] as const;
+  return [ref, count, width] as const;
 }

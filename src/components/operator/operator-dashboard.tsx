@@ -87,6 +87,8 @@ const withCache = (item: ItemRow): ItemWithCache => ({
   cachedPingStatus: null,
   cachedDataAge: null,
 });
+/** Board width below which groups stack full width instead of sharing rows. */
+const GROUPS_SIDE_BY_SIDE_MIN_WIDTH = 700;
 /** Space between groups on the board; tile.module.css uses the same for cards. */
 const BOARD_GAP = 20;
 const clone = (groups: GroupWithItems[]) =>
@@ -385,13 +387,19 @@ export function OperatorDashboard({
   );
   // Board rows: each group takes the columns its cards need, and rows are filled across
   // (see boardSpans). Groups in a row share a top edge; cards pack by height inside them.
-  const [trackRef, columns] = useTrackCount<HTMLDivElement>(
-    (width) => (width < 640 ? 150 : 210),
+  const [trackRef, columns, boardWidth] = useTrackCount<HTMLDivElement>(
+    // Minimum card width: two cards side by side on any phone (from 320px screens with a
+    // scrollbar), slightly wider cards on large phones and small tablets, full desktop cards
+    // from where groups start sharing rows.
+    (width) => (width < 480 ? 150 : width < GROUPS_SIDE_BY_SIDE_MIN_WIDTH ? 180 : 210),
     BOARD_GAP,
   );
+  // Mobile first: on narrow boards every group takes the full width and only its cards
+  // sit side by side; groups share rows once the board is tablet-wide.
+  const stacked = (boardWidth ?? 0) < GROUPS_SIDE_BY_SIDE_MIN_WIDTH;
   const spans = useMemo(
     () =>
-      columns
+      columns && !stacked
         ? boardSpans(
             filtered.map((group) => {
               const cards = group.items.filter((item) => hasMetricSlots(item)).length;
@@ -400,7 +408,7 @@ export function OperatorDashboard({
             columns,
           )
         : {},
-    [filtered, columns],
+    [filtered, columns, stacked],
   );
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -658,7 +666,9 @@ export function OperatorDashboard({
           >
             {filtered.map((group) => (
               <OperatorGroup
-                span={!arranging && columns ? (spans[group.id] ?? 1) : null}
+                span={!arranging && columns ? (spans[group.id] ?? columns) : null}
+                // Stacked groups keep every card the same width; side by side, cards stretch.
+                fillCards={!stacked}
                 initialNow={serverNow}
                 key={group.id}
                 group={group}
@@ -842,6 +852,7 @@ export function OperatorDashboard({
 
 function OperatorGroup({
   span,
+  fillCards,
   initialNow,
   group,
   arranging,
@@ -857,6 +868,8 @@ function OperatorGroup({
 }: {
   /** Board columns this group spans; null when the board is not packed. */
   span: number | null;
+  /** Stretch cards across the group's width rather than keeping board-column widths. */
+  fillCards: boolean;
   initialNow: number;
   group: GroupWithItems;
   arranging: boolean;
@@ -904,10 +917,12 @@ function OperatorGroup({
         ...(span
           ? {
               gridColumn: `span ${span}`,
-              "--group-columns": Math.max(
-                1,
-                Math.min(span, group.items.filter((item) => hasMetricSlots(item)).length),
-              ),
+              "--group-columns": fillCards
+                ? Math.max(
+                    1,
+                    Math.min(span, group.items.filter((item) => hasMetricSlots(item)).length),
+                  )
+                : span,
             }
           : {}),
       }}
