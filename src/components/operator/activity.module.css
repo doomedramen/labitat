@@ -1,0 +1,197 @@
+/* Live activity: one short row per download or stream; the row's fill is its progress. */
+.activity {
+  margin-bottom: 32px;
+  padding: 18px 20px 20px;
+  border-radius: 20px;
+  background: var(--card);
+}
+.activity[data-idle] {
+  margin-bottom: 20px;
+  padding: 0;
+  background: none;
+}
+.lead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+}
+.lead h2 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.lead b {
+  color: var(--primary);
+  font-size: 34px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 6px 12px;
+  margin-top: 14px;
+}
+/* Collapsed lists hide rows past the limit; phones use a lower limit below. */
+.activity:not([data-expanded]) .row:nth-child(n + 9) {
+  display: none;
+}
+.activity:not([data-overflow]) .more {
+  display: none;
+}
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 12px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--background);
+  font-size: 13px;
+  text-align: start;
+}
+.row::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--progress);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+.row > * {
+  position: relative;
+}
+/* Downloads and streams are told apart by icon and tint, not by position. */
+.rowKind {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  color: var(--primary);
+}
+.rowKind[data-kind="stream"] {
+  background: color-mix(in srgb, var(--info) 18%, transparent);
+  color: var(--info);
+}
+.row:has(.rowKind[data-kind="stream"])::before {
+  background: color-mix(in srgb, var(--info) 14%, transparent);
+}
+.rowTitle {
+  overflow: hidden;
+  color: var(--muted-foreground);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowTitle strong {
+  margin-right: 8px;
+  color: var(--foreground);
+  font-weight: 600;
+}
+.rowMeta,
+.rowPercent {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.rowMeta {
+  display: flex;
+  gap: 8px;
+}
+.rowPercent {
+  min-width: 34px;
+  color: var(--foreground);
+  text-align: right;
+}
+.more,
+.activityIssueToggle,
+.issue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  text-align: start;
+}
+.more {
+  justify-content: center;
+  margin-top: 4px;
+}
+.activityIssues {
+  margin-top: 10px;
+}
+.activityIssueToggle svg {
+  transition: transform 150ms ease;
+}
+.activityIssueToggle[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+.issue span:last-child {
+  color: var(--warning);
+  text-align: right;
+}
+.row:focus-visible,
+.more:focus-visible,
+.activityIssueToggle:focus-visible,
+.issue:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+@media (hover: hover) {
+  .row:hover,
+  .more:hover,
+  .activityIssueToggle:hover,
+  .issue:hover {
+    background: color-mix(in srgb, var(--foreground) 6%, var(--background));
+  }
+  .more:hover,
+  .activityIssueToggle:hover,
+  .issue:hover {
+    background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .activityIssueToggle svg {
+    transition: none;
+  }
+}
+@media (max-width: 639px) {
+  .activity {
+    margin-bottom: 24px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+  .lead {
+    font-size: 13px;
+  }
+  .lead b {
+    font-size: 26px;
+  }
+  .rows {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 10px;
+  }
+  .activity:not([data-expanded]) .row:nth-child(n + 5) {
+    display: none;
+  }
+  /* Phones collapse at four rows, so the button is needed even below the wide limit. */
+  .activity:not([data-overflow]) .more {
+    display: flex;
+  }
+}

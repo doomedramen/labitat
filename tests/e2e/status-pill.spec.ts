@@ -22,15 +22,14 @@ test("status reasons appear immediately on hover, focus and tap", async ({ page 
   await page.goto("/");
   const healthy = page.getByTestId("item-card").first();
   const failed = page.getByTestId("item-card").last();
+  // The status dot sits in each card's header, beside the name.
   await expect(
     healthy
-      .locator("footer")
+      .locator("header")
       .getByRole("button", { name: "Status for Healthy: Healthy", exact: true }),
   ).toBeVisible();
-  await expect(
-    failed.getByRole("button", { name: "Status for Failed: Needs attention", exact: true }),
-  ).toBeVisible();
   const status = failed.getByRole("button", { name: "Status for Failed: Needs attention" });
+  await expect(status).toBeVisible();
   await expect(failed.getByRole("tooltip")).toBeHidden();
   await status.hover();
   await expect(failed.getByRole("tooltip")).toContainText(
@@ -44,12 +43,14 @@ test("status reasons appear immediately on hover, focus and tap", async ({ page 
   await expect(failed.getByRole("tooltip")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(failed.getByRole("tooltip")).toBeHidden();
-  expect((await status.boundingBox())!.height).toBe(34);
-  expect(await status.evaluate((el) => getComputedStyle(el, "::before").inset)).toBe("-5px");
-  expect(await healthy.locator("svg path[stroke-dashoffset]").count()).toBe(0);
+  expect((await status.boundingBox())!.height).toBeGreaterThanOrEqual(36);
+  // A failing service shows its reason in place of the main stat.
+  await expect(failed.getByRole("button", { name: "Inspect Failed" })).toContainText(
+    /Connection refused|Unable to reach service/,
+  );
 });
 
-test("card background launches, metrics inspect, and status stays in the footer", async ({
+test("card background launches, stats inspect, and the status dot opens details", async ({
   page,
 }) => {
   await seedAndAuth(page, {
@@ -71,17 +72,17 @@ test("card background launches, metrics inspect, and status stays in the footer"
   await page.goto("/");
   const media = page.getByTestId("item-card").first();
   const launcher = page.getByTestId("item-card").last();
+  // Services with stats are cards; link-only services are compact chips.
+  await expect(media).toHaveAttribute("data-layout", "metrics");
+  await expect(launcher).toHaveAttribute("data-layout", "launcher");
   for (const width of [320, 390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const card of [media, launcher]) {
-      const bounds = (await card.boundingBox())!;
-      const status = (await card
-        .locator("footer")
-        .getByRole("button", { name: /Status for/ })
-        .boundingBox())!;
-      expect(status.width).toBeGreaterThanOrEqual(bounds.width - 2);
-      expect(status.y + status.height).toBeGreaterThanOrEqual(bounds.y + bounds.height - 2);
-    }
+    const card = (await media.boundingBox())!;
+    const chip = (await launcher.boundingBox())!;
+    expect(chip.height).toBeLessThan(card.height / 2);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
   }
   await page
     .context()
@@ -97,7 +98,6 @@ test("card background launches, metrics inspect, and status stays in the footer"
   await launcher.getByRole("button", { name: /Status for Launcher/ }).click();
   await expect(page.getByRole("dialog", { name: "Launcher" })).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).click();
-  // The status line opens details on every tile, with or without metrics.
   await media.getByRole("button", { name: /Status for Media/ }).click();
   await expect(page.getByRole("dialog", { name: "Media" })).toBeVisible();
 });

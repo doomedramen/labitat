@@ -27,6 +27,7 @@ function item(id: string, serviceType: string): ItemRow {
     displayMode: "label",
     statDisplayMode: "label",
     statCardOrder: null,
+    enabled: true,
     createdAt: null,
   };
 }
@@ -70,14 +71,29 @@ it("shows available activity with its source, expands bounded results and opens 
     sessions: [{ title: "A film", user: "Alex", progress: 60, duration: 120, state: "paused" }],
   });
   const open = vi.fn();
-  render(<LiveActivity items={items} initialNow={state.now} onDetails={open} />);
+  const { container } = render(
+    <LiveActivity items={items} initialNow={state.now} onDetails={open} />,
+  );
   expect(await screen.findByText("Download 0")).toBeVisible();
-  expect(screen.queryByText("Download 3")).toBeNull();
   expect(screen.getByText(/Plex · 1:00 \/ 2:00/)).toBeVisible();
   expect(screen.getByText("Alex")).toBeVisible();
   expect(screen.getByText("paused")).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "Show 3 more" }));
-  expect(screen.getByText("Download 4")).toBeVisible();
+  // Kinds alternate so a collapsed list shows both, and each row is marked by kind.
+  const rows = screen.getAllByRole("button", { name: /^Inspect / });
+  expect(rows.map((row) => row.querySelector("[data-kind]")?.getAttribute("data-kind"))).toEqual([
+    "download",
+    "stream",
+    "download",
+    "download",
+    "download",
+    "download",
+  ]);
+  // Rows past the limit are hidden by CSS; the button only flips the section's state.
+  const more = screen.getByRole("button", { name: "Show all 6" });
+  expect(container.querySelector("[data-expanded]")).toBeNull();
+  fireEvent.click(more);
+  expect(container.querySelector("[data-expanded]")).not.toBeNull();
+  expect(more).toHaveAttribute("aria-expanded", "true");
   fireEvent.click(screen.getByRole("button", { name: "Inspect Plex: A film" }));
   expect(open).toHaveBeenCalledWith("Plex");
 });
@@ -100,9 +116,7 @@ it("does not present stale or disabled activity as current", async () => {
   expect(screen.getByRole("button", { name: /Client: Saved data/ })).toBeVisible();
   expect(screen.queryByText("Old download")).toBeNull();
   expect(screen.queryByText("Private stream")).toBeNull();
-  expect(
-    within(screen.getByRole("region", { name: "Active streams" })).getByText("No activity to show"),
-  ).toBeVisible();
+  expect(screen.getByText("No activity to show")).toBeVisible();
 });
 
 it("does not invent progress for a download without a measurement", async () => {

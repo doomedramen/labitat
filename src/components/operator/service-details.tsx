@@ -32,6 +32,7 @@ export function ServiceDetails({
   onClose,
   onConfigure,
   onDelete,
+  onToggleEnabled,
   canConfigure,
   onRestoreFocus,
 }: {
@@ -39,6 +40,7 @@ export function ServiceDetails({
   onClose: () => void;
   onConfigure: (item: ItemRow) => void;
   onDelete: (item: ItemRow) => void;
+  onToggleEnabled: (item: ItemRow) => void;
   canConfigure: boolean;
   onRestoreFocus: () => void;
 }) {
@@ -80,6 +82,7 @@ export function ServiceDetails({
             item={item}
             onConfigure={onConfigure}
             onDelete={onDelete}
+            onToggleEnabled={onToggleEnabled}
             canConfigure={canConfigure}
           />
         )}
@@ -91,11 +94,13 @@ function DetailsContent({
   item,
   onConfigure,
   onDelete,
+  onToggleEnabled,
   canConfigure,
 }: {
   item: ItemRow;
   onConfigure: (item: ItemRow) => void;
   onDelete: (item: ItemRow) => void;
+  onToggleEnabled: (item: ItemRow) => void;
   canConfigure: boolean;
 }) {
   const live = useItemLive(item.id);
@@ -154,7 +159,7 @@ function DetailsContent({
               }
               aria-hidden="true"
             />
-            {health.label} · {service?.name ?? "Service link"}
+            {item.enabled ? health.label : "Disabled"} · {service?.name ?? "Service link"}
           </DialogDescription>
         </div>
       </DialogHeader>
@@ -172,12 +177,22 @@ function DetailsContent({
           </Button>
         )}
         {canConfigure && (
+          <Button variant="outline" onClick={() => onToggleEnabled(item)}>
+            {item.enabled ? "Disable" : "Enable"}
+          </Button>
+        )}
+        {canConfigure && (
           <Button variant="ghost" onClick={() => onDelete(item)}>
             Delete
           </Button>
         )}
       </div>
-      {health.reason && (
+      {!item.enabled && (
+        <p role="status" className="text-sm text-muted-foreground">
+          Disabled: hidden from the dashboard and not checked. Last known data is shown below.
+        </p>
+      )}
+      {item.enabled && health.reason && (
         <p role="status" className="text-sm text-warning">
           {health.reason}
         </p>

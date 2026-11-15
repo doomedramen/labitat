@@ -23,3 +23,19 @@ export async function configure(page: Page, label?: string) {
       .click();
   await page.getByRole("button", { name: "Configure", exact: true }).click();
 }
+
+type Box = { left: number; right: number; top: number; bottom: number };
+/** True when no two boxes overlap (edges may touch). */
+export function noOverlap(boxes: Box[]) {
+  return boxes.every((a, i) =>
+    boxes
+      .slice(i + 1)
+      .every(
+        (b) =>
+          a.right <= b.left + 0.5 ||
+          b.right <= a.left + 0.5 ||
+          a.bottom <= b.top + 0.5 ||
+          b.bottom <= a.top + 0.5,
+      ),
+  );
+}

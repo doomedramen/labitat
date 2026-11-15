@@ -332,6 +332,7 @@ class PollingSupervisor {
       const nextItems: PollingItem[] = [];
       for (const item of allItems) {
         if (!item.serviceType && !item.href) continue;
+        if (item.enabled === false) continue;
 
         const adapter = item.serviceType ? getService(item.serviceType) : null;
         if (adapter?.clientSide) continue;

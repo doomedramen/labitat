@@ -1,4 +1,5 @@
 import { test, expect, seedAndAuth } from "../fixtures";
+import { noOverlap } from "../helpers/operator";
 const fixture = Array.from({ length: 3 }, (_, group) => ({
   name: ["Infrastructure", "Media", "Network"][group],
   items: Array.from({ length: 8 }, (_, index) => ({
@@ -16,7 +17,7 @@ const fixture = Array.from({ length: 3 }, (_, group) => ({
     },
   })),
 }));
-test("24 services use aligned rows in both themes; mobile and 200% zoom reflow", async ({
+test("24 services pack without overlap in both themes; mobile and 200% zoom reflow", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -28,17 +29,19 @@ test("24 services use aligned rows in both themes; mobile and 200% zoom reflow",
   const rects = await cards.evaluateAll((elements) =>
     elements.map((element) => element.getBoundingClientRect().toJSON()),
   );
-  expect(rects.every((rect) => rect.height >= 150)).toBe(true);
-  expect(new Set(rects.slice(0, 8).map((rect) => rect.x)).size).toBe(4);
+  expect(rects.every((rect) => rect.height >= 120)).toBe(true);
+  // A group of eight uses as many columns as the board has, up to its card count.
+  expect(new Set(rects.slice(0, 8).map((rect) => rect.x)).size).toBeGreaterThanOrEqual(4);
+  expect(noOverlap(rects)).toBe(true);
 
   await page.screenshot({ path: "test-results/operator-24-dark.png", fullPage: true });
   await page.getByRole("button", { name: "Theme settings" }).click();
   await page.getByRole("menuitemradio", { name: "Light", exact: true }).click();
   await page.screenshot({ path: "test-results/operator-24-light.png", fullPage: true });
   for (const [width, columns, height] of [
-    [1024, 3, 150],
-    [640, 2, 150],
-    [320, 1, 120],
+    [1024, 3, 120],
+    [640, 2, 120],
+    [320, 1, 110],
   ]) {
     await page.setViewportSize({ width, height: 900 });
     await expect
@@ -47,7 +50,8 @@ test("24 services use aligned rows in both themes; mobile and 200% zoom reflow",
     const boxes = await cards.evaluateAll((elements) =>
       elements.slice(0, 8).map((element) => element.getBoundingClientRect().toJSON()),
     );
-    expect(new Set(boxes.map((box) => box.x)).size).toBe(columns);
+    expect(new Set(boxes.map((box) => box.x)).size).toBeGreaterThanOrEqual(columns);
+    expect(noOverlap(boxes)).toBe(true);
     expect(boxes.every((box) => box.height >= height)).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,

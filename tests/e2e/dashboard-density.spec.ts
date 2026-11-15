@@ -71,9 +71,10 @@ test("keeps the default dashboard compact, aligned, and usable in both themes", 
   await expect(cards.filter({ hasText: "CPU" }).getByText("CPU 5", { exact: true })).toHaveCount(0);
   await expect(page.getByText("A long download title that belongs in details")).toBeVisible();
   for (const card of await cards.and(page.locator('[data-layout="metrics"]')).all()) {
-    expect((await card.boundingBox())!.height).toBeGreaterThanOrEqual(150);
+    expect((await card.boundingBox())!.height).toBeGreaterThanOrEqual(120);
   }
-  expect((await cards.filter({ hasText: "Links" }).boundingBox())!.height).toBeLessThan(100);
+  // Link-only services are compact chips.
+  expect((await cards.filter({ hasText: "Links" }).boundingBox())!.height).toBeLessThan(60);
   await page.screenshot({
     path: "test-results/dashboard-dark.png",
     fullPage: true,
@@ -97,26 +98,27 @@ test("keeps the default dashboard compact, aligned, and usable in both themes", 
   });
 });
 
-test("supports hiding every metric, restoring from unused, and saving more than four", async ({
-  page,
-}) => {
+test("supports a card with no stats, and extras beyond three in details only", async ({ page }) => {
   await seedAndAuth(page, { groups: [{ name: "System", items: [groups[0].items[2]] }] });
   await page.goto("/");
   await configure(page, "Glances");
   const dialog = page.getByRole("dialog", { name: "Edit Item" });
-  for (const label of ["CPU", "RAM", "Swap", "Load"])
-    await dialog.getByRole("button", { name: `Hide ${label}`, exact: true }).click();
-  await expect(dialog.getByText("Shown (0)")).toBeVisible();
-  await expect(dialog.getByLabel("Shown stat cards")).toBeVisible();
+  await dialog.getByLabel("Main stat").selectOption({ label: "None, show as a link" });
   await dialog.getByRole("button", { name: "Update", exact: true }).click();
   await expect(dialog).toBeHidden();
+  await expect(page.getByTestId("item-card")).toHaveAttribute("data-layout", "launcher");
   await configure(page, "Glances");
-  await expect(dialog.getByText("Shown (0)")).toBeVisible();
-  for (const label of ["CPU", "RAM", "Swap", "Load", "Uptime"])
-    await dialog.getByRole("button", { name: `Show ${label}`, exact: true }).click();
+  await expect(dialog.getByLabel("Main stat")).toHaveValue("");
+  await dialog.getByLabel("Main stat").selectOption({ label: "CPU" });
+  const add = dialog.getByRole("group", { name: "Add a stat" });
+  for (const label of ["RAM", "Swap", "Load", "Uptime"])
+    await add.getByRole("button", { name: `Add ${label}`, exact: true }).click();
+  await expect(dialog.getByText("Details panel only", { exact: true })).toBeVisible();
   await dialog.getByRole("button", { name: "Update", exact: true }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByTestId("item-card").getByText("Uptime", { exact: true })).toBeHidden();
+  await expect(page.getByTestId("item-card")).toHaveAttribute("data-layout", "metrics");
+  await expect(page.getByTestId("item-card").getByText("Uptime", { exact: true })).toHaveCount(0);
+  await expect(page.getByTestId("item-card")).not.toContainText("Uptime");
   await page.getByRole("button", { name: "Inspect Glances", exact: true }).click();
   await expect(page.getByRole("dialog").getByText("Uptime", { exact: true })).toBeVisible();
   await page.reload();
@@ -141,7 +143,7 @@ test("shows the age of successful data after a newer failed update and opens det
   await card.getByRole("button", { name: /Status for Radarr/ }).focus();
   await expect(card.getByRole("tooltip")).toContainText("Upstream unavailable");
   await expect(card).toHaveAttribute("data-stale", "true");
-  await expect(card.getByText("Movies", { exact: true })).toBeVisible();
+  await expect(card).toContainText("Movies");
   const inspect = card.getByRole("button", { name: "Inspect Radarr" });
   await inspect.focus();
   await page.keyboard.press("Enter");

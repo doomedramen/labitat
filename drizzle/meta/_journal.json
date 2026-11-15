@@ -64,6 +64,13 @@
       "when": 1793780572141,
       "tag": "0008_operator_dashboard",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1794756255620,
+      "tag": "0009_item_enabled",
+      "breakpoints": true
     }
   ]
 }

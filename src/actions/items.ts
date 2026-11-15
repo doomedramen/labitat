@@ -108,6 +108,7 @@ export async function createItem(groupId: string, formData: FormData): Promise<G
 
   await db.insert(items).values({
     id: nanoid(),
+    enabled: formData.get("enabled") !== "false",
     groupId,
     label,
     href: (formData.get("href") as string) || null,
@@ -223,6 +224,7 @@ export async function updateItem(id: string, formData: FormData): Promise<GroupW
       pollingMs: pollingMs && !isNaN(pollingMs) ? pollingMs : null,
       displayMode,
       statDisplayMode,
+      enabled: formData.get("enabled") === null ? undefined : formData.get("enabled") !== "false",
       statCardOrder:
         rawStatCardOrder === "null"
           ? null
@@ -328,4 +330,13 @@ export async function getItemConfig(id: string): Promise<Record<string, string>>
     console.warn("[items] Failed to decrypt config for item", id);
     throw new Error("Saved credentials could not be loaded");
   }
+}
+
+/** Pause or resume a service without deleting it: hidden from the overview and not polled. */
+export async function setItemEnabled(id: string, enabled: boolean): Promise<GroupWithItems[]> {
+  await requireAuth();
+  await db.update(items).set({ enabled }).where(eq(items.id, id));
+  pollingSup.invalidateCache();
+  safeRevalidatePath("/");
+  return refreshGroupsCache();
 }

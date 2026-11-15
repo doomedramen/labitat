@@ -215,6 +215,48 @@ describe("polling supervisor scheduling", () => {
     pollingSup.stop();
   });
 
+  it("does not poll a disabled service", async () => {
+    const fetchData = vi.fn().mockResolvedValue({ _status: "ok" });
+    const row = (id: string, enabled: boolean) => ({
+      id,
+      serviceType: "svc",
+      href: null,
+      serviceUrl: `http://${id}.test`,
+      configEnc: null,
+      configurationRevision: 0,
+      pollingMs: 1000,
+      enabled,
+    });
+    vi.doMock("@/lib/db", () => ({
+      db: {
+        select: (fields?: unknown) => ({
+          from: () =>
+            fields
+              ? { where: () => ({ get: () => ({ revision: 0 }) }) }
+              : [row("on", true), row("off", false)],
+        }),
+      },
+    }));
+    vi.doMock("@/lib/adapters", () => ({
+      getService: () => ({ defaultPollingMs: 1000, fetchData }),
+    }));
+    vi.doMock("@/lib/crypto", () => ({ decrypt: async () => "{}" }));
+    vi.doMock("@/lib/adapters/fetch-with-timeout", () => ({ fetchWithTimeout: vi.fn() }));
+    vi.doMock("@/lib/server-cache", () => ({
+      serverCache: { get: vi.fn(() => null), set: vi.fn() },
+    }));
+
+    const { pollingSup } = await import("@/lib/polling-supervisor");
+    pollingSup.stop();
+    pollingSup.invalidateCache();
+    pollingSup.connect();
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    expect(fetchData).toHaveBeenCalled();
+    expect(fetchData.mock.calls.every(([config]) => config.url === "http://on.test")).toBe(true);
+    pollingSup.stop();
+  });
+
   it("records an unreachable service without logging the expected poll failure", async () => {
     const pollError = new Error("Whisparr error: 401");
     const cacheSet = vi.fn();

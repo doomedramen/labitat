@@ -40,17 +40,14 @@ import {
   WidgetDisplayProvider,
   useWidgetDisplay,
 } from "@/components/dashboard/item/widget-display-context";
-import { EditableStatGrid } from "@/components/dashboard/item/editable-stat-grid";
+import { StatPicker } from "@/components/editor/stat-picker";
 import { parseStatCardOrder, type StatCardOrder } from "@/hooks/use-stat-card-order";
 import { useItemLive } from "@/components/dashboard/use-item-live";
 import { getServicePresentation } from "@/lib/service-presentation";
 import { fetchServiceData } from "@/actions/services";
 
-/**
- * Stat card editor that only shows stat cards for reordering.
- * Excludes list items (streams, downloads) to prevent dialog overflow.
- */
-function StatCardEditor({ payload }: { payload: WidgetPayload }) {
+/** Card stat picker; list items (streams, downloads) are not stats and are left out. */
+function StatCardEditor({ payload, label }: { payload: WidgetPayload; label: string }) {
   const displaySettings = useWidgetDisplay();
 
   if (payload.loading || payload.error || payload.stats.length === 0) {
@@ -58,11 +55,11 @@ function StatCardEditor({ payload }: { payload: WidgetPayload }) {
   }
 
   return (
-    <EditableStatGrid
+    <StatPicker
+      label={label}
       items={payload.stats}
       order={displaySettings?.statCardOrder ?? null}
       onOrderChange={displaySettings?.onOrderChange ?? (() => {})}
-      displayMode={displaySettings?.statDisplayMode ?? "label"}
       defaultActiveIds={displaySettings?.defaultActiveIds}
     />
   );
@@ -325,6 +322,7 @@ export function ItemDialog({
     localStatCardOrderRef.current = next;
     setLocalStatCardOrderState(next);
   };
+  const [enabled, setEnabled] = useState(item?.enabled ?? true);
   const selectedService = services.find((s) => s.id === serviceType);
 
   const form = useForm({
@@ -360,6 +358,7 @@ export function ItemDialog({
         formData.append("serviceType", serviceType);
         formData.append("displayMode", "label");
         formData.append("statDisplayMode", statDisplayMode);
+        formData.append("enabled", String(enabled));
 
         // Add stat card order
         const latestOrder = localStatCardOrderRef.current;
@@ -401,6 +400,7 @@ export function ItemDialog({
     if (!open) return;
     setServiceType(item?.serviceType ?? "");
     setStatDisplayMode((item?.statDisplayMode as "icon" | "label") ?? "label");
+    setEnabled(item?.enabled ?? true);
     setLocalStatCardOrder(parseStatCardOrder(item?.statCardOrder));
     setSaveError(null);
     form.reset({
@@ -713,12 +713,9 @@ export function ItemDialog({
                 serviceType === item.serviceType &&
                 (selectedService.toPayload || selectedService.toMetrics) && (
                   <div className="space-y-2">
-                    <Label>Metrics</Label>
-                    <p className="text-xs text-muted-foreground">
-                      The first four appear on the tile. Additional shown metrics appear in details.
-                      Add from Unused, hide, or reorder.
-                    </p>
+                    <Label>Card</Label>
                     <ItemDialogPreview
+                      label={item.label}
                       open={open}
                       itemId={item.id}
                       adapter={selectedService}
@@ -734,8 +731,10 @@ export function ItemDialog({
                 !item &&
                 (selectedService.toPayload || selectedService.toMetrics) && (
                   <div className="space-y-2">
-                    <Label>Metrics</Label>
-                    <p className="text-xs text-muted-foreground">Save item first to preview</p>
+                    <Label>Card</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Save the service first, then choose what its card shows.
+                    </p>
                   </div>
                 )}
             </div>
@@ -744,6 +743,16 @@ export function ItemDialog({
                 {saveError}
               </p>
             )}
+            <div className="flex items-start justify-between gap-4 rounded-lg border border-border p-3">
+              <div className="space-y-1">
+                <Label htmlFor="item-enabled">Enabled</Label>
+                <p className="text-xs text-muted-foreground">
+                  When off, the service is hidden from the dashboard and is not checked. Its
+                  settings are kept.
+                </p>
+              </div>
+              <Switch id="item-enabled" checked={enabled} onCheckedChange={setEnabled} />
+            </div>
             <DialogFooter className="sticky -bottom-4 bg-popover">
               <Button
                 type="button"
@@ -770,10 +779,10 @@ type PreviewState =
   | { status: "error" }
   | { status: "empty" };
 
-function withPlaceholderValues(payload: WidgetPayload): WidgetPayload {
+function statsOnly(payload: WidgetPayload): WidgetPayload {
   return {
     ...payload,
-    stats: payload.stats.map((s) => ({ ...s, value: "--" })),
+    stats: payload.stats,
     downloads: undefined,
     streams: undefined,
     customComponent: undefined,
@@ -783,6 +792,7 @@ function withPlaceholderValues(payload: WidgetPayload): WidgetPayload {
 }
 
 function ItemDialogPreview({
+  label,
   open,
   itemId,
   adapter,
@@ -790,6 +800,7 @@ function ItemDialogPreview({
   statCardOrder,
   onOrderChange,
 }: {
+  label: string;
   open: boolean;
   itemId: string;
   adapter: ServiceDefinition;
@@ -807,7 +818,7 @@ function ItemDialogPreview({
       if (!data || data._status === "error") return null;
       try {
         const presentation = getServicePresentation(adapter, data);
-        return withPlaceholderValues({
+        return statsOnly({
           stats: presentation.metrics.map((metric) => ({
             id: metric.id,
             label: metric.label,
@@ -874,7 +885,7 @@ function ItemDialogPreview({
         defaultActiveIds: preview.payload.defaultActiveIds,
       }}
     >
-      <StatCardEditor payload={preview.payload} />
+      <StatCardEditor payload={preview.payload} label={label} />
     </WidgetDisplayProvider>
   );
 }

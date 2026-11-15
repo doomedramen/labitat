@@ -2,47 +2,47 @@
 :root,
 [data-palette="light"] {
   color-scheme: light;
-  --surface-page: #edf1f4;
+  --surface-page: #f1f4ef;
   --surface-card: #ffffff;
   --surface-raised: #ffffff;
-  --surface-muted: #e5eaf2;
-  --text-primary: #24384b;
-  --text-secondary: #53687a;
-  --line: #ced9e2;
-  --brand: #186477;
+  --surface-muted: #e6ece6;
+  --text-primary: #14201a;
+  --text-secondary: #5a6b61;
+  --line: #dbe3dc;
+  --brand: #2a7d1d;
   --on-brand: #ffffff;
-  --brand-subtle: #e4f3ee;
-  --success: #18744b;
-  --warning: #966000;
-  --destructive: #ba3547;
+  --brand-subtle: #e3f2df;
+  --success: #2a7d1d;
+  --warning: #8a5a00;
+  --destructive: #b82a22;
   --info: #2468c5;
-  --chart-1: #186477;
+  --chart-1: #2a7d1d;
   --chart-2: #137f82;
-  --chart-3: #966000;
+  --chart-3: #8a5a00;
   --chart-4: #9343b7;
-  --chart-5: #ba3547;
+  --chart-5: #b82a22;
 }
 [data-palette="dark"] {
   color-scheme: dark;
-  --surface-page: #202b3b;
-  --surface-card: #2a384b;
-  --surface-raised: #33445a;
-  --surface-muted: #36465b;
-  --text-primary: #eef3f8;
-  --text-secondary: #bac8d8;
-  --line: #435369;
-  --brand: #92dfed;
-  --on-brand: #123d46;
-  --brand-subtle: #173c33;
-  --success: #74d8a4;
-  --warning: #edc16c;
-  --destructive: #ff8c9b;
+  --surface-page: #0d1410;
+  --surface-card: #141d18;
+  --surface-raised: #1b2620;
+  --surface-muted: #1f2b24;
+  --text-primary: #eef3ee;
+  --text-secondary: #93a39a;
+  --line: #24332b;
+  --brand: #8fe36b;
+  --on-brand: #0d2a06;
+  --brand-subtle: #173321;
+  --success: #8fe36b;
+  --warning: #f2c15d;
+  --destructive: #ff8478;
   --info: #8cbdff;
-  --chart-1: #92dfed;
+  --chart-1: #8fe36b;
   --chart-2: #6dd4cb;
-  --chart-3: #edc16c;
+  --chart-3: #f2c15d;
   --chart-4: #d3a0ec;
-  --chart-5: #ff8c9b;
+  --chart-5: #ff8478;
 }
 :root {
   --background: var(--surface-page);
