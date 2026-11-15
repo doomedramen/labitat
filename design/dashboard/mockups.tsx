@@ -1,19 +1,23 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ArrowUpRight, ChevronRight, Moon, Pause, Play, Search, Sun } from "lucide-react";
+import { ArrowUpRight, Moon, Pause, Play, Search, Sun } from "lucide-react";
 import { activity, groupNames, services, type Activity, type Service } from "./fixture";
 import "./mockups.css";
 
 // Static redesign mock-ups. Nothing here is wired to the application.
-type Direction = "ledger" | "numerals" | "now";
-const directions: { id: Direction; label: string; note: string; theme: "dark" | "light" }[] = [
-  { id: "ledger", label: "A · Ledger", note: "Dense rows, healthy is silent", theme: "dark" },
-  { id: "numerals", label: "B · Numerals", note: "One big number per service", theme: "dark" },
-  { id: "now", label: "C · Now-first", note: "Activity rail, launcher grid", theme: "light" },
+type Direction = "numerals" | "compact" | "flow";
+const directions: { id: Direction; label: string; note: string }[] = [
+  { id: "numerals", label: "B · Numerals", note: "Round one, kept for comparison" },
+  { id: "compact", label: "D · Compact", note: "B with activity as short filled rows" },
+  { id: "flow", label: "E · Flow", note: "The dashboard as running text" },
 ];
 
 const downloads = activity.filter((entry) => entry.kind === "download");
 const streams = activity.filter((entry) => entry.kind === "stream");
+// Alternate kinds so a short list still shows both downloads and streams.
+const mixed = downloads
+  .flatMap((entry, index) => [entry, streams[index]])
+  .filter((entry): entry is Activity => !!entry);
 const problems = services.filter((service) => service.health !== "healthy");
 const byGroup = groupNames.map((name) => ({
   name,
@@ -27,7 +31,6 @@ const percent = (value: string) => {
   const match = /^(\d+(?:\.\d+)?)%$/.exec(value);
   return match ? Number(match[1]) : null;
 };
-const service = (id: string) => services.find((entry) => entry.id === id)!;
 
 function Icon({ item, size }: { item: Service; size: number }) {
   const [failed, setFailed] = useState(false);
@@ -64,101 +67,90 @@ function Progress({ entry }: { entry: Activity }) {
   );
 }
 
-/* A · Ledger: one line per service; only problems and activity earn extra ink. */
-function Ledger() {
+/* B: activity as cards. */
+function ActivityCards() {
   return (
-    <div className="ledger">
-      <header className="l-top">
-        <span className="l-brand">labitat</span>
-        <label className="l-search">
-          <Search size={14} aria-hidden="true" />
-          <input placeholder="Find a service" aria-label="Find a service" />
-          <kbd>/</kbd>
-        </label>
-        <p className="l-summary">
-          <b>{services.length}</b> services <i /> <b className="warn">{problems.length}</b> need
-          attention <i /> <span className="live">Live</span>
-        </p>
-      </header>
-
-      <section className="l-attention" aria-label="Needs attention">
-        <h2>Needs attention</h2>
-        <ul>
-          {problems.map((item) => (
-            <li key={item.id} data-health={item.health}>
-              <Icon item={item} size={18} />
-              <strong>{item.name}</strong>
-              <span>{item.reason}</span>
-              <time>{item.stale ? "last seen 12m ago" : "just now"}</time>
-              <ChevronRight size={14} aria-hidden="true" />
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="l-now" aria-label="Now">
-        {[
-          { title: "Downloads", meta: `${downloads.length} · ${totalSpeed} MB/s`, rows: downloads },
-          { title: "Streams", meta: `${streams.length} watching`, rows: streams },
-        ].map((column) => (
-          <div key={column.title}>
-            <h2>
-              {column.title} <span>{column.meta}</span>
-            </h2>
-            {column.rows.map((entry) => (
-              <a className="l-entry" href="#" key={entry.id}>
-                <span className="l-entry-title">
-                  <strong>{entry.title}</strong> {entry.subtitle}
-                </span>
-                <span className="l-entry-meta">
-                  {entry.kind === "stream" ? entry.viewer : (entry.speed ?? entry.activity)}
-                </span>
-                <span className="l-entry-time">
-                  {entry.timeLeft ?? "—"}
-                  {entry.kind === "download" && entry.timeLeft ? " left" : ""}
-                </span>
-                <Progress entry={entry} />
-              </a>
-            ))}
-          </div>
-        ))}
-      </section>
-
-      <div className="l-groups">
-        {byGroup.map((group) => (
-          <section key={group.name}>
-            <h2>
-              {group.name} <span>{group.items.length}</span>
-            </h2>
-            {group.items.map((item) => (
-              <a className="l-row" href={item.href} key={item.id} data-health={item.health}>
-                <Icon item={item} size={18} />
-                <span className="l-name">{item.name}</span>
-                {item.health === "healthy" ? (
-                  <span className="l-metrics">
-                    {item.metrics.slice(0, 3).map((metric) => (
-                      <span key={metric.id}>
-                        <b>{metric.displayValue}</b> {metric.label.toLowerCase()}
-                      </span>
-                    ))}
-                  </span>
+    <section className="n-now" aria-label="Now">
+      <div className="n-now-lead">
+        <span className="n-hero">
+          {totalSpeed}
+          <small>MB/s</small>
+        </span>
+        <span className="n-sub">
+          {downloads.length} downloads · {streams.length} streams
+        </span>
+      </div>
+      <div className="n-now-list">
+        {activity.map((entry) => (
+          <a className="n-entry" href="#" key={entry.id}>
+            <span className="n-entry-kind">
+              {entry.kind === "stream" ? (
+                entry.activity === "Paused" ? (
+                  <Pause size={12} />
                 ) : (
-                  <span className="l-reason">{item.reason}</span>
-                )}
-                <ArrowUpRight className="l-go" size={13} aria-hidden="true" />
-              </a>
-            ))}
-          </section>
+                  <Play size={12} />
+                )
+              ) : null}
+              {sourceName(entry.source)}
+            </span>
+            <strong>{entry.title}</strong>
+            <span className="n-entry-sub">{entry.subtitle}</span>
+            <Progress entry={entry} />
+            <span className="n-entry-foot">
+              <span>{entry.kind === "stream" ? entry.viewer : (entry.speed ?? "Queued")}</span>
+              <span>{entry.progress === undefined ? "" : `${entry.progress}%`}</span>
+            </span>
+          </a>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
-/* B · Numerals: equal tiles, one hero number each; link-only services become chips. */
-function Numerals() {
+/* D: each entry is one short row whose background is its own progress bar. */
+function ActivityRows() {
+  const [all, setAll] = useState(false);
   return (
-    <div className="numerals">
+    <section className="d-now" aria-label="Now" data-all={all || undefined}>
+      <p className="d-lead">
+        <b>
+          {totalSpeed}
+          <small> MB/s</small>
+        </b>
+        <span>
+          {downloads.length} downloads · {streams.length} streams
+        </span>
+      </p>
+      <div className="d-rows">
+        {mixed.map((entry) => (
+          <a
+            className="d-row"
+            href="#"
+            key={entry.id}
+            style={{ "--p": `${entry.progress ?? 0}%` } as React.CSSProperties}
+          >
+            <span className="d-title">
+              <strong>{entry.title}</strong> {entry.subtitle}
+            </span>
+            <span className="d-meta">
+              {entry.kind === "stream" ? entry.viewer?.split(" · ")[0] : (entry.speed ?? "Queued")}
+            </span>
+            <span className="d-pct">
+              {entry.progress === undefined ? "" : `${entry.progress}%`}
+            </span>
+          </a>
+        ))}
+      </div>
+      <button type="button" className="d-more" onClick={() => setAll((value) => !value)}>
+        {all ? "Show less" : `Show ${mixed.length - 3} more`}
+      </button>
+    </section>
+  );
+}
+
+function Numerals({ compact }: { compact: boolean }) {
+  return (
+    <div className="numerals" data-compact={compact || undefined}>
       <header className="n-top">
         <div>
           <h1>Labitat</h1>
@@ -173,40 +165,7 @@ function Numerals() {
         </label>
       </header>
 
-      <section className="n-now" aria-label="Now">
-        <div className="n-now-lead">
-          <span className="n-hero">
-            {totalSpeed}
-            <small>MB/s</small>
-          </span>
-          <span className="n-sub">
-            {downloads.length} downloads · {streams.length} streams
-          </span>
-        </div>
-        <div className="n-now-list">
-          {activity.map((entry) => (
-            <a className="n-entry" href="#" key={entry.id}>
-              <span className="n-entry-kind">
-                {entry.kind === "stream" ? (
-                  entry.activity === "Paused" ? (
-                    <Pause size={12} />
-                  ) : (
-                    <Play size={12} />
-                  )
-                ) : null}
-                {sourceName(entry.source)}
-              </span>
-              <strong>{entry.title}</strong>
-              <span className="n-entry-sub">{entry.subtitle}</span>
-              <Progress entry={entry} />
-              <span className="n-entry-foot">
-                <span>{entry.kind === "stream" ? entry.viewer : (entry.speed ?? "Queued")}</span>
-                <span>{entry.progress === undefined ? "" : `${entry.progress}%`}</span>
-              </span>
-            </a>
-          ))}
-        </div>
-      </section>
+      {compact ? <ActivityRows /> : <ActivityCards />}
 
       {byGroup.map((group) => {
         const tiles = group.items.filter((item) => item.metrics.length || item.reason);
@@ -265,112 +224,78 @@ function Numerals() {
   );
 }
 
-/* C · Now-first: what is happening lives in a rail; services are a launcher. */
-function NowFirst() {
-  const vitals = [
-    { item: service("catacomb"), metrics: ["cpu", "memory"] },
-    { item: service("catacomb-2"), metrics: ["cpu", "memory"] },
-    { item: service("catacomb-3"), metrics: ["cpu", "memory"] },
-    { item: service("pve-ups"), metrics: ["battery", "load"] },
-  ];
+/* E · Flow: the dashboard reads as text. Status is a sentence, services run inline. */
+function Flow() {
   return (
-    <div className="now">
-      <aside className="w-rail">
-        <h1>Labitat</h1>
-        <p className="w-date">Sunday 15 November · all times local</p>
-
-        <section>
-          <h2>Watching now</h2>
-          {streams.map((entry) => (
-            <a className="w-entry" href="#" key={entry.id}>
-              <strong>{entry.title}</strong>
-              <span>{entry.viewer}</span>
-              <Progress entry={entry} />
-              <small>
-                {entry.activity} · {entry.timeLeft}
-              </small>
-            </a>
-          ))}
-        </section>
-
-        <section>
-          <h2>
-            Downloading <span>{totalSpeed} MB/s</span>
-          </h2>
-          {downloads.map((entry) => (
-            <a className="w-entry" href="#" key={entry.id}>
-              <strong>{entry.title}</strong>
-              <span>{entry.subtitle}</span>
-              <Progress entry={entry} />
-              <small>
-                {sourceName(entry.source)} · {entry.timeLeft ? `${entry.timeLeft} left` : "queued"}
-              </small>
-            </a>
-          ))}
-        </section>
-
-        <section>
-          <h2>Needs attention</h2>
-          <ul className="w-problems">
-            {problems.map((item) => (
-              <li key={item.id} data-health={item.health}>
-                <strong>{item.name}</strong>
-                <span>{item.reason}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section>
-          <h2>Vitals</h2>
-          <dl className="w-vitals">
-            {vitals.map(({ item, metrics }) => (
-              <div key={item.id}>
-                <dt>{item.name}</dt>
-                {metrics.map((id) => {
-                  const metric = item.metrics.find((entry) => entry.id === id)!;
-                  return (
-                    <dd key={id}>
-                      <span>{metric.label}</span>
-                      <Meter value={percent(metric.displayValue) ?? 0} />
-                      <b>{metric.displayValue}</b>
-                    </dd>
-                  );
-                })}
-              </div>
-            ))}
-          </dl>
-        </section>
-      </aside>
-
-      <main className="w-main">
-        <label className="w-search">
-          <Search size={16} aria-hidden="true" />
+    <div className="flow">
+      <header className="f-top">
+        <span className="f-brand">labitat</span>
+        <label className="f-search">
+          <Search size={15} aria-hidden="true" />
           <input placeholder="Find a service" aria-label="Find a service" />
         </label>
-        {byGroup.map((group) => (
-          <section key={group.name}>
-            <h2>{group.name}</h2>
-            <div className="w-grid">
-              {group.items.map((item) => (
-                <a className="w-app" href={item.href} key={item.id} data-health={item.health}>
-                  <span className="w-app-icon">
-                    <Icon item={item} size={34} />
-                  </span>
-                  <span className="w-app-name">{item.name}</span>
-                  <span className="w-app-meta">
-                    {item.health !== "healthy"
-                      ? item.reason
-                      : item.metrics[0]
-                        ? `${item.metrics[0].displayValue} ${item.metrics[0].label.toLowerCase()}`
-                        : " "}
-                  </span>
-                </a>
-              ))}
-            </div>
-          </section>
+      </header>
+
+      <h1 className="f-status">
+        Everything is up except{" "}
+        {problems.map((item, index) => (
+          <React.Fragment key={item.id}>
+            {index > 0 && (index === problems.length - 1 ? " and " : ", ")}
+            <a href={item.href} data-health={item.health} title={item.reason}>
+              {item.name}
+            </a>
+          </React.Fragment>
         ))}
-      </main>
+        .
+      </h1>
+
+      <section className="f-now" aria-label="Now">
+        <h2>
+          Now <span>{totalSpeed} MB/s down</span>
+        </h2>
+        <p>
+          {mixed.map((entry) => (
+            <a href="#" key={entry.id} className="f-entry">
+              <span
+                className="f-entry-title"
+                style={{ "--p": `${entry.progress ?? 0}%` } as React.CSSProperties}
+              >
+                {entry.title}
+              </span>
+              <span className="f-entry-meta">
+                {entry.kind === "stream"
+                  ? `${entry.viewer?.split(" · ")[0]} · ${entry.activity === "Paused" ? "paused" : `${entry.progress}%`}`
+                  : entry.progress === undefined
+                    ? "queued"
+                    : `${entry.progress}% · ${entry.timeLeft}`}
+              </span>
+            </a>
+          ))}
+        </p>
+      </section>
+
+      {byGroup.map((group) => (
+        <section className="f-group" key={group.name}>
+          <h2>{group.name}</h2>
+          <p>
+            {group.items.map((item) => (
+              <a className="f-item" href={item.href} key={item.id} data-health={item.health}>
+                <Icon item={item} size={22} />
+                <span className="f-name">{item.name}</span>
+                {item.health !== "healthy" ? (
+                  <span className="f-reason">{item.reason}</span>
+                ) : (
+                  item.metrics[0] && (
+                    <span className="f-metric">
+                      <b>{item.metrics[0].displayValue}</b> {item.metrics[0].label.toLowerCase()}
+                    </span>
+                  )
+                )}
+              </a>
+            ))}
+          </p>
+        </section>
+      ))}
     </div>
   );
 }
@@ -378,22 +303,17 @@ function NowFirst() {
 function App() {
   const params = new URLSearchParams(location.search);
   const [direction, setDirection] = useState<Direction>(
-    directions.find((entry) => entry.id === params.get("direction"))?.id ?? "ledger",
+    directions.find((entry) => entry.id === params.get("direction"))?.id ?? "compact",
   );
-  const preferred = directions.find((entry) => entry.id === direction)!.theme;
-  const [theme, setTheme] = useState<"dark" | "light" | null>(
-    params.get("theme") === "dark" || params.get("theme") === "light"
-      ? (params.get("theme") as "dark" | "light")
-      : null,
+  const [theme, setTheme] = useState<"dark" | "light">(
+    params.get("theme") === "light" ? "light" : "dark",
   );
-  const active = theme ?? preferred;
   document.documentElement.dataset.direction = direction;
-  document.documentElement.dataset.theme = active;
-  const go = (next: Direction, nextTheme: "dark" | "light" | null) => {
+  document.documentElement.dataset.theme = theme;
+  const go = (next: Direction, nextTheme: "dark" | "light") => {
     const url = new URL(location.href);
     url.searchParams.set("direction", next);
-    if (nextTheme) url.searchParams.set("theme", nextTheme);
-    else url.searchParams.delete("theme");
+    url.searchParams.set("theme", nextTheme);
     history.replaceState(null, "", url);
     setDirection(next);
     setTheme(nextTheme);
@@ -401,27 +321,26 @@ function App() {
   return (
     <>
       <nav className="review" aria-label="Mock-up review controls (not part of the design)">
-        <span>Mock-ups</span>
         {directions.map((entry) => (
           <button
             key={entry.id}
             type="button"
             aria-pressed={entry.id === direction}
             title={entry.note}
-            onClick={() => go(entry.id, null)}
+            onClick={() => go(entry.id, theme)}
           >
             {entry.label}
           </button>
         ))}
         <button
           type="button"
-          aria-label={`Switch to ${active === "dark" ? "light" : "dark"} theme`}
-          onClick={() => go(direction, active === "dark" ? "light" : "dark")}
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+          onClick={() => go(direction, theme === "dark" ? "light" : "dark")}
         >
-          {active === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+          {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
         </button>
       </nav>
-      {direction === "ledger" ? <Ledger /> : direction === "numerals" ? <Numerals /> : <NowFirst />}
+      {direction === "flow" ? <Flow /> : <Numerals compact={direction === "compact"} />}
     </>
   );
 }

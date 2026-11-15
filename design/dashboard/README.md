@@ -20,13 +20,13 @@ The direction switch preserves search, filters, draft arrangement, and metric se
 
 ## Redesign mock-ups
 
-Three static directions for a fuller redesign live beside the studies, in `mockups.html`, `mockups.tsx` and `mockups.css`. They share the fixture above, are not interactive beyond the direction and theme switch, and are not covered by `pnpm design:test`.
+Static directions for a fuller redesign live beside the studies, in `mockups.html`, `mockups.tsx` and `mockups.css`. They share the fixture above, are not interactive beyond the direction and theme switch (and D's "show more"), and are not covered by `pnpm design:test`.
 
-- A · Ledger: <http://127.0.0.1:5173/mockups.html?direction=ledger>. One line per service; healthy services carry no status at all.
-- B · Numerals: <http://127.0.0.1:5173/mockups.html?direction=numerals>. Equal tiles with one lead number; link-only services become chips.
-- C · Now-first: <http://127.0.0.1:5173/mockups.html?direction=now>. Activity, problems and host vitals in a rail; services as a launcher grid.
+- B · Numerals: <http://127.0.0.1:5173/mockups.html?direction=numerals>. Equal tiles with one lead number; link-only services become chips. Kept from round one for comparison.
+- D · Compact: <http://127.0.0.1:5173/mockups.html?direction=compact>. B's tiles, with each activity entry as one short row whose background is its progress. Phones show three rows and a "show more".
+- E · Flow: <http://127.0.0.1:5173/mockups.html?direction=flow>. Status as a sentence, services and activity as running text; a title's underline is its progress.
 
-Add `&theme=light` or `&theme=dark` to override each direction's default theme.
+Round one's A (Ledger) and C (Now-first) were rejected and removed; they remain in the branch history. Add `&theme=light` for the light theme.
 
 ## Design intent
 
