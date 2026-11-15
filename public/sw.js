@@ -10,7 +10,7 @@
  * - Network only: HTML, RSC, and all other application data
  */
 
-const CACHE_NAME = "labitat-v4";
+const CACHE_NAME = "labitat-v5";
 const SW_VERSION = CACHE_NAME;
 const PRECACHE_URLS = ["/~offline", "/manifest.webmanifest"];
 

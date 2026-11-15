@@ -1,0 +1,39 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "labitat-design",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["design:dev"],
+      "port": 5173
+    },
+    {
+      "name": "labitat-verify",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "DATABASE_URL=file:/private/tmp/claude-501/-Users-martin-Developer-labitat/f292eb1b-f054-4e6e-8f56-0d2e14ed5bcd/scratchpad/verify.db",
+        "TEST_SECRET=local-verify-token",
+        "AUTH_ENABLED=false",
+        "COOKIE_SECURE=false",
+        "IDLE_POLLING_ENABLED=false",
+        "pnpm",
+        "exec",
+        "next",
+        "dev",
+        "--turbopack",
+        "-p",
+        "3210"
+      ],
+      "port": 3210
+    },
+    {
+      "name": "labitat-skew",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /Users/martin/Developer/labitat-stale-tabs && DATABASE_URL=file:/private/tmp/claude-501/-Users-martin-Developer-labitat/f292eb1b-f054-4e6e-8f56-0d2e14ed5bcd/scratchpad/skew.db AUTH_ENABLED=false COOKIE_SECURE=false TEST_SECRET=local-verify-token exec pnpm exec next start -p 3300"
+      ],
+      "port": 3300
+    }
+  ]
+}
