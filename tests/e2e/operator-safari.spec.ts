@@ -29,7 +29,7 @@ test.describe("Touch-first Safari", () => {
     // The status dot is a full touch target on phones.
     const status = page.getByRole("button", { name: /Status for Tautulli/ });
     expect((await status.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-    await page.getByRole("button", { name: "Inspect Seerr", exact: true }).tap();
+    await page.getByRole("button", { name: /^Status for Seerr:/ }).tap();
     const panel = page.getByRole("dialog", { name: "Seerr", exact: true });
     await expect(panel).toBeVisible();
     const bounds = (await panel.boundingBox())!;
@@ -73,7 +73,7 @@ test("landscape touch board preserves geometry and full tap targets", async ({ p
   const row = page.getByTestId("item-card").first();
   expect((await row.getByRole("link").boundingBox())!.height).toBeGreaterThanOrEqual(44);
   expect(
-    (await row.getByRole("button", { name: /Inspect/ }).boundingBox())!.height,
+    (await row.getByRole("button", { name: /^Status for / }).boundingBox())!.height,
   ).toBeGreaterThanOrEqual(44);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

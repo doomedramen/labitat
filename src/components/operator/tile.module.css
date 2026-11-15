@@ -53,7 +53,6 @@
   border-radius: inherit;
 }
 .launch:focus-visible,
-.inspect:focus-visible,
 .statusTrigger:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
@@ -111,17 +110,12 @@
   color: var(--muted-foreground);
   opacity: 0.6;
 }
-.inspect {
-  position: relative;
-  z-index: 2;
+.body {
   display: flex;
   flex: 1;
   flex-direction: column;
   justify-content: flex-end;
-  width: 100%;
   padding: 8px 16px 16px;
-  border-radius: 0 0 16px 16px;
-  text-align: start;
 }
 .value {
   display: flex;
@@ -229,18 +223,11 @@
   pointer-events: auto;
 }
 .statusTrigger {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  min-width: 36px;
+  display: grid;
+  place-items: center;
+  width: 36px;
   height: 36px;
-  padding: 0 12px;
   border-radius: 999px;
-  color: var(--muted-foreground);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 .dot {
   width: 8px;
@@ -319,7 +306,7 @@
   .head {
     padding-left: 14px;
   }
-  .inspect {
+  .body {
     padding: 6px 14px 14px;
   }
   .value {
@@ -329,6 +316,7 @@
     min-height: 44px;
   }
   .statusTrigger {
+    width: 44px;
     height: 44px;
   }
 }

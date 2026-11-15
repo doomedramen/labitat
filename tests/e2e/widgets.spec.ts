@@ -245,9 +245,9 @@ test("specialized Glances charts and processes render only in details", async ({
   await page.goto("/");
   await expect(page.locator(".recharts-wrapper")).toHaveCount(0);
   await expect(page.getByText("encoder", { exact: true })).toHaveCount(0);
-  await page.getByRole("button", { name: "Inspect Trends", exact: true }).click();
+  await page.getByRole("button", { name: /^Status for Trends:/ }).click();
   await expect(page.getByRole("dialog").locator(".recharts-wrapper").first()).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).click();
-  await page.getByRole("button", { name: "Inspect Processes", exact: true }).click();
+  await page.getByRole("button", { name: /^Status for Processes:/ }).click();
   await expect(page.getByRole("dialog").getByText("encoder", { exact: true })).toBeVisible();
 });

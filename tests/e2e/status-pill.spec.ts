@@ -45,12 +45,12 @@ test("status reasons appear immediately on hover, focus and tap", async ({ page 
   await expect(failed.getByRole("tooltip")).toBeHidden();
   expect((await status.boundingBox())!.height).toBeGreaterThanOrEqual(36);
   // A failing service shows its reason in place of the main stat.
-  await expect(failed.getByRole("button", { name: "Inspect Failed" })).toContainText(
+  await expect(failed.getByTestId("item-stats")).toContainText(
     /Connection refused|Unable to reach service/,
   );
 });
 
-test("card background launches, stats inspect, and the status dot opens details", async ({
+test("cards open their service anywhere except the status dot, which opens details", async ({
   page,
 }) => {
   await seedAndAuth(page, {
@@ -92,9 +92,12 @@ test("card background launches, stats inspect, and the status dot opens details"
   const popup = await popupPromise;
   await expect(popup).toHaveURL("https://media.test/");
   await popup.close();
-  await media.getByRole("button", { name: "Inspect Media" }).click();
-  await expect(page.getByRole("dialog", { name: "Media" })).toBeVisible();
-  await page.getByRole("button", { name: "Close", exact: true }).click();
+  // Clicking the stats opens the service too; only the status dot opens details.
+  const statsPopup = page.waitForEvent("popup");
+  // The card's link lies over the stats, so the click lands on the link, as a person's would.
+  await media.getByTestId("item-stats").click({ force: true });
+  await (await statsPopup).close();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await launcher.getByRole("button", { name: /Status for Launcher/ }).click();
   await expect(page.getByRole("dialog", { name: "Launcher" })).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).click();

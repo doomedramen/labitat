@@ -55,7 +55,7 @@ test.describe("Card stat picker", () => {
     await expect(dialog).toBeHidden();
     await page.reload();
     // Stats keep their chosen order on the card whether or not the service is healthy.
-    const text = (await card(page).getByRole("button", { name: "Inspect Radarr" }).textContent())!;
+    const text = (await card(page).getByTestId("item-stats").textContent())!;
     expect(text.indexOf("Movies")).toBeLessThan(text.indexOf("Queued"));
   });
 

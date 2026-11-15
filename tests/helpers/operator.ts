@@ -7,18 +7,14 @@ export async function inspect(page: Page, label: string) {
   const card = page
     .getByTestId("item-card")
     .filter({ has: page.getByRole("heading", { name: label, exact: true }) });
-  const metrics = card.getByRole("button", { name: `Inspect ${label}`, exact: true });
-  if (await metrics.count()) {
-    await metrics.click();
-  } else {
-    await card.getByRole("button", { name: `Status for ${label}`, exact: false }).click();
-  }
+  // The status dot is the only way to open a service's details.
+  await card.getByRole("button", { name: `Status for ${label}`, exact: false }).click();
 }
 export async function configure(page: Page, label?: string) {
   if (label) await inspect(page, label);
   else
     await page
-      .getByRole("button", { name: /^Inspect / })
+      .getByRole("button", { name: /^Status for / })
       .first()
       .click();
   await page.getByRole("button", { name: "Configure", exact: true }).click();

@@ -31,16 +31,14 @@ test.describe("Navigation & Middleware", () => {
     });
     await page.goto("/");
     const before = await page.getByTestId("item-card").boundingBox();
-    await page.getByRole("button", { name: "Inspect Navigation Item", exact: true }).click();
+    await page.getByRole("button", { name: /^Status for Navigation Item:/ }).click();
     await expect(page).toHaveURL(/service=/);
     await expect(page.getByRole("dialog", { name: "Navigation Item" })).toBeVisible();
     await page.reload();
     await expect(page.getByRole("dialog", { name: "Navigation Item" })).toBeVisible();
     await page.goBack();
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(
-      page.getByRole("button", { name: "Inspect Navigation Item", exact: true }),
-    ).toBeFocused();
+    await expect(page.getByRole("button", { name: /^Status for Navigation Item:/ })).toBeFocused();
     expect(await page.getByTestId("item-card").boundingBox()).toEqual(before);
     await page.goForward();
     await expect(page.getByRole("dialog", { name: "Navigation Item" })).toBeVisible();

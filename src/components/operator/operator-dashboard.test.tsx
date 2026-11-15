@@ -89,7 +89,7 @@ it("opening details in a 100-service fixture does not render every tile again", 
   const view = render(tree());
   await waitFor(() => expect(screen.getAllByTestId("item-card")).toHaveLength(100));
   payload.mockClear();
-  fireEvent.click(screen.getByRole("button", { name: "Inspect Host 0" }));
+  fireEvent.click(screen.getByRole("button", { name: /^Status for Host 0:/ }));
   view.rerender(tree());
   await screen.findByRole("dialog", { name: "Host 0" });
   // Details normalize metrics and render activity; the other 99 tiles stay memoized.

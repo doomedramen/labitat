@@ -220,7 +220,8 @@ export const ServiceTile = memo(function ServiceTile({
       </article>
     );
 
-  // The status dot sits in the same corner of every card and chip and opens its details.
+  // The status dot, in the same corner of every card and chip, is the only way to open
+  // details; the rest of the card opens the service itself.
   const status = (
     <div
       ref={statusRef}
@@ -269,15 +270,7 @@ export const ServiceTile = memo(function ServiceTile({
   if (!hasMetrics)
     return (
       <article className={styles.chip} data-overview="" {...attributes}>
-        {launch || (
-          <button
-            type="button"
-            className={styles.launch}
-            data-details-for={item.id}
-            onClick={() => onDetails(item.id)}
-            aria-label={`Inspect ${label}`}
-          />
-        )}
+        {launch}
         <span className={styles.chipIcon} aria-hidden="true">
           {icon}
         </span>
@@ -306,13 +299,7 @@ export const ServiceTile = memo(function ServiceTile({
         {item.href && <ArrowUpRight className={styles.arrow} size={13} aria-hidden="true" />}
         {status}
       </header>
-      <button
-        type="button"
-        data-details-for={item.id}
-        className={styles.inspect}
-        onClick={() => onDetails(item.id)}
-        aria-label={`Inspect ${label}`}
-      >
+      <div className={styles.body} data-testid="item-stats">
         {problem ? (
           <span className={styles.problem}>{reason}</span>
         ) : lead ? (
@@ -339,7 +326,7 @@ export const ServiceTile = memo(function ServiceTile({
             ))}
           </span>
         )}
-      </button>
+      </div>
     </article>
   );
 });

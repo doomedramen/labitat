@@ -57,7 +57,7 @@ test("24 services pack without overlap in both themes; mobile and 200% zoom refl
       true,
     );
   }
-  await page.getByRole("button", { name: "Inspect Host 1", exact: true }).click();
+  await page.getByRole("button", { name: /^Status for Host 1:/ }).click();
   const sheet = page.getByRole("dialog", { name: "Host 1", exact: true });
   await expect(sheet).toBeVisible();
   const box = (await sheet.boundingBox())!;
@@ -111,7 +111,7 @@ test("launch and inspect are independent, history loads only in the open 440px p
   await expect(card.getByRole("link")).toHaveAttribute("href", "https://host-0-0.test");
   expect(await card.locator("a button, button a").count()).toBe(0);
   const before = await card.boundingBox();
-  await card.getByRole("button", { name: "Inspect Host 1" }).focus();
+  await card.getByRole("button", { name: /^Status for Host 1:/ }).focus();
   await page.keyboard.press("Enter");
   const panel = page.getByRole("dialog", { name: "Host 1", exact: true });
   await expect(panel).toBeVisible();
@@ -126,7 +126,7 @@ test("launch and inspect are independent, history loads only in the open 440px p
   await expect.poll(() => history).toBe(2);
   await page.keyboard.press("Escape");
   await expect(panel).toHaveCount(0);
-  await expect(card.getByRole("button", { name: "Inspect Host 1" })).toBeFocused();
+  await expect(card.getByRole("button", { name: /^Status for Host 1:/ })).toBeFocused();
 });
 test("long names, large values, missing data, and empty groups stay usable", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
@@ -173,10 +173,10 @@ test("local date/time and search use working detail capabilities", async ({ page
     ],
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Inspect Clock", exact: true }).click();
+  await page.getByRole("button", { name: /^Status for Clock:/ }).click();
   await expect(page.getByRole("dialog").locator("time")).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).click();
-  await page.getByRole("button", { name: "Inspect Search", exact: true }).click();
+  await page.getByRole("button", { name: /^Status for Search:/ }).click();
   await page.getByRole("textbox", { name: "Search query", exact: true }).fill("home lab");
   await page
     .getByRole("combobox", { name: "Search engine", exact: true })

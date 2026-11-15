@@ -68,7 +68,10 @@ test("mobile-first mixed service board", async ({ page }) => {
       }
     }
     if (width === 768 || width === 320) {
-      const metrics = page.getByRole("button", { name: "Inspect SABnzbd", exact: true });
+      const metrics = page
+        .getByTestId("item-card")
+        .filter({ has: page.getByRole("heading", { name: "SABnzbd", exact: true }) })
+        .getByTestId("item-stats");
       const values = await Promise.all(
         ["33.2 M", "0:01:15", "1"].map((value) =>
           metrics.getByText(value, { exact: true }).evaluate((el) => ({

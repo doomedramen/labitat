@@ -119,7 +119,7 @@ test("supports a card with no stats, and extras beyond three in details only", a
   await expect(page.getByTestId("item-card")).toHaveAttribute("data-layout", "metrics");
   await expect(page.getByTestId("item-card").getByText("Uptime", { exact: true })).toHaveCount(0);
   await expect(page.getByTestId("item-card")).not.toContainText("Uptime");
-  await page.getByRole("button", { name: "Inspect Glances", exact: true }).click();
+  await page.getByRole("button", { name: /^Status for Glances:/ }).click();
   await expect(page.getByRole("dialog").getByText("Uptime", { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("dialog").getByText("Uptime", { exact: true })).toBeVisible();
@@ -144,7 +144,7 @@ test("shows the age of successful data after a newer failed update and opens det
   await expect(card.getByRole("tooltip")).toContainText("Upstream unavailable");
   await expect(card).toHaveAttribute("data-stale", "true");
   await expect(card).toContainText("Movies");
-  const inspect = card.getByRole("button", { name: "Inspect Radarr" });
+  const inspect = card.getByRole("button", { name: /^Status for Radarr:/ });
   await inspect.focus();
   await page.keyboard.press("Enter");
   await expect(

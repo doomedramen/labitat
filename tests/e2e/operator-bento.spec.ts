@@ -39,9 +39,7 @@ test("mixed Home services pack as cards then chips in saved order and stay in pl
   expect([...statCards, ...chips].sort()).toEqual([...saved].sort());
   expect(statCards).toEqual(saved.filter((label) => statCards.includes(label)));
   expect(chips).toEqual(saved.filter((label) => chips.includes(label)));
-  await expect(cards.first().getByRole("button", { name: "Inspect Bambuddy" })).toContainText(
-    printerError,
-  );
+  await expect(cards.first().getByTestId("item-stats")).toContainText(printerError);
 
   const cardBoxes = () =>
     cards.evaluateAll((elements) => elements.map((card) => card.getBoundingClientRect().toJSON()));
