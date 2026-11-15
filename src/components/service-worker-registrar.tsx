@@ -10,6 +10,16 @@ export function ServiceWorkerRegistrar() {
 
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
+    // Development chunk names are not content-hashed, so the worker's cache-first
+    // scripts would keep serving old code after every edit. Remove any left behind.
+    if (process.env.NODE_ENV === "development") {
+      void navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) =>
+          registrations.forEach((registration) => registration.unregister()),
+        );
+      return;
+    }
 
     let controllerChangeHandler: (() => void) | null = null;
 

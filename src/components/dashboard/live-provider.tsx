@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, type ReactNode } from "react";
 import { liveStore } from "@/lib/live-store";
 import { sseEventSchema, type ItemLive } from "@/lib/live-types";
+import { showNewBuildToast } from "./new-build-toast";
 
 declare global {
   interface Window {
@@ -36,11 +37,14 @@ export function LiveProvider({
   initialSnapshotById,
   snapshotKey,
   enableSse,
+  buildId,
   children,
 }: {
   initialSnapshotById: Record<string, ItemLive>;
   snapshotKey: string;
   enableSse: boolean;
+  /** The build this page was rendered by; a different one on the stream means a redeploy. */
+  buildId?: string;
   children: ReactNode;
 }) {
   // Stable getter for useSyncExternalStore's third argument
@@ -107,6 +111,8 @@ export function LiveProvider({
           closeConnection();
           liveStore.setSseState("disconnected");
           scheduleReconnect();
+        } else if (event.data.type === "hello") {
+          if (buildId && event.data.buildId !== buildId) showNewBuildToast();
         } else if (event.data.type === "poll-state") {
           liveStore.updatePollState(event.data);
         } else if (event.data.type === "update") {
@@ -178,7 +184,7 @@ export function LiveProvider({
       for (const type of ACTIVITY_EVENTS)
         window.removeEventListener(type, onActivity, { capture: true });
     };
-  }, [enableSse]);
+  }, [enableSse, buildId]);
 
   return (
     <ServerSnapshotContext.Provider value={getServerSnapshot}>

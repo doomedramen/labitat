@@ -4,6 +4,9 @@ import { LiveProvider } from "@/components/dashboard/live-provider";
 import { liveStore } from "@/lib/live-store";
 import type { ItemLive } from "@/lib/live-types";
 
+const toast = vi.hoisted(() => ({ info: vi.fn() }));
+vi.mock("sonner", () => ({ toast }));
+
 const originalVisibilityState = Object.getOwnPropertyDescriptor(document, "visibilityState");
 
 class MockEventSource {
@@ -167,5 +170,46 @@ describe("LiveProvider app resume", () => {
     expect(liveStore.getSnapshot("b")).toBeNull();
     expect(liveStore.getSnapshot("c")?.widgetData).toEqual({ value: "new" });
     expect(liveStore.getMeta().sseState).toBe("connected");
+  });
+});
+
+describe("LiveProvider redeploy detection", () => {
+  afterEach(() => {
+    MockEventSource.instances = [];
+    toast.info.mockReset();
+  });
+  const hello = (buildId: string) =>
+    act(() =>
+      MockEventSource.instances[0]!.onmessage?.({
+        data: JSON.stringify({ type: "hello", buildId }),
+      } as MessageEvent),
+    );
+
+  it("offers a reload once the server reports a different build", () => {
+    vi.stubGlobal("EventSource", MockEventSource);
+    render(
+      <LiveProvider initialSnapshotById={{}} snapshotKey="build-a" enableSse buildId="build-a">
+        <div />
+      </LiveProvider>,
+    );
+    hello("build-a");
+    expect(toast.info).not.toHaveBeenCalled();
+    hello("build-b");
+    expect(toast.info).toHaveBeenCalledOnce();
+    expect(toast.info.mock.calls[0]![1]).toMatchObject({
+      id: "labitat-new-build",
+      action: { label: "Reload" },
+    });
+  });
+
+  it("stays quiet when the page was rendered without a build", () => {
+    vi.stubGlobal("EventSource", MockEventSource);
+    render(
+      <LiveProvider initialSnapshotById={{}} snapshotKey="no-build" enableSse>
+        <div />
+      </LiveProvider>,
+    );
+    hello("build-b");
+    expect(toast.info).not.toHaveBeenCalled();
   });
 });

@@ -57,6 +57,21 @@ describe("ServiceWorkerRegistrar", () => {
     }
   });
 
+  it("unregisters instead of registering in development", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    const unregister = vi.fn();
+    const register = vi.fn();
+    Object.defineProperty(navigator, "serviceWorker", {
+      configurable: true,
+      value: { register, getRegistrations: vi.fn().mockResolvedValue([{ unregister }]) },
+    });
+    render(<ServiceWorkerRegistrar />);
+    await act(async () => {});
+    expect(register).not.toHaveBeenCalled();
+    expect(unregister).toHaveBeenCalledOnce();
+    vi.unstubAllEnvs();
+  });
+
   it("does not claim an update exists when the candidate worker version cannot be verified", async () => {
     vi.useFakeTimers();
     vi.stubGlobal("MessageChannel", MockMessageChannel);

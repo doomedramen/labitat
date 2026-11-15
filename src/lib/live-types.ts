@@ -48,6 +48,11 @@ export const sseEventSchema = z.union([
   z.object({
     type: z.literal("reconnect"),
   }),
+  /** Sent on every connection: the server's build, to spot a redeploy (see build-id.ts). */
+  z.object({
+    type: z.literal("hello"),
+    buildId: z.string(),
+  }),
   z.object({
     type: z.literal("update"),
     itemId: z.string(),

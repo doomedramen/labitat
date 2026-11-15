@@ -5,6 +5,7 @@ import { readDashboardLayout } from "@/lib/dashboard-layout";
 import { OperatorDashboard } from "@/components/operator/operator-dashboard";
 import type { ItemLive } from "@/lib/live-types";
 import { LiveProvider } from "@/components/dashboard/live-provider";
+import { currentBuildId } from "@/lib/build-id";
 // This page is always dynamic due to session auth, database queries, and cookie usage
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -61,7 +62,12 @@ async function DashboardContent() {
   const dashboardTitle = titleSetting?.value ?? "Labitat";
 
   return (
-    <LiveProvider initialSnapshotById={initialSnapshotById} snapshotKey={snapshotKey} enableSse>
+    <LiveProvider
+      initialSnapshotById={initialSnapshotById}
+      snapshotKey={snapshotKey}
+      enableSse
+      buildId={currentBuildId()}
+    >
       <OperatorDashboard
         groups={groupsWithItems}
         revision={layout.revision}

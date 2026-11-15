@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { pollingSup } from "@/lib/polling-supervisor";
 import { serverCache } from "@/lib/server-cache";
+import { currentBuildId } from "@/lib/build-id";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +86,7 @@ export async function GET(request: NextRequest) {
       // A resumed tab may have missed every update since its original SSR snapshot.
       for (const [itemId, observation] of serverCache.getAll())
         sendObservation(itemId, observation);
+      send({ type: "hello", buildId: currentBuildId() });
 
       const wasIdle = pollingSup.getConnectionCount() === 0;
       pollingSup.connect();

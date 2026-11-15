@@ -58,6 +58,14 @@ describe("SSE connection cleanup", () => {
       mocks.connect.mock.invocationCallOrder.at(-1)!,
     );
   });
+  it("tells every connection which build the server is running", async () => {
+    mocks.onUpdate.mockReturnValue(mocks.unsubscribe);
+    const response = await GET(new NextRequest("http://localhost/api/events"));
+    const reader = response.body!.getReader();
+    const { value } = await reader.read();
+    await reader.cancel();
+    expect(new TextDecoder().decode(value)).toContain('"type":"hello"');
+  });
   it("releases each expired connection even if no request abort arrives", async () => {
     vi.useFakeTimers();
     mocks.onUpdate.mockReturnValue(mocks.unsubscribe);
