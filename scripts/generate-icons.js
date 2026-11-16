@@ -249,13 +249,18 @@ async function generateIcon(size, outputPath) {
     mkdirSync(outputDir, { recursive: true });
   }
 
-  await sharp(SOURCE_SVG)
-    .resize(size, size, {
-      fit: "contain",
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    })
-    .png()
-    .toFile(outputPath);
+  let image = sharp(SOURCE_SVG, { density: 384 }).resize(size, size, {
+    fit: "contain",
+    background: { r: 0, g: 0, b: 0, alpha: 0 },
+  });
+  // Favicons sit on arbitrary tab colours: round the square so no hard dark edge shows.
+  if (relativePath.includes("favicon")) {
+    const mask = Buffer.from(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" rx="${size * 0.22}"/></svg>`,
+    );
+    image = image.composite([{ input: mask, blend: "dest-in" }]);
+  }
+  await image.png().toFile(outputPath);
 
   console.log(`✓ ${relativePath} (${size}x${size})`);
 }

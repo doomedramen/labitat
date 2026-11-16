@@ -83,8 +83,6 @@
 .icon,
 .chipIcon {
   position: relative;
-  overflow: hidden;
-  border-radius: 5px;
 }
 /* ItemIcon pads and frames itself for larger sizes; at this size the glyph is the frame. */
 .icon > *,
@@ -93,7 +91,8 @@
   height: 100%;
   padding: 0;
   border: 0;
-  border-radius: inherit;
+  border-radius: 0;
+  background: none;
 }
 .icon span,
 .chipIcon span {
